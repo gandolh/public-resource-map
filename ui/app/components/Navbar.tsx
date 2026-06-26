@@ -1,51 +1,61 @@
+import { Link, useLocation } from "react-router";
+import { User } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-} from "@/components/ui/DropdownMenu";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
-import { Link } from "react-router";
+import { Avatar } from "~/components/ui/Avatar";
+import { Button } from "~/components/ui/Button";
+import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "~/components/ui/DropdownMenu";
+import { cn } from "~/lib/utils";
 
-export function ProfileMenu() {
+function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const active = pathname === to || pathname.startsWith(to + "/");
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="p-0 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="" alt="User" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Profile</DropdownMenuItem>
-        <DropdownMenuItem>Settings</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Logout</DropdownMenuItem>
-      </DropdownMenuContent>
+    <Link
+      to={to}
+      className={cn(
+        "text-sm font-medium transition-colors duration-200 pb-0.5",
+        active
+          ? "text-cm-primary border-b-2 border-cm-primary opacity-80"
+          : "text-cm-on-surface-variant hover:text-cm-primary",
+      )}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function ProfileMenu() {
+  const trigger = (
+    <Button variant="ghost" size="icon" aria-label="Profile">
+      <Avatar fallback="U" />
+    </Button>
+  );
+
+  return (
+    <DropdownMenu trigger={trigger} align="end">
+      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+      <DropdownMenuItem>Profile</DropdownMenuItem>
+      <DropdownMenuItem>Settings</DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem>Sign out</DropdownMenuItem>
     </DropdownMenu>
   );
 }
 
 export function Navbar() {
   return (
-    <nav className="h-[65px] flex items-center justify-between px-6 border-b bg-background">
+    <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-cm-surface border-b border-cm-outline-variant shadow-sm">
       <div className="flex items-center gap-6">
-        <Link to="/" className="font-semibold text-lg hover:underline">
-          Home
+        <Link to="/map" className="text-xl font-bold text-cm-primary tracking-tight">
+          CivicMap
         </Link>
-        <Link to="/events" className="font-semibold text-lg hover:underline">
-          Events
-        </Link>
+        <div className="hidden md:flex items-center gap-5 ml-4">
+          <NavLink to="/map">Map</NavLink>
+          <NavLink to="/events">Events</NavLink>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
+
+      <div className="flex items-center gap-2">
         <ThemeToggle />
         <ProfileMenu />
       </div>

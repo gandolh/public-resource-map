@@ -2,14 +2,14 @@ import { Outlet } from "react-router";
 import { Navbar } from "./Navbar";
 import { ThemeProvider } from "./ThemeProvider";
 
-export function Layout() {
+export default function Layout() {
   return (
     <ThemeProvider>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-cm-background text-cm-on-background">
         <Navbar />
-        <main className="flex-1">
+        <div className="flex-1">
           <Outlet />
-        </main>
+        </div>
       </div>
     </ThemeProvider>
   );

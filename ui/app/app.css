@@ -1,120 +1,279 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
+/* CivicMap design tokens — light mode */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Surface scale */
+  --cm-surface:                  #f9f9ff;
+  --cm-surface-dim:              #d3daef;
+  --cm-surface-bright:           #f9f9ff;
+  --cm-surface-container-lowest: #ffffff;
+  --cm-surface-container-low:    #f1f3ff;
+  --cm-surface-container:        #e9edff;
+  --cm-surface-container-high:   #e1e8fd;
+  --cm-surface-container-highest:#dce2f7;
+  --cm-surface-variant:          #dce2f7;
+  --cm-surface-tint:             #206393;
+
+  /* On-surface */
+  --cm-on-surface:               #141b2b;
+  --cm-on-surface-variant:       #41474f;
+  --cm-on-background:            #141b2b;
+
+  /* Inverse */
+  --cm-inverse-surface:          #293040;
+  --cm-inverse-on-surface:       #edf0ff;
+  --cm-inverse-primary:          #96ccff;
+
+  /* Outline */
+  --cm-outline:                  #717880;
+  --cm-outline-variant:          #c1c7d0;
+
+  /* Primary — steel blue */
+  --cm-primary:                  #1c6090;
+  --cm-on-primary:               #ffffff;
+  --cm-primary-container:        #3c79ab;
+  --cm-on-primary-container:     #fdfcff;
+  --cm-primary-fixed:            #cee5ff;
+  --cm-primary-fixed-dim:        #96ccff;
+  --cm-on-primary-fixed:         #001d32;
+  --cm-on-primary-fixed-variant: #004a75;
+
+  /* Secondary */
+  --cm-secondary:                #4c6075;
+  --cm-on-secondary:             #ffffff;
+  --cm-secondary-container:      #cfe5fd;
+  --cm-on-secondary-container:   #52667b;
+  --cm-secondary-fixed:          #cfe5fd;
+  --cm-secondary-fixed-dim:      #b3c9e0;
+  --cm-on-secondary-fixed:       #061d2f;
+  --cm-on-secondary-fixed-variant:#34495c;
+
+  /* Tertiary — amber/library */
+  --cm-tertiary:                 #7d5400;
+  --cm-on-tertiary:              #ffffff;
+  --cm-tertiary-container:       #9a6c17;
+  --cm-on-tertiary-container:    #fffbff;
+  --cm-tertiary-fixed:           #ffddb0;
+  --cm-tertiary-fixed-dim:       #f6bc62;
+  --cm-on-tertiary-fixed:        #281800;
+  --cm-on-tertiary-fixed-variant:#614000;
+
+  /* Error */
+  --cm-error:                    #ba1a1a;
+  --cm-on-error:                 #ffffff;
+  --cm-error-container:          #ffdad6;
+  --cm-on-error-container:       #93000a;
+
+  /* Background */
+  --cm-background:               #f9f9ff;
+
+  /* Category colors */
+  --cm-cat-park:       #10b981;
+  --cm-cat-library:    #9a6c17;
+  --cm-cat-healthcare: #ef4444;
+  --cm-cat-education:  #3b82f6;
+  --cm-cat-food:       #f59e0b;
+  --cm-cat-shelter:    #6366f1;
+  --cm-cat-transport:  #06b6d4;
+  --cm-cat-community:  #8b5cf6;
+  --cm-cat-concert:    #ec4899;
+  --cm-cat-theater:    #f97316;
+  --cm-cat-sport:      #84cc16;
+  --cm-cat-festival:   #a855f7;
+  --cm-cat-exhibition: #14b8a6;
+  --cm-cat-workshop:   #0ea5e9;
+  --cm-cat-other:      #6b7280;
 }
 
+/* Dark mode overrides */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --cm-surface:                  #1f2937;
+  --cm-surface-dim:              #111827;
+  --cm-surface-bright:           #374151;
+  --cm-surface-container-lowest: #111827;
+  --cm-surface-container-low:    #1f2937;
+  --cm-surface-container:        #273040;
+  --cm-surface-container-high:   #2d3748;
+  --cm-surface-container-highest:#374151;
+  --cm-surface-variant:          #293040;
+  --cm-surface-tint:             #96ccff;
+
+  --cm-on-surface:               #e2e8f0;
+  --cm-on-surface-variant:       #94a3b8;
+  --cm-on-background:            #e2e8f0;
+
+  --cm-inverse-surface:          #edf0ff;
+  --cm-inverse-on-surface:       #293040;
+  --cm-inverse-primary:          #1c6090;
+
+  --cm-outline:                  #64748b;
+  --cm-outline-variant:          #374151;
+
+  --cm-primary:                  #96ccff;
+  --cm-on-primary:               #001d32;
+  --cm-primary-container:        #004a75;
+  --cm-on-primary-container:     #cee5ff;
+  --cm-primary-fixed:            #cee5ff;
+  --cm-primary-fixed-dim:        #96ccff;
+  --cm-on-primary-fixed:         #001d32;
+  --cm-on-primary-fixed-variant: #004a75;
+
+  --cm-secondary:                #b3c9e0;
+  --cm-on-secondary:             #1e3448;
+  --cm-secondary-container:      #34495c;
+  --cm-on-secondary-container:   #cfe5fd;
+
+  --cm-tertiary:                 #f6bc62;
+  --cm-on-tertiary:              #3e2500;
+  --cm-tertiary-container:       #614000;
+  --cm-on-tertiary-container:    #ffddb0;
+
+  --cm-error:                    #ffb4ab;
+  --cm-on-error:                 #690005;
+  --cm-error-container:          #93000a;
+  --cm-on-error-container:       #ffdad6;
+
+  --cm-background:               #111827;
 }
+
+/* Expose tokens as Tailwind-compatible CSS vars via @theme */
+@theme inline {
+  /* CivicMap palette → tw color utilities */
+  --color-cm-surface:                  var(--cm-surface);
+  --color-cm-surface-dim:              var(--cm-surface-dim);
+  --color-cm-surface-bright:           var(--cm-surface-bright);
+  --color-cm-surface-container-lowest: var(--cm-surface-container-lowest);
+  --color-cm-surface-container-low:    var(--cm-surface-container-low);
+  --color-cm-surface-container:        var(--cm-surface-container);
+  --color-cm-surface-container-high:   var(--cm-surface-container-high);
+  --color-cm-surface-container-highest:var(--cm-surface-container-highest);
+  --color-cm-surface-variant:          var(--cm-surface-variant);
+  --color-cm-surface-tint:             var(--cm-surface-tint);
+
+  --color-cm-on-surface:               var(--cm-on-surface);
+  --color-cm-on-surface-variant:       var(--cm-on-surface-variant);
+  --color-cm-on-background:            var(--cm-on-background);
+
+  --color-cm-inverse-surface:          var(--cm-inverse-surface);
+  --color-cm-inverse-on-surface:       var(--cm-inverse-on-surface);
+  --color-cm-inverse-primary:          var(--cm-inverse-primary);
+
+  --color-cm-outline:                  var(--cm-outline);
+  --color-cm-outline-variant:          var(--cm-outline-variant);
+
+  --color-cm-primary:                  var(--cm-primary);
+  --color-cm-on-primary:               var(--cm-on-primary);
+  --color-cm-primary-container:        var(--cm-primary-container);
+  --color-cm-on-primary-container:     var(--cm-on-primary-container);
+  --color-cm-primary-fixed:            var(--cm-primary-fixed);
+  --color-cm-primary-fixed-dim:        var(--cm-primary-fixed-dim);
+  --color-cm-on-primary-fixed:         var(--cm-on-primary-fixed);
+
+  --color-cm-secondary:                var(--cm-secondary);
+  --color-cm-on-secondary:             var(--cm-on-secondary);
+  --color-cm-secondary-container:      var(--cm-secondary-container);
+  --color-cm-on-secondary-container:   var(--cm-on-secondary-container);
+
+  --color-cm-tertiary:                 var(--cm-tertiary);
+  --color-cm-on-tertiary:              var(--cm-on-tertiary);
+  --color-cm-tertiary-container:       var(--cm-tertiary-container);
+  --color-cm-on-tertiary-container:    var(--cm-on-tertiary-container);
+  --color-cm-tertiary-fixed:           var(--cm-tertiary-fixed);
+  --color-cm-tertiary-fixed-dim:       var(--cm-tertiary-fixed-dim);
+
+  --color-cm-error:                    var(--cm-error);
+  --color-cm-on-error:                 var(--cm-on-error);
+  --color-cm-error-container:          var(--cm-error-container);
+  --color-cm-on-error-container:       var(--cm-on-error-container);
+
+  --color-cm-background:               var(--cm-background);
+
+  /* Category colors */
+  --color-cat-park:       var(--cm-cat-park);
+  --color-cat-library:    var(--cm-cat-library);
+  --color-cat-healthcare: var(--cm-cat-healthcare);
+  --color-cat-education:  var(--cm-cat-education);
+  --color-cat-food:       var(--cm-cat-food);
+  --color-cat-shelter:    var(--cm-cat-shelter);
+  --color-cat-transport:  var(--cm-cat-transport);
+  --color-cat-community:  var(--cm-cat-community);
+  --color-cat-concert:    var(--cm-cat-concert);
+  --color-cat-theater:    var(--cm-cat-theater);
+  --color-cat-sport:      var(--cm-cat-sport);
+  --color-cat-festival:   var(--cm-cat-festival);
+  --color-cat-exhibition: var(--cm-cat-exhibition);
+  --color-cat-workshop:   var(--cm-cat-workshop);
+  --color-cat-other:      var(--cm-cat-other);
+
+  /* Typography scale */
+  --font-size-display:           48px;
+  --font-size-headline-lg:       32px;
+  --font-size-headline-lg-mobile:24px;
+  --font-size-headline-md:       20px;
+  --font-size-body-lg:           18px;
+  --font-size-body-md:           16px;
+  --font-size-label-md:          14px;
+  --font-size-label-sm:          12px;
+
+  /* Spacing */
+  --spacing-xs:              4px;
+  --spacing-sm:              8px;
+  --spacing-md:              16px;
+  --spacing-lg:              24px;
+  --spacing-xl:              32px;
+  --spacing-gutter:          16px;
+  --spacing-margin-mobile:   16px;
+  --spacing-margin-desktop:  40px;
+
+  /* Border radius */
+  --radius-pill: 9999px;
+  --radius-sm:   4px;
+  --radius:      8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+}
+
+/* Map placeholder grid pattern */
+.map-placeholder {
+  background-color: var(--cm-surface-dim);
+  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cpath fill="%23e5e7eb" d="M0 0h100v100H0z"/%3E%3Cpath fill="none" stroke="%23d1d5db" stroke-width="1" d="M0 20h100M0 40h100M0 60h100M0 80h100M20 0v100M40 0v100M60 0v100M80 0v100"/%3E%3C/svg%3E');
+  background-size: 100px 100px;
+}
+
+.dark .map-placeholder {
+  background-color: #111827;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* User location pulse animation */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(28,96,144,0.7); }
+  70%  { box-shadow: 0 0 0 10px rgba(28,96,144,0); }
+  100% { box-shadow: 0 0 0 0 rgba(28,96,144,0); }
+}
+
+.pulse-dot {
+  animation: pulse-ring 2s infinite;
+}
+
+/* Leaflet z-index fix inside fixed nav */
+.leaflet-pane { z-index: 10; }
+.leaflet-control { z-index: 20; }
+.leaflet-top, .leaflet-bottom { z-index: 20; }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-cm-outline-variant outline-cm-primary/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-cm-background text-cm-on-background font-sans;
   }
 }

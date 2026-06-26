@@ -1,0 +1,29 @@
+{
+  "name": "@public-resource-map/backend",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@public-resource-map/shared": "*",
+    "better-sqlite3": "^12.1.0",
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.8.5",
+    "@fastify/cors": "^11.2.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^26.0.0",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.22.4",
+    "typescript": "^5.8.5"
+  }
+}

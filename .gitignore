@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.db
+*.db-shm
+*.db-wal
+
+# Playwright MCP artifacts
+.playwright-mcp/
+*.png
+*.jpg
+*.jpeg
