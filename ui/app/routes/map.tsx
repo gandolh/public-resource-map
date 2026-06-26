@@ -91,17 +91,21 @@ export default function MapPage() {
         />
 
         <div className="bg-cm-surface rounded-lg border border-cm-outline-variant shadow-[0_4px_6px_rgba(0,0,0,0.05)] p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden -mx-1 px-1">
-            {RESOURCE_CATEGORIES.map((cat) => (
-              <FilterChip
-                key={cat.value}
-                pressed={activeCategories.has(cat.value)}
-                onPressedChange={() => toggleCategory(cat.value)}
-                className="flex-shrink-0"
-              >
-                {cat.label}
-              </FilterChip>
-            ))}
+          <div className="relative">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden -mx-1 px-1">
+              {RESOURCE_CATEGORIES.map((cat) => (
+                <FilterChip
+                  key={cat.value}
+                  pressed={activeCategories.has(cat.value)}
+                  onPressedChange={() => toggleCategory(cat.value)}
+                  className="flex-shrink-0"
+                >
+                  {cat.label}
+                </FilterChip>
+              ))}
+            </div>
+            {/* Fade mask signals the row is scrollable on mobile */}
+            <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-cm-surface to-transparent" />
           </div>
           <RadiusSlider value={radius} onChange={setRadius} min={1} max={50} />
         </div>

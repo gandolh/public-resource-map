@@ -4,7 +4,7 @@ _Last updated: 2026-06-26_
 
 ## Where things stand
 
-The full CivicMap UI design (from Stitch brief 01) has been implemented and verified. All three routes render with the navbar, CivicMap token design system, and Base UI components. The backend is scaffolded but the database has not been migrated or seeded — all data-dependent UI shows empty states. Next focus is a UI audit followed by seeding data and wiring the backend.
+All three routes are functional with seeded NYC data. The database is migrated and seeded (8 resources, 8 events). A full UI audit has been run — one bug fixed (Hours JSON rendering), two open findings filed. Stitch design screens integrated into corpus. Next focus: wire location-aware defaults so events/map work without native geolocation, and fix the two open findings.
 
 ## Per-area snapshot
 
@@ -12,14 +12,14 @@ The full CivicMap UI design (from Stitch brief 01) has been implemented and veri
 |---|---|
 | npm workspaces | done — shared/backend/ui wired |
 | shared types | done — Resource, Event, common types, ESM build |
-| backend API | scaffolded — routes + Drizzle schema written; migration not run |
+| backend API | done — routes live; migration run; 8 resources + 8 events seeded |
 | UI `/map` | done — Leaflet map, CartoDB tiles, filter chips, radius slider, detail drawer |
 | UI `/events` | done — grid, category chips, empty state, pagination |
 | UI `/resources/:id` | done — hero, contact sidebar, hours, embedded map, not-found state |
 | Component library | done — Base UI primitives, CivicMap tokens, all components |
 | Navbar | done — CivicMap branding, active link state, theme toggle, profile menu |
 | Dark mode | tokens in CSS vars + `.dark` class; ThemeProvider wired |
-| Data ingestion | not started |
+| Data ingestion | seeded — 8 NYC resources, 8 events via `db:seed` script |
 | Backend auth | not started |
 | Deployment | Docker for UI only; backend has no Dockerfile |
 

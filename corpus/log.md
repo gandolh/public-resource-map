@@ -1,5 +1,21 @@
 # Log
 
+## [2026-06-26] done | UI audit run — 1 bug fixed, 2 findings filed
+
+Ran TP-01 through TP-04 against seeded data. Fixed raw JSON rendering in resource
+detail Hours section (`HoursDisplay` component in `resources.$id.tsx`). Filed F-01
+(map chip overflow on mobile) and a minor title-tag observation as corpus todos.
+Full results in `test-plans/RESULTS.md`.
+
+## [2026-06-26] done | Seed script added; 8 resources + 8 events loaded (NYC)
+
+Added `backend/src/db/seed.ts` and `db:seed` npm script. Seeded 8 resources and
+8 events around New York City (Central Park area). Migration confirmed clean.
+
+## [2026-06-26] done | Stitch screens integrated into corpus; stitch_output removed
+
+Extracted structural patterns from all 4 Stitch HTML screens into `wiki/stitch-screens.md`. Moved brief 01 to `briefs/done/`. Deleted `stitch_output/` directory and `stitch_civic_mapper.zip` from repo root. Updated `index.md` accordingly.
+
 ## [2026-06-26] todo | Brief 01 — Stitch design brief filed
 
 Filed `briefs/todo/01-stitch-design-brief.md` — a full design brief for Stitch (or any design tool) covering the map home screen, detail drawer, events list, map pins, and color/token system. Covers implemented vs. to-do scope and design constraints (responsive, dark mode, WCAG AA, Tailwind/Radix stack).

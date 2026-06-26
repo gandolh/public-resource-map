@@ -7,8 +7,14 @@ build/
 *.db-shm
 *.db-wal
 
-# Playwright MCP artifacts
+# Playwright artifacts
 .playwright-mcp/
+playwright/screenshots/
+playwright/**/*.png
+playwright/**/*.jpeg
+playwright/**/*.webm
+playwright/**/*.zip
+# root-level screenshots from MCP browser tool
 *.png
 *.jpg
 *.jpeg

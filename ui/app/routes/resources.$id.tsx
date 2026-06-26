@@ -34,6 +34,11 @@ export default function ResourceDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    if (resource) document.title = `${resource.name} — CivicMap`;
+    return () => { document.title = "CivicMap"; };
+  }, [resource]);
+
   if (loading) return <LoadingSkeleton />;
   if (error || !resource) return <NotFound />;
 
@@ -127,15 +132,32 @@ export default function ResourceDetailPage() {
           {resource.openingHours && (
             <div className="bg-cm-surface rounded-xl border border-cm-outline-variant p-6 shadow-sm">
               <h3 className="text-base font-semibold text-cm-on-background mb-4">Hours</h3>
-              <div className="flex items-start gap-3">
-                <Clock size={16} className="text-cm-primary mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-cm-on-surface-variant whitespace-pre-line">{resource.openingHours}</p>
-              </div>
+              <HoursDisplay raw={resource.openingHours} />
             </div>
           )}
         </div>
       </div>
     </main>
+  );
+}
+
+function HoursDisplay({ raw }: { raw: string }) {
+  let entries: [string, string][] = [];
+  try {
+    const parsed = JSON.parse(raw);
+    entries = Object.entries(parsed) as [string, string][];
+  } catch {
+    return <p className="text-sm text-cm-on-surface-variant whitespace-pre-line">{raw}</p>;
+  }
+  return (
+    <ul className="space-y-1">
+      {entries.map(([day, hours]) => (
+        <li key={day} className="flex justify-between text-sm py-1 border-b border-cm-outline-variant/30 last:border-0">
+          <span className="text-cm-on-surface-variant">{day}</span>
+          <span className={`font-medium ${hours === "Closed" ? "text-cm-outline" : "text-cm-on-background"}`}>{hours}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
