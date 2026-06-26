@@ -1,46 +1,39 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, Link } from "react-router";
 import type { MetaFunction } from "react-router";
-import { MapPin, Clock, Phone, Globe, Navigation, ChevronRight, Accessibility } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { MapPin, Phone, Globe, Navigation, ChevronRight } from "lucide-react";
 import { MapContainer, TileLayer, CircleMarker } from "react-leaflet";
 import { CategoryBadge } from "~/components/ui/CategoryBadge";
 import { Button } from "~/components/ui/Button";
-import type { Resource } from "@public-resource-map/shared";
-
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+import { fetchResource } from "~/lib/api";
+import { directionsUrl, useIsDarkMode, LIGHT_TILES, DARK_TILES, CARTO_ATTR } from "~/lib/map";
 
 export const meta: MetaFunction = () => [
   { title: "Resource — CivicMap" },
 ];
 
-const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-const CARTO_ATTR  = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
-
 export default function ResourceDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [resource, setResource] = useState<Resource | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dark = useIsDarkMode();
 
-  useEffect(() => {
-    if (!id) return;
-    fetch(`${API_BASE}/api/resources/${id}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Not found");
-        return r.json() as Promise<Resource>;
-      })
-      .then(setResource)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [id]);
+  const {
+    data: resource,
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["resource", id],
+    queryFn: ({ signal }) => fetchResource(id!, signal),
+    enabled: Boolean(id),
+  });
 
   useEffect(() => {
     if (resource) document.title = `${resource.name} — CivicMap`;
     return () => { document.title = "CivicMap"; };
   }, [resource]);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error || !resource) return <NotFound />;
+  if (isPending) return <LoadingSkeleton />;
+  if (isError || !resource) return <NotFound />;
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-10 pt-20 pb-10 space-y-6">
@@ -64,10 +57,17 @@ export default function ResourceDetailPage() {
                 {resource.address}
               </div>
             </div>
-            <Button size="lg" className="shrink-0">
-              <Navigation size={16} />
-              Get Directions
-            </Button>
+            <a
+              href={directionsUrl(resource.coordinates, resource.address)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0"
+            >
+              <Button size="lg">
+                <Navigation size={16} />
+                Get Directions
+              </Button>
+            </a>
           </div>
         </div>
       </section>
@@ -90,7 +90,7 @@ export default function ResourceDetailPage() {
               className="w-full h-full"
               zoomControl={false}
             >
-              <TileLayer url={LIGHT_TILES} attribution={CARTO_ATTR} />
+              <TileLayer url={dark ? DARK_TILES : LIGHT_TILES} attribution={CARTO_ATTR} />
               <CircleMarker
                 center={[resource.coordinates.lat, resource.coordinates.lng]}
                 radius={10}

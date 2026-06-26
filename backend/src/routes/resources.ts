@@ -1,34 +1,15 @@
 import type { FastifyInstance } from "fastify";
 import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import { z } from "zod";
 import { db } from "../db/index.js";
 import { resources } from "../db/schema.js";
-import type { Resource, CreateResourceInput } from "@public-resource-map/shared";
-
-const createResourceSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-  category: z.enum([
-    "park", "library", "community_center", "healthcare",
-    "education", "food", "shelter", "transport", "other",
-  ]),
-  address: z.string().min(1),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  website: z.string().url().optional(),
-  phone: z.string().optional(),
-  openingHours: z.string().optional(),
-});
-
-const nearbyQuerySchema = z.object({
-  lat: z.coerce.number().min(-90).max(90),
-  lng: z.coerce.number().min(-180).max(180),
-  radiusKm: z.coerce.number().min(0.1).max(100).default(5),
-  category: z.string().optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
-});
+import {
+  createResourceSchema,
+  nearbyQuerySchema,
+  type Resource,
+  type CreateResourceInput,
+} from "@public-resource-map/shared";
+import { boundingBox } from "../lib/geo.js";
 
 function rowToResource(row: typeof resources.$inferSelect): Resource {
   return {
@@ -55,12 +36,11 @@ export async function resourceRoutes(app: FastifyInstance) {
 
     const { lat, lng, radiusKm, category, page, pageSize } = query.data;
 
-    const latDelta = radiusKm / 111.0;
-    const lngDelta = radiusKm / (111.0 * Math.cos((lat * Math.PI) / 180));
+    const box = boundingBox(lat, lng, radiusKm);
 
     const conditions = [
-      sql`${resources.lat} BETWEEN ${lat - latDelta} AND ${lat + latDelta}`,
-      sql`${resources.lng} BETWEEN ${lng - lngDelta} AND ${lng + lngDelta}`,
+      sql`${resources.lat} BETWEEN ${box.minLat} AND ${box.maxLat}`,
+      sql`${resources.lng} BETWEEN ${box.minLng} AND ${box.maxLng}`,
     ];
 
     if (category) {

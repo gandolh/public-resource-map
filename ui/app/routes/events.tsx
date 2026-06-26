@@ -26,8 +26,7 @@ const EVENT_CATEGORIES: { value: EventCategory; label: string }[] = [
 const PAGE_SIZE = 12;
 
 export default function EventsPage() {
-  const { coords } = useUserLocation();
-  const center = coords ?? { lat: 44.4268, lng: 26.1025 };
+  const { center } = useUserLocation();
 
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState<EventCategory | undefined>();

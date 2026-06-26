@@ -5,7 +5,7 @@ export const meta: MetaFunction = () => [
   { title: "CivicMap — Discover your city" },
 ];
 
-export function loader() {
+export function clientLoader() {
   return redirect("/map");
 }
 

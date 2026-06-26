@@ -4,20 +4,20 @@
 
 ## Status (as of 2026-06-26)
 
-Early-stage. The UI shell (layout, navbar, theme system, shadcn/ui component library) is complete. The home page is a placeholder. The backend exists as scaffolding with no data yet. No map integration has been wired up.
+Functional. The UI shell (layout, navbar, theme system, component library) is complete. The map page renders Leaflet tiles with resource markers, category filter, radius slider, and a detail drawer; the events page lists paginated nearby events; the resource detail page is wired up. The backend serves seeded NYC resources/events over a REST API. Home redirects to `/map`.
 
 ## Major components
 
 | Package | Role |
 |---|---|
-| `ui/` | React 19 SPA — React Router 8, Vite 7, Tailwind 4, shadcn/ui |
+| `ui/` | React 19 SPA — React Router 8, Vite 7, Tailwind 4. Data fetching via TanStack Query; UI state via Zustand. |
 | `backend/` | Fastify 5 REST API — SQLite via Drizzle ORM, Zod validation |
-| `shared/` | TypeScript types shared between ui and backend |
+| `shared/` | Zod schemas + derived TypeScript types shared between ui and backend |
 
 ## Key external dependencies
 
-- **Mapping**: not yet chosen — likely Leaflet or Mapbox GL JS (see [open-questions.md](open-questions.md))
-- **Data sources**: not yet integrated — iabilet.ro and other local event/resource feeds
+- **Mapping**: Leaflet + react-leaflet, CARTO basemaps (light/dark)
+- **Data sources**: seeded fixtures only; external event/resource feeds not yet integrated
 
 ## Repo layout
 

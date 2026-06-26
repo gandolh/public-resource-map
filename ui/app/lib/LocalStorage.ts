@@ -36,9 +36,7 @@ export class LocalStorage {
   }
 
   static has(key: string) {
-    const item = window.localStorage.get(key);
-
-    return !!item;
+    return window.localStorage.getItem(key) !== null;
   }
 
   static clear() {

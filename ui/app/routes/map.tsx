@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useEffect } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import type { MetaFunction } from "react-router";
 import { SearchInput } from "~/components/ui/SearchInput";
@@ -9,7 +9,9 @@ import { UserLocationMarker } from "~/components/map/UserLocationMarker";
 import { ResourceMarkers } from "~/components/map/ResourceMarkers";
 import { useUserLocation } from "~/hooks/useUserLocation";
 import { useNearbyResources } from "~/hooks/useNearbyResources";
-import type { Resource, ResourceCategory } from "@public-resource-map/shared";
+import { useMapFilterStore } from "~/stores/mapFilterStore";
+import { useIsDarkMode, LIGHT_TILES, DARK_TILES, CARTO_ATTR } from "~/lib/map";
+import type { Coordinates, ResourceCategory } from "@public-resource-map/shared";
 
 export const meta: MetaFunction = () => [
   { title: "Map — CivicMap" },
@@ -25,40 +27,19 @@ const RESOURCE_CATEGORIES: { value: ResourceCategory; label: string }[] = [
   { value: "food", label: "Food" },
 ];
 
-const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-const DARK_TILES  = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-const CARTO_ATTR  = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-
-function isDarkMode() {
-  return typeof document !== "undefined" && document.documentElement.classList.contains("dark");
-}
-
 export default function MapPage() {
-  const { coords, loading: locLoading } = useUserLocation();
-  const [radius, setRadius] = useState(5);
-  const [activeCategories, setActiveCategories] = useState<Set<ResourceCategory>>(new Set());
-  const [selectedItem, setSelectedItem] = useState<Resource | null>(null);
-  const [search, setSearch] = useState("");
-
-  const center = coords ?? { lat: 44.4268, lng: 26.1025 }; // Bucharest default
+  const { coords, center, loading: locLoading } = useUserLocation();
+  const { radius, category, search, selected, setRadius, toggleCategory, setSearch, setSelected } =
+    useMapFilterStore();
 
   const { resources, loading: resLoading } = useNearbyResources({
     lat: center.lat,
     lng: center.lng,
     radiusKm: radius,
-    categories: activeCategories.size > 0 ? [...activeCategories] : undefined,
+    category,
   });
 
-  const toggleCategory = useCallback((cat: ResourceCategory) => {
-    setActiveCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(cat)) next.delete(cat);
-      else next.add(cat);
-      return next;
-    });
-  }, []);
-
-  const dark = isDarkMode();
+  const dark = useIsDarkMode();
 
   return (
     <div className="relative w-full h-[calc(100vh-64px)] md:h-[calc(100vh-64px)] flex mt-16 pb-14 md:pb-0">
@@ -76,8 +57,8 @@ export default function MapPage() {
         {coords && <UserLocationMarker coords={coords} />}
         <ResourceMarkers
           resources={resources}
-          selectedId={selectedItem?.id ?? null}
-          onSelect={setSelectedItem}
+          selectedId={selected?.id ?? null}
+          onSelect={setSelected}
         />
         <MapRecenter center={center} />
       </MapContainer>
@@ -96,7 +77,7 @@ export default function MapPage() {
               {RESOURCE_CATEGORIES.map((cat) => (
                 <FilterChip
                   key={cat.value}
-                  pressed={activeCategories.has(cat.value)}
+                  pressed={category === cat.value}
                   onPressedChange={() => toggleCategory(cat.value)}
                   className="flex-shrink-0"
                 >
@@ -119,15 +100,17 @@ export default function MapPage() {
       )}
 
       {/* Detail drawer */}
-      {selectedItem && (
-        <DetailDrawer item={selectedItem} onClose={() => setSelectedItem(null)} />
+      {selected && (
+        <DetailDrawer item={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   );
 }
 
-function MapRecenter({ center }: { center: { lat: number; lng: number } }) {
+function MapRecenter({ center }: { center: Coordinates }) {
   const map = useMap();
-  map.setView([center.lat, center.lng]);
+  useEffect(() => {
+    map.setView([center.lat, center.lng]);
+  }, [map, center.lat, center.lng]);
   return null;
 }

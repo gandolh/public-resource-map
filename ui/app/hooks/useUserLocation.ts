@@ -1,36 +1,28 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useLocationStore, DEFAULT_CENTER } from "~/stores/locationStore";
 import type { Coordinates } from "@public-resource-map/shared";
 
 interface UseUserLocationResult {
   coords: Coordinates | null;
+  /** User location if granted, otherwise the default center. */
+  center: Coordinates;
   loading: boolean;
   error: string | null;
 }
 
+/**
+ * Shared geolocation. The underlying request fires at most once per session
+ * (tracked in the store), so multiple pages reuse the same result.
+ */
 export function useUserLocation(): UseUserLocationResult {
-  const [coords, setCoords] = useState<Coordinates | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const coords = useLocationStore((s) => s.coords);
+  const loading = useLocationStore((s) => s.loading);
+  const error = useLocationStore((s) => s.error);
+  const requestLocation = useLocationStore((s) => s.requestLocation);
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Geolocation not supported");
-      setLoading(false);
-      return;
-    }
+    requestLocation();
+  }, [requestLocation]);
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLoading(false);
-      },
-      (err) => {
-        setError(err.message);
-        setLoading(false);
-      },
-      { timeout: 10000, maximumAge: 60000 },
-    );
-  }, []);
-
-  return { coords, loading, error };
+  return { coords, center: coords ?? DEFAULT_CENTER, loading, error };
 }

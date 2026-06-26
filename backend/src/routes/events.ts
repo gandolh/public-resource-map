@@ -4,36 +4,17 @@ import { randomUUID } from "crypto";
 import { z } from "zod";
 import { db } from "../db/index.js";
 import { events } from "../db/schema.js";
-import type { Event, CreateEventInput } from "@public-resource-map/shared";
+import {
+  createEventSchema,
+  nearbyQuerySchema,
+  type Event,
+  type CreateEventInput,
+} from "@public-resource-map/shared";
+import { boundingBox } from "../lib/geo.js";
 
-const createEventSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  category: z.enum([
-    "concert", "theater", "sport", "community",
-    "festival", "exhibition", "workshop", "other",
-  ]),
-  address: z.string().min(1),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  startDate: z.string().datetime(),
-  endDate: z.string().datetime().optional(),
-  sourceUrl: z.string().url().optional(),
-  sourcePlatform: z.string().optional(),
-  imageUrl: z.string().url().optional(),
-  price: z.number().min(0).optional(),
-  currency: z.string().length(3).optional(),
-});
-
-const nearbyQuerySchema = z.object({
-  lat: z.coerce.number().min(-90).max(90),
-  lng: z.coerce.number().min(-180).max(180),
-  radiusKm: z.coerce.number().min(0.1).max(100).default(5),
-  category: z.string().optional(),
+const eventsQuerySchema = nearbyQuerySchema.extend({
   from: z.string().optional(),
   to: z.string().optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 function rowToEvent(row: typeof events.$inferSelect): Event {
@@ -58,19 +39,18 @@ function rowToEvent(row: typeof events.$inferSelect): Event {
 
 export async function eventRoutes(app: FastifyInstance) {
   app.get<{ Querystring: Record<string, string> }>("/events", async (req, reply) => {
-    const query = nearbyQuerySchema.safeParse(req.query);
+    const query = eventsQuerySchema.safeParse(req.query);
     if (!query.success) {
       return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
     }
 
     const { lat, lng, radiusKm, category, from, to, page, pageSize } = query.data;
 
-    const latDelta = radiusKm / 111.0;
-    const lngDelta = radiusKm / (111.0 * Math.cos((lat * Math.PI) / 180));
+    const box = boundingBox(lat, lng, radiusKm);
 
     const conditions = [
-      sql`${events.lat} BETWEEN ${lat - latDelta} AND ${lat + latDelta}`,
-      sql`${events.lng} BETWEEN ${lng - lngDelta} AND ${lng + lngDelta}`,
+      sql`${events.lat} BETWEEN ${box.minLat} AND ${box.maxLat}`,
+      sql`${events.lng} BETWEEN ${box.minLng} AND ${box.maxLng}`,
     ];
 
     if (category) conditions.push(eq(events.category, category));

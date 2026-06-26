@@ -1,7 +1,9 @@
-import { X, MapPin, Clock, ExternalLink, Navigation, Share2, Calendar } from "lucide-react";
+import { Link } from "react-router";
+import { X, MapPin, Clock, ExternalLink, Navigation, ArrowRight, Calendar } from "lucide-react";
 import { CategoryBadge } from "./CategoryBadge";
 import { Button } from "./Button";
 import { cn } from "~/lib/utils";
+import { directionsUrl } from "~/lib/map";
 import type { Resource, Event } from "@public-resource-map/shared";
 
 type DrawerItem = Resource | Event;
@@ -24,6 +26,22 @@ function formatDate(iso: string) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+/**
+ * Opening hours are stored as a JSON object (e.g. {"Mon":"9–5",...}) or a plain
+ * string. Render a one-line summary so the drawer never dumps raw JSON.
+ */
+function formatHours(raw: string): string {
+  try {
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    const entries = Object.entries(parsed);
+    if (entries.length === 0) return raw;
+    const [day, hours] = entries[0]!;
+    return entries.length === 1 ? `${day}: ${hours}` : `${day}: ${hours} · +${entries.length - 1} more`;
+  } catch {
+    return raw;
+  }
 }
 
 export function DetailDrawer({ item, onClose, className }: DetailDrawerProps) {
@@ -131,7 +149,7 @@ function DrawerContent({ name, description, address, category, event, resource, 
         {resource?.openingHours && (
           <div className="flex items-start gap-2 text-cm-on-surface-variant">
             <Clock size={16} className="flex-shrink-0 mt-0.5 text-cm-outline" />
-            <p className="text-sm">{resource.openingHours}</p>
+            <p className="text-sm">{formatHours(resource.openingHours)}</p>
           </div>
         )}
 
@@ -159,15 +177,17 @@ function DrawerContent({ name, description, address, category, event, resource, 
               <p className="text-sm text-cm-on-surface-variant leading-relaxed">{description}</p>
             )}
             {event && (
-              <div className="flex gap-3 mt-2">
-                <Button variant="secondary" size="md" className="flex-1">
+              <a
+                href={directionsUrl(event.coordinates, event.address)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2"
+              >
+                <Button variant="secondary" size="md" className="w-full">
                   <Navigation size={16} />
                   Directions
                 </Button>
-                <Button variant="secondary" size="icon">
-                  <Share2 size={16} />
-                </Button>
-              </div>
+              </a>
             )}
           </>
         )}
@@ -182,12 +202,14 @@ function DrawerContent({ name, description, address, category, event, resource, 
               View Event
             </Button>
           </a>
-        ) : (
-          <Button size="lg" className="w-full">
-            <Navigation size={16} />
-            Get Directions
-          </Button>
-        )}
+        ) : resource ? (
+          <Link to={`/resources/${resource.id}`} className="block">
+            <Button size="lg" className="w-full">
+              View details
+              <ArrowRight size={16} />
+            </Button>
+          </Link>
+        ) : null}
       </div>
     </>
   );

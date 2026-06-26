@@ -1,7 +1,11 @@
-export interface Coordinates {
-  lat: number;
-  lng: number;
-}
+import { z } from "zod";
+
+export const coordinatesSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+});
+
+export type Coordinates = z.infer<typeof coordinatesSchema>;
 
 export interface PaginatedResponse<T> {
   data: T[];
@@ -14,3 +18,15 @@ export interface ApiError {
   code: string;
   message: string;
 }
+
+/** Shared query schema for "find things near a point within a radius". */
+export const nearbyQuerySchema = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+  radiusKm: z.coerce.number().min(0.1).max(100).default(5),
+  category: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export type NearbyQuery = z.infer<typeof nearbyQuerySchema>;
