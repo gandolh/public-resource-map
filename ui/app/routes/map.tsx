@@ -61,7 +61,7 @@ export default function MapPage() {
   const dark = isDarkMode();
 
   return (
-    <div className="relative w-full h-[calc(100vh-64px)] flex mt-16">
+    <div className="relative w-full h-[calc(100vh-64px)] md:h-[calc(100vh-64px)] flex mt-16 pb-14 md:pb-0">
       {/* Map */}
       <MapContainer
         center={[center.lat, center.lng]}
@@ -91,12 +91,13 @@ export default function MapPage() {
         />
 
         <div className="bg-cm-surface rounded-lg border border-cm-outline-variant shadow-[0_4px_6px_rgba(0,0,0,0.05)] p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden -mx-1 px-1">
             {RESOURCE_CATEGORIES.map((cat) => (
               <FilterChip
                 key={cat.value}
                 pressed={activeCategories.has(cat.value)}
                 onPressedChange={() => toggleCategory(cat.value)}
+                className="flex-shrink-0"
               >
                 {cat.label}
               </FilterChip>

@@ -43,7 +43,7 @@ export default function EventsPage() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 md:px-10 pt-24 pb-10">
+    <main className="max-w-7xl mx-auto px-4 md:px-10 pt-24 pb-24 md:pb-10">
       {/* Header */}
       <div className="mb-6">
         <h1 className="hidden md:block text-4xl font-bold tracking-tight text-cm-on-surface mb-1">
@@ -106,12 +106,12 @@ export default function EventsPage() {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
+    <div className="flex flex-col items-center justify-center py-20 text-center px-4">
       <div className="w-16 h-16 rounded-full bg-cm-surface-container-high flex items-center justify-center mb-4">
         <span className="text-2xl">🗓️</span>
       </div>
       <h3 className="text-lg font-semibold text-cm-on-surface mb-2">No events found</h3>
-      <p className="text-sm text-cm-on-surface-variant max-w-xs text-balance">
+      <p className="text-sm text-cm-on-surface-variant leading-relaxed max-w-sm w-full">
         Try changing your category filter or expand your search area on the map.
       </p>
     </div>

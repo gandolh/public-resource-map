@@ -219,15 +219,15 @@
   --font-size-label-md:          14px;
   --font-size-label-sm:          12px;
 
-  /* Spacing */
-  --spacing-xs:              4px;
-  --spacing-sm:              8px;
-  --spacing-md:              16px;
-  --spacing-lg:              24px;
-  --spacing-xl:              32px;
-  --spacing-gutter:          16px;
-  --spacing-margin-mobile:   16px;
-  --spacing-margin-desktop:  40px;
+  /* Spacing (prefixed to avoid overriding Tailwind built-ins) */
+  --spacing-cm-xs:              4px;
+  --spacing-cm-sm:              8px;
+  --spacing-cm-md:              16px;
+  --spacing-cm-lg:              24px;
+  --spacing-cm-xl:              32px;
+  --spacing-cm-gutter:          16px;
+  --spacing-cm-margin-mobile:   16px;
+  --spacing-cm-margin-desktop:  40px;
 
   /* Border radius */
   --radius-pill: 9999px;

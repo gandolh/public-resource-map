@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { User } from "lucide-react";
+import { User, Map, CalendarDays } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar } from "~/components/ui/Avatar";
 import { Button } from "~/components/ui/Button";
@@ -15,11 +15,28 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
       className={cn(
         "text-sm font-medium transition-colors duration-200 pb-0.5",
         active
-          ? "text-cm-primary border-b-2 border-cm-primary opacity-80"
+          ? "text-cm-primary border-b-2 border-cm-primary"
           : "text-cm-on-surface-variant hover:text-cm-primary",
       )}
     >
       {children}
+    </Link>
+  );
+}
+
+function MobileTabLink({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) {
+  const { pathname } = useLocation();
+  const active = pathname === to || pathname.startsWith(to + "/");
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "flex flex-col items-center gap-0.5 py-2 px-4 text-xs font-medium transition-colors",
+        active ? "text-cm-primary" : "text-cm-on-surface-variant",
+      )}
+    >
+      <Icon size={22} strokeWidth={active ? 2.5 : 1.75} />
+      {label}
     </Link>
   );
 }
@@ -44,21 +61,30 @@ function ProfileMenu() {
 
 export function Navbar() {
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-cm-surface border-b border-cm-outline-variant shadow-sm">
-      <div className="flex items-center gap-6">
-        <Link to="/map" className="text-xl font-bold text-cm-primary tracking-tight">
-          CivicMap
-        </Link>
-        <div className="hidden md:flex items-center gap-5 ml-4">
-          <NavLink to="/map">Map</NavLink>
-          <NavLink to="/events">Events</NavLink>
+    <>
+      {/* Desktop top navbar */}
+      <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-cm-surface border-b border-cm-outline-variant shadow-sm">
+        <div className="flex items-center gap-6">
+          <Link to="/map" className="text-xl font-bold text-cm-primary tracking-tight">
+            CivicMap
+          </Link>
+          <div className="hidden md:flex items-center gap-5 ml-4">
+            <NavLink to="/map">Map</NavLink>
+            <NavLink to="/events">Events</NavLink>
+          </div>
         </div>
-      </div>
 
-      <div className="flex items-center gap-2">
-        <ThemeToggle />
-        <ProfileMenu />
-      </div>
-    </nav>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <ProfileMenu />
+        </div>
+      </nav>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around bg-cm-surface border-t border-cm-outline-variant safe-area-bottom">
+        <MobileTabLink to="/map" icon={Map} label="Map" />
+        <MobileTabLink to="/events" icon={CalendarDays} label="Events" />
+      </nav>
+    </>
   );
 }
