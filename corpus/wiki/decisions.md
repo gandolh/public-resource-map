@@ -62,7 +62,7 @@ Locked tech and design choices. Don't relitigate without an explicit revisit + l
 - **Refresh = fetch → parse → geocode → diff against DB.** Output is a **diff/preview of what's new** (and ideally changed), not an immediate write.
 - **Review + accept workflow.** Admin sees the new events and **accepts individually or bulk-accepts**; only accepted events are persisted as live. (Optionally: reject/ignore so they don't resurface.)
 - **Deduplication is mandatory** at refresh time — within a source (canonical `url`/source id) and across sources (same event listed on multiple platforms): match on normalized title + date + venue/city. Dedup runs *before* the diff is shown so the admin isn't asked to accept duplicates.
-- **Per-adapter extraction** is source-specific (JSON-LD for iaBilet; sitemap+detail for PLG sites). Mechanics tracked in [open-questions.md](open-questions.md); full spec in `briefs/todo/02-admin-source-ingestion.md`.
+- **Per-adapter extraction** is source-specific. Mechanics tracked in [open-questions.md](open-questions.md); full spec in [briefs/todo/04-event-ingestion-pipeline.md](../briefs/todo/04-event-ingestion-pipeline.md).
 - Ingestion endpoints live behind the **admin gate** (the same auth; admin-only role/flag). Geocoding is shared infra (cached venue → coords).
 
 ## Map / UI model (locked 2026-06-28 — supersedes the original event-centric UI)
@@ -73,7 +73,27 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Selecting a pin opens a place panel** showing the place's identity (what it is, address, hours) **+ its event list** (each event: date, title, **buy-link only if the source provided one**). This **merges** the old resource-detail + event-list concepts into one surface.
 - **`/resources/:id` collapses into a unified PLACE surface.** One model whether reached by pin-click (panel) or deep link (full page) — do not maintain two divergent place views.
 - **Standalone list view survives but is reframed:** no longer the event-centric `/events`, but a citywide **"what's on" index** — all upcoming events across the current city's places, each **linking back to its place on the map**. A secondary date-first lens on the same data, not a separate data model.
-- **City picker is a primary Navbar control** (NEW — doesn't exist yet), scoped to **Timișoara / București**, defaulting to the user's last choice (persist via existing `locationStore`). The map currently centers on geolocation/seed; that changes.
+- **City picker is a primary Navbar control** (NEW), scoped to **Timișoara / București**, **defaulting to Timișoara** (or nearest of the two if geolocation is granted), persisted via `locationStore`. "Center on me" is a separate optional button; the app works fully with geolocation denied.
+
+## UI interactions & features (locked 2026-06-28 — full grilling pass; detail in [brief 13](../briefs/todo/13-ui-interactions-and-features.md))
+
+- **Place panel:** identity + events **grouped by date** (Today / This weekend / Later), first ~5 then expand, empty state. Event row = title/time/EventCategory dot/buy-link-if-present.
+- **Selection:** pin click **pans + zoom-to-fits** so the pin clears the panel/sheet, scales 32→40px, deep-links to `/places/:id`.
+- **Filtering is multi-axis, all AND-ed + shared with the what's-on list:** PlaceCategory chips + an **event-timing lens** ("today"/"this weekend", dims placeless-of-events) + **draw-to-filter**.
+- **Draw-to-filter (NEW):** free-hand + polygon over the map; **client-side point-in-polygon** over loaded city places (Turf or small helper); ephemeral, one shape, clearable, live result count; ANDs with other filters. Leaflet draw plugin (Geoman/Leaflet.draw). Saved per-user areas deferred.
+- **What's-on list** honors the same active filters (incl. drawn area), links each event back to its place.
+- **Auth screens:** dedicated centered-card routes (`/login` `/register` `/verify` `/reset`), not over the map.
+- **/admin (NEW — own contextual menu):** separate layout + **sidebar nav** (Sources, Review queue, Places, later Users) + exit-to-public; route-lazy-loaded, admin-gated. **Review screen** = dense filterable table (source→status) + sticky bulk accept/reject toolbar + row→detail drawer with map preview + ambiguous-match resolver.
+- **Notifications:** Navbar **bell + unread badge + dropdown** (items link to place/event) + mark-all-read + full view.
+- **States & a11y on every surface:** loading (skeleton) / empty (copy+action) / error (retry); WCAG AA — keyboard map+panel nav, focus management, ARIA, 4.5:1 category contrast, category never color-only.
+
+## Data conventions (locked 2026-06-28)
+
+- **Dates: UTC ISO 8601 strings** in the DB; convert to **Europe/Bucharest only at compute/display** (reminder sweep, today/weekend grouping). Centralized TZ logic.
+- **PKs: `randomUUID()` everywhere + unique natural-key constraints** for dedup (place osmType+osmId, geocode_cache address, favorites, notifications).
+- **No universal soft-delete:** lifecycle via **status enums**; hard-delete only transient rows.
+- **Two category enums:** `PlaceCategory` + `EventCategory` (separate taxonomies, color-coded per-enum).
+- **Dependency policy:** minimal, **exact-pinned**, justified per add in its brief; prefer a tiny helper over a heavy lib, but don't hand-roll mature solved problems (drawing). New this session: `vitest`, `@vitest/coverage-v8`, `@playwright/test` (brief 11), `argon2` (brief 02), a Leaflet draw plugin + point-in-polygon (brief 13).
 
 ## Auth (locked 2026-06-28)
 

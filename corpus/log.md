@@ -1,5 +1,17 @@
 # Log
 
+## [2026-06-28] research + grill + brief | Tests/schema/UI plans resolved; brief 13 + 2 new features
+
+Research (map-detail UX, Drizzle schema patterns, Playwright auth/isolation) + an exhaustive grilling pass that resolved the full decision tree across three areas. Plus two new features requested mid-session.
+
+**Schema (→ brief 07 detail + decisions.md "Data conventions"):** UUID PKs + unique natural-key constraints; status enums not soft-delete; two category enums (PlaceCategory/EventCategory); match state (`placeId`+`matchStatus`+JSON candidates) on `staged_event`, resolved placeId copied to live event on accept; UTC ISO 8601 storage, Bucharest TZ only at compute; FK + (lat,lng)+city indexes.
+
+**Tests (→ brief 11 detail):** e2e DB isolation = seed-once + reset-for-mutators; auth via setup-project per-role storageState (gitignored) + a few real-UI auth specs; reminder sweep = exported `runReminderSweep(now)` with injectable clock (no test-only route).
+
+**UI/UX + 2 new features (→ new brief 13, decisions.md "UI interactions & features"):** place panel events grouped-by-date + expand; selection pans/zoom-fits + deep-links; multi-axis AND filters shared with what's-on. **NEW: draw-to-filter** (free-hand + polygon, client-side point-in-polygon, ephemeral, ANDs with filters, Leaflet draw plugin). **NEW: /admin** own layout + sidebar contextual menu (Sources/Review/Places), lazy-loaded, gated; review screen = table + bulk toolbar + detail drawer w/ map preview + ambiguous resolver. Auth = dedicated centered-card routes. City picker **defaults to Timișoara**. Notification bell+dropdown. Loading/empty/error + WCAG AA on every surface. Dep policy: minimal, exact-pinned, justified per add.
+
+Brief 13 added (build order: after 06). Fixed a stale `briefs/todo/02-admin-source-ingestion.md` link in decisions.md → points to brief 04.
+
 ## [2026-06-28] research + brief + corpus-UX | Optimization research, brief 12, glossary + index front door
 
 Online research into making the corpus smoother + optimizing the platform (sources in `todos/2026-06-28-optimization-research.md`).

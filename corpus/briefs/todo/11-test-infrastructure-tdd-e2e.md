@@ -75,6 +75,12 @@ Per-workspace `test` scripts delegate to the root Vitest workspace.
 - For each feature brief (02–06), its acceptance criteria become Vitest/API tests up front; the e2e spec lands when the UI does.
 - `test:watch` is the inner loop; `test:all` is the pre-commit/PR gate.
 
+## E2e patterns (locked 2026-06-28, from research)
+
+- **DB isolation: seed once + reset for mutators.** Boot with the RO seed (brief 08). Read-only specs (browse map, view place, what's-on) share the seeded DB. **Mutating specs** (admin accept, favorite→notify, reminder sweep) either re-seed or run in a transaction-rolled-back fixture so they don't leak into other specs.
+- **Auth: setup project + per-role `storageState`.** A Playwright `setup` project logs in once as the seeded demo **user** and **admin**, saving `authState.user.json` / `authState.admin.json` (**gitignored**). Specs declare the role they need (Playwright project dependencies). **Plus** a few explicit specs that exercise the real login/register/verify/reset UI *without* storageState.
+- **Reminder sweep: exported function + injectable clock.** Implement as `runReminderSweep(now)` taking the current time; the prod scheduler calls it on a timer. Tests call it directly with a fixed Europe/Bucharest `now` and assert idempotency (re-run → no duplicate). **No test-only HTTP route.**
+
 ## CI
 
 - **No GitHub Actions / hosted CI** (explicit choice, 2026-06-28). The gate is **local**: `npm run test:all` before commit/push (run manually, or wire a lightweight pre-commit/pre-push git hook if desired — no hosted runner).

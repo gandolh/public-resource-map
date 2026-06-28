@@ -29,6 +29,16 @@ Without this, three briefs independently add overlapping tables and FKs (place v
 - Regenerate Drizzle migration(s); `db:migrate` from empty must produce the full consolidated schema.
 - Document the new ERD in `wiki/architecture.md` after landing.
 
+## Schema design decisions (locked 2026-06-28)
+
+- **PKs: `randomUUID()` text on every table** (consistent FKs, per locked decision) **+ unique constraints on natural keys**: `place` unique `(osmType, osmId)` where `source='osm'`; `geocode_cache` unique `(normalizedAddress)`; `favorite_place` unique `(userId, placeId)`; `favorite_event` unique `(userId, eventId)`; `notification` unique `(userId, eventId, kind)`. DB-enforced dedup.
+- **No universal `deletedAt`. Lifecycle via status enums.** `event.status` (live/stale/ended), `staged_event.status` (new/changed/accepted/rejected/needs-attention), `event_source.enabled` (bool). Hard-delete only truly transient rows. Avoids soft-delete-leak bugs; matches the reconcile model.
+- **Two category enums** (not one): `PlaceCategory` (library/park/clinic/museum/townhall/…) and `EventCategory` (concert/exhibition/theater/workshop/…). Defined in `shared/` via Drizzle `{ enum: [...] }`; color-coding applies per-enum.
+- **Match state on `staged_event`:** `placeId` (nullable until resolved) + `matchStatus` (auto-matched | ambiguous | unmatched | manual). Ambiguous candidates in a JSON column (or a small `staged_match` table). On accept, the resolved `placeId` is copied to the live `event`.
+- **Dates: UTC ISO 8601 strings** (`startDate`, `endDate?`, `createdAt`, `updatedAt`). Convert to **Europe/Bucharest only at compute/display** (reminder sweep, today/weekend grouping). TZ logic centralized, never in storage.
+- **FK indexes** on every foreign key (event→place, favorites→user/place/event, staged_event→source/place) per Drizzle relation-performance guidance.
+- **Spatial:** composite index on `place (lat, lng)` and on `place.city` (brief 12).
+
 ## Acceptance criteria
 
 - One Drizzle schema expresses the full place-centric model (places, events→places, sources, staged events, geocode cache, users/sessions, favorites, notifications) with no leftover event-centric `resource` table.
