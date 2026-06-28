@@ -36,9 +36,10 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 07 | [briefs/todo/07-schema-consolidation.md](briefs/todo/07-schema-consolidation.md) | todo | Schema consolidation & migration plan (**build first**) |
 | 08 | [briefs/todo/08-ro-seed-data.md](briefs/todo/08-ro-seed-data.md) | todo | Real RO seed data (Timișoara + București) |
 | 09 | [briefs/todo/09-attribution-and-about-data.md](briefs/todo/09-attribution-and-about-data.md) | todo | Attribution & "about the data" transparency |
-| 10 | [briefs/todo/10-test-plans-rewrite.md](briefs/todo/10-test-plans-rewrite.md) | todo | Test plans — rewrite place-centric + new-feature coverage |
+| 10 | [briefs/todo/10-test-plans-rewrite.md](briefs/todo/10-test-plans-rewrite.md) | todo | Test plans — rewrite place-centric + new-feature coverage (the *what*) |
+| 11 | [briefs/todo/11-test-infrastructure-tdd-e2e.md](briefs/todo/11-test-infrastructure-tdd-e2e.md) | todo | Test infrastructure & TDD/e2e harness (the *machinery*; **build early**) |
 
-**Recommended build order:** 07 (schema) → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → 05 (favorites/notifications) → 06 (place-centric UI) → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD).
+**Recommended build order:** 07 (schema) → **11 (test harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → 05 (favorites/notifications) → 06 (place-centric UI) → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD). _11 lands right after the schema so features 02–06 can be built test-first; 10 (plans) follows the UI._
 
 ## Test Plans
 

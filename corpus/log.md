@@ -1,5 +1,9 @@
 # Log
 
+## [2026-06-28] brief | Brief 11 — test infrastructure & TDD/e2e harness
+
+Filed brief 11 — the testing *machinery*, distinct from brief 10 (test *plans*). Found that despite the locked testing decision, **no test infra exists**: no runner, no config, no specs, no test scripts; "Playwright" had been manual screenshot-driving only. Brief 11 stands up the pyramid: **Vitest** (unit + auth internals + Fastify `.inject()` API integration, co-located `*.test.ts`) and **@playwright/test** (assertion-based e2e in a new `e2e/` dir, seeded throwaway RO DB, T/B geolocation mock, test-only reminder-sweep trigger). Root scripts `test`/`test:watch`/`test:cov`/`test:e2e`/`test:all`. Deps reasoned to house style: Vitest (Vite/ESM fit, no Jest), no supertest (use Fastify `.inject()`), component-test deps deferred. **No GitHub Actions / hosted CI** (user choice) — `npm run test:all` is the local pre-commit gate. The manual `playwright/` hub is kept for brief 10's visual audit; automated e2e is separate. Build order updated: 11 lands right after schema (07) so features 02–06 can be built test-first.
+
 ## [2026-06-28] brief | Four foundational briefs added (07–10) + build order
 
 Corpus + online exploration surfaced gaps the feature briefs (02–06) didn't own. Added:
