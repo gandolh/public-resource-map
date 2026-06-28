@@ -2,9 +2,13 @@
 
 _Last updated: 2026-06-28_
 
+## 🟢 Development green light
+
+A pre-dev corpus stress-test (3 review→change rounds + research validation) is complete. Code-vs-corpus contradictions fixed (`.js` import convention, shadcn→base-ui, shared-is-Zod, brief 07 sync with later decisions, draw-plugin = Geoman not Leaflet.draw). Brief↔filesystem parity verified, no dead links, dependency graph acyclic and ordered. **Cleared to start development at brief 07.** Remaining unknowns are empirical only (per-publisher source landscape; threshold tuning) — they resolve during the relevant briefs, not before.
+
 ## Where things stand
 
-**Planning, not yet building the reframe.** The 2026-06-28 grilling + research sessions re-shaped the product (POC, place-centric, sparse events, in-app+email notifications) and produced a full brief backlog (02–12). **The running code still reflects the OLD event-centric NYC-seed model** — none of the new decisions are implemented yet. The next phase is execution against the briefs, starting with schema consolidation (07) + the test harness (11).
+**Planning complete; ready to build.** The 2026-06-28 grilling + research sessions re-shaped the product (POC, place-centric, sparse events, in-app+email notifications) and produced a full brief backlog (02–12). **The running code still reflects the OLD event-centric NYC-seed model** — none of the new decisions are implemented yet. The next phase is execution against the briefs, starting with schema consolidation (07) + the test harness (11).
 
 ## Code vs. decisions gap
 

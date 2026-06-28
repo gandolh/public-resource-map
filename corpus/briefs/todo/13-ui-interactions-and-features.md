@@ -27,7 +27,7 @@
 - **Client-side point-in-polygon** over the already-loaded city places (Turf.js or a small helper) — instant, no new endpoint, identical for freehand/polygon. (City datasets are modest; fits ingest-once/serve-from-DB.)
 - **Composes via AND** with category + event-timing + city filters. Shape renders as a **clearable overlay** with a **live result count** ("12 places in this area") and an obvious **clear drawing** control.
 - **Ephemeral** (not persisted), **one shape at a time**, with edit/clear. *(Saved per-user areas = noted future retention hook, deferred.)*
-- **Tooling:** a Leaflet draw plugin (Leaflet-Geoman or Leaflet.draw) for both modes; exact-pinned (house style). +1 draw plugin, +1 point-in-polygon dep (or hand-rolled helper if trivial).
+- **Tooling: `@geoman-io/leaflet-geoman-free`** (locked 2026-06-28 after validation — NOT Leaflet.draw). Rationale: Leaflet.draw is **unmaintained (last commit 2018) and has no freehand mode** — it literally can't do the requested free-hand draw; Leaflet-Geoman is actively maintained, has a **freehand mode**, and supports TypeScript + react-leaflet + Vite. Exact-pinned (house style). Point-in-polygon: `@turf/boolean-point-in-polygon` (small, focused) or a hand-rolled ray-cast helper if that's all that's needed.
 
 ## What's-on list view
 

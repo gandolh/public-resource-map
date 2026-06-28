@@ -15,7 +15,7 @@ ui  ──►  shared  ◄──  backend
 - **Framework**: React Router 8 (SPA mode — `ssr: false`)
 - **Build**: Vite 7 + `@react-router/dev`
 - **Styling**: Tailwind CSS 4 (Vite plugin), `tw-animate-css`, CSS custom properties for theming
-- **Components**: shadcn/ui (new-york style, Radix UI primitives, lucide-react icons)
+- **Components**: `@base-ui/react` primitives + lucide-react icons (the original Stitch brief specified shadcn/ui; replaced during brief 01 — see [decisions.md → Code conventions](decisions.md))
 - **Theme**: dark/light/system — persisted to localStorage as `"vite-ui-theme"`, toggled via `ThemeProvider` context
 - **Route config** (`app/routes.ts`): layout wrapper wrapping four routes — index (`/`), `map`, `events`, `resources/:id`. Home redirects to `/map`.
 - **Alias**: `~/*` and `@/*` both resolve to `./app/*`
@@ -66,7 +66,7 @@ app/
 - **DB file**: `backend/data/app.db` (gitignored)
 - **Migrations**: Drizzle Kit → `backend/drizzle/` folder
 
-### API routes
+### API routes (CURRENT — event-centric; reshaped by briefs 03/04/05/14)
 
 | Method | Path | Description |
 |---|---|---|
@@ -80,7 +80,9 @@ app/
 | POST | `/api/events` | create event |
 | DELETE | `/api/events/:id` | delete event |
 
-Proximity filtering uses a bounding-box approximation (not Haversine). Good enough for city-scale use; see [open-questions.md](open-questions.md) for spatial index considerations.
+Proximity filtering uses a bounding-box approximation (not Haversine). Good enough for city-scale use.
+
+> **Target API (after the reframe):** `/api/places` + `/api/places/:id` (brief 03), `/api/admin/*` ingestion + OSM sync behind the admin gate (briefs 03/04), `/api/auth/*` (brief 02), `/api/favorites/*` + `/api/notifications` (brief 05), `/archive` data (brief 14). The `resources`/`events` routes above are replaced. Spatial index question is **closed for POC** (bbox + `(lat,lng)`+city index — see decisions.md).
 
 ## Shared (`shared/`)
 

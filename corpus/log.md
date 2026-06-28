@@ -1,5 +1,19 @@
 # Log
 
+## [2026-06-28] review-loop | Pre-development corpus stress test → GREEN LIGHT
+
+Ran a pre-dev stress test (3 review→change rounds + targeted research) auditing the corpus against the actual code. Found + fixed real contradictions that would have bitten on day one:
+
+- **`.js` import convention was wrong/dangerous.** decisions.md said "no `.js` suffixes anywhere"; but backend+shared run as Node ESM (`"type":"module"`, tsx/node) and the code correctly uses `.js` suffixes — stripping them breaks `node dist`. Verified via research (nodenext requires extensions; bundler is "infectious"). Corrected to package-specific rule + flagged a `nodenext` consideration for backend/shared.
+- **Stale facts:** decisions.md + architecture.md said "shadcn/ui" (actual: `@base-ui/react`); architecture.md said shared = "pure types, no runtime" (actual: Zod + z.infer). Both corrected with history notes.
+- **Brief 07 (built first) was out of sync** with later-session decisions: notification model (coalesced + `notification_event` join, not `(userId,eventId,kind)` for new-event), two category enums (Place/Event), event `past`/archived status, existing EventCategory enum to reuse. Added a sequencing note (07 creates ALL tables; later briefs add logic only) + import-extension convention.
+- **architecture.md API table** presented the current event-centric routes as if target — added a forward-pointer to the place-centric API (briefs 02/03/04/05/14).
+- **test-plans/index.md** presented stale NYC/event-centric plans as current — added a STALE banner → briefs 10/11.
+- **Draw plugin validated:** brief 13 had listed "Geoman/Leaflet.draw" — research showed Leaflet.draw is unmaintained (2018) with NO freehand mode (the requested feature). Locked **`@geoman-io/leaflet-geoman-free`** + `@turf/boolean-point-in-polygon`.
+- **Verified:** brief↔filesystem parity (all 13), no dead links (only log.md retains historical `02-admin-source-ingestion`), dependency graph acyclic + build order honors it.
+
+Result: **status.md flips to 🟢 green light — cleared to start development at brief 07.** Remaining unknowns are empirical (source landscape, threshold tuning), resolved during their briefs.
+
 ## [2026-06-28] grill + brief | Open-questions resolved; event horizon + archive page (brief 14)
 
 Grilled the remaining open questions; resolved the decidable mechanics → moved to decisions.md ("Ingestion & data mechanics") and pruned open-questions.md down to only what needs real-world probing / real-data tuning.
