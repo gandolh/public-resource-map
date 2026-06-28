@@ -1,5 +1,15 @@
 # Log
 
+## [2026-06-28] brief | Four foundational briefs added (07–10) + build order
+
+Corpus + online exploration surfaced gaps the feature briefs (02–06) didn't own. Added:
+- **07 — Schema consolidation** (build FIRST): reconcile the NYC `resource`/`event` schema with the place-centric model; one coherent migration instead of 03/04/05 each bolting on colliding tables. Clean reset acceptable (POC, no prod data).
+- **08 — Real RO seed data**: deterministic `db:seed` from a captured OSM sync (frozen fixture) + hand-curated real T/B events + a demo user with favorites/notifications. Replaces NYC; first real-data milestone.
+- **09 — Attribution & "about the data"**: ODbL requires `© OpenStreetMap contributors` (+ CARTO) map-corner attribution (confirmed from OSM Foundation guidelines); per-event source credit; an about-data page with the link-out posture + iaBilet POC disclaimer + takedown contact. Compliance, not polish.
+- **10 — Test plans rewrite**: TP-01–04 test the old event-centric UI; rewrite for place-centric + add TP-05 auth / TP-06 favorites+notifications (reminder idempotency) / TP-07 admin ingestion. Switch geo mock NYC→T/B.
+
+Numbers are stable ≠ build order. Recommended order recorded in `index.md`: 07→02→03→08→04→05→06→09→10→deploy. Deployment execution brief deferred (decision locked; write when its time comes). `index.md` briefs table updated.
+
 ## [2026-06-28] research + decision | Competitor/source landscape scan → three decisions (two reversals)
 
 Scanned comparable platforms + probed the real RO event-source landscape (full findings: `todos/2026-06-28-competitor-research-findings.md`). Key learnings: Bandsintown is our retention-loop mirror (wins via push+email); Localist confirms API-first/scrape-last is industry-standard; **but** probing showed RO sources are almost all static HTML (data.gov.ro cultural calendar is a dead static XLSX; museums/OneEvent expose no feeds), and the comprehensive layer (ZileșiNopți/OneEvent) are reuse-restricted competitors. Net: no RO source is clean + machine-readable + comprehensive — pick 2 of 3.

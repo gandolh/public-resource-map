@@ -23,7 +23,7 @@ The front door for **public-resource-map** project knowledge. Read this first.
 
 ## Briefs
 
-Briefs 02–06 were split from the original oversized "admin source-ingestion" brief on 2026-06-28; they are listed in **dependency / build order**.
+Briefs 02–06 were split from the original oversized "admin source-ingestion" brief on 2026-06-28; 07–10 were added the same day. **Numbers are stable and ≠ build order** — see the recommended build order below.
 
 | # | File | Status | Title |
 |---|---|---|---|
@@ -31,8 +31,14 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 02 | [briefs/todo/02-auth-and-admin-gate.md](briefs/todo/02-auth-and-admin-gate.md) | todo | Auth & admin gate (prerequisite for all admin work) |
 | 03 | [briefs/todo/03-place-model-and-osm-sync.md](briefs/todo/03-place-model-and-osm-sync.md) | todo | Place model & OSM resource sync (resources-first anchor) |
 | 04 | [briefs/todo/04-event-ingestion-pipeline.md](briefs/todo/04-event-ingestion-pipeline.md) | todo | Event ingestion pipeline — refresh/match/geocode/reconcile/diff/accept |
-| 05 | [briefs/todo/05-favorites-and-notifications.md](briefs/todo/05-favorites-and-notifications.md) | todo | Favorites & in-app notifications (retention loop) |
+| 05 | [briefs/todo/05-favorites-and-notifications.md](briefs/todo/05-favorites-and-notifications.md) | todo | Favorites & notifications — in-app + email (retention loop) |
 | 06 | [briefs/todo/06-place-centric-ui.md](briefs/todo/06-place-centric-ui.md) | todo | Place-centric map UI (refactor of the existing 3-surface UI) |
+| 07 | [briefs/todo/07-schema-consolidation.md](briefs/todo/07-schema-consolidation.md) | todo | Schema consolidation & migration plan (**build first**) |
+| 08 | [briefs/todo/08-ro-seed-data.md](briefs/todo/08-ro-seed-data.md) | todo | Real RO seed data (Timișoara + București) |
+| 09 | [briefs/todo/09-attribution-and-about-data.md](briefs/todo/09-attribution-and-about-data.md) | todo | Attribution & "about the data" transparency |
+| 10 | [briefs/todo/10-test-plans-rewrite.md](briefs/todo/10-test-plans-rewrite.md) | todo | Test plans — rewrite place-centric + new-feature coverage |
+
+**Recommended build order:** 07 (schema) → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → 05 (favorites/notifications) → 06 (place-centric UI) → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD).
 
 ## Test Plans
 
