@@ -2,6 +2,20 @@
 
 The front door for **public-resource-map** project knowledge. Read this first.
 
+> **New here?** Read [wiki/overview.md](wiki/overview.md) → [wiki/glossary.md](wiki/glossary.md) → [wiki/decisions.md](wiki/decisions.md). The project is a **place-centric** map of Romanian public resources + events (POC). Terms like *place*, *OSM*, *Overpass*, *staged event* are defined in the glossary.
+
+## Start here (by task)
+
+| I want to… | Go to |
+|---|---|
+| Understand what this project is | [wiki/overview.md](wiki/overview.md) + [wiki/glossary.md](wiki/glossary.md) |
+| Know what's decided (don't relitigate) | [wiki/decisions.md](wiki/decisions.md) |
+| Build the next thing | [Briefs](#briefs) → follow the **recommended build order** |
+| Understand the code/architecture | [wiki/architecture.md](wiki/architecture.md) |
+| Know what's still open | [wiki/open-questions.md](wiki/open-questions.md) |
+| See current state / dev commands | [wiki/status.md](wiki/status.md) |
+| Trace history of a decision | [log.md](log.md) |
+
 ## Navigation
 
 | File | Contents |
@@ -14,10 +28,11 @@ The front door for **public-resource-map** project knowledge. Read this first.
 | Page | What it answers |
 |---|---|
 | [wiki/overview.md](wiki/overview.md) | What this project is, major components, repo layout |
+| [wiki/glossary.md](wiki/glossary.md) | **Project jargon defined** — place, OSM, Overpass, staged event, etc. |
 | [wiki/architecture.md](wiki/architecture.md) | Package structure, API routes, UI file map, data layer |
 | [wiki/decisions.md](wiki/decisions.md) | Locked tech/design choices — don't relitigate |
 | [wiki/status.md](wiki/status.md) | Current state dashboard, per-area snapshot, dev commands |
-| [wiki/open-questions.md](wiki/open-questions.md) | Genuinely unresolved: map library, data sources, auth, deployment |
+| [wiki/open-questions.md](wiki/open-questions.md) | Genuinely unresolved: extraction mechanics, matching, spatial index |
 | [wiki/design.md](wiki/design.md) | Stitch CivicMap design system — colors, typography, components spec |
 | [wiki/stitch-screens.md](wiki/stitch-screens.md) | Reference HTML screens from Stitch — layout, component classes, patterns for all 4 views |
 
@@ -38,8 +53,9 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 09 | [briefs/todo/09-attribution-and-about-data.md](briefs/todo/09-attribution-and-about-data.md) | todo | Attribution & "about the data" transparency |
 | 10 | [briefs/todo/10-test-plans-rewrite.md](briefs/todo/10-test-plans-rewrite.md) | todo | Test plans — rewrite place-centric + new-feature coverage (the *what*) |
 | 11 | [briefs/todo/11-test-infrastructure-tdd-e2e.md](briefs/todo/11-test-infrastructure-tdd-e2e.md) | todo | Test infrastructure & TDD/e2e harness (the *machinery*; **build early**) |
+| 12 | [briefs/todo/12-platform-optimization.md](briefs/todo/12-platform-optimization.md) | todo | Platform optimization — DB PRAGMAs, spatial index, map/Leaflet, SPA (apply incrementally) |
 
-**Recommended build order:** 07 (schema) → **11 (test harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → 05 (favorites/notifications) → 06 (place-centric UI) → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD). _11 lands right after the schema so features 02–06 can be built test-first; 10 (plans) follows the UI._
+**Recommended build order:** 07 (schema) → **11 (test harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → 05 (favorites/notifications) → 06 (place-centric UI) → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD). _Brief 12 is cross-cutting: its DB PRAGMAs apply with brief 07; the rest apply opportunistically when measured need appears — not a single milestone._ _11 lands right after the schema so features 02–06 can be built test-first; 10 (plans) follows the UI._
 
 ## Test Plans
 

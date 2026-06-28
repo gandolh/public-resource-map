@@ -1,5 +1,13 @@
 # Log
 
+## [2026-06-28] research + brief + corpus-UX | Optimization research, brief 12, glossary + index front door
+
+Online research into making the corpus smoother + optimizing the platform (sources in `todos/2026-06-28-optimization-research.md`).
+
+**Platform → brief 12 (platform optimization):** evidence-based, apply-incrementally optimizations. DB: WAL + synchronous=NORMAL + foreign_keys + busy_timeout PRAGMAs at startup (apply with schema brief 07); prepared statements. Spatial: `(lat,lng)`+`city` indexes, server-side bbox+city filtering, R-tree as a noted future option. Map: viewport-only markers, Leaflet.markercluster + chunkedLoading, canvas renderer, clearLayers/addLayers — all gated on *measured* slowdown (real data, brief 08). SPA: debounced bbox refetch, route-lazy admin UI. Explicit "do NOT pre-optimize" section. WAL caveat (same-host) noted — aligns with single-VPS deployment.
+
+**Corpus UX (applied now):** added `wiki/glossary.md` (defines place/OSM/Overpass/staged-event/etc. — jargon-dense domain); upgraded `index.md` with a "New here?" path + task-oriented "Start here" table. Captured the larger rollout (front-matter metadata — research cited 89% discoverability gain; per-page source-of-truth lines; decision IDs) as `todos/2026-06-28-corpus-ux-improvements.md`. Rejected Docusaurus (LLM is the consumer, not a docs-site audience). Also flagged `status.md` as stale (predates the reframe) — refreshed separately.
+
 ## [2026-06-28] brief | Brief 11 — test infrastructure & TDD/e2e harness
 
 Filed brief 11 — the testing *machinery*, distinct from brief 10 (test *plans*). Found that despite the locked testing decision, **no test infra exists**: no runner, no config, no specs, no test scripts; "Playwright" had been manual screenshot-driving only. Brief 11 stands up the pyramid: **Vitest** (unit + auth internals + Fastify `.inject()` API integration, co-located `*.test.ts`) and **@playwright/test** (assertion-based e2e in a new `e2e/` dir, seeded throwaway RO DB, T/B geolocation mock, test-only reminder-sweep trigger). Root scripts `test`/`test:watch`/`test:cov`/`test:e2e`/`test:all`. Deps reasoned to house style: Vitest (Vite/ESM fit, no Jest), no supertest (use Fastify `.inject()`), component-test deps deferred. **No GitHub Actions / hosted CI** (user choice) — `npm run test:all` is the local pre-commit gate. The manual `playwright/` hub is kept for brief 10's visual audit; automated e2e is separate. Build order updated: 11 lands right after schema (07) so features 02–06 can be built test-first.
