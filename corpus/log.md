@@ -1,5 +1,17 @@
 # Log
 
+## [2026-06-29] research + design | Pin/map UX + de-generic-ify design.md aesthetics
+
+Researched (A) best-UX map pins + basemap and (B) what makes design.md read as "generic AI". Finding: design.md was almost a checklist of the generic-AI look (Inter-only, all-rounded, blue+slate, uniform shadows). Grilled the direction; all recommended options chosen. Revised `design.md` (+ matched its frontmatter tokens):
+
+- **Aesthetic direction → "Warmer Editorial-Civic"** (was "Minimalist-Professional"), with explicit anti-generic rules.
+- **Typography → two-family pairing:** **Fraunces** (variable serif) for display/headings/brand/place-titles; **Inter** kept for body/UI. Frontmatter scales updated (display + headline-* → Fraunces; body-*/label-* → Inter). Biggest personality lever.
+- **Color:** keep dominant civic blue, **promote the amber tertiary to a deliberate warm accent**; warm the neutrals; color never the sole signal.
+- **Geometry:** tightened rounding (cards ≤8px, drawers 12px not 16px, pills reserved for chips/badges), crisp borders over soft shadows.
+- **Elevation:** role-differentiated (card vs drawer vs pin must not share one shadow).
+- **Map Pins → icon-led + event-aware + zoom-aware:** per-category SVG icon as primary signal (color secondary), event-presence accent ring/badge, dot↔teardrop by zoom, unmistakable selected state. Added **Map Clusters** (styled divIcon, event hint) + **Basemap** (CARTO **Voyager** light / DarkMatter dark; self-hosted tinted style = future).
+- Synced brief 06 pin bullet → points to design.md pin system. Captured full findings + sources in `todos/2026-06-29-pin-map-aesthetic-research.md`.
+
 ## [2026-06-29] brief | Split briefs 13 + 11 along real seams (→ 15, 16, 17)
 
 Reviewed whether to split further. Most briefs are already small and system-scoped — declined to over-split. Split only where genuine independent surfaces existed; **kept brief 04 whole** (its admin API is thin wrappers over the pipeline — no real seam, splitting would just couple two always-built-together briefs).

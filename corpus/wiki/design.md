@@ -50,24 +50,24 @@ colors:
   surface-variant: '#dce2f7'
 typography:
   display:
-    fontFamily: Inter
+    fontFamily: Fraunces
     fontSize: 48px
-    fontWeight: '700'
+    fontWeight: '600'
     lineHeight: 56px
     letterSpacing: -0.02em
   headline-lg:
-    fontFamily: Inter
+    fontFamily: Fraunces
     fontSize: 32px
     fontWeight: '600'
     lineHeight: 40px
     letterSpacing: -0.01em
   headline-lg-mobile:
-    fontFamily: Inter
+    fontFamily: Fraunces
     fontSize: 24px
     fontWeight: '600'
     lineHeight: 32px
   headline-md:
-    fontFamily: Inter
+    fontFamily: Fraunces
     fontSize: 20px
     fontWeight: '600'
     lineHeight: 28px
@@ -114,34 +114,42 @@ spacing:
 
 The design system is built on a foundation of **Civic Modernism**. It balances the authoritative reliability of a government institution with the fluid, accessible utility of a contemporary digital product. The primary goal is to foster community engagement by making complex urban data navigable and inviting.
 
-The aesthetic follows a **Minimalist-Professional** approach:
-- **Trustworthy:** Clear structures and consistent patterns reassure the user.
-- **Accessible:** High-contrast ratios and clear affordances ensure the app is usable by all citizens.
-- **Clean:** Generous whitespace and a "lightweight chrome" philosophy keep the focus on the data and the map.
-- **Functional:** Information density is carefully managed to avoid overwhelm while remaining useful for local discovery.
+The aesthetic follows a **Warmer Editorial-Civic** approach (revised 2026-06-29 — deliberately steers away from the "generic AI" look: Inter-only, all-rounded, blue+slate, uniform shadows. See [research](../todos/2026-06-29-pin-map-aesthetic-research.md)):
+- **Trustworthy + human:** Clear civic structure, but with editorial warmth (a distinctive display typeface, a confident accent) so it reads credible *and* characterful — not templated.
+- **Accessible:** High-contrast ratios and clear affordances ensure the app is usable by all citizens. Meaning is never carried by color alone.
+- **Clean, not generic:** Generous whitespace + "lightweight chrome," but with **intentional, role-varied** elevation/geometry instead of uniformly-soft rounded cards.
+- **Functional:** Information density carefully managed for local discovery.
+
+> **Anti-generic rules (be specific, not vague):** distinctive display face for headings/brand (Fraunces) + Inter for body/UI; max card radius 8px (pills only for chips/badges); shadows differ by element role (don't give every element the same shadow); dominant civic blue + a deliberate warm accent (not a timid even palette).
 
 ## Colors
 
 The palette is designed for high legibility and rapid category recognition. 
 
 ### Semantic System
-- **Steel Blue (--color-primary):** Used for navigation, primary actions, and branding. It conveys stability.
-- **Category Colors:** Each category (Park, Healthcare, etc.) uses a distinct, accessible hue. These should be paired with 10% opacity backgrounds for badges to ensure text legibility.
-- **Neutral Scale:** Utilizes a systematic grey scale for secondary text and borders, moving from #F9FAFB (Background) to #111827 (Primary Text).
+- **Steel Blue (--color-primary):** Navigation, primary actions, branding. Conveys civic stability — stays the dominant color.
+- **Warm accent (--color-tertiary, amber `#7d5400` family — promoted 2026-06-29):** A deliberate, sharp **secondary accent** used sparingly for emphasis, highlights, and "what's on" energy — gives the palette personality vs. a timid all-blue scheme ("dominant color + sharp accent beats an evenly-distributed palette"). Not a third equal color; a punctuation.
+- **Category Colors:** Each category uses a distinct, accessible hue, paired with 10% opacity backgrounds for badge legibility. **Color is never the sole signal** — always paired with an icon/label (a11y + the pin system below).
+- **Neutral Scale:** Systematic grey scale for secondary text/borders. Keep neutrals slightly **warm** (not pure slate) to match the editorial-civic tone.
 
 ### Color Implementation
 - **Active States:** Use `primary_color_hex` at 100% opacity for text and icons.
 - **Inactive States:** Use neutral greys to de-emphasize non-essential chrome.
 - **Category Pairing:** When using category colors on text, ensure a contrast ratio of at least 4.5:1 against the surface.
 
-## Typography
+## Typography (revised 2026-06-29 — two-family pairing)
 
-This design system utilizes **Inter** exclusively to leverage its exceptional legibility and systematic weights. 
+Typography is the **primary carrier of personality** (the element most resistant to a generic-AI look). Two families:
 
-- **Hierarchy:** Use bold weights for location titles and regular weights for descriptions.
-- **Labels:** Small labels (`label-sm`) should use a slightly increased letter spacing (0.05em) and uppercase styling for "Utility" text like timestamps or distances.
-- **Line Heights:** Generous line heights are maintained to ensure readability for users with varying visual abilities.
-- **Optical Sizing:** For large display text, use negative letter-spacing to maintain a "tight" professional appearance.
+- **Display — Fraunces** (variable serif, Google Fonts) for **headings, brand wordmark, place titles, and large display text.** A characterful old-style serif with optical sizing + warmth → editorial, human, trustworthy. Use its optical-size axis: tighter/higher-contrast at large sizes. This is where the design earns its distinctiveness.
+- **Body/UI — Inter** for body copy, controls, labels, dense UI. Genuinely the best legibility at small sizes; kept deliberately as the workhorse (it's only a problem when used for *everything*).
+
+Usage:
+- **Hierarchy:** Fraunces for titles/headlines (the `display`/`headline-*` scale); Inter for `body-*` and `label-*`. Don't set body copy in Fraunces.
+- **Labels:** Small labels (`label-sm`) use slightly increased letter spacing (0.05em) + uppercase for "utility" text (timestamps, distances).
+- **Line Heights:** Generous for readability across visual abilities.
+- **Optical Sizing:** Fraunces handles this natively; for large headings use its high-contrast optical size + slightly negative tracking.
+- Load both via Google Fonts (variable); preload the display face for the brand/above-the-fold headings.
 
 ## Layout & Spacing
 
@@ -154,27 +162,47 @@ The design system employs a **Fluid-Fixed Hybrid** grid. The map occupies the fu
 
 ## Elevation & Depth
 
-Visual hierarchy is established through **Tonal Layers** and **Low-Contrast Outlines**.
+Visual hierarchy is established through **Tonal Layers** and **role-differentiated elevation** (revised 2026-06-29 — *don't give every element the same shadow*; shadow should signal where a thing sits in 3D, so its role determines its elevation).
 
-- **Level 0 (Base):** The map layer.
-- **Level 1 (Cards/Search):** Uses a subtle 1px border (`#E5E7EB`) and a very soft, diffused shadow (0px 4px 6px rgba(0,0,0,0.05)) to separate content from the map.
-- **Level 2 (Active Drawer/Modals):** Increased shadow depth (0px 10px 15px rgba(0,0,0,0.1)) to indicate focus.
-- **Surface Contrast:** In dark mode, depth is communicated by shifting from a background of `#111827` to a surface of `#1F2937` rather than using heavy shadows.
+- **Level 0 (Base):** The map layer — no shadow.
+- **Level 1 (Cards/Search/chips):** A crisp **1px border** (warm-neutral) is the primary separator; shadow is minimal-to-none. Borders over diffuse shadows = sharper, less generic.
+- **Level 2 (Active Drawer/Modals/open panel):** A real, deeper shadow (e.g. `0 10px 15px rgba(0,0,0,0.1)`) — reserved for genuinely-elevated, focus-stealing surfaces only.
+- **Pins (map):** Their own small, tight drop shadow so they read as "on top of the map" — distinct from card elevation (a pin is not a card).
+- **Rule:** at most these tiers; a card, a button, a badge, and a pin must NOT share one shadow value.
+- **Surface Contrast:** In dark mode, communicate depth by shifting background→surface tone (e.g. `#111827`→`#1F2937`) rather than heavy shadows.
 
 ## Shapes
 
-The shape language is **Rounded**, conveying a modern and friendly civic tone.
+The shape language is **gently rounded but crisp** (revised 2026-06-29 — tightened; uniform heavy rounding reads generic). Rounding differs by role rather than rounding everything:
 
-- **Standard Elements:** Buttons, cards, and input fields use 0.5rem (8px).
-- **Large Elements:** Detail drawers and modals use 1rem (16px) on top corners.
-- **Pills:** Filter chips and category badges use a full border-radius (9999px) to distinguish them as interactive or metadata elements.
+- **Standard Elements:** Buttons, cards, input fields use **0.5rem (8px) max** — do not climb higher.
+- **Large Elements:** Detail drawers/bottom sheets use **0.75rem (12px)** on the leading corners (was 16px) — slightly crisper.
+- **Pills (full radius) reserved for chips & category badges only** — they signal "interactive filter / metadata," so keep the pill shape meaningful by *not* applying it elsewhere.
+- Prefer **crisp 1px borders** to define edges where a soft shadow would otherwise be the only separation (sharper, less "bubbly").
 
 ## Components
 
-### Map Pins
-- **Structure:** 32px circular base.
-- **Styling:** White border (2px) with the interior filled with the category color. A white icon is centered within.
-- **Interaction:** Scale up to 40px when hovered or selected.
+### Map Pins (revised 2026-06-29 — icon-led, event-aware, zoom-aware)
+
+Meaning is carried by **icon + shape + color + state**, not color alone (a11y + scannability when many categories share the map).
+
+- **Icon is the primary signal:** each `PlaceCategory` has a distinct **SVG icon** (lucide), centered in the pin. Category **color is the secondary** cue; the icon must be legible at small size. (SVG, not PNG — crisp at any DPI, themeable.)
+- **Shape is zoom-aware:**
+  - **Dense / lower zoom:** compact **dot** (cleaner when crowded).
+  - **Zoomed-in / selected:** precise **teardrop** with a V-point for unambiguous location.
+- **Event-presence is visible at a glance:** places with upcoming events get an **accent ring** (the warm accent) or a small **count badge** — so "where's something on" survives even when clustered.
+- **Base:** 32px; **white/contrast border (2px)**, interior in the category color, icon in white (or dark, whichever clears 4.5:1).
+- **States:** hover → preview + slight lift; **selected → scale to 40px + a clear selected ring + Level-2 elevation** (unmistakable which pin is active). Non-selected may dim when one is selected.
+
+### Map Clusters (NEW)
+- Clusters use a **styled `L.divIcon`** matching the design system (our type + neutral/blue), **not** default Leaflet styling — size tiers by count.
+- A cluster containing event-hosting places shows the **same accent hint** (a small dot) so event presence survives clustering.
+- Per-pin category color + event badge **resolve only when zoomed in past overlap** (legibility — see brief 13).
+
+### Basemap (revised 2026-06-29)
+- **Light: CARTO Voyager** (warmer, more characterful than Positron, still clean — pairs with the editorial-civic tone). **Dark: CARTO DarkMatter.**
+- Keep the basemap **low-saturation** so colored pins pop; minimal labels at low zoom. Attribution per [brief 09](../briefs/todo/09-attribution-and-about-data.md).
+- _Future:_ a self-hosted, brand-tinted OpenMapTiles/MapTiler style for full control (post-POC — see research).
 
 ### Event Cards
 - **Structure:** Horizontal or vertical layout depending on container width.

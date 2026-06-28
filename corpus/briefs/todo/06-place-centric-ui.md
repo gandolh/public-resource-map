@@ -8,7 +8,7 @@ Reshape the existing 3-surface UI (`/map` resource markers · standalone `/event
 
 ## Scope
 
-- **Pin = place**, colored by **category**, with a **small badge/dot when the place has upcoming events** (`ResourceMarkers` must change to encode category-color + event presence).
+- **Pin = place** — `ResourceMarkers` must change to the **icon-led, event-aware, zoom-aware** pin system specced in [design.md → Map Pins](../../wiki/design.md) (per-category SVG icon as primary signal + category color, event-presence accent ring/badge, dot↔teardrop by zoom, clear selected state) and clustered per [brief 13](13-ui-interactions-and-features.md). Basemap: CARTO **Voyager** (light) / DarkMatter (dark) per design.md.
 - **Place panel** (on pin-click): place identity (what it is, address, hours) **+ its event list** (each: date, title, **buy-link only if present**) + **favorite-star** for the place and per-event.
 - **`/resources/:id` collapses into a unified place surface** — one model whether reached by pin-click (panel) or deep link (full page). Don't maintain two place views.
 - **Standalone list reframed:** retire event-centric `/events`; add a citywide **"what's on"** index — all upcoming events across the current city's places, each **linking back to its place on the map**. Same data, date-first lens.
