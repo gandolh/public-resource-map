@@ -6,7 +6,7 @@ Only genuinely unresolved questions. Delete an entry the moment it's answered �
 
 ## Event sources — per-publisher discovery (Timișoara + București)
 
-Direction locked (place-centric, public primary publishers, API-first/scrape-last, build **all** per-city adapters — see [decisions.md](decisions.md)). What's open is the concrete per-publisher landscape, resolved as each adapter is built. Full feature spec: [briefs/todo/02-admin-source-ingestion.md](../briefs/todo/02-admin-source-ingestion.md).
+Direction locked (place-centric, public primary publishers, API-first/scrape-last, build **all** per-city adapters — see [decisions.md](decisions.md)). What's open is the concrete per-publisher landscape, resolved as each adapter is built. Full feature spec: [briefs/todo/04-event-ingestion-pipeline.md](../briefs/todo/04-event-ingestion-pipeline.md).
 
 - **Which publishers exist per city, and what's their machine-readable surface?** For each Timișoara/București town hall, museum, and cultural institution: does it expose an **official API**, an **iCal/`.ics`** feed (common + often unadvertised for calendars), **RSS/Atom**, **JSON-LD**, or a clean **sitemap** — before falling back to HTML scraping? Probe in discovery order; record the mechanism on each `event_source`.
 - **Per-source terms.** Each publisher's site has its own terms; vet reuse legality individually as each adapter is added (we vet by hand because the source count is large).

@@ -71,3 +71,6 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 |---|---|
 | [todos/2026-06-26-map-chip-overflow.md](todos/2026-06-26-map-chip-overflow.md) | Map filter chips clipped on mobile (F-01) |
 | [todos/2026-06-26-resource-title-tag.md](todos/2026-06-26-resource-title-tag.md) | Resource detail page title is static |
+| [todos/2026-06-28-competitor-research-findings.md](todos/2026-06-28-competitor-research-findings.md) | Competitor/source landscape research + ideas |
+| [todos/2026-06-28-optimization-research.md](todos/2026-06-28-optimization-research.md) | Platform-optimization + corpus-UX research (feeds brief 12) |
+| [todos/2026-06-28-corpus-ux-improvements.md](todos/2026-06-28-corpus-ux-improvements.md) | Corpus-UX improvements (done + proposed) |
