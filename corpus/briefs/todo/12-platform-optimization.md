@@ -25,7 +25,7 @@ Current model is a bounding-box approximation (decisions.md). **Trigger: real RO
 
 **Trigger: a city's place count makes the map sluggish** (likely once full OSM sync lands — hundreds–thousands of pins). Until then, plain markers are fine.
 
-- **Marker clustering** — combine nearby pins into count badges. `Leaflet.markercluster` is the standard; sufficient for our scale (it only struggles past ~100k). Use `chunkedLoading` so adding many markers doesn't freeze the UI.
+- **Marker clustering** — combine nearby pins into count badges. `Leaflet.markercluster` is the standard; sufficient for our scale (it only struggles past ~100k). Use `chunkedLoading` so adding many markers doesn't freeze the UI. **NOTE (2026-06-28, stress-test): clustering is no longer deferred — it moved to [brief 13](13-ui-interactions-and-features.md) as a day-one *legibility* requirement** (a full OSM sync is an illegible wall of pins at city zoom, independent of perf). This brief retains the *perf* aspects (chunkedLoading, canvas); the clustering *behavior* (zoom-gated category/badge detail) is specced in brief 13.
 - **Render only in-viewport markers** — query the backend by current map bounds (ties to the spatial index above); don't hold off-screen pins in the DOM.
 - **Canvas renderer for markers** (`L.canvas()` / `preferCanvas: true`) — browsers move a few canvas tiles far faster than thousands of DOM nodes. Tradeoff: less flexible per-marker DOM styling — but our pins are category-color + event-badge, which canvas handles fine.
 - **Fastest marker updates:** on filter/city change, `clearLayers()` + `addLayers(batch)` rather than per-marker add/remove (~10x faster).

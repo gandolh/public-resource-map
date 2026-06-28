@@ -1,5 +1,20 @@
 # Log
 
+## [2026-06-28] grill | UI/UX stress test — edge cases resolved (2 overrides)
+
+Stress-tested the UI/UX in briefs 06/13 + design.md against real-world failure modes the happy-path specs skipped. Resolutions folded into brief 13 (edge-cases section), brief 05 (notif coalescing), brief 12 (clustering note), decisions.md.
+
+- **Pin density [override]:** clustering is **day-one legibility**, not deferred perf. Cluster at city zoom; category color + event badge resolve only zoomed-in. (Moved from brief 12 → brief 13.)
+- **Timing filter [override]:** **hard-filter (remove), not dim** — dimming is invisible at density. Banner + count + clear. (Reverses decisions.md "dim, don't remove".)
+- **Draw vs pan:** explicit **draw-mode toggle** (locks pan, done/cancel, hint).
+- **Draw lifetime:** persists across pan/zoom/panel/what's-on; **cleared on city change** (toast).
+- **Zero-results:** guided-recovery overlay — active filters as removable chips + clear-all + "X match if you widen/drop Y". Never a blank map.
+- **Admin review at scale:** confidence-sorted — high-confidence pre-selected for one-click bulk accept; low-confidence buckets (ambiguous/needs-attention/geocode-failed/changed) surfaced first.
+- **Notification flood:** new-event notifications **coalesced per (place, accept-batch)** (one "8 new events at X" item, not 8); reminders stay per-event. Changed `notification` model (placeId+batchId+event-id set for new-event kind).
+- **Favorite while logged-out:** star visible (the hook) → contextual login prompt → completes the favorite in place.
+- **Place deep-link:** `/places/:id` = full page + mini-map when cold/shared; panel-over-map in-app; draggable mobile sheet so the pin shows.
+- **Mobile max-chrome:** collapsing chrome, filters/draw behind one button, draggable sheet — map stays the hero at 375px.
+
 ## [2026-06-28] research + grill + brief | Tests/schema/UI plans resolved; brief 13 + 2 new features
 
 Research (map-detail UX, Drizzle schema patterns, Playwright auth/isolation) + an exhaustive grilling pass that resolved the full decision tree across three areas. Plus two new features requested mid-session.
