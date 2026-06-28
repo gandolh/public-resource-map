@@ -17,7 +17,7 @@ ui  ──►  shared  ◄──  backend
 - **Styling**: Tailwind CSS 4 (Vite plugin), `tw-animate-css`, CSS custom properties for theming
 - **Components**: shadcn/ui (new-york style, Radix UI primitives, lucide-react icons)
 - **Theme**: dark/light/system — persisted to localStorage as `"vite-ui-theme"`, toggled via `ThemeProvider` context
-- **Route config** (`app/routes.ts`): layout wrapper → home (`/`). `/events` referenced in Navbar but not yet a route.
+- **Route config** (`app/routes.ts`): layout wrapper wrapping four routes — index (`/`), `map`, `events`, `resources/:id`. Home redirects to `/map`.
 - **Alias**: `~/*` and `@/*` both resolve to `./app/*`
 
 ### Current UI file map
@@ -25,22 +25,37 @@ ui  ──►  shared  ◄──  backend
 ```
 app/
   root.tsx               HTML shell, error boundary, font preload (Inter)
-  routes.ts              route config
+  routes.ts              route config (index, map, events, resources/:id)
   app.css                Tailwind + OKLCH theme tokens
   components/
-    Layout.tsx           flex column: Navbar + main outlet
-    Navbar.tsx           Home / Events links, theme toggle, profile dropdown
+    Layout.tsx           QueryClientProvider + flex column: Navbar + main outlet
+    Navbar.tsx           Map / Events links, theme toggle, profile dropdown (decorative)
     ThemeProvider.tsx    context + localStorage persistence
     ThemeToggle.tsx      Sun/Moon dropdown
-    ui/
-      Avatar.tsx         Radix Avatar
-      Button.tsx         CVA button (6 variants, 4 sizes)
-      DropdownMenu.tsx   Radix DropdownMenu (full system)
+    map/
+      ResourceMarkers.tsx    Leaflet markers for resources
+      UserLocationMarker.tsx user-location pin
+    ui/                  Base UI primitives + CivicMap components
+      Avatar, Button, DropdownMenu, CategoryBadge, FilterChip,
+      EventCard, MapPin, DetailDrawer, SearchInput, Pagination, RadiusSlider
+  hooks/
+    useEvents.ts             TanStack Query — events list
+    useNearbyResources.ts    TanStack Query — nearby resources
+    useUserLocation.ts       geolocation hook
   lib/
+    api.ts               typed fetch wrapper for backend
+    map.ts               Leaflet/tile helpers
+    queryClient.ts       TanStack Query client
     LocalStorage.ts      type-safe get/set/has/remove/clear wrapper
     utils.ts             cn() = clsx + tailwind-merge
+  stores/
+    locationStore.ts     Zustand — shared geolocation state
+    mapFilterStore.ts    Zustand — category/radius/search/selection
   routes/
-    home.tsx             placeholder only
+    home.tsx             redirects to /map
+    map.tsx              Leaflet map + filter overlay + detail drawer
+    events.tsx           events grid + category chips + pagination
+    resources.$id.tsx    resource detail page
 ```
 
 ## Backend (`backend/`)

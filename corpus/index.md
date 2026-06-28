@@ -23,9 +23,16 @@ The front door for **public-resource-map** project knowledge. Read this first.
 
 ## Briefs
 
+Briefs 02–06 were split from the original oversized "admin source-ingestion" brief on 2026-06-28; they are listed in **dependency / build order**.
+
 | # | File | Status | Title |
 |---|---|---|---|
 | 01 | [briefs/done/01-stitch-design-brief.md](briefs/done/01-stitch-design-brief.md) | done | Stitch design brief — map UI, components, tokens |
+| 02 | [briefs/todo/02-auth-and-admin-gate.md](briefs/todo/02-auth-and-admin-gate.md) | todo | Auth & admin gate (prerequisite for all admin work) |
+| 03 | [briefs/todo/03-place-model-and-osm-sync.md](briefs/todo/03-place-model-and-osm-sync.md) | todo | Place model & OSM resource sync (resources-first anchor) |
+| 04 | [briefs/todo/04-event-ingestion-pipeline.md](briefs/todo/04-event-ingestion-pipeline.md) | todo | Event ingestion pipeline — refresh/match/geocode/reconcile/diff/accept |
+| 05 | [briefs/todo/05-favorites-and-notifications.md](briefs/todo/05-favorites-and-notifications.md) | todo | Favorites & in-app notifications (retention loop) |
+| 06 | [briefs/todo/06-place-centric-ui.md](briefs/todo/06-place-centric-ui.md) | todo | Place-centric map UI (refactor of the existing 3-surface UI) |
 
 ## Test Plans
 
