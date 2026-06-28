@@ -55,8 +55,9 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 11 | [briefs/todo/11-test-infrastructure-tdd-e2e.md](briefs/todo/11-test-infrastructure-tdd-e2e.md) | todo | Test infrastructure & TDD/e2e harness (the *machinery*; **build early**) |
 | 12 | [briefs/todo/12-platform-optimization.md](briefs/todo/12-platform-optimization.md) | todo | Platform optimization — DB PRAGMAs, spatial index, map/Leaflet, SPA (apply incrementally) |
 | 13 | [briefs/todo/13-ui-interactions-and-features.md](briefs/todo/13-ui-interactions-and-features.md) | todo | UI/UX interactions & features — place panel, filters, **draw-to-filter**, **/admin shell**, states/a11y |
+| 14 | [briefs/todo/14-archived-events-page.md](briefs/todo/14-archived-events-page.md) | todo | Archived events page — past events (citywide + my saved), link to place |
 
-**Recommended build order:** 07 (schema) → **11 (test harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → 05 (favorites/notifications) → 06 (place-centric UI) → **13 (UI interactions/features)** → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD). _Brief 12 is cross-cutting: its DB PRAGMAs apply with brief 07; the rest apply opportunistically. Brief 13 builds on 06's shell (06 = structure, 13 = interaction detail + draw-filter + /admin)._ _11 lands right after the schema so features 02–06 can be built test-first; 10 (plans) follows the UI._
+**Recommended build order:** 07 (schema) → **11 (test harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → 05 (favorites/notifications) → 06 (place-centric UI) → **13 (UI interactions/features)** → **14 (archive)** → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD). _Brief 12 is cross-cutting: its DB PRAGMAs apply with brief 07; the rest apply opportunistically. Brief 13 builds on 06's shell (06 = structure, 13 = interaction detail + draw-filter + /admin); 14 builds on the event-archive lifecycle._ _11 lands right after the schema so features 02–06 can be built test-first; 10 (plans) follows the UI._
 
 ## Test Plans
 

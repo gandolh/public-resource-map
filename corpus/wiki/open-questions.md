@@ -2,38 +2,23 @@
 
 Only genuinely unresolved questions. Delete an entry the moment it's answered — its history goes in `log.md`. For decided items, see [decisions.md](decisions.md).
 
-> **2026-06-28 — major reframe.** The product pivoted to **place-centric**, **resources-first**, sourcing events from **public primary publishers (API-first, scrape-last)**, NOT from scraping iaBilet (its ToS forbids reuse — see decisions.md → Legal posture). The former "iaBilet specifics / source landscape" content here is now moot and was removed; it lives in `log.md`. The iaBilet adapter survives only as a permission-blocked POC item.
+> **2026-06-28 — most mechanics now decided.** A grilling pass resolved the matching algorithm, change-detection tiers, geocode-sanity checks, OSM tag-mapping shape, address-normalization, spatial-index question, and the event-horizon/recency lifecycle — all moved to [decisions.md](decisions.md) and the relevant briefs. What remains genuinely open is **only what requires real-world probing or real data to settle**.
 
-## Event sources — per-publisher discovery (Timișoara + București)
+## Event sources — per-publisher landscape (Timișoara + București)
 
-Direction locked (place-centric, public primary publishers, API-first/scrape-last, build **all** per-city adapters — see [decisions.md](decisions.md)). What's open is the concrete per-publisher landscape, resolved as each adapter is built. Full feature spec: [briefs/todo/04-event-ingestion-pipeline.md](../briefs/todo/04-event-ingestion-pipeline.md).
+The *approach* is locked (place-centric, public primary publishers, **API-first/scrape-last**, build a **few clean defensible adapters**, OSM carries the map — see [decisions.md](decisions.md)). Genuinely open because it can only be answered by probing real sites:
 
-- **Which publishers exist per city, and what's their machine-readable surface?** For each Timișoara/București town hall, museum, and cultural institution: does it expose an **official API**, an **iCal/`.ics`** feed (common + often unadvertised for calendars), **RSS/Atom**, **JSON-LD**, or a clean **sitemap** — before falling back to HTML scraping? Probe in discovery order; record the mechanism on each `event_source`.
-- **Per-source terms.** Each publisher's site has its own terms; vet reuse legality individually as each adapter is added (we vet by hand because the source count is large).
-- **iaBilet (blocked).** Adapter is POC-only; obtaining explicit permission / an official feed is a hard blocker before any business launch. Do not enable in production.
+- **Which specific publishers, and what's each one's machine-readable surface?** Per Timișoara/București town hall, museum, cultural institution: official API? **iCal/`.ics`** (common + often unadvertised)? RSS/Atom? JSON-LD? clean sitemap? — before falling back to HTML. Probe in discovery order; record `mechanism` per `event_source`.
+- **Per-source terms** — vet reuse legality by hand as each adapter is added.
+- **iaBilet (blocked)** — POC-only adapter; permission/official feed is a hard launch blocker; do not enable in production.
 
-## Venue ↔ event matching mechanics
+## Threshold *tuning* (needs real data, not a decision)
 
-Model locked (match event venue → OSM place; ambiguous → admin resolves; unmatched → event-venue place). Open at build time:
-- **Match algorithm** — normalize venue string + city, fuzzy-match against OSM place names/addresses. Threshold for "confident match" vs. "ambiguous → admin" vs. "no match → geocode."
-- **"Changed" detection granularity** — which event fields (date, price, title) count as a meaningful change that re-enters the diff.
+The *mechanisms* are decided; the exact numbers must be tuned once real RO data flows:
 
-## Geocoding mechanics (fallback path)
+- **Venue-match fuzzy-score thresholds** (high = auto, mid = ambiguous→admin, low = geocode). Algorithm locked (normalize + token-set/trigram); start conservative, tune from observed false-match / queue-volume rates.
+- **Geocode confidence floor** — the Nominatim importance/confidence cutoff; tune against observed bad pins.
 
-Provider + policy locked (Nominatim public, 1 req/s, cache, manual-pin fallback — see decisions.md). Open:
-- Address-normalization rules for the `geocode_cache` key (so trivially-different strings hit the same cache row).
-- When a geocode result looks plausible-but-wrong (square centroid) — heuristics to route it to the admin manual-pin step rather than accepting silently.
+## Secondary (revisit if it bites)
 
-## OSM resource layer mechanics
-
-Ingestion model locked (admin-triggered sync, bypasses accept gate, upserts `source:osm` only, ingest-into-SQLite — see decisions.md). Open:
-- **Overpass query shape** per city (bounding box / area id; which tag filters).
-- **Tag → `ResourceCategory` mapping table.** OSM tags (`amenity=library`, `leisure=park`, `amenity=clinic|hospital`, `healthcare=*`, `amenity=townhall`, `tourism=museum`…) don't map 1:1 to our enum. Unmapped tags bucket into **"other"** (visible, not dropped) so gaps are seen.
-- **Messy-feature handling** — polygons → centroid; keep un-addressed features; drop un-named ones (a nameless pin is noise).
-
-## Spatial indexing
-
-**Should proximity queries use a spatial index?**
-- Current bounding-box approximation works for small datasets.
-- SQLite has no built-in spatial index; could use `spatialite` or a manual R-tree via `better-sqlite3`.
-- Revisit when data volume or query latency becomes an issue (likely once real RO data lands across both cities).
+- **R-tree / spatialite spatial index** — NOT needed for the POC (city-scoped bbox + `(lat,lng)`+city index is sufficient — see [decisions.md](decisions.md) / brief 12). Documented future option only; revisit if query latency shows up at real volume.

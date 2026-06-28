@@ -37,6 +37,7 @@ See [decisions.md](decisions.md) for the target; briefs 02–12 for the path.
 | Test plans (10) | stale — test the old UI |
 | Platform optimization (12) | not started — DB PRAGMAs apply with 07 |
 | UI interactions & features (13) | not started — place panel, filters, draw-to-filter, /admin shell, states/a11y |
+| Archived events page (14) | not started — /archive: citywide past + my saved, links to place |
 | Deployment | decision locked; no brief yet; backend has no deploy setup |
 
 ## Dev commands

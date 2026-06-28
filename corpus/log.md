@@ -1,5 +1,19 @@
 # Log
 
+## [2026-06-28] grill + brief | Open-questions resolved; event horizon + archive page (brief 14)
+
+Grilled the remaining open questions; resolved the decidable mechanics → moved to decisions.md ("Ingestion & data mechanics") and pruned open-questions.md down to only what needs real-world probing / real-data tuning.
+
+- **Venue↔place matching:** normalize + fuzzy token-set/trigram, two conservative thresholds (auto / ambiguous→admin / geocode).
+- **"Changed" detection tiered:** date/venue/cancellation → re-review; price/desc/buyUrl/image → silent; whitespace → ignore.
+- **Geocode sanity:** city-bbox + result-granularity + confidence floor → else manual-pin queue.
+- **geocode_cache key:** conservative normalized address + city (RO abbrev expansion); bias to correctness over hit-rate.
+- **OSM tag→PlaceCategory:** priority-ordered first-match-wins, ~8–12 buckets + visible "other", one primary category/pin; kept in sync with the Overpass filter.
+- **Spatial index:** CLOSED for POC (bbox + (lat,lng)+city index; R-tree = future only).
+- **Event horizon (was a gap):** upcoming-only on map/what's-on/reminders; past events → archived (not deleted), retained for dedup/reconcile + the archive page; periodic prune.
+
+**New feature — archived-events page (brief 14):** public `/archive` with two tabs — "My past events" (logged-in user's past favorites — "what it saved") + "Citywide archive" (past events for the current city); each row links to its still-existing place page ("where it was"). Reuses the event-archive lifecycle + place surface; no new tables, no separate archive map. Build after 06/13. Index + status + decisions updated.
+
 ## [2026-06-28] grill | UI/UX stress test — edge cases resolved (2 overrides)
 
 Stress-tested the UI/UX in briefs 06/13 + design.md against real-world failure modes the happy-path specs skipped. Resolutions folded into brief 13 (edge-cases section), brief 05 (notif coalescing), brief 12 (clustering note), decisions.md.

@@ -47,6 +47,18 @@ Locked tech and design choices. Don't relitigate without an explicit revisit + l
 - **Upserts ONLY `source: osm` places.** An OSM re-sync must **never clobber** `source: event-venue` places or admin **manual-pin** corrections — it touches OSM-sourced rows only.
 - Ingest-once-into-SQLite, serve-from-DB (Overpass is not for live user queries — rate-limited, batch-oriented). See [open-questions.md](open-questions.md) for query shape / category mapping (still to define).
 
+## Ingestion & data mechanics (locked 2026-06-28 — grilling pass)
+
+- **Venue↔place matching:** normalize the venue string (lowercase, strip diacritics/punctuation, strip room-noise like "Sala Mare", collapse whitespace) → **fuzzy token-set/trigram score** against OSM place names+aliases **in the same city** → two thresholds: **high = auto-match**, **mid = ambiguous (admin picks from top candidates)**, **low = no match → geocode a new event-venue place**. Thresholds start conservative (favor "ambiguous" over a wrong auto-match) and are tuned from real data.
+- **"Changed" detection (re-refresh of an accepted event) is tiered:**
+  - **Re-review** (back into the admin diff as `changed`): **startDate/time, venue, cancellation** — anything affecting *whether/where* a user shows up.
+  - **Silent update** (apply, no re-review): **price, description, buyUrl, image**.
+  - **Ignore:** whitespace/formatting-only.
+- **Geocode sanity (before a result becomes a live pin):** accept only if the point is **inside the active city's bounding box** AND the **result granularity is specific** (reject country/city/administrative centroids; want road/building/POI) AND Nominatim **importance/confidence clears a floor**. Any failure → **admin manual-pin queue**, never silently live.
+- **`geocode_cache` key = conservative normalized address + city:** lowercase, strip diacritics, expand/strip RO abbreviations (str./strada, nr., bd./bulevardul, p-ța/piața), collapse whitespace/punctuation, append city. Biased toward correctness — a near-miss just re-geocodes (cheap), never collapses two real addresses into one coord.
+- **OSM tag → `PlaceCategory`:** an explicit **priority-ordered, first-match-wins rule list** (deterministic for multi-tagged features), ~8–12 buckets covering common civic/cultural POIs; mapped-but-unlisted → **"other" (visible, not dropped)**. The Overpass tag filter and this map are kept in sync. **One primary category per pin** (no multi-category).
+- **Event horizon / recency:** the **map, what's-on, and reminders** show **upcoming events only** (now → optional ~90-day cap). When an event's end passes it flips to **past/archived status** (excluded from those surfaces) but is **retained** — for dedup + reconcile history AND as the data behind the **archived-events page** ([brief 14](../briefs/todo/14-archived-events-page.md)): a public `/archive` (citywide past events + a logged-in "my past favorites" tab), each linking to its still-existing place. A periodic prune removes very old archived rows (the archive shows what's retained, not literally forever). _Applies consistently across ingestion, what's-on, reminders, the archive page, and DB-growth control._
+
 ## Geocoding (locked 2026-06-28)
 
 - **Geocode only as a FALLBACK.** Try the venue↔OSM-place match first — a matched OSM place already has coordinates from the OSM ingest (free, no API call). **Geocode only the venues that don't match.** The matcher is thus also a geocoding-cost reducer; every successful match is a geocode not performed.
