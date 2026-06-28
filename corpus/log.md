@@ -1,5 +1,17 @@
 # Log
 
+## [2026-06-29] brief | Split briefs 13 + 11 along real seams (→ 15, 16, 17)
+
+Reviewed whether to split further. Most briefs are already small and system-scoped — declined to over-split. Split only where genuine independent surfaces existed; **kept brief 04 whole** (its admin API is thin wrappers over the pipeline — no real seam, splitting would just couple two always-built-together briefs).
+
+- **Brief 13** (was "UI interactions & features") → narrowed to **public place-centric interaction detail**; carved out:
+  - **Brief 15 — Draw-to-filter** (self-contained: Geoman plugin + point-in-polygon + draw-mode toggle plugging into 13's shared filter state).
+  - **Brief 16 — Admin shell & ingestion review UI** (separate audience/route/gate; frontend for the brief-04 pipeline).
+- **Brief 11** (was "test infrastructure & TDD/e2e") → narrowed to the **Vitest** harness (unit + Fastify `.inject()` integration) + TDD workflow + `runReminderSweep(now)` unit test; carved out:
+  - **Brief 17 — Playwright e2e harness** (separate runner: config, fixtures, per-role storageState, seeded-DB determinism).
+
+Numbers stable (15–17 new). Updated index table + build order (07→11→02→03→08→04→16→05→06→13→15→14→17→09→10), decisions.md cross-refs (draw→15, /admin→16), status.md per-area rows. All 16 todo briefs ↔ filesystem in parity.
+
 ## [2026-06-28] review-loop | Pre-development corpus stress test → GREEN LIGHT
 
 Ran a pre-dev stress test (3 review→change rounds + targeted research) auditing the corpus against the actual code. Found + fixed real contradictions that would have bitten on day one:

@@ -52,12 +52,16 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 08 | [briefs/todo/08-ro-seed-data.md](briefs/todo/08-ro-seed-data.md) | todo | Real RO seed data (Timișoara + București) |
 | 09 | [briefs/todo/09-attribution-and-about-data.md](briefs/todo/09-attribution-and-about-data.md) | todo | Attribution & "about the data" transparency |
 | 10 | [briefs/todo/10-test-plans-rewrite.md](briefs/todo/10-test-plans-rewrite.md) | todo | Test plans — rewrite place-centric + new-feature coverage (the *what*) |
-| 11 | [briefs/todo/11-test-infrastructure-tdd-e2e.md](briefs/todo/11-test-infrastructure-tdd-e2e.md) | todo | Test infrastructure & TDD/e2e harness (the *machinery*; **build early**) |
+| 11 | [briefs/todo/11-test-infrastructure-tdd-e2e.md](briefs/todo/11-test-infrastructure-tdd-e2e.md) | todo | Vitest harness (unit + integration) & TDD workflow (the *machinery*; **build early**) |
 | 12 | [briefs/todo/12-platform-optimization.md](briefs/todo/12-platform-optimization.md) | todo | Platform optimization — DB PRAGMAs, spatial index, map/Leaflet, SPA (apply incrementally) |
-| 13 | [briefs/todo/13-ui-interactions-and-features.md](briefs/todo/13-ui-interactions-and-features.md) | todo | UI/UX interactions & features — place panel, filters, **draw-to-filter**, **/admin shell**, states/a11y |
+| 13 | [briefs/todo/13-ui-interactions-and-features.md](briefs/todo/13-ui-interactions-and-features.md) | todo | Public UI/UX interactions — place panel, filters, what's-on, city picker, states/a11y |
 | 14 | [briefs/todo/14-archived-events-page.md](briefs/todo/14-archived-events-page.md) | todo | Archived events page — past events (citywide + my saved), link to place |
+| 15 | [briefs/todo/15-draw-to-filter.md](briefs/todo/15-draw-to-filter.md) | todo | Draw-to-filter — free-hand/polygon spatial map filter (split from 13) |
+| 16 | [briefs/todo/16-admin-shell-and-review-ui.md](briefs/todo/16-admin-shell-and-review-ui.md) | todo | Admin shell & ingestion review UI — /admin, sources panel, review table (split from 13) |
+| 17 | [briefs/todo/17-playwright-e2e-harness.md](briefs/todo/17-playwright-e2e-harness.md) | todo | Playwright e2e harness — config, fixtures, seeded-DB determinism (split from 11) |
 
-**Recommended build order:** 07 (schema) → **11 (test harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → 05 (favorites/notifications) → 06 (place-centric UI) → **13 (UI interactions/features)** → **14 (archive)** → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD). _Brief 12 is cross-cutting: its DB PRAGMAs apply with brief 07; the rest apply opportunistically. Brief 13 builds on 06's shell (06 = structure, 13 = interaction detail + draw-filter + /admin); 14 builds on the event-archive lifecycle._ _11 lands right after the schema so features 02–06 can be built test-first; 10 (plans) follows the UI._
+**Recommended build order:** 07 (schema) → **11 (Vitest harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → **16 (admin review UI)** → 05 (favorites/notifications) → 06 (place-centric UI) → **13 (public interactions)** → **15 (draw-filter)** → **14 (archive)** → **17 (e2e harness)** → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD).
+_Notes: 15 (draw) builds on 13's shared filter state. 16 (admin UI) follows 04 (its API) and can be built independently of the public-UI track. 17 (e2e) lands after the UI surfaces exist + the seed (08); 11's Vitest comes early for test-first backend work. 12 is cross-cutting (DB PRAGMAs with 07; rest opportunistic)._
 
 ## Test Plans
 

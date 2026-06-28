@@ -8,7 +8,7 @@ A pre-dev corpus stress-test (3 review→change rounds + research validation) is
 
 ## Where things stand
 
-**Planning complete; ready to build.** The 2026-06-28 grilling + research sessions re-shaped the product (POC, place-centric, sparse events, in-app+email notifications) and produced a full brief backlog (02–12). **The running code still reflects the OLD event-centric NYC-seed model** — none of the new decisions are implemented yet. The next phase is execution against the briefs, starting with schema consolidation (07) + the test harness (11).
+**Planning complete; ready to build.** The 2026-06-28 grilling + research sessions re-shaped the product (POC, place-centric, sparse events, in-app+email notifications) and produced a full brief backlog (02–17). **The running code still reflects the OLD event-centric NYC-seed model** — none of the new decisions are implemented yet. The next phase is execution against the briefs, starting with schema consolidation (07) + the test harness (11).
 
 ## Code vs. decisions gap
 
@@ -30,7 +30,7 @@ See [decisions.md](decisions.md) for the target; briefs 02–12 for the path.
 | Component library | done — Base UI primitives, CivicMap tokens |
 | Dark mode | done — tokens in CSS vars + ThemeProvider |
 | Schema consolidation (07) | **not started — build first** |
-| Test harness (11) | **not started — no runner/config exists** |
+| Vitest harness (11) | **not started — no runner/config exists** |
 | Auth (02) | not started |
 | Places + OSM sync (03) | not started |
 | RO seed data (08) | not started — still NYC |
@@ -40,8 +40,11 @@ See [decisions.md](decisions.md) for the target; briefs 02–12 for the path.
 | Attribution (09) | not started |
 | Test plans (10) | stale — test the old UI |
 | Platform optimization (12) | not started — DB PRAGMAs apply with 07 |
-| UI interactions & features (13) | not started — place panel, filters, draw-to-filter, /admin shell, states/a11y |
+| Public UI interactions (13) | not started — place panel, filters, what's-on, city picker, states/a11y |
 | Archived events page (14) | not started — /archive: citywide past + my saved, links to place |
+| Draw-to-filter (15) | not started — freehand/polygon spatial filter (split from 13) |
+| Admin shell & review UI (16) | not started — /admin, sources panel, review table (split from 13) |
+| Playwright e2e harness (17) | not started — config, fixtures, seeded-DB determinism (split from 11) |
 | Deployment | decision locked; no brief yet; backend has no deploy setup |
 
 ## Dev commands
