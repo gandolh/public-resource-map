@@ -1,5 +1,7 @@
 # Test Plans — CivicMap
 
+> ⚠️ **STALE — pre-reframe.** TP-01–04 below describe the OLD event-centric UI (standalone `/events`, `/resources/:id`) and an **NYC** seed/geo-mock. They predate the place-centric reframe. **[Brief 10](../briefs/todo/10-test-plans-rewrite.md)** rewrites them (place-centric + auth/favorites/notifications/ingestion) against the **Timișoara/București** seed (brief 08), and **[brief 11](../briefs/todo/11-test-infrastructure-tdd-e2e.md)** stands up the actual test runner. Treat the plans below as historical until brief 10 lands.
+
 Setup: [playwright/README.md](../../playwright/README.md)
 
 ## How a run works

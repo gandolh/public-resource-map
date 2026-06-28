@@ -84,10 +84,12 @@ Proximity filtering uses a bounding-box approximation (not Haversine). Good enou
 
 ## Shared (`shared/`)
 
-Pure TypeScript types, no runtime code. Three modules:
+**Zod schemas + types derived via `z.infer`** (not pure types — it has runtime code: the Zod schemas; backend imports them so shape + validation share one source of truth). Three modules:
 
-- `types/common.ts` — `Coordinates`, `PaginatedResponse<T>`, `ApiError`
-- `types/resource.ts` — `Resource`, `ResourceCategory`, `CreateResourceInput`
-- `types/event.ts` — `Event`, `EventCategory`, `CreateEventInput`
+- `types/common.ts` — `coordinatesSchema`/`Coordinates`, `PaginatedResponse<T>`, `ApiError`
+- `types/resource.ts` — `resourceSchema`/`Resource`, `ResourceCategory`, `createResourceSchema` _(→ becomes `Place`/`PlaceCategory` in brief 07)_
+- `types/event.ts` — `eventSchema`/`Event`, `eventCategorySchema`/`EventCategory` (concert/theater/sport/community/festival/exhibition/workshop/other), `createEventSchema`
 
-Compiled with `composite: true` so downstream packages can use TypeScript project references.
+Imports use `.js` suffixes (Node ESM). Compiled with `composite: true` so downstream packages can use TypeScript project references.
+
+> **Note:** the above is the *current* (event-centric) shape. Brief 07 reshapes it to the place-centric model (Place/PlaceCategory, Event gains placeId/status/buyUrl).

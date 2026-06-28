@@ -13,15 +13,22 @@ Without this, three briefs independently add overlapping tables and FKs (place v
 ## The reconciliation
 
 - **`resource` → `place`.** The old `resource` becomes the `place` table (brief 03), gaining `source` (`osm` | `event-venue`), `osmType`/`osmId`, `isManualPin`. Old NYC resources are dropped (replaced by RO seed, brief 08).
-- **`event` gains a FK to `place`** and a `status` (live/stale/ended), optional `buyUrl`. No longer standalone with an embedded address — the address/coords live on its `place`.
-- **New tables** (owned by their briefs, but defined coherently here): `user`/`session`/tokens (02), `event_source`/`staged_event`/`geocode_cache` (04), `favorite_place`/`favorite_event`/`notification` (05).
+- **`event` gains a FK to `place`** and a `status` (`live` | `stale` | `ended` | `past`), optional `buyUrl`. No longer standalone with an embedded address — the address/coords live on its `place`. (`past`/archived powers brief 14; events aren't deleted when they end — see event-horizon decision.)
+- **New tables** (owned by their briefs, but defined coherently here): `user`/`session`/`verification_token`/`reset_token` (02); `event_source`/`staged_event`/`geocode_cache` (04); `favorite_place`/`favorite_event`/`notification`/**`notification_event`** (05).
+- **`notification` is NOT keyed on a single event** (revised — stress-test): a `new-event` notification is **coalesced per (place, accept-batch)** and links to many events via the **`notification_event`** join; a `reminder` is per-event. See brief 05 for the exact columns. Brief 07 just ensures both tables + their indexes exist coherently.
 - **Dedup keys** on `event` (normalized-title + startDate + place/city) with an index, used by 04.
 
 ## Shared types (`shared/`)
 
-- Rename/replace `Resource` → `Place` Zod schema (keep `ResourceCategory` as the category enum); add `source` discriminator.
-- `Event` schema gains `placeId`, `status`, optional `buyUrl`; drop standalone address fields (moved to `Place`).
-- Bump downstream imports (ui/backend) — this is a breaking shared-package change; do it in one pass.
+- Rename/replace `Resource` → `Place` Zod schema; add `source` discriminator (`osm` | `event-venue`).
+- **Two category enums** (revised — was "keep ResourceCategory"): `PlaceCategory` (library/park/clinic/museum/townhall/…) on `place`, and the existing `EventCategory` on `event`. Define both in `shared/` via Zod `z.enum`. _Note: an `EventCategory` enum already exists in `shared/src/types/event.ts` (concert/theater/sport/community/festival/exhibition/workshop/other) — reuse/extend it, don't recreate; `ResourceCategory` exists in `resource.ts` and is renamed/reshaped to `PlaceCategory`._
+- `Event` schema gains `placeId`, `status` (live/stale/ended/past), optional `buyUrl`; drop standalone address fields (moved to `Place`).
+- **`shared/` already uses Zod + `z.infer`** (not "pure types") — this brief reshapes existing schemas, it doesn't introduce Zod. Bump downstream imports (ui/backend) — a breaking shared-package change; do it in one pass.
+- **Import-extension convention (see decisions.md → Code conventions):** keep `.js` suffixes in `shared/` + `backend/` source (Node ESM runtime requires them); UI stays extensionless (Vite). Do NOT strip `.js` from backend/shared imports.
+
+## Sequencing note
+
+This brief is built **first** and creates the **full table set** (places, events, users/sessions/tokens, sources, staged events, geocode cache, favorites, notifications + join) in one coherent migration. Later briefs then build the *logic/UI* on top of already-existing tables: 02 = auth logic on `user`/`session`/tokens; 03 = OSM sync into `place`; 04 = pipeline into `event_source`/`staged_event`; 05 = favorites/notifications logic. So a later brief should never need a structural migration — only data + behavior. (If one does, that's a signal this brief missed a column.)
 
 ## Migration strategy
 
