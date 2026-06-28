@@ -4,7 +4,7 @@
 
 ## Problem
 
-The locked testing decision ("assertion-based Playwright on a seeded DB + thin Vitest for auth internals") describes intent, but **no test infrastructure exists**: no test runner, no config, no `.spec` files, no test scripts in any `package.json`. "Playwright" so far has been *manual* browser-driving for screenshots ([playwright/README.md](../../playwright/README.md) + `playwright/screenshots/`). This brief stands up the real harness and a TDD workflow.
+The locked testing decision ("assertion-based Playwright on a seeded DB + thin Vitest for auth internals") describes intent, but **no test infrastructure exists**: no test runner, no config, no `.spec` files, no test scripts in any `package.json`. "Playwright" so far has been *manual* browser-driving for screenshots ([playwright/README.md](../../../playwright/README.md) + `playwright/screenshots/`). This brief stands up the real harness and a TDD workflow.
 
 ## Test pyramid (matches locked decisions)
 

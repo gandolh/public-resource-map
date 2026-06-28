@@ -1,5 +1,14 @@
 # Log
 
+## [2026-06-29] review-loop | Corpus stress test (post-splits + aesthetic edits) — drift fixed
+
+Re-audited the corpus after the recent brief splits (15/16/17) + design.md overhaul. Found + fixed drift introduced since the last green-light:
+- **Broken links (2):** brief 11 → `../../playwright/README.md` should be `../../../` (playwright is at repo root, brief is two dirs deeper); brief 12 → `../todos/` should be `../../todos/`. Both fixed; full link sweep now clean.
+- **decisions.md had NO record of the aesthetic direction** (Fraunces/Voyager/Editorial-Civic lived only in design.md + log). Added a "Design direction (locked 2026-06-29)" subsection so decisions.md remains the single source for locked choices.
+- **Fraunces font dependency was unbuildable-from-briefs** — added a Fonts bullet to brief 06 (owns root.tsx/Navbar) to add Fraunces + update the font preload/tokens.
+- **index.md Todos** missing the new `2026-06-29-pin-map-aesthetic-research.md` → added.
+- Verified: all internal links resolve, all todos indexed, briefs↔index parity intact. Green light still valid (these were doc-sync fixes, no scope/decision change).
+
 ## [2026-06-29] research + design | Pin/map UX + de-generic-ify design.md aesthetics
 
 Researched (A) best-UX map pins + basemap and (B) what makes design.md read as "generic AI". Finding: design.md was almost a checklist of the generic-AI look (Inter-only, all-rounded, blue+slate, uniform shadows). Grilled the direction; all recommended options chosen. Revised `design.md` (+ matched its frontmatter tokens):

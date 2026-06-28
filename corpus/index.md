@@ -79,3 +79,4 @@ _Notes: 15 (draw) builds on 13's shared filter state. 16 (admin UI) follows 04 (
 | [todos/2026-06-28-competitor-research-findings.md](todos/2026-06-28-competitor-research-findings.md) | Competitor/source landscape research + ideas |
 | [todos/2026-06-28-optimization-research.md](todos/2026-06-28-optimization-research.md) | Platform-optimization + corpus-UX research (feeds brief 12) |
 | [todos/2026-06-28-corpus-ux-improvements.md](todos/2026-06-28-corpus-ux-improvements.md) | Corpus-UX improvements (done + proposed) |
+| [todos/2026-06-29-pin-map-aesthetic-research.md](todos/2026-06-29-pin-map-aesthetic-research.md) | Pin/map UX + design.md aesthetic research (feeds design.md revision) |

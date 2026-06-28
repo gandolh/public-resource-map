@@ -171,6 +171,16 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **`cn()` utility** (`clsx` + `tailwind-merge`) as the canonical class-building function.
 - **UI primitives: `@base-ui/react`** (Button, Avatar, Menu, Toggle, Slider, Input) + lucide-react icons. _(History: the original Stitch brief said shadcn/ui new-york; it was replaced by `@base-ui/react` during brief 01 implementation — see log 2026-06-26.)_
 
+## Design direction (locked 2026-06-29 — full spec in [design.md](design.md))
+
+Deliberately steered away from the "generic AI" aesthetic (research-driven). The visual direction is **Warmer Editorial-Civic** (was "Minimalist-Professional"):
+- **Typography (the biggest personality lever): two families** — **Fraunces** (variable serif, Google Fonts) for display/headings/brand/place-titles; **Inter** for body/UI. New font dependency: Fraunces.
+- **Color:** dominant **civic blue** + a deliberate **warm amber accent** (the tertiary token, used as sparing punctuation); slightly warm neutrals (not pure slate); **category meaning never carried by color alone**.
+- **Geometry:** tightened rounding (cards ≤8px, drawers 12px, **pills reserved for chips/badges only**); crisp 1px borders preferred over diffuse shadows.
+- **Elevation: role-differentiated** — a card, button, badge, and map pin must NOT share one shadow value.
+- **Map pins: icon-led + event-aware + zoom-aware** (per-category SVG icon primary, color secondary; event-presence accent ring; dot↔teardrop by zoom; unmistakable selected state). Clusters styled to the system, not default Leaflet.
+- **Basemap: CARTO Voyager (light) / DarkMatter (dark)** — warmer than Positron, still clean. Self-hosted brand-tinted style = future, not POC.
+
 ## Data model
 
 - **Bounding-box proximity** for spatial queries (not Haversine, not PostGIS) — acceptable approximation for city-scale; revisit if performance degrades at scale.

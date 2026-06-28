@@ -1,6 +1,6 @@
 # Brief 12 — Platform optimization (map, DB, frontend)
 
-> Written 2026-06-28 from online research (sources in [research todo](../todos/2026-06-28-optimization-research.md)). A grab-bag of **targeted, evidence-based** optimizations. Most are cheap; apply opportunistically alongside the feature briefs rather than as one big pass. **Do NOT pre-optimize** — several only matter once real RO data volume lands (brief 08). Each item notes its trigger.
+> Written 2026-06-28 from online research (sources in [research todo](../../todos/2026-06-28-optimization-research.md)). A grab-bag of **targeted, evidence-based** optimizations. Most are cheap; apply opportunistically alongside the feature briefs rather than as one big pass. **Do NOT pre-optimize** — several only matter once real RO data volume lands (brief 08). Each item notes its trigger.
 
 ## Database (better-sqlite3)
 

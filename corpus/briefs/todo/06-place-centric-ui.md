@@ -15,6 +15,7 @@ Reshape the existing 3-surface UI (`/map` resource markers · standalone `/event
 - **City picker** as a **primary Navbar control** — scoped to **Timișoara / București**, defaulting to last choice (persist via existing `locationStore`). Map centers on the selected city (native GPS "center on me" stays optional, not a dependency).
 - **Notification bell** + **profile/auth** state in the Navbar (from briefs 05 / 02).
 - **Attribution:** OSM/ODbL + per-source event attribution visible.
+- **Fonts (per [design.md](../../wiki/design.md) / [decisions.md → Design direction](../../wiki/decisions.md)):** add **Fraunces** (variable serif, Google Fonts) for display/headings + keep **Inter** for body/UI; update `root.tsx` font preload (currently Inter-only) and the Tailwind/CSS font tokens. Apply Fraunces to the `display`/`headline-*` scale, Inter to `body-*`/`label-*`.
 
 ## Existing code touched
 
