@@ -10,11 +10,7 @@ build/
 
 # Playwright artifacts
 .playwright-mcp/
-playwright/screenshots/
-playwright/**/*.png
-playwright/**/*.jpeg
-playwright/**/*.webm
-playwright/**/*.zip
+playwright/
 # root-level screenshots from MCP browser tool
 *.png
 *.jpg
