@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { coordinatesSchema } from "./common.js";
 
 export const eventCategories = [
   "concert",
@@ -15,15 +14,20 @@ export const eventCategories = [
 export const eventCategorySchema = z.enum(eventCategories);
 export type EventCategory = z.infer<typeof eventCategorySchema>;
 
+export const eventStatuses = ["live", "stale", "ended", "past"] as const;
+export const eventStatusSchema = z.enum(eventStatuses);
+export type EventStatus = z.infer<typeof eventStatusSchema>;
+
 export const eventSchema = z.object({
   id: z.string(),
+  placeId: z.string(),
   title: z.string(),
   description: z.string().nullable(),
   category: eventCategorySchema,
-  address: z.string(),
-  coordinates: coordinatesSchema,
+  status: eventStatusSchema,
   startDate: z.string(),
   endDate: z.string().nullable(),
+  buyUrl: z.string().nullable(),
   sourceUrl: z.string().nullable(),
   sourcePlatform: z.string().nullable(),
   imageUrl: z.string().nullable(),
@@ -36,14 +40,14 @@ export const eventSchema = z.object({
 export type Event = z.infer<typeof eventSchema>;
 
 export const createEventSchema = z.object({
+  placeId: z.string().min(1),
   title: z.string().min(1),
   description: z.string().optional(),
   category: eventCategorySchema,
-  address: z.string().min(1),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
+  status: eventStatusSchema.default("live"),
   startDate: z.string().datetime(),
   endDate: z.string().datetime().optional(),
+  buyUrl: z.string().url().optional(),
   sourceUrl: z.string().url().optional(),
   sourcePlatform: z.string().optional(),
   imageUrl: z.string().url().optional(),

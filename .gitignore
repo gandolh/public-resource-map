@@ -8,6 +8,9 @@ build/
 *.db-shm
 *.db-wal
 
+# Vitest coverage output (reported locally, not committed)
+coverage/
+
 # Playwright artifacts
 .playwright-mcp/
 playwright/

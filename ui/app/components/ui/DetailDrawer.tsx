@@ -4,9 +4,9 @@ import { CategoryBadge } from "./CategoryBadge";
 import { Button } from "./Button";
 import { cn } from "~/lib/utils";
 import { directionsUrl } from "~/lib/map";
-import type { Resource, Event } from "@public-resource-map/shared";
+import type { Place, Event } from "@public-resource-map/shared";
 
-type DrawerItem = Resource | Event;
+type DrawerItem = Place | Event;
 
 function isEvent(item: DrawerItem): item is Event {
   return "title" in item;
@@ -51,7 +51,8 @@ export function DetailDrawer({ item, onClose, className }: DetailDrawerProps) {
   const resource = isEvent(item) ? null : item;
   const name = event ? event.title : resource!.name;
   const description = event ? event.description : resource!.description;
-  const address = item.address;
+  // Events carry no address of their own — it lives on their place.
+  const address = resource?.address ?? null;
   const category = item.category;
 
   return (
@@ -97,10 +98,10 @@ export function DetailDrawer({ item, onClose, className }: DetailDrawerProps) {
 interface DrawerContentProps {
   name: string;
   description: string | null;
-  address: string;
+  address: string | null;
   category: Parameters<typeof CategoryBadge>[0]["category"];
   event: Event | null;
-  resource: Resource | null;
+  resource: Place | null;
   onClose: () => void;
   compact?: boolean;
 }
@@ -141,10 +142,12 @@ function DrawerContent({ name, description, address, category, event, resource, 
           {name}
         </h2>
 
-        <div className="flex items-start gap-2 text-cm-on-surface-variant">
-          <MapPin size={16} className="flex-shrink-0 mt-0.5 text-cm-outline" />
-          <p className="text-sm">{address}</p>
-        </div>
+        {address && (
+          <div className="flex items-start gap-2 text-cm-on-surface-variant">
+            <MapPin size={16} className="flex-shrink-0 mt-0.5 text-cm-outline" />
+            <p className="text-sm">{address}</p>
+          </div>
+        )}
 
         {resource?.openingHours && (
           <div className="flex items-start gap-2 text-cm-on-surface-variant">
@@ -176,9 +179,9 @@ function DrawerContent({ name, description, address, category, event, resource, 
             {description && (
               <p className="text-sm text-cm-on-surface-variant leading-relaxed">{description}</p>
             )}
-            {event && (
+            {resource && (
               <a
-                href={directionsUrl(event.coordinates, event.address)}
+                href={directionsUrl(resource.coordinates, resource.address ?? undefined)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2"

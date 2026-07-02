@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { Link, useLocation } from "react-router";
-import { User, Map, CalendarDays } from "lucide-react";
+import { Map, CalendarDays } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar } from "~/components/ui/Avatar";
 import { Button } from "~/components/ui/Button";
 import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "~/components/ui/DropdownMenu";
+import { useAuthStore } from "~/stores/authStore";
 import { cn } from "~/lib/utils";
 
 function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
@@ -42,24 +44,48 @@ function MobileTabLink({ to, icon: Icon, label }: { to: string; icon: React.Elem
 }
 
 function ProfileMenu() {
+  const user = useAuthStore((s) => s.user);
+  const status = useAuthStore((s) => s.status);
+  const logout = useAuthStore((s) => s.logout);
+  const authed = status === "authenticated" && user;
+
+  const fallback = (user?.displayName ?? user?.email ?? "?")
+    .charAt(0)
+    .toUpperCase();
+
   const trigger = (
     <Button variant="ghost" size="icon" aria-label="Profile">
-      <Avatar fallback="U" />
+      <Avatar fallback={fallback} />
     </Button>
   );
 
   return (
     <DropdownMenu trigger={trigger} align="end">
-      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-      <DropdownMenuItem>Profile</DropdownMenuItem>
-      <DropdownMenuItem>Settings</DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem>Sign out</DropdownMenuItem>
+      {authed ? (
+        <>
+          <DropdownMenuLabel>{user.displayName ?? user.email}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => void logout()}>Sign out</DropdownMenuItem>
+        </>
+      ) : (
+        <>
+          <DropdownMenuLabel>Account</DropdownMenuLabel>
+          <DropdownMenuItem render={<Link to="/login" />}>Log in</DropdownMenuItem>
+          <DropdownMenuItem render={<Link to="/register" />}>Register</DropdownMenuItem>
+        </>
+      )}
     </DropdownMenu>
   );
 }
 
 export function Navbar() {
+  const status = useAuthStore((s) => s.status);
+  const bootstrap = useAuthStore((s) => s.bootstrap);
+
+  useEffect(() => {
+    if (status === "idle") void bootstrap();
+  }, [status, bootstrap]);
+
   return (
     <>
       {/* Desktop top navbar */}

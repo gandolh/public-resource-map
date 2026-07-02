@@ -1,25 +1,29 @@
 import { cn } from "~/lib/utils";
-import type { ResourceCategory, EventCategory } from "@public-resource-map/shared";
+import type { PlaceCategory, EventCategory } from "@public-resource-map/shared";
 
-type Category = ResourceCategory | EventCategory;
+type Category = PlaceCategory | EventCategory;
 
 const categoryConfig: Record<Category, { label: string; color: string }> = {
-  park:           { label: "Park",          color: "var(--cm-cat-park)" },
-  library:        { label: "Library",       color: "var(--cm-cat-library)" },
-  community_center:{ label: "Community",   color: "var(--cm-cat-community)" },
-  healthcare:     { label: "Healthcare",    color: "var(--cm-cat-healthcare)" },
-  education:      { label: "Education",     color: "var(--cm-cat-education)" },
-  food:           { label: "Food",          color: "var(--cm-cat-food)" },
-  shelter:        { label: "Shelter",       color: "var(--cm-cat-shelter)" },
-  transport:      { label: "Transport",     color: "var(--cm-cat-transport)" },
-  concert:        { label: "Concert",       color: "var(--cm-cat-concert)" },
-  theater:        { label: "Theater",       color: "var(--cm-cat-theater)" },
-  sport:          { label: "Sport",         color: "var(--cm-cat-sport)" },
-  community:      { label: "Community",     color: "var(--cm-cat-community)" },
-  festival:       { label: "Festival",      color: "var(--cm-cat-festival)" },
-  exhibition:     { label: "Exhibition",    color: "var(--cm-cat-exhibition)" },
-  workshop:       { label: "Workshop",      color: "var(--cm-cat-workshop)" },
-  other:          { label: "Other",         color: "var(--cm-cat-other)" },
+  // PlaceCategory
+  park:            { label: "Park",          color: "var(--cm-cat-park)" },
+  library:         { label: "Library",       color: "var(--cm-cat-library)" },
+  clinic:          { label: "Clinic",        color: "var(--cm-cat-healthcare)" },
+  museum:          { label: "Museum",        color: "var(--cm-cat-exhibition)" },
+  townhall:        { label: "Town Hall",     color: "var(--cm-cat-other)" },
+  community_center:{ label: "Community",     color: "var(--cm-cat-community)" },
+  education:       { label: "Education",     color: "var(--cm-cat-education)" },
+  sports:          { label: "Sports",        color: "var(--cm-cat-sport)" },
+  cultural_center: { label: "Cultural",      color: "var(--cm-cat-festival)" },
+  // EventCategory
+  concert:         { label: "Concert",       color: "var(--cm-cat-concert)" },
+  theater:         { label: "Theater",       color: "var(--cm-cat-theater)" },
+  sport:           { label: "Sport",         color: "var(--cm-cat-sport)" },
+  community:       { label: "Community",     color: "var(--cm-cat-community)" },
+  festival:        { label: "Festival",      color: "var(--cm-cat-festival)" },
+  exhibition:      { label: "Exhibition",    color: "var(--cm-cat-exhibition)" },
+  workshop:        { label: "Workshop",      color: "var(--cm-cat-workshop)" },
+  // shared
+  other:           { label: "Other",         color: "var(--cm-cat-other)" },
 };
 
 interface CategoryBadgeProps {

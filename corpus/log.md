@@ -1,5 +1,30 @@
 # Log
 
+## [2026-07-02] build (wave 3) | Brief 03 shipped — place model & OSM sync
+
+Admin-triggered OpenStreetMap (Overpass) sync + public places API + ODbL attribution (senior/opus, branch `build/backlog`). Verified from the controller: `npm run typecheck` green; `npm test` = **54 pass + 3 todo** (up from 39; +20 cases, Overpass stubbed — zero network); `db:migrate` from empty clean. **No structural migration** — built on brief 07's `place` table (07's promise held again).
+
+- **Backend:** `backend/src/lib/osm-categories.ts` (priority-ordered `CATEGORY_RULES`, `mapTagsToCategory` unmapped→`other`, `OVERPASS_TAG_FILTERS` derived from the same rules so query+map can't drift); `backend/src/lib/osm-sync.ts` (`CITIES` bbox registry for timisoara/bucuresti, `buildOverpassQuery`, `fetchOverpass` = the network seam via `OVERPASS_URL`, area-weighted `centroid`, `upsertOsmPlaces`, `syncOsmForCity(db,city,deps)`). Routes: `backend/src/routes/places.ts` (`GET /api/places`, `GET /api/places/:id`), `backend/src/routes/admin-osm.ts` (`POST /api/admin/osm/sync` behind `requireAdmin`). Deleted the transitional `resources.ts` route.
+- **Contracts:** `GET /api/places?city|lat|lng|radiusKm|category|page|pageSize` → `{data:Place[],total,page,pageSize}`; `POST /api/admin/osm/sync {city}` (key or diacritics-insensitive name) → `OsmSyncResult {city,fetched,upserted,inserted,updated,skipped*}`. Upsert matches only `source='osm'` on `(osmType,osmId)`; event-venue + `isManualPin` rows never clobbered (counted `skippedProtected`).
+- **Shared:** `shared/src/types/osm.ts` (`osmSyncRequestSchema`/`osmSyncResultSchema`), `placesQuerySchema` in common.
+- **UI (minimal):** repointed `ui/app/lib/api.ts` `/api/resources`→`/api/places`; `ui/app/lib/map.ts` `CARTO_ATTR` now carries explicit OSM + ODbL attribution. Full about-the-data page remains brief 09; full UI refactor remains brief 06.
+
+## [2026-07-02] build (wave 2) | Brief 02 shipped — auth & admin gate
+
+Full self-hosted email+password auth + admin gate (senior/opus, branch `build/backlog`). Verified from the controller: `npm run typecheck` green all 3 workspaces; `npm test` = **39 pass + 3 todo** (auth-internals seams filled: argon2id round-trip, single-use verify/reset tokens, session expiry; 3 remaining todos are the reminder-sweep → brief 05); `db:migrate` from empty clean.
+
+- **Backend:** `argon2` 0.44.0 + `@fastify/cookie` 11.0.2 (exact-pinned). `backend/src/routes/auth.ts` (register/verify/login/logout/me/request-reset/reset), `backend/src/plugins/auth.ts` (auth plugin — resolves `request.user` from an opaque **`prm_session`** httpOnly+Secure+SameSite cookie backed by the `session` table; exposes `requireAuth`/`requireAdmin` guards via decorators). `backend/src/lib/auth-internals.ts` (hashing + token logic), `mailer.ts` (dev = console-logged verify/reset links), `ensure-admin.ts` (seeds/promotes one admin from `ADMIN_EMAIL`/`ADMIN_PASSWORD`). Built on brief 07's committed `user`(role|emailVerified)/`session`/`verification_token`/`reset_token` tables — **no structural migration needed** (07's promise held; admin = `role === 'admin'`).
+- **Shared:** `shared/src/types/auth.ts` — `publicUserSchema`/`PublicUser`, `registerSchema`, `loginSchema`, verify/reset schemas, `userRoleSchema`.
+- **UI:** `ui/app/stores/authStore.ts`, `ui/app/lib/authApi.ts`, `ui/app/routes/login.tsx`; Navbar profile dropdown now reflects real auth state.
+- **Deviation vs. brief prose:** brief said `isAdmin`/`emailVerifiedAt`; used 07's committed `role`/`emailVerified` columns instead (source-of-truth = code). E2e happy-path deferred to brief 17 (Playwright).
+
+## [2026-07-02] build (wave 1) | Briefs 07 + 11 shipped — schema consolidation + Vitest harness
+
+First execution wave against the backlog (orchestrate → plan-split-dispatch, branch `build/backlog`, both dispatched senior/opus). Verified from the controller: `npm run typecheck` green all 3 workspaces; `npm test` = 25 pass + 7 todo seams; new files tracked, none wrongly gitignored.
+
+- **Brief 07 — schema consolidation (done).** Replaced the NYC-era event-centric schema with ONE consolidated place-centric Drizzle schema (13 tables: place, event, user, session, verification_token, reset_token, event_source, staged_event, geocode_cache, favorite_place, favorite_event, notification, notification_event). `shared/` reshaped: `Resource`→`Place` (+ `PlaceCategory`, `PlaceSource` osm|event-venue), `Event` gains `placeId`/`status`/`buyUrl` and drops embedded address; `EventCategory` reused. Fresh single migration (`0000_overconfident_hiroim.sql`), empty→full. All locked schema decisions applied (uuid text PKs, natural-key uniques, status-enum lifecycle, UTC ISO dates, FK + spatial indexes). Threaded the breaking shared change through backend + ui. `architecture.md` ERD updated. Deviations: route paths kept transitional `/api/resources`+`/api/events` (rename is brief 03); added `event.normalizedTitle`, `staged_event.eventId`, `notification.batchId` proactively so later briefs need no structural migration.
+- **Brief 11 — Vitest harness (done).** Stood up Vitest (root scripts `test`/`test:watch`/`test:cov`; `vitest.workspace.ts` + per-package configs; deps `vitest` 4.1.9 + `@vitest/coverage-v8` 4.1.9, exact-pinned). Added `buildApp()` factory + `buildTestApp()` helper (in-memory SQLite + migrator + Fastify `.inject()`). Real green tests: shared Zod edges, `geo` unit, `.inject()` API integration on existing routes. `it.todo` seams left for auth-internals + `runReminderSweep(now)` (features unbuilt — land with briefs 02/04/05). Playwright/e2e intentionally deferred to brief 17. Deviation: Vitest 4 dropped auto-discovered workspace files, so `vitest.config.ts` imports the `projects` list from `vitest.workspace.ts` (kept the file, made it run under v4).
+
 ## [2026-06-29] review-loop | Corpus stress test (post-splits + aesthetic edits) — drift fixed
 
 Re-audited the corpus after the recent brief splits (15/16/17) + design.md overhaul. Found + fixed drift introduced since the last green-light:

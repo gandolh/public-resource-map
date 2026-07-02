@@ -1,15 +1,15 @@
 import { create } from "zustand";
-import type { Resource, ResourceCategory } from "@public-resource-map/shared";
+import type { Place, PlaceCategory } from "@public-resource-map/shared";
 
 interface MapFilterState {
   radius: number;
-  category: ResourceCategory | undefined;
+  category: PlaceCategory | undefined;
   search: string;
-  selected: Resource | null;
+  selected: Place | null;
   setRadius: (radius: number) => void;
-  toggleCategory: (category: ResourceCategory) => void;
+  toggleCategory: (category: PlaceCategory) => void;
   setSearch: (search: string) => void;
-  setSelected: (selected: Resource | null) => void;
+  setSelected: (selected: Place | null) => void;
 }
 
 export const useMapFilterStore = create<MapFilterState>((set) => ({

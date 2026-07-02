@@ -11,20 +11,20 @@ import { useUserLocation } from "~/hooks/useUserLocation";
 import { useNearbyResources } from "~/hooks/useNearbyResources";
 import { useMapFilterStore } from "~/stores/mapFilterStore";
 import { useIsDarkMode, LIGHT_TILES, DARK_TILES, CARTO_ATTR } from "~/lib/map";
-import type { Coordinates, ResourceCategory } from "@public-resource-map/shared";
+import type { Coordinates, PlaceCategory } from "@public-resource-map/shared";
 
 export const meta: MetaFunction = () => [
   { title: "Map — CivicMap" },
   { name: "description", content: "Explore public resources and events near you" },
 ];
 
-const RESOURCE_CATEGORIES: { value: ResourceCategory; label: string }[] = [
+const RESOURCE_CATEGORIES: { value: PlaceCategory; label: string }[] = [
   { value: "park", label: "Parks" },
   { value: "library", label: "Libraries" },
-  { value: "healthcare", label: "Healthcare" },
+  { value: "clinic", label: "Clinics" },
   { value: "community_center", label: "Community" },
   { value: "education", label: "Education" },
-  { value: "food", label: "Food" },
+  { value: "museum", label: "Museums" },
 ];
 
 export default function MapPage() {

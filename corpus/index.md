@@ -43,16 +43,16 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | # | File | Status | Title |
 |---|---|---|---|
 | 01 | [briefs/done/01-stitch-design-brief.md](briefs/done/01-stitch-design-brief.md) | done | Stitch design brief — map UI, components, tokens |
-| 02 | [briefs/todo/02-auth-and-admin-gate.md](briefs/todo/02-auth-and-admin-gate.md) | todo | Auth & admin gate (prerequisite for all admin work) |
-| 03 | [briefs/todo/03-place-model-and-osm-sync.md](briefs/todo/03-place-model-and-osm-sync.md) | todo | Place model & OSM resource sync (resources-first anchor) |
+| 02 | [briefs/done/02-auth-and-admin-gate.md](briefs/done/02-auth-and-admin-gate.md) | done | Auth & admin gate (prerequisite for all admin work) |
+| 03 | [briefs/done/03-place-model-and-osm-sync.md](briefs/done/03-place-model-and-osm-sync.md) | done | Place model & OSM resource sync (resources-first anchor) |
 | 04 | [briefs/todo/04-event-ingestion-pipeline.md](briefs/todo/04-event-ingestion-pipeline.md) | todo | Event ingestion pipeline — refresh/match/geocode/reconcile/diff/accept |
 | 05 | [briefs/todo/05-favorites-and-notifications.md](briefs/todo/05-favorites-and-notifications.md) | todo | Favorites & notifications — in-app + email (retention loop) |
 | 06 | [briefs/todo/06-place-centric-ui.md](briefs/todo/06-place-centric-ui.md) | todo | Place-centric map UI (refactor of the existing 3-surface UI) |
-| 07 | [briefs/todo/07-schema-consolidation.md](briefs/todo/07-schema-consolidation.md) | todo | Schema consolidation & migration plan (**build first**) |
+| 07 | [briefs/done/07-schema-consolidation.md](briefs/done/07-schema-consolidation.md) | done | Schema consolidation & migration plan (**build first**) |
 | 08 | [briefs/todo/08-ro-seed-data.md](briefs/todo/08-ro-seed-data.md) | todo | Real RO seed data (Timișoara + București) |
 | 09 | [briefs/todo/09-attribution-and-about-data.md](briefs/todo/09-attribution-and-about-data.md) | todo | Attribution & "about the data" transparency |
 | 10 | [briefs/todo/10-test-plans-rewrite.md](briefs/todo/10-test-plans-rewrite.md) | todo | Test plans — rewrite place-centric + new-feature coverage (the *what*) |
-| 11 | [briefs/todo/11-test-infrastructure-tdd-e2e.md](briefs/todo/11-test-infrastructure-tdd-e2e.md) | todo | Vitest harness (unit + integration) & TDD workflow (the *machinery*; **build early**) |
+| 11 | [briefs/done/11-test-infrastructure-tdd-e2e.md](briefs/done/11-test-infrastructure-tdd-e2e.md) | done | Vitest harness (unit + integration) & TDD workflow (the *machinery*; **build early**) |
 | 12 | [briefs/todo/12-platform-optimization.md](briefs/todo/12-platform-optimization.md) | todo | Platform optimization — DB PRAGMAs, spatial index, map/Leaflet, SPA (apply incrementally) |
 | 13 | [briefs/todo/13-ui-interactions-and-features.md](briefs/todo/13-ui-interactions-and-features.md) | todo | Public UI/UX interactions — place panel, filters, what's-on, city picker, states/a11y |
 | 14 | [briefs/todo/14-archived-events-page.md](briefs/todo/14-archived-events-page.md) | todo | Archived events page — past events (citywide + my saved), link to place |

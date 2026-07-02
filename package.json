@@ -9,9 +9,14 @@
   "scripts": {
     "dev": "concurrently \"npm run dev -w backend\" \"npm run dev -w ui\"",
     "build": "npm run build -w shared && npm run build -w backend && npm run build -w ui",
-    "typecheck": "npm run typecheck -w shared && npm run typecheck -w backend && npm run typecheck -w ui"
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w backend && npm run typecheck -w ui",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage"
   },
   "devDependencies": {
-    "concurrently": "9.2.3"
+    "@vitest/coverage-v8": "4.1.9",
+    "concurrently": "9.2.3",
+    "vitest": "4.1.9"
   }
 }

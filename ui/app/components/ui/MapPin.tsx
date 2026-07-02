@@ -1,18 +1,21 @@
-import { Trees, BookOpen, HeartPulse, GraduationCap, Utensils, Home, Bus, Users, Music, Theater, Trophy, Sparkles, Eye, Wrench, MapPin as PinIcon } from "lucide-react";
+import { Trees, BookOpen, HeartPulse, GraduationCap, Landmark, Building2, Users, Music, Theater, Trophy, Sparkles, Eye, Wrench, MapPin as PinIcon } from "lucide-react";
 import { categoryConfig } from "./CategoryBadge";
 import { cn } from "~/lib/utils";
 import type { Category } from "./CategoryBadge";
 import type { LucideIcon } from "lucide-react";
 
 const categoryIcons: Record<Category, LucideIcon> = {
+  // PlaceCategory
   park:            Trees,
   library:         BookOpen,
+  clinic:          HeartPulse,
+  museum:          Landmark,
+  townhall:        Building2,
   community_center:Users,
-  healthcare:      HeartPulse,
   education:       GraduationCap,
-  food:            Utensils,
-  shelter:         Home,
-  transport:       Bus,
+  sports:          Trophy,
+  cultural_center: Sparkles,
+  // EventCategory
   concert:         Music,
   theater:         Theater,
   sport:           Trophy,
@@ -20,6 +23,7 @@ const categoryIcons: Record<Category, LucideIcon> = {
   festival:        Sparkles,
   exhibition:      Eye,
   workshop:        Wrench,
+  // shared
   other:           PinIcon,
 };
 

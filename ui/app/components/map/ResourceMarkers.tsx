@@ -1,7 +1,7 @@
 import { Marker } from "react-leaflet";
 import L from "leaflet";
 import { categoryConfig } from "~/components/ui/CategoryBadge";
-import type { Resource } from "@public-resource-map/shared";
+import type { Place } from "@public-resource-map/shared";
 
 function makePinIcon(color: string, size: number, selected: boolean) {
   const shadow = selected ? `box-shadow:0 10px 15px rgba(0,0,0,.2);` : "";
@@ -22,9 +22,9 @@ function makePinIcon(color: string, size: number, selected: boolean) {
 }
 
 interface ResourceMarkersProps {
-  resources: Resource[];
+  resources: Place[];
   selectedId: string | null;
-  onSelect: (r: Resource) => void;
+  onSelect: (r: Place) => void;
 }
 
 export function ResourceMarkers({ resources, selectedId, onSelect }: ResourceMarkersProps) {

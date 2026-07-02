@@ -58,7 +58,7 @@ export default function ResourceDetailPage() {
               </div>
             </div>
             <a
-              href={directionsUrl(resource.coordinates, resource.address)}
+              href={directionsUrl(resource.coordinates, resource.address ?? undefined)}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0"

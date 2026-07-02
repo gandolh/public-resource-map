@@ -1,4 +1,4 @@
-import { MapPin, Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 import { Link } from "react-router";
 import { CategoryBadge } from "./CategoryBadge";
 import type { Event } from "@public-resource-map/shared";
@@ -42,14 +42,9 @@ export function EventCard({ event }: EventCardProps) {
           {event.title}
         </h3>
 
-        <div className="flex items-center gap-1.5 text-sm text-cm-on-surface-variant mb-1">
+        <div className="flex items-center gap-1.5 text-sm text-cm-on-surface-variant mb-4">
           <Calendar size={14} className="flex-shrink-0" />
           <span>{formatDate(event.startDate)}</span>
-        </div>
-
-        <div className="flex items-center gap-1.5 text-sm text-cm-on-surface-variant mb-4">
-          <MapPin size={14} className="flex-shrink-0" />
-          <span className="truncate">{event.address}</span>
         </div>
 
         <div className="mt-auto pt-3 border-t border-cm-surface-variant flex justify-between items-center">
