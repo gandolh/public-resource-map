@@ -5,7 +5,10 @@ import { fileURLToPath } from "url";
 import * as schema from "./schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const defaultDbPath = path.resolve(__dirname, "../../data/app.db");
+// DATABASE_PATH lets a deploy keep the sqlite file outside the rsynced source
+// tree (so redeploys never wipe it); falls back to the in-repo default.
+const defaultDbPath =
+  process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
 
 /**
  * Create a Drizzle DB bound to a fresh better-sqlite3 connection.

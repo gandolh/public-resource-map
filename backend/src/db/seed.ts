@@ -9,7 +9,8 @@ import * as schema from "./schema.js";
 import { ensureAdmin } from "../lib/ensure-admin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.resolve(__dirname, "../../data/app.db");
+const dbPath =
+  process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
 
 if (!fs.existsSync(dbPath)) {
   console.error("Database not found at", dbPath, "— run db:migrate first");
