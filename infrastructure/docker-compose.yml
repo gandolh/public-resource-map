@@ -1,0 +1,40 @@
+# public-resource-map. Build context is the repo root (..).
+services:
+  prm-api:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+      target: prod
+    image: prm-api:1.0
+    ports:
+      # LOOPBACK ONLY — Caddy is the only way in.
+      - "127.0.0.1:${PORT:-8790}:${PORT:-8790}"
+    env_file:
+      - .env
+    volumes:
+      - ${PRM_DATA_DIR:-../backend/data}:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- \"http://127.0.0.1:${PORT:-8790}/health\""]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+
+  # Migrations only. Built from the `builder` stage because the migrator is
+  # `tsx src/db/migrate.ts` and tsx is a devDependency — running it from this
+  # service is what keeps a TypeScript runtime out of the production image.
+  #
+  # `profiles` keeps it out of `compose up`: it is invoked explicitly by the
+  # deploy with `compose run --rm prm-migrate`, never started as a service.
+  prm-migrate:
+    profiles: ["tools"]
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+      target: builder
+    image: prm-migrate:1.0
+    env_file:
+      - .env
+    volumes:
+      - ${PRM_DATA_DIR:-../backend/data}:/data
+    entrypoint: ["npm", "run", "db:migrate", "-w", "@public-resource-map/backend"]

@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+ui/build
+.git
+corpus
+*.md
+.env
+infrastructure/.env
+backend/data
+**/*.map
+**/*.tsbuildinfo
