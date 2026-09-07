@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Public Resource Map — workspaces, sources, and the Ward boundary",
+    "viewBox": [1060, 780],
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "read",
+        "label": "The read path",
+        "focus": ["browser", "caddy", "ui", "api", "db"],
+        "note": "A public map: the session hook resolves a cookie if there is one and does not gate."
+      },
+      {
+        "id": "sources",
+        "label": "Where pins come from",
+        "focus": ["osm", "publishers", "api", "db"],
+        "note": "OSM is the reuse-permitted anchor; event publishers are API-first, scrape-last."
+      },
+      {
+        "id": "identity",
+        "label": "Admin, and only admin",
+        "focus": ["ward", "api"],
+        "note": "No user.role column — an admin is a (subject, prm, admin) grant and nothing else."
+      }
+    ]
+  },
+  "components": [
+    { "id": "browser", "type": "external", "label": "Browser", "sublabel": "anonymous by default", "pos": [30, 370], "size": [140, 60] },
+    { "id": "caddy", "type": "cloud", "label": "Caddy", "sublabel": "gandolh.ro :443", "pos": [230, 370], "size": [140, 60] },
+    { "id": "ui", "type": "frontend", "label": "ui/", "sublabel": "React 19, Leaflet", "tag": "TanStack Query", "pos": [470, 160], "size": [170, 60] },
+    { "id": "api", "type": "backend", "label": "backend/", "sublabel": "Fastify 5 + Drizzle", "tag": "guards are opt-in", "pos": [470, 370], "size": [170, 60] },
+    { "id": "ward", "type": "security", "label": "Ward", "sublabel": "identity + grants", "tag": "public signup: on", "pos": [450, 610], "size": [170, 60] },
+    { "id": "osm", "type": "external", "label": "OpenStreetMap", "sublabel": "ODbL — reuse permitted", "pos": [810, 160], "size": [180, 60] },
+    { "id": "db", "type": "database", "label": "SQLite", "sublabel": "places, events, staging", "pos": [810, 370], "size": [180, 60] },
+    { "id": "publishers", "type": "external", "label": "Public publishers", "sublabel": "venue + municipal calendars", "pos": [810, 610], "size": [180, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "One origin — sub-paths, no subdomains", "wraps": ["caddy", "ui", "api", "ward", "db"] },
+    { "kind": "security-group", "label": "prm's own state", "wraps": ["api", "db"] }
+  ],
+  "connections": [
+    { "id": "b-c", "from": "browser", "to": "caddy", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "c-ui", "from": "caddy", "to": "ui", "label": "/prm", "fromSide": "top", "toSide": "left" },
+    { "id": "c-api", "from": "caddy", "to": "api", "label": "/prm-api", "variant": "emphasis" },
+    { "id": "ui-api", "from": "ui", "to": "api", "label": "Zod-typed JSON", "fromSide": "bottom", "toSide": "top", "labelAt": [548, 234] },
+    { "id": "api-ward", "from": "api", "to": "ward", "label": "resolve session · check grant", "variant": "security", "fromSide": "bottom", "toSide": "top", "labelAt": [548, 480] },
+    { "id": "api-db", "from": "api", "to": "db", "label": "Drizzle", "labelDy": 46 },
+    { "id": "osm-api", "from": "osm", "to": "api", "label": "admin sync", "variant": "dashed", "fromSide": "left", "toSide": "top" },
+    { "id": "pub-api", "from": "publishers", "to": "api", "label": "ingest → staging", "variant": "dashed", "fromSide": "left", "toSide": "bottom" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Three workspaces, one contract",
+      "items": [
+        "ui/ — React 19 SPA, Leaflet map, TanStack Query, Zustand for UI state",
+        "backend/ — Fastify 5, SQLite via Drizzle, Zod validation",
+        "shared/ — the Zod schemas both sides compile against"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Public by default",
+      "items": [
+        "Ward is registered on the root instance but gates NOTHING",
+        "The hook resolves a session if a cookie is present, else anonymous",
+        "requireAuth and requireAdmin are opt-in, per route"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Two sources, not equal",
+      "items": [
+        "OSM is ODbL and reuse-permitted — the clean anchor for pins",
+        "Event publishers are API-first, scrape-last; never an aggregator",
+        "Launch of any reuse-restricted source is blocked on permission"
+      ]
+    }
+  ]
+}

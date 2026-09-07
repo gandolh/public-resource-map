@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Where a pin comes from, and where an event has to get through",
+    "viewBox": [
+      1080,
+      780
+    ],
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "places",
+        "label": "Places — synced",
+        "focus": [
+          "osm",
+          "sync",
+          "place"
+        ],
+        "note": "An OSM sync writes places directly; a partial unique index makes a re-run an upsert."
+      },
+      {
+        "id": "events",
+        "label": "Events — staged",
+        "focus": [
+          "publishers",
+          "adapter",
+          "match",
+          "staged",
+          "review",
+          "event"
+        ],
+        "note": "Nothing reaches the map without clearing both a match and a human."
+      },
+      {
+        "id": "failure",
+        "label": "When matching fails",
+        "focus": [
+          "match",
+          "geocode",
+          "venue_place"
+        ],
+        "note": "A failure creates an event-venue place — a recorded matching failure, not a second class of content."
+      }
+    ]
+  },
+  "stages": [
+    {
+      "label": "Source"
+    },
+    {
+      "label": "Adapt"
+    },
+    {
+      "label": "Resolve"
+    },
+    {
+      "label": "Stage"
+    },
+    {
+      "label": "Live"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "osm",
+      "type": "external",
+      "label": "OpenStreetMap",
+      "sublabel": "ODbL",
+      "stage": 0,
+      "row": 0,
+      "tag": "reuse permitted"
+    },
+    {
+      "id": "publishers",
+      "type": "external",
+      "label": "Public publishers",
+      "sublabel": "venue, museum, municipal",
+      "stage": 0,
+      "row": 3,
+      "tag": "never an aggregator"
+    },
+    {
+      "id": "sync",
+      "type": "backend",
+      "label": "OSM sync",
+      "sublabel": "admin-only",
+      "stage": 1,
+      "row": 0
+    },
+    {
+      "id": "adapter",
+      "type": "backend",
+      "label": "Adapter",
+      "sublabel": "api · ical · rss · html",
+      "stage": 1,
+      "row": 3,
+      "tag": "scrape last"
+    },
+    {
+      "id": "match",
+      "type": "security",
+      "label": "Venue match",
+      "sublabel": "raw string → place",
+      "stage": 2,
+      "row": 2,
+      "tag": "four outcomes"
+    },
+    {
+      "id": "geocode",
+      "type": "database",
+      "label": "geocode_cache",
+      "sublabel": "the fallback's fallback",
+      "stage": 2,
+      "row": 4
+    },
+    {
+      "id": "place",
+      "type": "database",
+      "label": "place",
+      "sublabel": "source = osm",
+      "stage": 3,
+      "row": 0,
+      "tag": "the anchor"
+    },
+    {
+      "id": "venue_place",
+      "type": "database",
+      "label": "place",
+      "sublabel": "source = event-venue",
+      "stage": 3,
+      "row": 4,
+      "tag": "match failed"
+    },
+    {
+      "id": "staged",
+      "type": "database",
+      "label": "staged_event",
+      "sublabel": "match_status + status",
+      "stage": 3,
+      "row": 2,
+      "tag": "two axes"
+    },
+    {
+      "id": "review",
+      "type": "security",
+      "label": "Human review",
+      "sublabel": "accept · reject",
+      "stage": 4,
+      "row": 3
+    },
+    {
+      "id": "event",
+      "type": "database",
+      "label": "event",
+      "sublabel": "attached to a place",
+      "stage": 4,
+      "row": 1,
+      "tag": "on the map"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-osm",
+      "from": "osm",
+      "to": "sync",
+      "label": "places",
+      "classification": "ODbL",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f-sync",
+      "from": "sync",
+      "to": "place",
+      "label": "upsert on (osm_type, osm_id)",
+      "classification": "re-runnable",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f-pub",
+      "from": "publishers",
+      "to": "adapter",
+      "label": "raw listings",
+      "classification": "public sources",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f-adapt",
+      "from": "adapter",
+      "to": "match",
+      "label": "venue string",
+      "classification": "unnormalised, kept"
+    },
+    {
+      "id": "f-matched",
+      "from": "match",
+      "to": "staged",
+      "label": "matched or not",
+      "classification": "either way",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f-geo",
+      "from": "match",
+      "to": "geocode",
+      "label": "no OSM candidate",
+      "classification": "cached",
+      "variant": "dashed",
+      "labelAt": [
+        530,
+        428
+      ]
+    },
+    {
+      "id": "f-venue",
+      "from": "geocode",
+      "to": "venue_place",
+      "label": "create a venue place",
+      "classification": "recorded failure",
+      "variant": "dashed",
+      "labelAt": [
+        638,
+        656
+      ]
+    },
+    {
+      "id": "f-review",
+      "from": "staged",
+      "to": "review",
+      "label": "needs a decision",
+      "classification": "nothing auto-publishes",
+      "variant": "security"
+    },
+    {
+      "id": "f-accept",
+      "from": "review",
+      "to": "event",
+      "label": "accepted",
+      "classification": "now public",
+      "variant": "emphasis",
+      "labelAt": [
+        960,
+        542
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Places are synced",
+      "items": [
+        "OSM is the anchor because it is ODbL — legal, not technical",
+        "A partial unique index on (osm_type, osm_id) makes a re-sync an upsert",
+        "Partial, so the venue places with no OSM identity do not collide on NULLs"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Events are staged",
+      "items": [
+        "An ingested event becomes a staged_event, never an event",
+        "Two independent axes: do we know where it is, has a human decided",
+        "So a publisher that starts emitting nonsense cannot quietly publish"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "A failed match is data",
+      "items": [
+        "source = 'event-venue' means the matcher could not resolve the venue",
+        "The raw venue string and address are kept, so a bad match stays diagnosable",
+        "A rise in venue places means the matcher or OSM coverage got worse"
+      ]
+    }
+  ]
+}

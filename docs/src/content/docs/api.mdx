@@ -1,0 +1,86 @@
+---
+title: HTTP API
+description: Every route the backend serves, how authentication is opt-in rather than app-wide, and why /api/me exists instead of the UI calling Ward directly.
+---
+
+The backend is served behind `handle_path /prm-api/*`, which **strips the
+prefix**, so the backend keeps serving its own `/api/*` routes unchanged. A
+route written `/api/places` is `GET /prm-api/api/places` to a caller.
+
+Every route plugin is registered with `{ prefix: "/api" }`; `/health` is the one
+exception and sits at the root.
+
+## Authentication is opt-in, not app-wide
+
+This is the opposite of atrium, and deliberately so. **PRM is a public resource
+map and stays one.**
+
+`registerWard(app)` installs `request.ward`, a session-resolving `preHandler`,
+and the `requireAuth` / `requireAdmin` guards on the root instance — but
+**gates nothing**. The hook resolves a session when a cookie is present and
+leaves the request anonymous otherwise. Guards are applied per route, by the
+routes that need them.
+
+If you are adding an endpoint here, the default is public, and you opt in to a
+guard.
+
+## Public
+
+| Method | Path | What it does |
+|---|---|---|
+| `GET` | `/health` | Liveness. |
+| `GET` | `/api/places` | Places for a city, filtered by category. The map's main read. |
+| `GET` | `/api/places/:id` | One place. |
+| `GET` | `/api/events` | Events. |
+| `GET` | `/api/events/:id` | One event. |
+| `GET` | `/api/whats-on` | What is on at a place — the place-centric view that replaced the standalone events grid. |
+| `GET` | `/api/me` | Who the browser is, **as prm sees it**. Never `401`. |
+
+## Authenticated
+
+| Method | Path | Guard |
+|---|---|---|
+| `POST` | `/api/places` | `requireAdmin` |
+| `DELETE` | `/api/places/:id` | `requireAdmin` |
+| `POST` | `/api/events` | `requireAdmin` |
+| `DELETE` | `/api/events/:id` | `requireAdmin` |
+| `POST` | `/api/admin/osm/sync` | `requireAdmin` — pulls places from OpenStreetMap |
+
+`requireAdmin` asks one question: does this caller hold the
+`(subject, "prm", "admin")` grant? **There is no `user.role` column any more.**
+The cutover to Ward deleted it, so "is this person an admin" is a question about
+a Ward grant and nothing else.
+
+## `GET /api/me`, and why it exists
+
+Ward publishes `GET /ward-api/session`, and the UI could call it directly. It
+should not, for two reasons that are worth keeping:
+
+1. **Ward answers with the whole estate's grant map.** The browser would receive
+   this person's atrium and newspapper roles on every page load of a public map
+   — information prm has no business handing out.
+2. **The question the UI actually asks is "am I a prm admin",** which is *prm's
+   interpretation* of a grant, not a fact Ward holds. Ward stores the triple and
+   never interprets it.
+
+So this route answers narrowly and translates. **The grant map does not leave
+the server.**
+
+### It never returns `401`
+
+Anonymous is the ordinary case on a public map, so it answers `{ user: null }`
+with a `200`.
+
+A `401` here would make the first page load of every unauthenticated visitor an
+error in the browser console, and would tempt the UI into treating "not signed
+in" as a failure — which on this app it emphatically is not. It is deliberately
+**not** behind `requireAuth`: that guard is for routes that need a session, and
+this one exists to find out whether there is one.
+
+## Validation
+
+Request and response shapes are **Zod schemas from `shared/`**, compiled against
+by both the UI and the backend. That is the point of the package: one definition,
+two consumers, and a type error rather than a runtime mismatch when they
+disagree. The generated [schema reference](/reference/) is TypeDoc over its
+public barrel.

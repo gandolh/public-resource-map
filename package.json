@@ -4,7 +4,8 @@
   "workspaces": [
     "shared",
     "backend",
-    "ui"
+    "ui",
+    "docs"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev -w backend\" \"npm run dev -w ui\"",

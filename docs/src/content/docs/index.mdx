@@ -1,0 +1,74 @@
+---
+title: Public Resource Map
+description: A place-centric map of public resources and what is on at them, for Romanian cities — and honest about being a proof of concept.
+tableOfContents: false
+---
+
+import Diagram from '../../components/Diagram.astro'
+
+**Public Resource Map** is a place-centric web app for Romanian cities. The
+map's unit is a **place** — a park, library, clinic, museum or town hall — and
+events attach to places. You pick a city, see what is near you, select a place,
+and see what is on there.
+
+<dl class="doc-facts">
+  <dt>Runs at</dt>
+  <dd><code>/prm</code> (SPA) and <code>/prm-api</code> (API) on the estate's single origin</dd>
+  <dt>Scope</dt>
+  <dd>Proof of concept — Timișoara and București</dd>
+  <dt>Made of</dt>
+  <dd><code>ui/</code> React 19 + React Router, <code>backend/</code> Fastify 5, <code>shared/</code> Zod schemas</dd>
+  <dt>Stores</dt>
+  <dd>SQLite via Drizzle ORM</dd>
+  <dt>Identity</dt>
+  <dd>Ward. PRM is the only app in the estate with public registration turned on.</dd>
+</dl>
+
+:::caution[It is a proof of concept, and that is a legal position, not modesty]
+The tech is demonstrable end to end. **Commercial or public launch of any
+reuse-restricted source is blocked on obtaining permission.** OSM data is ODbL
+and reuse-permitted — that is why it is the clean anchor. Event data comes from
+public primary publishers, API-first and scrape-last, and never from a ticketing
+aggregator. See [Decisions → Legal posture](/wiki/decisions/).
+:::
+
+## The one-line data model
+
+Pins are **places**, from two sources:
+
+- **OSM** — parks, libraries, clinics, museums, town halls. ODbL, reuse
+  permitted, the clean anchor.
+- **event-venue** — created only when an event's venue cannot be matched to an
+  OSM place.
+
+Events attach to places. A buy-tickets link appears **only when the public
+source itself provides one**.
+
+<Diagram
+  name="architecture"
+  title="PRM — the three workspaces, ingestion, and the Ward boundary"
+  caption="The two pin sources are the thing to read off this: OSM is the anchor, and an event-venue place exists only where matching failed"
+  height={820}
+/>
+
+## Why the map is place-centric
+
+The code was originally **event-centric** — a `/map` of resource markers, a
+standalone `/events` grid, and `/resources/:id` — and the 2026-06-28 grilling
+session re-shaped the product around places instead.
+
+That pivot is the single most load-bearing thing to understand before changing
+anything: a place is the durable object, and an event is something that happens
+at one. Parts of the code still predate it. [Status](/wiki/status/) is honest
+about which.
+
+## Where to go next
+
+| If you want to | Read |
+|---|---|
+| Understand the layout | [Architecture](/wiki/architecture/) |
+| Call or add an endpoint | [HTTP API](/api/) |
+| Understand the tables | [Data model](/data/) |
+| Understand where data comes from | [Ingestion](/ingestion/) |
+| Touch anything visual | [The design system](/wiki/design/) |
+| Know why something is the way it is | [Decisions](/wiki/decisions/) |

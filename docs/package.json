@@ -1,0 +1,25 @@
+{
+  "name": "@prm/docs-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Public Resource Map documentation site — narrative rendered from corpus/, diagrams compiled by archify.",
+  "//cookie": "cookie@^2 is pinned here on purpose and is NOT used by this site. Astro's build imports named exports (parseCookie) from cookie@2, but Vite's module runner resolves bare specifiers from the PROJECT ROOT — and this monorepo hoists cookie@0.7.2 there, pulled in by express via @react-router/serve in ui/. Node's own resolution finds astro's nested copy correctly; Vite's does not, and the build dies with \"Named export 'parseCookie' not found\". A copy inside docs/node_modules is what makes the docs project root resolve v2. Removing this breaks `npm run docs` only, and only at the very end of the build.",
+  "scripts": {
+    "sync-corpus": "node scripts/sync-corpus.mjs",
+    "diagrams": "node scripts/build-diagrams.mjs",
+    "ref": "typedoc",
+    "predev": "npm run sync-corpus && npm run diagrams",
+    "dev": "astro dev",
+    "docs": "npm run sync-corpus && npm run diagrams && npm run ref && astro build",
+    "preview": "astro preview"
+  },
+  "devDependencies": {
+    "@astrojs/starlight": "^0.41.3",
+    "@fontsource-variable/archivo": "^5.2.5",
+    "astro": "^7.1.1",
+    "cookie": "^2.0.1",
+    "sharp": "^0.35.4",
+    "typedoc": "^0.28.20"
+  }
+}

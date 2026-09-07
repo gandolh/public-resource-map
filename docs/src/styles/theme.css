@@ -1,0 +1,262 @@
+/*
+ * PRM's docs wear the built UI's design system.
+ *
+ * The tokens below are lifted from `ui/DESIGN.md`, which is authoritative and
+ * was derived FROM the built UI rather than written ahead of it —
+ * `corpus/wiki/design.md` is explicit that it is a pointer, not a spec. The
+ * strategy it records is "restrained: neutrals plus one accent, which is correct
+ * for a surface someone came to operate", and a docs site is exactly that kind
+ * of surface, so the system transfers without translation.
+ *
+ * Four rules from DESIGN.md are carried over because breaking them here would
+ * make the docs read as a different product:
+ *
+ *   • **A 1px border is the default separator.** Shadow is spent only on what
+ *     genuinely floats. Starlight leans on shadow for cards; this re-points it.
+ *   • **Radii cap at 12px**, and pills are reserved for filter chips and badges.
+ *   • **Archivo, one family.** No serif, and no webfont monospace — `--font-mono`
+ *     is a system stack used only for real identifiers.
+ *   • **Both themes ship.** DESIGN.md's reason is the use scene: daylight
+ *     outdoors *and* a laptop indoors. The docs keep the toggle for consistency
+ *     with the app, and because both palettes are designed rather than inverted.
+ *
+ * The eleven category hues are NOT used as decoration here. In the app they
+ * carry information and are always paired with an icon and a written label;
+ * spending them on documentation chrome would be exactly the misuse DESIGN.md
+ * rule 4 exists to prevent. Two of them appear once each, on the data-model
+ * page, labelled.
+ */
+
+@import '@fontsource-variable/archivo';
+
+:root {
+  --font-ui: 'Archivo Variable', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+/* --- Light --------------------------------------------------------------- */
+:root,
+:root[data-theme='light'] {
+  --bg: #f7f9fb;
+  --surface: #fcfdfe;
+  --surface-2: #f1f4f8;
+  --surface-3: #e6ebf2;
+  --line: #e3e6ec;
+  --line-strong: #ccd2dc;
+  --fg: #0d1117;
+  --fg-muted: #59636f;
+  --fg-faint: #697281;
+  --accent: #2a5bef;
+  --accent-hover: #1f4bd8;
+  --accent-weak: #eef2fe;
+  --accent-line: #c7d5fb;
+  --ok: #0b7d55;
+  --ok-weak: #e6f5ef;
+  --warn: #9a5b00;
+  --danger: #c62f2f;
+  --danger-weak: #fdeced;
+  --fg-on-accent: #ffffff;
+
+  --sl-color-accent-low: var(--accent-weak);
+  --sl-color-accent: var(--accent);
+  --sl-color-accent-high: var(--accent-hover);
+
+  --sl-color-white: #ffffff;
+  --sl-color-black: #0d1117;
+  --sl-color-gray-1: #1a222c;
+  --sl-color-gray-2: #59636f;
+  --sl-color-gray-3: #697281;
+  --sl-color-gray-4: #ccd2dc;
+  --sl-color-gray-5: #e3e6ec;
+  --sl-color-gray-6: #f1f4f8;
+  --sl-color-gray-7: #f7f9fb;
+}
+
+/* --- Dark (designed, not inverted) --------------------------------------- */
+:root[data-theme='dark'] {
+  --bg: #0b0d11;
+  --surface: #14171d;
+  --surface-2: #1a1e25;
+  --surface-3: #222731;
+  --line: #262b34;
+  --line-strong: #363d49;
+  --fg: #eef1f5;
+  --fg-muted: #99a2b0;
+  --fg-faint: #8d96a5;
+  --accent: #6d9bff;
+  --accent-hover: #85adff;
+  --accent-weak: #16203a;
+  --accent-line: #2c3f6b;
+  --ok: #34d399;
+  --ok-weak: #0e2a22;
+  --warn: #fbbf24;
+  --danger: #fb7185;
+  --danger-weak: #2c1218;
+  --fg-on-accent: #0b0d11;
+
+  --sl-color-accent-low: var(--accent-weak);
+  --sl-color-accent: var(--accent);
+  --sl-color-accent-high: var(--accent-hover);
+
+  --sl-color-white: #eef1f5;
+  --sl-color-black: #0b0d11;
+  --sl-color-gray-1: #eef1f5;
+  --sl-color-gray-2: #b6bdc8;
+  --sl-color-gray-3: #99a2b0;
+  --sl-color-gray-4: #5d6675;
+  --sl-color-gray-5: #262b34;
+  --sl-color-gray-6: #1a1e25;
+  --sl-color-gray-7: #14171d;
+}
+
+:root {
+  --sl-color-text: var(--fg);
+  --sl-color-text-accent: var(--accent);
+  --sl-color-bg: var(--bg);
+  --sl-color-bg-nav: var(--surface);
+  --sl-color-bg-sidebar: var(--bg);
+  --sl-color-bg-inline-code: var(--surface-2);
+  --sl-color-hairline: var(--line);
+  --sl-color-hairline-light: var(--line);
+  --sl-color-hairline-shade: var(--line);
+  --sl-font: var(--font-ui);
+  --sl-font-mono: var(--font-mono);
+
+  --sl-color-green: var(--ok);
+  --sl-color-green-low: var(--ok-weak);
+  --sl-color-green-high: var(--ok);
+  --sl-color-orange: var(--warn);
+  --sl-color-orange-low: var(--surface-2);
+  --sl-color-orange-high: var(--warn);
+  --sl-color-red: var(--danger);
+  --sl-color-red-low: var(--danger-weak);
+  --sl-color-red-high: var(--danger);
+  --sl-color-blue: var(--accent);
+  --sl-color-blue-low: var(--accent-weak);
+  --sl-color-blue-high: var(--accent-hover);
+  --sl-color-purple: var(--accent);
+  --sl-color-purple-low: var(--accent-weak);
+  --sl-color-purple-high: var(--accent-hover);
+}
+
+/* --- A 1px border is the default separator ------------------------------- */
+/* DESIGN.md: shadow is spent only on what genuinely floats, and differs by
+   role. Nothing on a documentation page floats, so nothing here gets one. */
+.sl-markdown-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  font-size: 0.9375rem;
+  /* Tabular numerals wherever digits align — DESIGN.md's typography rule. */
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-markdown-content th {
+  text-align: left;
+  font-weight: 600;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  padding: 0.5rem 0.75rem;
+}
+
+.sl-markdown-content td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+}
+
+.sl-markdown-content tr:last-child td {
+  border-bottom: none;
+}
+
+.sl-markdown-content :not(pre) > code {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.08em 0.32em;
+  font-size: 0.875em;
+}
+
+.expressive-code .frame pre,
+.sl-markdown-content pre {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+.sl-markdown-content h2 {
+  letter-spacing: -0.011em;
+}
+
+.site-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* --- Diagram frames ------------------------------------------------------ */
+.doc-diagram {
+  margin: 1.75rem 0;
+}
+
+.doc-diagram__frame {
+  width: 100%;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.doc-diagram__caption {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--fg-faint);
+  line-height: 1.5;
+}
+
+/* --- Key/value facts ----------------------------------------------------- */
+.doc-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1.25rem;
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+}
+
+.doc-facts dt {
+  color: var(--fg-faint);
+}
+
+.doc-facts dd {
+  margin: 0;
+  color: var(--fg);
+}
+
+/* A category hue, used only where the page is talking about category hues.
+   Always paired with a written label in the markup — DESIGN.md rule 4. */
+.cat-swatch {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 3px;
+  margin-right: 0.35em;
+  vertical-align: baseline;
+  border: 1px solid var(--line-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

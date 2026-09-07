@@ -1,5 +1,26 @@
 # Log
 
+## [2026-09-04] build | Total UI/UX rework — new visual world + place-centric public surface
+
+The user asked for a total UI/UX rework ("the main idea is good, I just don't like the ui/ux of it"). Ran the impeccable direction flow: captured product truth in `ui/PRODUCT.md`, derived four visual directions from the audience's own world, and presented them as **running coded mockups** rather than prose (a land-registry sheet, a tram diagram, an orienteering overprint, and the category standard). The user took the **standing exit deliberately** — the convention, played straight, "or even better" — with **Citymapper + Linear** as the craft bar. That is now locked in [decisions.md → Visual direction](wiki/decisions.md); the 2026-06-29 Fraunces/steel-blue world is retired without ever having been built.
+
+Verified: `npm run typecheck` green all 3 workspaces; `npm test` = **68 pass + 3 todo** (up from 54); `npm run build -w ui` succeeds; the direction contract (seed `6c65d315`) is greppable in `build/client/index.html`; the design detector returns `[]`.
+
+- **Backend (the surface could not exist without these).** `backend/src/lib/time.ts` — every Europe/Bucharest window in one place (`lensWindow`, `zonedTimeToInstant`, 90-day horizon), DST-correct via a two-pass offset, no dependency, 7 tests. `GET /api/places` gained a comma-separated `category` list, a `lens` (`today|weekend|all`) that **hard-filters**, and **`upcomingEventCount`** on every row. New `GET /api/places/:id/events` and `GET /api/whats-on` (`routes/whats-on.ts`, `shared/src/types/whats-on.ts`, shared `rowToEvent` in `routes/event-mapper.ts`). 7 new API tests.
+- **Design system.** `ui/app/app.css` rewritten: cool-biased neutrals, one blue accent, 11 category hues (reused by `EventCategory` rather than adding 8 more), role-differentiated elevation, radii capped at 12px, **Archivo** as the single family, no webfont mono. Both themes designed, not inverted. Authoritative reference: **`ui/DESIGN.md`**.
+- **Place-centric IA.** `/` is the map; `/places/:id` is a **child route** of it so the map stays mounted — one place surface for a pin click and a shared link alike (a deliberate deviation from brief 06's "full page + mini-map", because two divergent place views is what that brief forbids). `/whats-on` shares one filter store with the map. `/map`, `/events`, `/resources/:id` redirect. Day-one clustering, guided zero-results, loading/empty/error everywhere, focus management, draggable two-snap mobile sheet.
+- **i18n without a framework.** `ui/app/lib/i18n.tsx` — RO default (browser language deliberately ignored), EN switch, `Intl.PluralRules` for Romanian's three forms including the "de" form above 19, `Intl.DateTimeFormat` in Europe/Bucharest.
+- **Seed replaced.** 38 real Timișoara/București public places + 14 **synthetic** events, labelled as such in `db/seed.ts`. Real ingestion is still brief 04.
+
+**Three bugs worth remembering, each invisible until something forced it out:**
+1. **Unlayered CSS beats `@layer utilities` at any specificity.** A bare `a { color: inherit }` silently defeated every `text-*` utility on every link in the app. Base element rules now live in `@layer base`.
+2. **A filled CSS animation outranks inline style.** The sheet's entrance keyframe ended on `transform: translateY(0)` with `fill-mode: both`, permanently pinning the sheet open and defeating its own snap transform.
+3. **A Drizzle correlated subquery must use the query builder, not a raw `sql` template.** A raw template renders columns unqualified, so `place_id = id` resolved both sides to the subquery's own table and every event count came back zero.
+
+**Constraint discovered:** CARTO's keyless raster endpoints now return a watermark tile, not a map. Style is behind `VITE_CARTO_API_KEY`; filtered OSM tiles are the documented fallback. See [decisions.md → Basemap constraint](wiki/decisions.md).
+
+**Finish review:** 3 rounds via the shipped `impeccable-finish-reviewer`, ending **`ship`** — 11 material fixes plus 3 regressions all scored resolved. Scope limit recorded honestly: login/register, all loading/empty/error states, and every dark surface except the desktop place panel were never captured and so were never reviewed.
+
 ## [2026-07-02] build (wave 3) | Brief 03 shipped — place model & OSM sync
 
 Admin-triggered OpenStreetMap (Overpass) sync + public places API + ODbL attribution (senior/opus, branch `build/backlog`). Verified from the controller: `npm run typecheck` green; `npm test` = **54 pass + 3 todo** (up from 39; +20 cases, Overpass stubbed — zero network); `db:migrate` from empty clean. **No structural migration** — built on brief 07's `place` table (07's promise held again).
@@ -240,3 +261,107 @@ Implemented the full Stitch CivicMap design system. Key deliverables:
 ## [2026-06-26] maintenance | Bootstrap monorepo + corpus
 
 Restructured project as npm workspaces (`shared`, `backend`, `ui`). Updated all packages to latest stable (React 19.2.7, React Router 8.0.1, Vite 7.3.6, Fastify 5.8.5, Tailwind 4.3.1, TypeScript 5.8.5, Drizzle 0.45.2). Created Fastify + SQLite backend with Drizzle ORM and Zod validation; generated initial migration. All three packages compile and type-check cleanly. Seeded corpus wiki (overview, architecture, decisions, status, open-questions).
+
+## [2026-09-06] change | prm moves to Ward: no credentials left in this repo, roles become grants
+
+prm authenticates nobody now. Dropped: `user`, `session`, `verification_token`,
+`reset_token`, `plugins/auth.ts`, `routes/auth.ts`, `lib/auth-internals.ts`,
+`lib/ensure-admin.ts`, `shared/src/types/auth.ts`'s schemas, and the
+`/login` + `/register` screens. There is **no credential of any kind** in this
+repo any more.
+
+**prm is the app that shaped Ward's design, and it kept what it needed.** The
+estate's first cut had no public signup; prm ships it, and that collision is
+what moved the security boundary from registration to **authorization**. Anyone
+may hold a Ward account; a grant is what lets them reach anything. prm's app row
+is the only one in the estate with `public_registration` on, and
+`/ward/register?app=prm` confers exactly `prm:user`.
+
+**Roles became grants, and one subtlety needed spelling out.** `requireAuth` now
+means *holds a prm grant*, not *has a session* — a live Ward account with no prm
+grant is not signed in here, which is precisely what stops open registration at
+prm from opening atrium. And **`prm:admin` does not imply `prm:user`**: grants
+are a set, not a ladder, and Ward has no hierarchy to consult, so `requireAuth`
+accepts either explicitly. Assuming otherwise would have produced an admin who
+could not open their own favourites.
+
+**Nothing is gated by default, and that is the property most worth not losing.**
+Every other app in the estate gates its whole surface and allowlists exceptions.
+prm is a public resource map and does the opposite: the root hook resolves a
+session only when a cookie is present, and the guards are opt-in per route. The
+consequence is that **when Ward is down, the public map still works** — it never
+asks Ward anything. Guarded routes answer 503 and fail closed, and
+`request.wardUnavailable` is tracked separately from `request.ward === null` so
+a guard never tells somebody they are signed out when the truth is that the
+identity service is unreachable.
+
+**`GET /api/me` is new, and prm has it rather than the UI calling Ward.** Ward's
+own `/ward-api/session` answers with the *whole estate's* grant map; the browser
+has no business receiving this person's atrium roles on every page load of a
+public map. And "am I a prm admin" is prm's interpretation of a grant, not a
+fact Ward holds. So the route answers narrowly — subject, username, `isAdmin` —
+and the grant map does not leave the server. It never 401s: anonymous is the
+ordinary case here.
+
+**The config is read lazily, and that was a real finding rather than a
+preference.** Validating at import and `process.exit(1)`-ing is what prm's other
+config does, and it broke every API test instantly: `buildApp` accepts an
+injected Ward client so tests can decide who is signed in without a network, and
+an import-time exit killed the worker before the injection happened. Reading on
+first use keeps the failure just as loud where it matters — the real client
+reads all three during boot, before the server listens.
+
+**Tests got a fake Ward rather than stubbed guards.** `test/fake-ward.ts`
+implements the client interface and maps a cookie value to a session, so the
+**real** `requireAuth`/`requireAdmin` decide. Stubbing the guards would have
+made the guard tests tautological, and the assertion actually worth having is
+that `requireAdmin` refuses a session holding only `prm:user`.
+
+**The cutover destroys every account and everything keyed on one.** prm keyed
+people on **email**, Ward keys them on a minted subject, and no mapping exists
+that was not invented at cutover time — so favourites and notifications go with
+the accounts that owned them. Places, events, sources and the geocode cache are
+untouched: that half of the app never knew about accounts and does not notice.
+`drizzle/0001_ward_cutover.sql` has **no down**. Take a database copy first.
+
+54 tests pass, typecheck clean across shared/backend/ui. Nothing has been run
+against a real browser or a deployed Ward.
+
+## [2026-09-06] done | A documentation site at `/prm/docs`
+
+`docs/` — Astro + Starlight, built by `npm run docs -w @prm/docs-site`, deployed
+at the estate's `/<project>/docs` convention.
+
+**Four authored pages**, chosen as the things the corpus does not carry: an
+orientation page, the **HTTP route table** (and why authentication here is
+opt-in per route rather than app-wide, which is the opposite of atrium), the
+**data model** (nine Drizzle tables, the partial unique index that makes an OSM
+re-sync an upsert, and the two independent status axes on `staged_event`), and
+the **ingestion pipeline**. The nine corpus pages are rendered on every build
+rather than restated.
+
+**Two archify diagrams**: the workspace/source architecture with the Ward
+boundary, and the ingestion flow — which makes the asymmetry legible, that
+places are *synced* while events must clear both a match and a human before they
+become real.
+
+**The docs wear `ui/DESIGN.md`.** Palette, Archivo as the single family,
+tabular numerals, the 12px radius cap and the "a 1px border is the default
+separator; shadow is spent only on what genuinely floats" rule. Both themes ship,
+for the reason DESIGN.md gives — the use scene is daylight outdoors *and* a
+laptop indoors. The eleven category hues are deliberately **not** used as
+decoration: in the app they carry information and are always paired with an icon
+and a label, and spending them on docs chrome is exactly the misuse rule 4
+exists to prevent.
+
+**One build trap worth knowing.** Astro's build imports named exports from
+`cookie@2`, but Vite's module runner resolves bare specifiers from the *project
+root* — and this monorepo hoists `cookie@0.7.2` there, pulled in by `express` via
+`@react-router/serve` in `ui/`. Node's own resolution finds astro's nested copy
+correctly; Vite's does not, and the build dies at the very last step with
+`Named export 'parseCookie' not found`. A `cookie@^2` devDependency in `docs/`
+fixes it by giving the docs project root its own copy; the reason is recorded in
+a `//cookie` key in `docs/package.json` so nobody removes it as unused.
+
+Typecheck clean, 54 tests pass. `docs` added to the root `workspaces` array;
+`build` and `typecheck` name their workspaces explicitly, so neither picks it up.

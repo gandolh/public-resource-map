@@ -1,0 +1,101 @@
+---
+title: Data model
+description: Nine tables in SQLite via Drizzle — places and their two sources, events, the staging table that keeps ingestion reviewable, and what the Ward cutover removed.
+---
+
+SQLite through **Drizzle ORM**, with the schema in `backend/src/db/schema.ts`
+and migrations in `backend/drizzle/`.
+
+## The tables
+
+| Table | Holds |
+|---|---|
+| `place` | The map's unit. Was `resource`, before the place-centric pivot. |
+| `event` | Always attached to a place; lifecycle via `status`. |
+| `event_source` | A publisher and its adapter, with health from the last run. |
+| `staged_event` | Ingested events **before** they become real ones. |
+| `geocode_cache` | Geocoding is a fallback, and it is cached. |
+| `favorite_place` · `favorite_event` | Per-subject favourites. |
+| `notification` · `notification_event` | The in-process daily reminder sweep. |
+
+## `place` — and its two sources
+
+```ts
+source: 'osm' | 'event-venue'
+```
+
+Everything follows from that column.
+
+- **`osm`** places are the clean anchor: parks, libraries, clinics, museums,
+  town halls, under ODbL, which is reuse-permitted. `osmType` and `osmId` are
+  set only here.
+- **`event-venue`** places exist **only where matching failed** — created when
+  an event's venue string could not be resolved to an OSM place.
+
+A uniqueness constraint enforces the pairing rather than trusting the ingester:
+
+```sql
+UNIQUE (osm_type, osm_id) WHERE source = 'osm'
+```
+
+Partial, so the two `event-venue` places that legitimately have no OSM identity
+do not collide with each other on a pair of NULLs — which is exactly what a
+plain unique index would have done.
+
+Indexed on `(lat, lng)` and on `city`, which are the two questions the map asks.
+
+## `staged_event` — why ingestion has a staging table
+
+An ingested event does **not** become an `event`. It becomes a `staged_event`,
+carrying two independent status columns:
+
+| Column | Values | Question it answers |
+|---|---|---|
+| `match_status` | `auto-matched` · `ambiguous` · `unmatched` · `manual` | Do we know which place this is at? |
+| `status` | `new` · `changed` · `accepted` · `rejected` · `needs-attention` | Has a human decided about it? |
+
+Keeping them separate is the design. A confidently matched event can still be
+rejected, and an ambiguous one can be accepted after a human resolves the venue
+— collapsing the two into one column would make either of those unexpressible.
+
+The row also keeps `venue_name` and `raw_address` — **the raw strings from the
+source, unnormalised**. That is what makes a bad match diagnosable later: the
+thing the matcher was actually given is still there.
+
+`place_id` is null until resolved; `event_id` is set once accepted or linked.
+
+## `event_source` — health lives on the row
+
+`mechanism` is `api` · `ical` · `rss` · `jsonld` · `html`, in descending order
+of preference. That ordering is the **API-first, scrape-last** rule made
+visible: `html` is the last resort, not a peer.
+
+`last_status` (`ok` · `suspect` · `error`), `last_event_count`,
+`last_successful_at` and `last_run_at` sit on the source itself, so "which
+publisher quietly stopped returning anything" is a query rather than a log
+search. `suspect` is the interesting one — a run that succeeded but returned
+implausibly little.
+
+## What the Ward cutover removed
+
+**There is no `user` table and no `user.role` column.**
+
+PRM used to own email + password accounts, self-registration, roles and
+`emailVerified` — and that self-registration is what collided with the estate's
+original no-public-signup decision, and is why the estate's security boundary
+moved from *registration* to *authorization*.
+
+Now: identity is Ward's, and "is this person an admin" is the
+`(subject, "prm", "admin")` grant and nothing else. Favourites and notifications
+are keyed on the opaque subject.
+
+PRM remains **the only app in the estate with public registration turned on**,
+which is a `public_registration` flag on Ward's `apps` row plus a
+`baseline_role` — Ward's schema will not let one exist without the other.
+
+## Geocoding is a fallback
+
+`geocode_cache` exists because geocoding is what happens when a venue string
+cannot be matched to an OSM place — not the primary path. Caching it keeps a
+re-run of an ingestion from re-hitting a third-party geocoder for strings it has
+already resolved.

@@ -1,0 +1,90 @@
+---
+title: Ingestion
+description: Where places and events come from — the API-first, scrape-last rule, why matching failures create places rather than being dropped, and why nothing reaches the map without passing through staging.
+---
+
+import Diagram from '../../components/Diagram.astro'
+
+Two pipelines feed the map, and they are not alike. Places are **synced**;
+events are **staged**.
+
+<Diagram
+  name="ingestion"
+  title="Where a pin comes from, and where an event has to get through"
+  caption="The asymmetry is the point: an OSM sync writes places directly, while an event has to clear both a match and a human before it becomes real"
+  height={800}
+/>
+
+## Places — an OSM sync
+
+`POST /api/admin/osm/sync` pulls parks, libraries, clinics, museums and town
+halls from OpenStreetMap for a city.
+
+OSM is the **clean anchor** for one reason that is legal rather than technical:
+it is ODbL, and reuse is permitted. Every other source in this system carries a
+question mark about republishing, and OSM does not.
+
+Re-running a sync is safe. The partial unique index on `(osm_type, osm_id)`
+where `source = 'osm'` means an upsert lands on the existing row rather than
+duplicating a pin.
+
+## Events — API first, scrape last
+
+Events come from **public primary publishers**: a venue's own calendar, a
+museum's, a municipality's. The `mechanism` column ranks how:
+
+| Mechanism | Preference |
+|---|---|
+| `api` | A real API. Best. |
+| `ical` | A published calendar feed. |
+| `rss` | A feed, less structured. |
+| `jsonld` | Structured data embedded in a page. |
+| `html` | Parsing the page. **Last resort.** |
+
+:::danger[Never a ticketing aggregator]
+Events are never taken from a ticketing aggregator, and a buy-tickets link
+appears **only when the public source itself provides one**. This is the legal
+posture, not a preference — see [Decisions](/wiki/decisions/).
+:::
+
+## Matching, and why a failure creates a place
+
+An ingested event carries a **raw venue string**. Resolving it to a place is the
+hard part, and it has four outcomes:
+
+| `match_status` | Meaning |
+|---|---|
+| `auto-matched` | Resolved to an OSM place confidently. |
+| `ambiguous` | More than one candidate. Needs a human. |
+| `unmatched` | No candidate. |
+| `manual` | A human resolved it. |
+
+When matching fails and the event is still wanted, an **`event-venue` place** is
+created for it. That is why `place.source` exists.
+
+This is worth understanding before changing the matcher: an `event-venue` place
+is **a recorded matching failure**, not a second class of content. A rise in
+them means the matcher or the OSM coverage got worse, and the column is what
+makes that measurable.
+
+Geocoding is the fallback under the fallback — used to place a venue string that
+has no OSM match, and cached in `geocode_cache` so a re-run does not re-ask.
+
+## Nothing reaches the map without staging
+
+An ingested event lands in `staged_event`, not `event`. It carries two
+independent statuses — [see the data model](/data/#staged_event--why-ingestion-has-a-staging-table)
+— one for "do we know where this is" and one for "has a human decided".
+
+The value is that **a bad source cannot quietly publish**. A publisher that
+changes its markup and starts emitting nonsense produces staged rows in
+`needs-attention`, not pins on a public map.
+
+## Source health is a column, not a log line
+
+`event_source` carries `last_status`, `last_event_count`, `last_successful_at`
+and `last_run_at` on the row.
+
+So "which publisher quietly stopped returning anything" is a query. The
+`suspect` status exists specifically for the failure that does not look like
+one: a run that succeeded and returned implausibly little.
