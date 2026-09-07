@@ -11,6 +11,8 @@ interface LocationState {
   /** True once a geolocation request has been started, so we only ask once. */
   requested: boolean;
   requestLocation: () => void;
+  /** Let the user ask again after a denial they have since fixed. */
+  retryLocation: () => void;
 }
 
 export const useLocationStore = create<LocationState>((set, get) => ({
@@ -18,6 +20,11 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   loading: false,
   error: null,
   requested: false,
+  retryLocation: () => {
+    set({ requested: false, error: null });
+    get().requestLocation();
+  },
+
   requestLocation: () => {
     if (get().requested) return;
     set({ requested: true });

@@ -1,27 +1,37 @@
 import { create } from "zustand";
-import type {
-  LoginInput,
-  PublicUser,
-  RegisterInput,
-} from "@public-resource-map/shared";
-import {
-  fetchMe,
-  loginRequest,
-  logoutRequest,
-  registerRequest,
-} from "~/lib/authApi";
 
-type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated";
+import { fetchMe, IdentityUnavailableError, type PrmUser } from "~/lib/authApi";
+
+/**
+ * Who is signed in, as prm sees it.
+ *
+ * ## There is no `login`, `register` or `logout` here
+ *
+ * They were removed rather than reimplemented. Signing in, signing up and
+ * signing out are all **navigations to Ward**, not requests prm makes — see
+ * `lib/authApi.ts`. A store method that looked like `login()` would imply prm
+ * could authenticate somebody, which is exactly the thing that stopped being
+ * true.
+ *
+ * ## `unavailable` is a fourth status, and it is not `unauthenticated`
+ *
+ * If Ward cannot be reached, prm does not know who anybody is — which is not
+ * the same as knowing nobody is signed in. Collapsing the two would put a
+ * "Sign in" button in front of somebody whose only route to signing in is the
+ * service that is currently down, so the UI shows a different message.
+ *
+ * The public map keeps working in this state, because it never asks who anybody
+ * is. That is a real property of prm's shape and worth not losing.
+ */
+type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated" | "unavailable";
 
 interface AuthState {
-  user: PublicUser | null;
+  user: PrmUser | null;
   status: AuthStatus;
+  /** Holds `prm:admin`. prm's reading of a Ward grant, resolved server-side. */
   isAdmin: boolean;
-  /** Resolve the current user from the session cookie via /api/auth/me. */
+  /** Resolve the current person from Ward's cookie via `GET /api/me`. */
   bootstrap: () => Promise<void>;
-  login: (input: LoginInput) => Promise<PublicUser>;
-  register: (input: RegisterInput) => Promise<PublicUser>;
-  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -35,28 +45,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user = await fetchMe();
       set({
         user,
-        isAdmin: user?.role === "admin",
+        isAdmin: user?.isAdmin ?? false,
         status: user ? "authenticated" : "unauthenticated",
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof IdentityUnavailableError) {
+        set({ user: null, isAdmin: false, status: "unavailable" });
+        return;
+      }
+      // The API itself is unreachable. Treated as anonymous, because the public
+      // map is what the person is looking at and it needs no session — the
+      // per-request error states surface the outage where it matters.
       set({ user: null, isAdmin: false, status: "unauthenticated" });
     }
-  },
-
-  login: async (input) => {
-    const user = await loginRequest(input);
-    set({ user, isAdmin: user.role === "admin", status: "authenticated" });
-    return user;
-  },
-
-  register: async (input) => {
-    // Registration does not open a session (email verification is separate);
-    // the caller decides what to do next (e.g. prompt to log in).
-    return registerRequest(input);
-  },
-
-  logout: async () => {
-    await logoutRequest();
-    set({ user: null, isAdmin: false, status: "unauthenticated" });
   },
 }));

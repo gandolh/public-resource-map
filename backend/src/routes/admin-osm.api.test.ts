@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { buildTestApp, type TestApp } from "../test/harness.js";
-import { user } from "../db/schema.js";
-import { createSession } from "../lib/auth-internals.js";
-import { SESSION_COOKIE } from "../plugins/auth.js";
+
 
 let t: TestApp;
 beforeEach(async () => {
@@ -13,17 +11,19 @@ afterEach(async () => {
   await t.close();
 });
 
-/** Create a user with the given role and return a session cookie header for it. */
-async function loginAs(role: "user" | "admin"): Promise<string> {
-  const id = randomUUID();
-  await t.db.insert(user).values({
-    id,
-    email: `${role}-${id}@example.com`,
-    passwordHash: "x",
-    role,
-  });
-  const sess = await createSession(t.db, id);
-  return `${SESSION_COOKIE}=${sess.id}`;
+/**
+ * A signed-in caller holding exactly `prm:<role>`, as a cookie header.
+ *
+ * The grant is the whole point: prm no longer has a `user.role` column, so
+ * "is this person an admin" is a question about Ward's `(subject, "prm", role)`
+ * triple and nothing else. `signIn` writes only the grant asked for, so the
+ * `prm:user` case below is a genuine non-admin rather than an admin with a
+ * flag turned off.
+ */
+function loginAs(role: "user" | "admin"): string {
+  const token = randomUUID();
+  t.ward.signIn(token, `subject_${token}`, { prm: [role] });
+  return `ward_session=${token}`;
 }
 
 describe("POST /api/admin/osm/sync — admin gate", () => {
@@ -37,7 +37,7 @@ describe("POST /api/admin/osm/sync — admin gate", () => {
   });
 
   it("403s a non-admin user", async () => {
-    const cookie = await loginAs("user");
+    const cookie = loginAs("user");
     const res = await t.app.inject({
       method: "POST",
       url: "/api/admin/osm/sync",
@@ -48,7 +48,7 @@ describe("POST /api/admin/osm/sync — admin gate", () => {
   });
 
   it("400s an admin on an unknown city (gate passed, validation reached)", async () => {
-    const cookie = await loginAs("admin");
+    const cookie = loginAs("admin");
     const res = await t.app.inject({
       method: "POST",
       url: "/api/admin/osm/sync",

@@ -1,16 +1,23 @@
 import type { FastifyInstance } from "fastify";
-import { eq, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte, sql, getTableColumns } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import { place } from "../db/schema.js";
+import { event, place } from "../db/schema.js";
 import {
   createPlaceSchema,
+  parseCsv,
+  placeEventsQuerySchema,
   placesQuerySchema,
+  type Event,
   type Place,
   type CreatePlaceInput,
 } from "@public-resource-map/shared";
 import { boundingBox } from "../lib/geo.js";
+import { lensWindow } from "../lib/time.js";
+import { rowToEvent } from "./event-mapper.js";
 
-function rowToPlace(row: typeof place.$inferSelect): Place {
+function rowToPlace(
+  row: typeof place.$inferSelect & { upcomingEventCount?: number },
+): Place {
   return {
     id: row.id,
     name: row.name,
@@ -28,7 +35,35 @@ function rowToPlace(row: typeof place.$inferSelect): Place {
     openingHours: row.openingHours,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    ...(row.upcomingEventCount === undefined
+      ? {}
+      : { upcomingEventCount: row.upcomingEventCount }),
   };
+}
+
+/**
+ * Live, upcoming events at a place inside the lens window, as a correlated
+ * scalar subquery. This is what lets a pin show "3 things on here" without the
+ * map firing one request per pin.
+ *
+ * Built through the query builder rather than a raw `sql` template on purpose:
+ * a hand-written template renders its columns unqualified, so `place_id = id`
+ * silently resolves both sides to the subquery's own table and every count
+ * comes back zero. The builder emits `"event"."place_id" = "place"."id"`.
+ */
+function upcomingCountExpr(db: FastifyInstance["db"], from: string, to: string) {
+  const sub = db
+    .select({ c: sql<number>`count(*)` })
+    .from(event)
+    .where(
+      and(
+        eq(event.placeId, place.id),
+        eq(event.status, "live"),
+        gte(event.startDate, from),
+        lte(event.startDate, to),
+      ),
+    );
+  return sql<number>`(${sub})`;
 }
 
 /**
@@ -47,7 +82,10 @@ export async function placeRoutes(app: FastifyInstance) {
         .send({ code: "INVALID_QUERY", message: query.error.message });
     }
 
-    const { city, lat, lng, radiusKm, category, page, pageSize } = query.data;
+    const { city, lat, lng, radiusKm, category, lens, page, pageSize } = query.data;
+
+    const { from, to } = lensWindow(lens);
+    const eventCount = upcomingCountExpr(db, from, to);
 
     const conditions = [];
     if (city) conditions.push(eq(place.city, city));
@@ -56,7 +94,14 @@ export async function placeRoutes(app: FastifyInstance) {
       conditions.push(sql`${place.lat} BETWEEN ${box.minLat} AND ${box.maxLat}`);
       conditions.push(sql`${place.lng} BETWEEN ${box.minLng} AND ${box.maxLng}`);
     }
-    if (category) conditions.push(eq(place.category, category));
+
+    const categories = parseCsv(category);
+    if (categories.length === 1) conditions.push(eq(place.category, categories[0]!));
+    else if (categories.length > 1) conditions.push(inArray(place.category, categories));
+
+    // The timing lens removes places rather than dimming them — at city pin
+    // density a dimmed pin is invisible (locked 2026-06-28 stress test).
+    if (lens !== "all") conditions.push(sql`${eventCount} > 0`);
 
     const where = conditions.length
       ? sql.join(conditions, sql` AND `)
@@ -64,7 +109,12 @@ export async function placeRoutes(app: FastifyInstance) {
     const offset = (page - 1) * pageSize;
 
     const [rows, countRows] = await Promise.all([
-      db.select().from(place).where(where).limit(pageSize).offset(offset),
+      db
+        .select({ ...getTableColumns(place), upcomingEventCount: eventCount })
+        .from(place)
+        .where(where)
+        .limit(pageSize)
+        .offset(offset),
       db.select({ count: sql<number>`count(*)` }).from(place).where(where),
     ]);
 
@@ -75,6 +125,52 @@ export async function placeRoutes(app: FastifyInstance) {
       pageSize,
     };
   });
+
+  /**
+   * What is on at one place. This is the other half of the place panel: the
+   * panel's identity block comes from `/places/:id`, its programme from here.
+   * Upcoming and live only — a past or retracted event never reaches a user.
+   */
+  app.get<{ Params: { id: string }; Querystring: Record<string, string> }>(
+    "/places/:id/events",
+    async (req, reply) => {
+      const query = placeEventsQuerySchema.safeParse(req.query);
+      if (!query.success) {
+        return reply
+          .status(400)
+          .send({ code: "INVALID_QUERY", message: query.error.message });
+      }
+
+      const exists = await db
+        .select({ id: place.id })
+        .from(place)
+        .where(eq(place.id, req.params.id))
+        .get();
+      if (!exists) {
+        return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
+      }
+
+      const { lens, limit } = query.data;
+      const { from, to } = lensWindow(lens);
+
+      const rows = await db
+        .select()
+        .from(event)
+        .where(
+          and(
+            eq(event.placeId, req.params.id),
+            eq(event.status, "live"),
+            gte(event.startDate, from),
+            lte(event.startDate, to),
+          ),
+        )
+        .orderBy(asc(event.startDate))
+        .limit(limit);
+
+      const data: Event[] = rows.map(rowToEvent);
+      return { data, total: data.length, page: 1, pageSize: limit };
+    },
+  );
 
   app.get<{ Params: { id: string } }>("/places/:id", async (req, reply) => {
     const row = await db

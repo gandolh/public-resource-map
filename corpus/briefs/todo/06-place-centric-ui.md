@@ -2,6 +2,26 @@
 
 > Split from the original brief 02 on 2026-06-28. Depends on **brief 03** (places API), **brief 04** (events on places), **brief 05** (favorite controls + bell). Implements [decisions.md → Map / UI model](../../wiki/decisions.md). This is a **refactor** of the existing event-centric UI, not a new build.
 
+
+## ✅ Mostly shipped 2026-09-04 — what remains
+
+The refactor landed as part of the UI/UX rework. **Superseded prose:** the
+Fraunces + Inter instruction and the CARTO Voyager basemap belong to the retired
+design system — see [decisions.md → Visual direction](../../wiki/decisions.md).
+The actual system is [`ui/DESIGN.md`](../../../ui/DESIGN.md).
+
+Shipped: pin = place (category icon + hue + event-count badge, clustered);
+place panel on desktop / draggable sheet on mobile; one place surface for both
+pin-click and deep link (`/places/:id` nested under the map, so a cold visit
+centres the live map rather than showing a lesser standalone page — a
+deliberate deviation from "full page + mini-map", because two place views is
+exactly what this brief forbids); `/whats-on` citywide index linking back to
+places; city picker in the navbar, persisted; OSM/ODbL attribution.
+
+**Still open here:** the favorite star (place and per-event) and the
+notification bell — both depend on **brief 05**, and were left out rather than
+shipped as controls that do nothing.
+
 ## Goal
 
 Reshape the existing 3-surface UI (`/map` resource markers · standalone `/events` grid · `/resources/:id`) into the **place-centric** model: the map is home, the pin is a place, events live inside a place.

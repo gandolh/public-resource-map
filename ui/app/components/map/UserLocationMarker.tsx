@@ -1,34 +1,25 @@
 import { CircleMarker } from "react-leaflet";
 import type { Coordinates } from "@public-resource-map/shared";
 
-interface UserLocationMarkerProps {
-  coords: Coordinates;
-}
-
-export function UserLocationMarker({ coords }: UserLocationMarkerProps) {
+/**
+ * "You are here", in the accent — the one place on the map the accent is spent,
+ * so it never competes with a category hue for meaning.
+ */
+export function UserLocationMarker({ coords }: { coords: Coordinates }) {
+  const accent = "var(--accent)";
   return (
     <>
-      {/* Pulse ring */}
       <CircleMarker
         center={[coords.lat, coords.lng]}
-        radius={14}
-        pathOptions={{
-          color: "#1c6090",
-          fillColor: "#1c6090",
-          fillOpacity: 0.15,
-          weight: 0,
-        }}
+        radius={15}
+        pathOptions={{ color: accent, fillColor: accent, fillOpacity: 0.14, weight: 0 }}
+        interactive={false}
       />
-      {/* Inner dot */}
       <CircleMarker
         center={[coords.lat, coords.lng]}
-        radius={7}
-        pathOptions={{
-          color: "#ffffff",
-          fillColor: "#206393",
-          fillOpacity: 1,
-          weight: 2,
-        }}
+        radius={6.5}
+        pathOptions={{ color: "var(--surface)", fillColor: accent, fillOpacity: 1, weight: 2.5 }}
+        interactive={false}
       />
     </>
   );

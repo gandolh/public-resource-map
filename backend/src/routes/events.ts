@@ -6,36 +6,15 @@ import { event, place } from "../db/schema.js";
 import {
   createEventSchema,
   nearbyQuerySchema,
-  type Event,
   type CreateEventInput,
 } from "@public-resource-map/shared";
 import { boundingBox } from "../lib/geo.js";
+import { rowToEvent } from "./event-mapper.js";
 
 const eventsQuerySchema = nearbyQuerySchema.extend({
   from: z.string().optional(),
   to: z.string().optional(),
 });
-
-function rowToEvent(row: typeof event.$inferSelect): Event {
-  return {
-    id: row.id,
-    placeId: row.placeId,
-    title: row.title,
-    description: row.description,
-    category: row.category as Event["category"],
-    status: row.status as Event["status"],
-    startDate: row.startDate,
-    endDate: row.endDate,
-    buyUrl: row.buyUrl,
-    sourceUrl: row.sourceUrl,
-    sourcePlatform: row.sourcePlatform,
-    imageUrl: row.imageUrl,
-    price: row.price,
-    currency: row.currency,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
-}
 
 export async function eventRoutes(app: FastifyInstance) {
   const db = app.db;

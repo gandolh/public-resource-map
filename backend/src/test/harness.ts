@@ -4,6 +4,7 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { fileURLToPath } from "node:url";
 import { createDb, type DB } from "../db/index.js";
 import { buildApp } from "../app.js";
+import { createFakeWard, type FakeWard } from "./fake-ward.js";
 
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
@@ -11,6 +12,12 @@ export interface TestApp {
   app: FastifyInstance;
   db: DB;
   sqlite: BetterSqlite3.Database;
+  /**
+   * The injected Ward client. Call `ward.signIn(token, subject, grants)` and
+   * then send `cookie: ward_session=<token>` to make a request authenticated.
+   * The real guards still decide what that session may do.
+   */
+  ward: FakeWard;
   /** Close the Fastify app + the SQLite connection. Call in `afterAll`/`afterEach`. */
   close: () => Promise<void>;
 }
@@ -32,13 +39,15 @@ export async function buildTestApp(): Promise<TestApp> {
   const { db, sqlite } = createDb(":memory:");
   migrate(db, { migrationsFolder });
 
-  const app = await buildApp({ db, logger: false });
+  const ward = createFakeWard();
+  const app = await buildApp({ db, logger: false, ward });
   await app.ready();
 
   return {
     app,
     db,
     sqlite,
+    ward,
     close: async () => {
       await app.close();
       sqlite.close();

@@ -1,54 +1,38 @@
+import type { PlaceCategory } from "@public-resource-map/shared";
+import { CategoryIcon, categoryColor } from "~/lib/categories";
 import { cn } from "~/lib/utils";
-import type { PlaceCategory, EventCategory } from "@public-resource-map/shared";
 
-type Category = PlaceCategory | EventCategory;
-
-const categoryConfig: Record<Category, { label: string; color: string }> = {
-  // PlaceCategory
-  park:            { label: "Park",          color: "var(--cm-cat-park)" },
-  library:         { label: "Library",       color: "var(--cm-cat-library)" },
-  clinic:          { label: "Clinic",        color: "var(--cm-cat-healthcare)" },
-  museum:          { label: "Museum",        color: "var(--cm-cat-exhibition)" },
-  townhall:        { label: "Town Hall",     color: "var(--cm-cat-other)" },
-  community_center:{ label: "Community",     color: "var(--cm-cat-community)" },
-  education:       { label: "Education",     color: "var(--cm-cat-education)" },
-  sports:          { label: "Sports",        color: "var(--cm-cat-sport)" },
-  cultural_center: { label: "Cultural",      color: "var(--cm-cat-festival)" },
-  // EventCategory
-  concert:         { label: "Concert",       color: "var(--cm-cat-concert)" },
-  theater:         { label: "Theater",       color: "var(--cm-cat-theater)" },
-  sport:           { label: "Sport",         color: "var(--cm-cat-sport)" },
-  community:       { label: "Community",     color: "var(--cm-cat-community)" },
-  festival:        { label: "Festival",      color: "var(--cm-cat-festival)" },
-  exhibition:      { label: "Exhibition",    color: "var(--cm-cat-exhibition)" },
-  workshop:        { label: "Workshop",      color: "var(--cm-cat-workshop)" },
-  // shared
-  other:           { label: "Other",         color: "var(--cm-cat-other)" },
-};
-
-interface CategoryBadgeProps {
-  category: Category;
+/**
+ * Hue plus icon plus written label, always all three. The colour is a fast
+ * secondary cue for people who can use it, never the thing carrying meaning.
+ */
+export function CategoryBadge({
+  category,
+  label,
+  className,
+}: {
+  category: PlaceCategory;
+  label: string;
   className?: string;
-}
-
-export function CategoryBadge({ category, className }: CategoryBadgeProps) {
-  const config = categoryConfig[category] ?? { label: category, color: "var(--cm-cat-other)" };
+}) {
+  const color = categoryColor(category);
   return (
     <span
-      className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold uppercase tracking-wider", className)}
+      className={cn(
+        // Deliberately not a pill: this states what a place IS, it does not
+        // filter anything, and the pill shape is reserved for controls that do.
+        "inline-flex items-center gap-1.5 rounded-md border px-2 py-1",
+        "text-[11.5px] font-semibold tracking-[0.01em]",
+        className,
+      )}
       style={{
-        color: config.color,
-        backgroundColor: `color-mix(in srgb, ${config.color} 12%, transparent)`,
+        color,
+        borderColor: `color-mix(in srgb, ${color} 34%, transparent)`,
+        background: `color-mix(in srgb, ${color} 10%, transparent)`,
       }}
     >
-      <span
-        className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
-        style={{ backgroundColor: config.color }}
-      />
-      {config.label}
+      <CategoryIcon category={category} size={13} strokeWidth={2.2} />
+      {label}
     </span>
   );
 }
-
-export { categoryConfig };
-export type { Category };

@@ -39,6 +39,12 @@ export const placeSchema = z.object({
   openingHours: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  /**
+   * Upcoming events at this place within the requested lens window. Present on
+   * list responses so a pin can show event-presence without an N+1 fetch;
+   * absent when the caller did not ask for counts.
+   */
+  upcomingEventCount: z.number().int().nonnegative().optional(),
 });
 
 export type Place = z.infer<typeof placeSchema>;

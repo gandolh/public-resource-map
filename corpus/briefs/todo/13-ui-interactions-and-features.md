@@ -2,6 +2,32 @@
 
 > Written 2026-06-28; **narrowed 2026-06-29** — draw-to-filter split to [brief 15](15-draw-to-filter.md), /admin shell + review UI split to [brief 16](16-admin-shell-and-review-ui.md). This brief is now the **public, place-centric interaction detail**. Companion to [brief 06](06-place-centric-ui.md) (06 = shell/routes; 13 = interaction detail). Builds on [design.md](../../wiki/design.md) (bottom-sheet/side-panel shell locked there). Depends on 03/04/05/06.
 
+
+## ✅ Mostly shipped 2026-09-04 — what remains
+
+Shipped: events grouped Today / Tomorrow / This weekend / Later with a
+show-all expand and a first-class empty state; selection pans the pin clear of
+the panel/sheet and deep-links to `/places/:id`; PlaceCategory chips (multi-
+select) AND-ed with the timing lens, shared by map and what's-on through one
+store; the timing lens **hard-filters** server-side; day-one clustering with an
+event-presence hint on clusters; guided zero-results recovery instead of a
+blank map; loading skeletons, empty and error states with retry on every
+surface; dedicated centred-card `/login` and `/register`; focus moved into the
+panel on open and Escape to close; mobile chrome collapses behind one Filters
+button and the bottom tab bar hides while a sheet is open.
+
+**Still open:**
+- **Favorite-while-logged-out flow and the notification bell** — brief 05.
+- `/verify` and `/reset` UI routes (backend flows exist).
+- Zero-results shows "clear filters" but **not** the active filters as
+  individually-removable chips.
+- No dedicated banner while a timing lens is active (the count sits in the
+  filter card instead).
+- Non-selected pins are **not** dimmed when one is selected (selection is
+  carried by scale + ring + elevation).
+- Mobile sheet has two snaps (peek / full), not three.
+- Attribution is Leaflet's control, not a tappable "i" on mobile.
+
 ## Place panel (place + its events)
 
 - Layout: **place identity at top**, then **events grouped by date** — *Today / This weekend / Later*. Show first ~5, **"show all" expand** for busy venues. Each event row: title, time, **category dot** (EventCategory color), buy-link **only if the source provides one**.

@@ -1,6 +1,14 @@
 export class LocalStorage {
   static get<T>(key: string) {
-    const item = window.localStorage.getItem(key);
+    // Storage can be absent (prerender) or throw (Safari private mode, blocked
+    // site data). A missing preference is a working state, not an error.
+    if (typeof window === "undefined") return undefined;
+    let item: string | null = null;
+    try {
+      item = window.localStorage.getItem(key);
+    } catch {
+      return undefined;
+    }
     if (!item) {
       return undefined;
     }
@@ -32,7 +40,12 @@ export class LocalStorage {
       lsValue = value;
     }
 
-    window.localStorage.setItem(key, lsValue);
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(key, lsValue);
+    } catch {
+      /* quota or blocked storage — the preference just does not persist */
+    }
   }
 
   static has(key: string) {

@@ -33,7 +33,9 @@ The front door for **public-resource-map** project knowledge. Read this first.
 | [wiki/decisions.md](wiki/decisions.md) | Locked tech/design choices — don't relitigate |
 | [wiki/status.md](wiki/status.md) | Current state dashboard, per-area snapshot, dev commands |
 | [wiki/open-questions.md](wiki/open-questions.md) | Genuinely unresolved: extraction mechanics, matching, spatial index |
-| [wiki/design.md](wiki/design.md) | Stitch CivicMap design system — colors, typography, components spec |
+| [wiki/design.md](wiki/design.md) | Pointer to the built design system (`ui/DESIGN.md`) + the record of the four directions and why the standard was chosen |
+| [../ui/DESIGN.md](../ui/DESIGN.md) | **The design system** — tokens, type scale, elevation, component anatomy, derived from the shipped UI |
+| [../ui/PRODUCT.md](../ui/PRODUCT.md) | **Product truth** — users, positioning, constraints, brand commitments, accessibility |
 | [wiki/stitch-screens.md](wiki/stitch-screens.md) | Reference HTML screens from Stitch — layout, component classes, patterns for all 4 views |
 
 ## Briefs

@@ -93,72 +93,30 @@ export const event = sqliteTable(
 );
 
 // ---------------------------------------------------------------------------
-// Auth (brief 02) — users, server-side sessions, verify + reset tokens.
+// Identity is Ward's (2026-09-06). There are no user tables here.
 // ---------------------------------------------------------------------------
-export const user = sqliteTable(
-  "user",
-  {
-    id: id(),
-    email: text("email").notNull(),
-    passwordHash: text("password_hash").notNull(),
-    displayName: text("display_name"),
-    role: text("role").notNull().default("user"), // 'user' | 'admin'
-    emailVerified: integer("email_verified", { mode: "boolean" })
-      .notNull()
-      .default(false),
-    createdAt: createdAt(),
-    updatedAt: updatedAt(),
-  },
-  (t) => [uniqueIndex("user_email_unique").on(t.email)],
-);
-
-export const session = sqliteTable(
-  "session",
-  {
-    id: id(), // opaque session id stored in the httpOnly cookie
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
-    expiresAt: text("expires_at").notNull(),
-    createdAt: createdAt(),
-  },
-  (t) => [index("session_user_idx").on(t.userId)],
-);
-
-export const verificationToken = sqliteTable(
-  "verification_token",
-  {
-    id: id(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
-    token: text("token").notNull(),
-    expiresAt: text("expires_at").notNull(),
-    createdAt: createdAt(),
-  },
-  (t) => [
-    uniqueIndex("verification_token_unique").on(t.token),
-    index("verification_token_user_idx").on(t.userId),
-  ],
-);
-
-export const resetToken = sqliteTable(
-  "reset_token",
-  {
-    id: id(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
-    token: text("token").notNull(),
-    expiresAt: text("expires_at").notNull(),
-    usedAt: text("used_at"), // single-use: set once consumed
-    createdAt: createdAt(),
-  },
-  (t) => [
-    uniqueIndex("reset_token_unique").on(t.token),
-    index("reset_token_user_idx").on(t.userId),
-  ],
-);
+//
+// `user`, `session`, `verification_token` and `reset_token` are **gone**. prm
+// holds no credential of any kind: no password hash, no session id, no reset
+// token. Sign-in, registration, email verification and password reset are all
+// Ward's, at one login page for the estate.
+//
+// Two properties that used to be prm's changed hands, and both were in the
+// wrong place here:
+//
+//  - **Roles.** `user.role` was prm's own `'user' | 'admin'` column. Authority
+//    is now a Ward **grant** — the triple `(subject, "prm", role)` — which is
+//    what lets prm keep public registration open without that registration
+//    conferring anything anywhere else in the estate.
+//  - **`emailVerified`.** Always an account-level fact rather than an app-level
+//    one, and now recorded once by Ward instead of once per app.
+//
+// What prm still owns is everything below: places, events, sources, and the
+// per-person rows — favourites and notifications — which are now keyed on
+// Ward's opaque **subject** instead of a local `user.id`. There is no foreign
+// key for a subject and there must not be: the table it would reference does
+// not exist in this database, and a local `user` table would be a second, stale
+// answer to "who exists".
 
 // ---------------------------------------------------------------------------
 // Ingestion (brief 04) — sources, staged (diff/accept) events, geocode cache.
@@ -246,17 +204,15 @@ export const favoritePlace = sqliteTable(
   "favorite_place",
   {
     id: id(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
+    subject: text("subject").notNull(),
     placeId: text("place_id")
       .notNull()
       .references(() => place.id),
     createdAt: createdAt(),
   },
   (t) => [
-    uniqueIndex("favorite_place_unique").on(t.userId, t.placeId),
-    index("favorite_place_user_idx").on(t.userId),
+    uniqueIndex("favorite_place_unique").on(t.subject, t.placeId),
+    index("favorite_place_subject_idx").on(t.subject),
     index("favorite_place_place_idx").on(t.placeId),
   ],
 );
@@ -265,17 +221,15 @@ export const favoriteEvent = sqliteTable(
   "favorite_event",
   {
     id: id(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
+    subject: text("subject").notNull(),
     eventId: text("event_id")
       .notNull()
       .references(() => event.id),
     createdAt: createdAt(),
   },
   (t) => [
-    uniqueIndex("favorite_event_unique").on(t.userId, t.eventId),
-    index("favorite_event_user_idx").on(t.userId),
+    uniqueIndex("favorite_event_unique").on(t.subject, t.eventId),
+    index("favorite_event_subject_idx").on(t.subject),
     index("favorite_event_event_idx").on(t.eventId),
   ],
 );
@@ -284,9 +238,7 @@ export const notification = sqliteTable(
   "notification",
   {
     id: id(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
+    subject: text("subject").notNull(),
     kind: text("kind").notNull(), // 'new-event' | 'reminder'
     // new-event notifications are coalesced per (place, accept-batch) and link
     // to their events via `notification_event`; reminders are per-event.
@@ -302,12 +254,12 @@ export const notification = sqliteTable(
   (t) => [
     // idempotency for per-event reminders; new-event rows have null eventId
     // (SQLite treats NULLs as distinct) so they are not collapsed here.
-    uniqueIndex("notification_user_event_kind_unique").on(
-      t.userId,
+    uniqueIndex("notification_subject_event_kind_unique").on(
+      t.subject,
       t.eventId,
       t.kind,
     ),
-    index("notification_user_idx").on(t.userId),
+    index("notification_subject_idx").on(t.subject),
     index("notification_place_idx").on(t.placeId),
     index("notification_event_idx").on(t.eventId),
   ],

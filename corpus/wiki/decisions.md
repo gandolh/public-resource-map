@@ -101,6 +101,38 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Notifications:** Navbar **bell + unread badge + dropdown** (items link to place/event) + mark-all-read + full view.
 - **States & a11y on every surface:** loading (skeleton) / empty (copy+action) / error (retry); WCAG AA — keyboard map+panel nav, focus management, ARIA, 4.5:1 category contrast, category never color-only.
 
+## Visual direction (locked 2026-09-04 — REPLACES the earlier CivicMap design system)
+
+The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Fraunces + Inter, amber accent) is **retired**. It was never built, and the UI it was written for is gone.
+
+- **The direction is the category convention, executed at full fidelity.** Four visual directions were designed and shown as running coded mockups (a land-registry sheet, a transit diagram, an orienteering overprint, and the standard). The user chose **the standard, deliberately**, as the permanent standing exit — floating search, pill filter chips, teardrop pins, a docked side panel on desktop, a draggable bottom sheet on mobile. This is a commitment, not a fallback: **future work does not "rescue" it with a novel visual world.**
+- **The craft bar is Citymapper and Linear.** Precise and dense over soft and generous: tight type, crisp 1px borders in preference to diffuse shadows, restrained colour with one accent, tabular numerals wherever digits align, motion at 150–220ms ease-out with no bounce or spring. "Looks like every other map app" is an accepted trade. "Looks less finished than Citymapper" is not.
+- **Typeface: Archivo** (variable, Google Fonts), one family for everything. Chosen over Geist/Inter — both are on the overused-face list, and Archivo is a signage grotesque with a large x-height that holds at 12px and real Romanian diacritics rather than fallback glyphs. **No webfont monospace:** monospace is reserved for genuine identifiers (an OSM way id, a stack trace), and the small tracked-uppercase utility labels use the UI face.
+- **Colour: restrained.** Cool-biased neutrals plus **one** blue accent (`#2a5bef` light / `#6d9bff` dark). Eleven `PlaceCategory` hues are *information*, and **`EventCategory` reuses the same eleven** rather than adding eight more — two taxonomies, one palette, and the two enums never appear on the same mark.
+- **Elevation by role:** a 1px border is the default separator; `--sh-1` for resting chrome, `--sh-2` for floating overlays, `--sh-3` for the panel and sheet, and a separate tight `--sh-pin`. A chip, a panel and a pin must not share a shadow.
+- **Radii cap at 12px**; pills are reserved for filter chips and badges, so the pill shape keeps meaning "this narrows what you see".
+- **Both themes ship.** The use scene forces it: bright daylight outdoors on a phone, and a laptop indoors.
+- The authoritative token reference is **`ui/DESIGN.md`**, derived from the built system. [design.md](design.md) is now a pointer, not a spec.
+
+## Interface language (locked 2026-09-04)
+
+- **Romanian by default, English behind a switch.** RO leads because the audience is residents and the UI should agree with the place names; EN exists so the POC can be demoed to a non-Romanian stakeholder. Browser language is deliberately **ignored** — a Romanian with an English-locale phone still lands in Romanian.
+- **No translation framework.** `Intl.PluralRules` handles Romanian's three plural forms including the "de" form above nineteen (*1 loc · 3 locuri · 23 de locuri*), and `Intl.DateTimeFormat` handles dates in Europe/Bucharest. Adding i18next to reach platform APIs would be a dependency for a lookup table. Lives in `ui/app/lib/i18n.tsx`.
+
+## Basemap constraint (discovered 2026-09-04)
+
+- **CARTO's keyless raster endpoints no longer serve maps.** `basemaps.cartocdn.com/light_all/...` answers HTTP 200 with a ~2.5KB "API KEY REQUIRED" watermark tile. Leaflet + CARTO stays the locked stack, but the style is now behind `VITE_CARTO_API_KEY`.
+- **Fallback while no key is set:** standard OpenStreetMap raster tiles, filtered in CSS toward the same quiet low-saturation register (`.map-fallback` in `app.css`, including a dark-mode inversion). Attribution changes with the provider, because naming CARTO for tiles CARTO did not serve would be false. Getting a CARTO key is a small open task before any public deploy.
+- **Basemap style: Positron / Dark Matter**, not Voyager — the map carries eleven category hues plus an accent, and the quieter the basemap the more the pins mean. _(Supersedes the Voyager choice in the retired design system.)_
+
+## Public API surface added for the place-centric UI (2026-09-04)
+
+- `GET /api/places` now takes a comma-separated `category` list and a `lens` (`today` | `weekend` | `all`), and every row carries **`upcomingEventCount`** — computed as a correlated subquery so a map of pins costs one request, not one per pin. `lens=today|weekend` **hard-filters** places to those holding an event in the window, per the locked UI decision.
+- `GET /api/places/:id/events` — a place's programme: live and upcoming only, in date order.
+- `GET /api/whats-on` — the citywide date-first index, honouring the same city/category/lens filters so the map and the list can never disagree. Each row carries the place it happens at.
+- `backend/src/lib/time.ts` owns every Europe/Bucharest window calculation (`lensWindow`, `zonedTimeToInstant`), with the 90-day horizon. DST-correct via a two-pass offset, no dependency.
+- **Note on Drizzle:** a correlated subquery must be built with the query builder, not a raw `sql` template. A raw template renders its columns unqualified, so `place_id = id` silently resolves both sides to the subquery's own table and every count returns zero. This cost a debugging round; it is in the code as a comment.
+
 ## Data conventions (locked 2026-06-28)
 
 - **Dates: UTC ISO 8601 strings** in the DB; convert to **Europe/Bucharest only at compute/display** (reminder sweep, today/weekend grouping). Centralized TZ logic.
@@ -109,7 +141,11 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Two category enums:** `PlaceCategory` + `EventCategory` (separate taxonomies, color-coded per-enum).
 - **Dependency policy:** minimal, **exact-pinned**, justified per add in its brief; prefer a tiny helper over a heavy lib, but don't hand-roll mature solved problems (drawing). New this session: `vitest`, `@vitest/coverage-v8`, `@playwright/test` (brief 11), `argon2` (brief 02), `@geoman-io/leaflet-geoman-free` + `@turf/boolean-point-in-polygon` (brief 13). All exact-pinned; confirm latest stable versions at install time.
 
-## Auth (locked 2026-06-28)
+## Auth (locked 2026-06-28 — **SUPERSEDED 2026-09-06, see "Identity is Ward's" below**)
+
+> Every bullet in this section describes machinery prm no longer has. It is
+> kept because the *reasoning* still explains why prm has end-user accounts at
+> all, which the replacement inherited unchanged; only the implementation moved.
 
 - **Full end-user auth is in scope now** (not deferred), because favorites + notifications are the **retention loop the POC is meant to demonstrate** — not just admin gating. (Re-confirmed 2026-06-28 against the POC reframe: kept deliberately, as a demoed feature.)
 - **Email + password, self-hosted** — matches the house style of hand-rolling over dependencies (better-sqlite3, no UUID lib, Zod). No managed provider (Clerk/Auth0) for v1.
@@ -118,17 +154,70 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Verify + reset flows are built now**, but email delivery is **console-logged links in dev**; swap in a transactional email provider (Resend/Postmark/SES) before launch.
 - The Navbar profile dropdown is currently **decorative**; it becomes real when auth lands.
 
+## Identity is Ward's (locked 2026-09-06 — supersedes "Auth" above)
+
+- **prm authenticates nobody.** The `user`, `session`, `verification_token` and
+  `reset_token` tables are dropped; `plugins/auth.ts`, `routes/auth.ts`,
+  `lib/auth-internals.ts`, `lib/ensure-admin.ts` and the login/register screens
+  are deleted. prm holds **no credential of any kind** — no password hash, no
+  session id, no reset token. Sign-in, registration, email verification and
+  password reset are [Ward's](../../../wzd_auth/corpus/wiki/overview.md), at one
+  login page for the estate.
+- **prm is the reason Ward has public registration at all.** The estate's first
+  design had no self-signup; prm ships it, and that collision is what moved the
+  security boundary from *registration* to *authorization*. Anyone may hold a
+  Ward account; a **grant** is what lets them reach anything. prm's app row is
+  the only one in the estate with `public_registration` on, and registering at
+  `/ward/register?app=prm` confers exactly `prm:user` and nothing anywhere else.
+- **Roles became grants.** `user.role` is gone. Authority is the Ward triple
+  `(subject, "prm", role)`; Ward stores it and never interprets it. `requireAuth`
+  now means *holds a prm grant*, not merely *has a session* — a live Ward
+  account with no prm grant is not signed in as far as prm is concerned, which
+  is exactly what keeps open registration here from opening atrium.
+  **`prm:admin` does not imply `prm:user`**: grants are a set, not a ladder, so
+  `requireAuth` accepts either explicitly rather than assuming a hierarchy Ward
+  does not have.
+- **`emailVerified` was never prm's.** It is an account-level fact, not an
+  app-level one, and Ward records it once instead of every app recording it
+  separately.
+- **Per-person rows are re-keyed onto the subject.** `favorite_place`,
+  `favorite_event` and `notification` swap `user_id` for `subject` — an opaque
+  Ward identifier, with **no foreign key**, because the table it would reference
+  does not exist here and a local `user` table would be a second, stale answer
+  to "who exists".
+- **Nothing is gated by default, and that is deliberate.** Every other app in
+  the estate gates its whole surface; prm is a *public resource map* and does
+  the opposite. The root hook resolves a session only when a cookie is present
+  and leaves the request anonymous otherwise; `requireAuth`/`requireAdmin` stay
+  opt-in per route. A consequence worth keeping: **when Ward is down, the public
+  map still works**, because it never asks Ward anything. Guarded routes answer
+  503 and fail closed.
+- **prm hand-writes its Ward client** (`backend/src/ward/`) rather than
+  importing a shared package — the estate decided against one because these
+  repos are separate checkouts that `npm ci` independently. The contract is
+  `wzd_auth/corpus/wiki/integrating.md`.
+- **There is no seeded admin.** `ensureAdmin` promoted an account from
+  `ADMIN_EMAIL`/`ADMIN_PASSWORD` on every boot; `prm:admin` is now issued by
+  hand from Ward's console. An admin a redeploy can recreate is an admin an
+  environment variable can silently grant.
+- **The cutover destroys every account and everything keyed on one** — the
+  favourites and notifications go with them. prm keyed people on **email** and
+  Ward keys them on a minted subject, so no mapping exists that was not invented
+  at cutover time; the estate chose a full prune. Places, events, sources and
+  the geocode cache are untouched. **Take a database copy first** — `0001_ward_cutover.sql`
+  has no down.
+
 ## Favorites & notifications (locked 2026-06-28)
 
-- **Two favorite entities:**
-  - `favorite_place` (userId → placeId) — drives "new here" notifications.
-  - `favorite_event` (userId → eventId) — drives day-before reminders. _Distinct from favoriting a place; "remind me before this" only makes sense for a specific event the user intends to attend._
+- **Two favorite entities:** (both re-keyed to `subject` in 2026-09-06's Ward cutover)
+  - `favorite_place` (subject → placeId) — drives "new here" notifications.
+  - `favorite_event` (subject → eventId) — drives day-before reminders. _Distinct from favoriting a place; "remind me before this" only makes sense for a specific event the user intends to attend._
 - **Notifications: IN-APP inbox + EMAIL (revised 2026-06-28 after research — was in-app-only).** The in-app inbox/bell stays (testable, natural read-model); **email is added as a second delivery channel on the same notification rows**, reusing the auth verify/reset email infra (console-logged in dev, provider before launch). Rationale: Bandsintown/Apple Music confirm the **away-from-app ping** is the core of the retention loop the POC exists to demo; in-app-only was the weakest part of the story and email is cheap given the infra already exists.
 - **Web/native push is still OUT** for the POC — the noted #1 post-POC retention upgrade (service worker + VAPID, iOS caveats).
 - Email sends are best-effort/idempotent off the same `notification` rows (don't double-send on retries).
 - **Two triggers create inbox items:**
   1. **New-events trigger** — fires **synchronously at the admin-accept step**: when an admin accepts new events at a place, create inbox items for users who `favorite_place`d it. (Not at scrape time — unaccepted events don't notify.)
-  2. **Day-before reminder** — a **once-a-day scheduled sweep running IN-PROCESS inside the Fastify API service** (not a separate pm2 process, not OS cron; distinct from the rejected *ingestion* cron — this one only reads accepted events + writes inbox rows, nothing legally/data sensitive). Semantics: **daily sweep at a fixed local time (e.g. 09:00 Europe/Bucharest)** selects `favorite_event`s whose start is the **next calendar day in Bucharest time**, inserts reminder inbox rows. **Idempotent** via a unique constraint on `(userId, eventId, kind='reminder')` so restarts/double-runs never duplicate. Timezone comparison is **Europe/Bucharest**, not UTC (events are ISO 8601 strings).
+  2. **Day-before reminder** — a **once-a-day scheduled sweep running IN-PROCESS inside the Fastify API service** (not a separate pm2 process, not OS cron; distinct from the rejected *ingestion* cron — this one only reads accepted events + writes inbox rows, nothing legally/data sensitive). Semantics: **daily sweep at a fixed local time (e.g. 09:00 Europe/Bucharest)** selects `favorite_event`s whose start is the **next calendar day in Bucharest time**, inserts reminder inbox rows. **Idempotent** via a unique constraint on `(subject, eventId, kind='reminder')` so restarts/double-runs never duplicate. Timezone comparison is **Europe/Bucharest**, not UTC (events are ISO 8601 strings).
 
 ## Testing (locked 2026-06-28)
 

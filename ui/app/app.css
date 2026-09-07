@@ -1,279 +1,429 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 @import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
-/* CivicMap design tokens — light mode */
+/* ===========================================================================
+   CivicMap design tokens.
+
+   Direction: the category convention, executed at full fidelity. The craft bar
+   is Citymapper and Linear — precise and dense rather than soft and generous.
+   That resolves into four rules the whole system obeys:
+
+     1. A 1px border is the default separator. Shadow is spent only on things
+        that genuinely float above the map, and it differs by role.
+     2. Radii stay tight (max 12px on panels); pills are reserved for chips and
+        badges, so the pill shape keeps meaning "filter" and nothing else.
+     3. Neutrals carry a slight blue bias — picked, not inherited grey.
+     4. One accent. Category hue is information, not decoration, and is always
+        paired with an icon and a label (never colour alone).
+   =========================================================================== */
+
 :root {
-  /* Surface scale */
-  --cm-surface:                  #f9f9ff;
-  --cm-surface-dim:              #d3daef;
-  --cm-surface-bright:           #f9f9ff;
-  --cm-surface-container-lowest: #ffffff;
-  --cm-surface-container-low:    #f1f3ff;
-  --cm-surface-container:        #e9edff;
-  --cm-surface-container-high:   #e1e8fd;
-  --cm-surface-container-highest:#dce2f7;
-  --cm-surface-variant:          #dce2f7;
-  --cm-surface-tint:             #206393;
+  /* Surfaces — cool-biased neutrals, not pure grey */
+  --bg:            #f7f9fb;
+  --surface:       #fcfdfe;
+  --surface-2:     #f1f4f8;
+  --surface-3:     #e6ebf2;
+  --line:          #e3e6ec;
+  --line-strong:   #ccd2dc;
 
-  /* On-surface */
-  --cm-on-surface:               #141b2b;
-  --cm-on-surface-variant:       #41474f;
-  --cm-on-background:            #141b2b;
+  /* Text */
+  --fg:            #0d1117;
+  --fg-muted:      #59636f;
+  --fg-faint:      #697281;
+  --fg-on-accent:  #ffffff;
 
-  /* Inverse */
-  --cm-inverse-surface:          #293040;
-  --cm-inverse-on-surface:       #edf0ff;
-  --cm-inverse-primary:          #96ccff;
+  /* The one accent */
+  --accent:        #2a5bef;
+  --accent-hover:  #1f4bd8;
+  --accent-weak:   #eef2fe;
+  --accent-line:   #c7d5fb;
 
-  /* Outline */
-  --cm-outline:                  #717880;
-  --cm-outline-variant:          #c1c7d0;
+  /* Semantic — separate from the accent, never used as decoration */
+  --ok:            #0b7d55;
+  --ok-weak:       #e6f5ef;
+  --warn:          #9a5b00;
+  --danger:        #c62f2f;
+  --danger-weak:   #fdeced;
 
-  /* Primary — steel blue */
-  --cm-primary:                  #1c6090;
-  --cm-on-primary:               #ffffff;
-  --cm-primary-container:        #3c79ab;
-  --cm-on-primary-container:     #fdfcff;
-  --cm-primary-fixed:            #cee5ff;
-  --cm-primary-fixed-dim:        #96ccff;
-  --cm-on-primary-fixed:         #001d32;
-  --cm-on-primary-fixed-variant: #004a75;
+  /* Map chrome */
+  --map-scrim:     rgba(13, 17, 23, 0.06);
+  --pin-stroke:    #ffffff;
+  --pin-ico:       #ffffff;
 
-  /* Secondary */
-  --cm-secondary:                #4c6075;
-  --cm-on-secondary:             #ffffff;
-  --cm-secondary-container:      #cfe5fd;
-  --cm-on-secondary-container:   #52667b;
-  --cm-secondary-fixed:          #cfe5fd;
-  --cm-secondary-fixed-dim:      #b3c9e0;
-  --cm-on-secondary-fixed:       #061d2f;
-  --cm-on-secondary-fixed-variant:#34495c;
+  /* Category hues. Each is dark enough in light mode to carry a white icon at
+     32px and to clear 4.5:1 as text on `--surface`. */
+  --cat-park:             #157f4a;
+  --cat-library:          #9c5c00;
+  --cat-clinic:           #c4342a;
+  --cat-museum:           #6d3fb0;
+  --cat-townhall:         #0f6e8e;
+  --cat-community_center: #b03a86;
+  --cat-education:        #3a37a8;
+  --cat-theater:          #c2410c;
+  --cat-sports:           #4d7c0f;
+  --cat-cultural_center:  #0f766e;
+  --cat-other:            #566072;
 
-  /* Tertiary — amber/library */
-  --cm-tertiary:                 #7d5400;
-  --cm-on-tertiary:              #ffffff;
-  --cm-tertiary-container:       #9a6c17;
-  --cm-on-tertiary-container:    #fffbff;
-  --cm-tertiary-fixed:           #ffddb0;
-  --cm-tertiary-fixed-dim:       #f6bc62;
-  --cm-on-tertiary-fixed:        #281800;
-  --cm-on-tertiary-fixed-variant:#614000;
+  /* Elevation, by role. A chip, a panel and a pin must not share a shadow. */
+  --sh-1: 0 1px 2px rgba(13, 17, 23, 0.07);
+  --sh-2: 0 4px 12px -2px rgba(13, 17, 23, 0.10), 0 2px 4px -2px rgba(13, 17, 23, 0.06);
+  --sh-3: 0 16px 40px -8px rgba(13, 17, 23, 0.20), 0 4px 12px -4px rgba(13, 17, 23, 0.10);
+  --sh-pin: 0 2px 4px rgba(13, 17, 23, 0.30);
 
-  /* Error */
-  --cm-error:                    #ba1a1a;
-  --cm-on-error:                 #ffffff;
-  --cm-error-container:          #ffdad6;
-  --cm-on-error-container:       #93000a;
-
-  /* Background */
-  --cm-background:               #f9f9ff;
-
-  /* Category colors */
-  --cm-cat-park:       #10b981;
-  --cm-cat-library:    #9a6c17;
-  --cm-cat-healthcare: #ef4444;
-  --cm-cat-education:  #3b82f6;
-  --cm-cat-food:       #f59e0b;
-  --cm-cat-shelter:    #6366f1;
-  --cm-cat-transport:  #06b6d4;
-  --cm-cat-community:  #8b5cf6;
-  --cm-cat-concert:    #ec4899;
-  --cm-cat-theater:    #f97316;
-  --cm-cat-sport:      #84cc16;
-  --cm-cat-festival:   #a855f7;
-  --cm-cat-exhibition: #14b8a6;
-  --cm-cat-workshop:   #0ea5e9;
-  --cm-cat-other:      #6b7280;
+  /* Motion — fast and confident. No bounce, no spring. */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 240ms;
 }
 
-/* Dark mode overrides */
 .dark {
-  --cm-surface:                  #1f2937;
-  --cm-surface-dim:              #111827;
-  --cm-surface-bright:           #374151;
-  --cm-surface-container-lowest: #111827;
-  --cm-surface-container-low:    #1f2937;
-  --cm-surface-container:        #273040;
-  --cm-surface-container-high:   #2d3748;
-  --cm-surface-container-highest:#374151;
-  --cm-surface-variant:          #293040;
-  --cm-surface-tint:             #96ccff;
+  --bg:            #0b0d11;
+  --surface:       #14171d;
+  --surface-2:     #1a1e25;
+  --surface-3:     #222731;
+  --line:          #262b34;
+  --line-strong:   #363d49;
 
-  --cm-on-surface:               #e2e8f0;
-  --cm-on-surface-variant:       #94a3b8;
-  --cm-on-background:            #e2e8f0;
+  --fg:            #eef1f5;
+  --fg-muted:      #99a2b0;
+  --fg-faint:      #8d96a5;
+  --fg-on-accent:  #0b0d11;
 
-  --cm-inverse-surface:          #edf0ff;
-  --cm-inverse-on-surface:       #293040;
-  --cm-inverse-primary:          #1c6090;
+  --accent:        #6d9bff;
+  --accent-hover:  #85adff;
+  --accent-weak:   #16203a;
+  --accent-line:   #2c3f6b;
 
-  --cm-outline:                  #64748b;
-  --cm-outline-variant:          #374151;
+  --ok:            #34d399;
+  --ok-weak:       #0e2a22;
+  --warn:          #fbbf24;
+  --danger:        #fb7185;
+  --danger-weak:   #2c1218;
 
-  --cm-primary:                  #96ccff;
-  --cm-on-primary:               #001d32;
-  --cm-primary-container:        #004a75;
-  --cm-on-primary-container:     #cee5ff;
-  --cm-primary-fixed:            #cee5ff;
-  --cm-primary-fixed-dim:        #96ccff;
-  --cm-on-primary-fixed:         #001d32;
-  --cm-on-primary-fixed-variant: #004a75;
+  --map-scrim:     rgba(0, 0, 0, 0.32);
+  --pin-stroke:    #14171d;
+  /* Dark-mode fills are light, so the glyph flips to dark to keep contrast. */
+  --pin-ico:       #0b0d11;
 
-  --cm-secondary:                #b3c9e0;
-  --cm-on-secondary:             #1e3448;
-  --cm-secondary-container:      #34495c;
-  --cm-on-secondary-container:   #cfe5fd;
+  /* Lifted so they hold against a dark basemap and carry white text. */
+  --cat-park:             #34c77b;
+  --cat-library:          #e3a223;
+  --cat-clinic:           #f2695f;
+  --cat-museum:           #b083f0;
+  --cat-townhall:         #35b0d8;
+  --cat-community_center: #ee72bd;
+  --cat-education:        #8b88f5;
+  --cat-theater:          #f0863f;
+  --cat-sports:           #9bcc3c;
+  --cat-cultural_center:  #2bbfad;
+  --cat-other:            #93a0b4;
 
-  --cm-tertiary:                 #f6bc62;
-  --cm-on-tertiary:              #3e2500;
-  --cm-tertiary-container:       #614000;
-  --cm-on-tertiary-container:    #ffddb0;
-
-  --cm-error:                    #ffb4ab;
-  --cm-on-error:                 #690005;
-  --cm-error-container:          #93000a;
-  --cm-on-error-container:       #ffdad6;
-
-  --cm-background:               #111827;
+  /* In dark, depth comes from surface tone; shadow only stops things floating. */
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --sh-2: 0 4px 12px -2px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --sh-3: 0 16px 40px -8px rgba(0, 0, 0, 0.7), 0 4px 12px -4px rgba(0, 0, 0, 0.5);
+  --sh-pin: 0 2px 5px rgba(0, 0, 0, 0.6);
 }
 
-/* Expose tokens as Tailwind-compatible CSS vars via @theme */
 @theme inline {
-  /* CivicMap palette → tw color utilities */
-  --color-cm-surface:                  var(--cm-surface);
-  --color-cm-surface-dim:              var(--cm-surface-dim);
-  --color-cm-surface-bright:           var(--cm-surface-bright);
-  --color-cm-surface-container-lowest: var(--cm-surface-container-lowest);
-  --color-cm-surface-container-low:    var(--cm-surface-container-low);
-  --color-cm-surface-container:        var(--cm-surface-container);
-  --color-cm-surface-container-high:   var(--cm-surface-container-high);
-  --color-cm-surface-container-highest:var(--cm-surface-container-highest);
-  --color-cm-surface-variant:          var(--cm-surface-variant);
-  --color-cm-surface-tint:             var(--cm-surface-tint);
+  --color-bg:          var(--bg);
+  --color-surface:     var(--surface);
+  --color-surface-2:   var(--surface-2);
+  --color-surface-3:   var(--surface-3);
+  --color-line:        var(--line);
+  --color-line-strong: var(--line-strong);
 
-  --color-cm-on-surface:               var(--cm-on-surface);
-  --color-cm-on-surface-variant:       var(--cm-on-surface-variant);
-  --color-cm-on-background:            var(--cm-on-background);
+  --color-fg:          var(--fg);
+  --color-fg-muted:    var(--fg-muted);
+  --color-fg-faint:    var(--fg-faint);
+  --color-fg-on-accent:var(--fg-on-accent);
 
-  --color-cm-inverse-surface:          var(--cm-inverse-surface);
-  --color-cm-inverse-on-surface:       var(--cm-inverse-on-surface);
-  --color-cm-inverse-primary:          var(--cm-inverse-primary);
+  --color-accent:      var(--accent);
+  --color-accent-hover:var(--accent-hover);
+  --color-accent-weak: var(--accent-weak);
+  --color-accent-line: var(--accent-line);
 
-  --color-cm-outline:                  var(--cm-outline);
-  --color-cm-outline-variant:          var(--cm-outline-variant);
+  --color-ok:          var(--ok);
+  --color-ok-weak:     var(--ok-weak);
+  --color-warn:        var(--warn);
+  --color-danger:      var(--danger);
+  --color-danger-weak: var(--danger-weak);
 
-  --color-cm-primary:                  var(--cm-primary);
-  --color-cm-on-primary:               var(--cm-on-primary);
-  --color-cm-primary-container:        var(--cm-primary-container);
-  --color-cm-on-primary-container:     var(--cm-on-primary-container);
-  --color-cm-primary-fixed:            var(--cm-primary-fixed);
-  --color-cm-primary-fixed-dim:        var(--cm-primary-fixed-dim);
-  --color-cm-on-primary-fixed:         var(--cm-on-primary-fixed);
+  --color-cat-park:             var(--cat-park);
+  --color-cat-library:          var(--cat-library);
+  --color-cat-clinic:           var(--cat-clinic);
+  --color-cat-museum:           var(--cat-museum);
+  --color-cat-townhall:         var(--cat-townhall);
+  --color-cat-community_center: var(--cat-community_center);
+  --color-cat-education:        var(--cat-education);
+  --color-cat-theater:          var(--cat-theater);
+  --color-cat-sports:           var(--cat-sports);
+  --color-cat-cultural_center:  var(--cat-cultural_center);
+  --color-cat-other:            var(--cat-other);
 
-  --color-cm-secondary:                var(--cm-secondary);
-  --color-cm-on-secondary:             var(--cm-on-secondary);
-  --color-cm-secondary-container:      var(--cm-secondary-container);
-  --color-cm-on-secondary-container:   var(--cm-on-secondary-container);
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
 
-  --color-cm-tertiary:                 var(--cm-tertiary);
-  --color-cm-on-tertiary:              var(--cm-on-tertiary);
-  --color-cm-tertiary-container:       var(--cm-tertiary-container);
-  --color-cm-on-tertiary-container:    var(--cm-on-tertiary-container);
-  --color-cm-tertiary-fixed:           var(--cm-tertiary-fixed);
-  --color-cm-tertiary-fixed-dim:       var(--cm-tertiary-fixed-dim);
+  --shadow-e1: var(--sh-1);
+  --shadow-e2: var(--sh-2);
+  --shadow-e3: var(--sh-3);
 
-  --color-cm-error:                    var(--cm-error);
-  --color-cm-on-error:                 var(--cm-on-error);
-  --color-cm-error-container:          var(--cm-error-container);
-  --color-cm-on-error-container:       var(--cm-on-error-container);
+  /* Archivo: a signage grotesque with a large x-height that holds up at 12px,
+     and real Romanian diacritics (ă â î ș ț) rather than fallback glyphs. */
+  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* No webfont mono. Monospace here means an actual identifier — an OSM way id,
+     a stack trace — not a costume for "this bit is technical". */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  --color-cm-background:               var(--cm-background);
-
-  /* Category colors */
-  --color-cat-park:       var(--cm-cat-park);
-  --color-cat-library:    var(--cm-cat-library);
-  --color-cat-healthcare: var(--cm-cat-healthcare);
-  --color-cat-education:  var(--cm-cat-education);
-  --color-cat-food:       var(--cm-cat-food);
-  --color-cat-shelter:    var(--cm-cat-shelter);
-  --color-cat-transport:  var(--cm-cat-transport);
-  --color-cat-community:  var(--cm-cat-community);
-  --color-cat-concert:    var(--cm-cat-concert);
-  --color-cat-theater:    var(--cm-cat-theater);
-  --color-cat-sport:      var(--cm-cat-sport);
-  --color-cat-festival:   var(--cm-cat-festival);
-  --color-cat-exhibition: var(--cm-cat-exhibition);
-  --color-cat-workshop:   var(--cm-cat-workshop);
-  --color-cat-other:      var(--cm-cat-other);
-
-  /* Typography scale */
-  --font-size-display:           48px;
-  --font-size-headline-lg:       32px;
-  --font-size-headline-lg-mobile:24px;
-  --font-size-headline-md:       20px;
-  --font-size-body-lg:           18px;
-  --font-size-body-md:           16px;
-  --font-size-label-md:          14px;
-  --font-size-label-sm:          12px;
-
-  /* Spacing (prefixed to avoid overriding Tailwind built-ins) */
-  --spacing-cm-xs:              4px;
-  --spacing-cm-sm:              8px;
-  --spacing-cm-md:              16px;
-  --spacing-cm-lg:              24px;
-  --spacing-cm-xl:              32px;
-  --spacing-cm-gutter:          16px;
-  --spacing-cm-margin-mobile:   16px;
-  --spacing-cm-margin-desktop:  40px;
-
-  /* Border radius */
-  --radius-pill: 9999px;
-  --radius-sm:   4px;
-  --radius:      8px;
-  --radius-md:   12px;
-  --radius-lg:   16px;
-  --radius-xl:   24px;
+  --ease-out-fast: var(--ease);
 }
 
-/* Map placeholder grid pattern */
-.map-placeholder {
-  background-color: var(--cm-surface-dim);
-  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cpath fill="%23e5e7eb" d="M0 0h100v100H0z"/%3E%3Cpath fill="none" stroke="%23d1d5db" stroke-width="1" d="M0 20h100M0 40h100M0 60h100M0 80h100M20 0v100M40 0v100M60 0v100M80 0v100"/%3E%3C/svg%3E');
-  background-size: 100px 100px;
-}
+/* --- base ---------------------------------------------------------------- */
 
-.dark .map-placeholder {
-  background-color: #111827;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* User location pulse animation */
-@keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 rgba(28,96,144,0.7); }
-  70%  { box-shadow: 0 0 0 10px rgba(28,96,144,0); }
-  100% { box-shadow: 0 0 0 0 rgba(28,96,144,0); }
-}
-
-.pulse-dot {
-  animation: pulse-ring 2s infinite;
-}
-
-/* Leaflet z-index fix inside fixed nav */
-.leaflet-pane { z-index: 10; }
-.leaflet-control { z-index: 20; }
-.leaflet-top, .leaflet-bottom { z-index: 20; }
-
+/* These element rules live in `@layer base` deliberately. Written unlayered they
+   would sit OUTSIDE the cascade layers Tailwind sets up, and unlayered CSS beats
+   layered CSS whatever the specificity — so a bare `a { color: inherit }` would
+   silently defeat every `text-*` utility on every link in the app. */
 @layer base {
-  * {
-    @apply border-cm-outline-variant outline-cm-primary/50;
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
   }
+  html.dark { color-scheme: dark; }
+
   body {
-    @apply bg-cm-background text-cm-on-background font-sans;
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 14.5px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: inherit;
+    text-underline-offset: 2px;
+  }
+}
+
+/* Browser surfaces we did not draw still belong to the design system. */
+::selection { background: var(--accent); color: var(--fg-on-accent); }
+:root { accent-color: var(--accent); caret-color: var(--accent); }
+
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+  border: 3px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--fg-faint); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* A horizontal scroller fades at its trailing edge, so a clipped chip reads as
+   "there is more" rather than as a rendering fault. */
+.scroll-fade-x {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
+/* Digits that sit in a column must not dance as they change. */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Small utility labels — section headers, menu titles. Tracked uppercase in the
+   UI face, which is what makes them read as labels without borrowing a
+   monospace to signal "technical". */
+.label-cap {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+/* --- Leaflet, re-skinned ------------------------------------------------- */
+
+.leaflet-container {
+  background: var(--surface-2);
+  font-family: var(--font-sans);
+  outline: none;
+}
+.leaflet-container a { color: var(--accent); }
+
+/* Leaflet stacks its own panes and controls from 200 to 1000, which floats the
+   attribution above our panel and sheet. Rather than fight each layer — and
+   push the attribution behind the tiles, which is a licence problem — give the
+   map ONE stacking context at level 0. Everything Leaflet does then resolves
+   inside it, and all app chrome (400+) sits cleanly above the whole map. */
+.leaflet-container { z-index: 0; }
+
+/* On a phone the bottom tab bar owns the last 56px, so map controls that would
+   sit at the very bottom are lifted clear of it. */
+@media (max-width: 767px) {
+  .leaflet-bottom { bottom: 58px; }
+  /* A sheet over the map must not leave the tiles unattributed, so the
+     attribution rides above whichever snap the sheet is resting at. */
+  .sheet-peek .leaflet-bottom { bottom: calc(46dvh + 10px); }
+  .sheet-full .leaflet-bottom { bottom: calc(82dvh + 10px); }
+}
+
+/* Standard OSM tiles are saturated and busy — filtered toward the quiet,
+   low-saturation register the pin palette needs. Only applied on the fallback
+   basemap; real CARTO tiles are already this quiet and are left alone. */
+.map-fallback .leaflet-tile-pane {
+  filter: saturate(0.3) brightness(1.05) contrast(0.94);
+}
+.dark .map-fallback .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) saturate(0.28) brightness(0.9) contrast(0.92);
+}
+
+/* The default attribution is a white pill with 11px serif-ish text; ours has to
+   stay legible (it is a licence obligation) without shouting. */
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--surface) 88%, transparent) !important;
+  color: var(--fg-faint) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 10px !important;
+  line-height: 1.5 !important;
+  padding: 2px 8px !important;
+  border-top-left-radius: var(--radius-sm);
+  backdrop-filter: blur(6px);
+}
+.leaflet-control-attribution a { color: var(--fg-muted) !important; }
+
+.leaflet-bar {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--sh-2) !important;
+  overflow: hidden;
+}
+.leaflet-bar a {
+  background: var(--surface) !important;
+  color: var(--fg) !important;
+  border-bottom: 1px solid var(--line) !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 30px !important;
+}
+.leaflet-bar a:hover { background: var(--surface-2) !important; }
+.leaflet-bar a:last-child { border-bottom: none !important; }
+
+/* Markers are our own divIcons; kill Leaflet's default box. */
+.cm-pin, .cm-cluster { background: none; border: none; }
+
+/* Pins are built as HTML strings inside a divIcon, where Tailwind's compiler
+   cannot see the classes — so their styling lives here as real CSS. */
+.cmp { position: relative; }
+.cmp-drop {
+  width: 100%;
+  height: 100%;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--c);
+  border: 2.5px solid var(--pin-stroke);
+  box-shadow: var(--sh-pin);
+  display: grid;
+  place-items: center;
+  transition: transform var(--dur-2) var(--ease);
+}
+.cmp-ico { transform: rotate(45deg); line-height: 0; color: var(--pin-ico); }
+.cmp-badge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  border: 2px solid var(--pin-stroke);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 13px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.cm-pin:hover .cmp-drop { transform: rotate(-45deg) scale(1.08); }
+/* Selection rings in the accent, not the category hue: a ring in the pin's own
+   colour on the pin's own colour is barely a ring, and one accent owns
+   "selected" everywhere else in the app. */
+.cmp.is-selected .cmp-drop {
+  box-shadow: var(--sh-2), 0 0 0 3px var(--surface), 0 0 0 5.5px var(--accent);
+}
+
+.cmc {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface);
+  /* Same stroke language as a pin — white rim, definition from a hairline ring
+     rather than a heavy dark border, so pins and clusters read as one family. */
+  border: 2.5px solid var(--pin-stroke);
+  color: var(--fg);
+  box-shadow: var(--sh-2), 0 0 0 1px var(--line-strong);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  transition: transform var(--dur-2) var(--ease);
+}
+.cm-cluster:hover .cmc { transform: scale(1.06); }
+/* Event presence on a cluster is a counted badge, not a coloured dot — the
+   number is the signal, so it survives for anyone who cannot use the hue. */
+/* Deliberately identical to `.cmp-badge` on a pin: across both marker families
+   an inverted chip in the corner means "events here", while the large centred
+   numeral means "places here". Two numerals, two unmistakably different roles. */
+.cmc-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  border: 2px solid var(--pin-stroke);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes cm-panel-in {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+/* Opacity only. This animation used to end on `transform: translateY(0)` with
+   fill-mode `both`, which permanently outranked the sheet's own snap transform
+   and pinned it open at full height. The slide is done by the snap itself. */
+@keyframes cm-sheet-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.cm-panel-in { animation: cm-panel-in var(--dur-3) var(--ease) both; }
+.cm-sheet-in { animation: cm-sheet-in var(--dur-3) var(--ease) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

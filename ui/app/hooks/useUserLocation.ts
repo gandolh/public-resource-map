@@ -1,28 +1,14 @@
-import { useEffect } from "react";
-import { useLocationStore, DEFAULT_CENTER } from "~/stores/locationStore";
-import type { Coordinates } from "@public-resource-map/shared";
-
-interface UseUserLocationResult {
-  coords: Coordinates | null;
-  /** User location if granted, otherwise the default center. */
-  center: Coordinates;
-  loading: boolean;
-  error: string | null;
-}
+import { useLocationStore } from "~/stores/locationStore";
 
 /**
- * Shared geolocation. The underlying request fires at most once per session
- * (tracked in the store), so multiple pages reuse the same result.
+ * Geolocation is an enhancement, never a dependency: nothing here fires on
+ * mount. The user asks for it by pressing "centre on me", and the whole app
+ * works if they never do, or if the browser refuses.
  */
-export function useUserLocation(): UseUserLocationResult {
+export function useUserLocation() {
   const coords = useLocationStore((s) => s.coords);
   const loading = useLocationStore((s) => s.loading);
   const error = useLocationStore((s) => s.error);
-  const requestLocation = useLocationStore((s) => s.requestLocation);
-
-  useEffect(() => {
-    requestLocation();
-  }, [requestLocation]);
-
-  return { coords, center: coords ?? DEFAULT_CENTER, loading, error };
+  const request = useLocationStore((s) => s.requestLocation);
+  return { coords, loading, error, request };
 }
