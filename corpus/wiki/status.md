@@ -66,10 +66,11 @@ Still open:
 ```bash
 # from repo root
 npm install
+cp .env.example .env          # dev loads it into both processes
 npm run build -w shared       # must build first
 npm run db:migrate -w backend # first time only
-npm run db:seed -w backend    # currently NYC data (brief 08 replaces with RO)
-npm run dev                   # backend (3001) + ui (5173)
+npm run db:seed -w backend    # Timișoara + București
+npm run dev                   # backend (3001) + ui (5173) → http://localhost:5173/prm/
 npm run typecheck             # all workspaces
 npm test                      # Vitest (backend + shared): unit + Fastify .inject() integration
 npm run test:watch            # TDD inner loop

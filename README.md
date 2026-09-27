@@ -1,12 +1,29 @@
 # 🌍 Public Resource Map
 
-**Public Resource Map** is a web app that helps you discover nearby events and public resources using an interactive map. Whether it’s concerts, local festivals, community meetups, or other events, this app shows what’s happening around you — all in one place.
+A place-centric map of public resources in Romanian cities, starting with
+Timișoara and București: parks, libraries, clinics, museums and town halls, and
+what's on at each of them. It's a proof of concept; see
+[corpus/wiki/overview.md](corpus/wiki/overview.md).
 
----
+## Getting started
 
-## ✨ What It Does
+```bash
+npm install
+cp .env.example .env
+npm run build -w shared         # the other workspaces import its build
+npm run db:migrate -w backend
+npm run db:seed -w backend      # Timișoara + București
+npm run dev                     # backend on :3001, UI on :5173
+```
 
-- 📍 Shows your location on a map
-- 🗺 Displays nearby events and resources
-- 🔗 Lets you click on an event to see more details
-- 🚀 Redirects you to the original event page (like iabilet.ro or other platforms)
+Then open http://localhost:5173/prm/. Local dev is laid out like the deploy:
+the app under `/prm/`, the API under `/prm-api`, and Ward's sign-in under
+`/ward`, all on the UI dev server.
+
+Signing in needs a Ward. Start the local one in
+[`../wzd_auth/infrastructure/local`](../wzd_auth/infrastructure/local) and run
+its `seed.mjs`, which writes this app's Ward key into `.env`. Without it the
+public map still works.
+
+For the CARTO basemap, set `VITE_CARTO_API_KEY` in `.env`. Without a key the map
+uses OpenStreetMap tiles.

@@ -65,7 +65,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 19 | [briefs/todo/19-show-in-progress-events.md](briefs/todo/19-show-in-progress-events.md) | todo | Show in-progress events — window overlap, not "starts after now" (audit) |
 | 20 | [briefs/todo/20-map-loads-every-place.md](briefs/todo/20-map-loads-every-place.md) | todo | The map loads every place in the city — no silent 1000 cap (audit) |
 | 21 | [briefs/todo/21-ward-jwks-failure-is-unavailable.md](briefs/todo/21-ward-jwks-failure-is-unavailable.md) | todo | Ward: a JWKS fetch failure means "unavailable", never "signed out" (audit) |
-| 22 | [briefs/todo/22-fresh-clone-setup-path.md](briefs/todo/22-fresh-clone-setup-path.md) | todo | A fresh clone boots — `.env.example`, env loading, README (audit) |
+| 22 | [briefs/done/22-fresh-clone-setup-path.md](briefs/done/22-fresh-clone-setup-path.md) | done | A fresh clone boots — `.env.example`, env loading, README (audit) |
 | 23 | [briefs/todo/23-drizzle-snapshot-for-0001.md](briefs/todo/23-drizzle-snapshot-for-0001.md) | todo | Drizzle snapshot for `0001_ward_cutover` so `generate` is safe (audit) |
 | 24 | [briefs/todo/24-cross-city-deep-link.md](briefs/todo/24-cross-city-deep-link.md) | todo | A shared place link adopts the place's city (audit) |
 | 25 | [briefs/todo/25-osm-healthcare-taxonomy.md](briefs/todo/25-osm-healthcare-taxonomy.md) | todo | OSM sync: stop importing pharmacies/dentists as "clinic" (audit) |

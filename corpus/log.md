@@ -1,5 +1,15 @@
 # Log
 
+## [2026-09-27] done | Brief 22 — a fresh clone boots, and local dev signs in through a local Ward
+
+Both dev scripts now load the repo-root `.env`: the backend through `tsx watch --env-file-if-exists=../.env` (tsx forwards the flag), the UI through `node --env-file-if-exists=../.env` in front of the react-router CLI, since Node refuses the flag in `NODE_OPTIONS`. A missing `.env` still ends in `config.ts`'s own `WARD_PUBLIC_ORIGIN is not set` error. New `.env.example` lists every variable the code reads; README has a Getting started; status.md's seed comment no longer says NYC.
+
+Beyond the brief, on the owner's call: local dev is now laid out like the deploy. `.env` sets `PRM_BASE=/prm/` and `VITE_API_URL=/prm-api`, and the UI dev server proxies `/prm-api` to the backend (prefix stripped, as Caddy's `handle_path` does) and `/ward` + `/ward-api` to `WARD_PUBLIC_ORIGIN`, the local Ward container in `wzd_auth/infrastructure/local`. Ward's `?next=/prm/`, its cookie and its same-origin check on `/refresh` and `/logout` then behave as in the deploy; the proxy rewrites `Origin` only for requests from a page on the dev server itself. Production builds are unaffected: the deploy still passes `PRM_BASE` and `VITE_API_URL` itself, and `server.proxy` only exists in dev.
+
+Verified in a headless browser against the local Ward on a scratch database: the navbar's Autentificare opened Ward's page at `localhost:5173/ward/login?next=/prm/`, signing in returned to `/prm/` showing the account, and `/prm-api/api/places?city=Timișoara` returned seeded places. Not verified from a fresh `git clone`. Typecheck clean; tests 54 pass + 3 todo, unchanged.
+
+Found on the way, not prm's: Ward's Sign out does nothing in a browser. `/logout` clears cookies only when it receives the refresh token, but `ward_refresh` is scoped to `/ward-api/refresh`, so the browser never sends it there; Ward answers 204 and the session stays live. Reported to the owner.
+
 ## [2026-09-27] audit + brief | Improvements sweep → briefs 18–28
 
 A read-only survey of the whole repo, vetted against `decisions.md` and the existing queue. **26 raw candidates → 11 briefed, 7 on a watch list, 8 dropped.** The full ranked list, watch items and drop reasons are in [todos/2026-09-27-improvements-audit.md](todos/2026-09-27-improvements-audit.md). The five lens finders were dispatched but all died on a rate limit before reporting, so every finding was read and vetted directly. The ones marked ★ in the audit were reproduced.
