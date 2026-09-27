@@ -1,5 +1,15 @@
 # Log
 
+## [2026-09-27] audit + brief | Improvements sweep → briefs 18–28
+
+A read-only survey of the whole repo, vetted against `decisions.md` and the existing queue. **26 raw candidates → 11 briefed, 7 on a watch list, 8 dropped.** The full ranked list, watch items and drop reasons are in [todos/2026-09-27-improvements-audit.md](todos/2026-09-27-improvements-audit.md). The five lens finders were dispatched but all died on a rate limit before reporting, so every finding was read and vetted directly. The ones marked ★ in the audit were reproduced.
+
+The headline findings: `POST`/`DELETE` on places and events are open to anonymous callers (18). Every surface drops an event the moment it **starts**, which hides temporary exhibitions for their whole run and contradicts the locked lifecycle (19). The map fetches at most 1000 places with no ordering, while a real București sync is **3,171** (20, measured with one Overpass count query). A JWKS fetch failure resolves as "signed out" instead of 503, with nothing logged, contrary to prm's own rule and Ward contract rule 5 (21, reproduced). A fresh clone's backend dies at boot on missing Ward env, and the `.env.example` it points to does not exist (22). drizzle-kit has no snapshot for the hand-written `0001`, so the next `generate` re-does the cutover (23, reproduced on a scratch copy).
+
+One question moved to [open-questions.md](wiki/open-questions.md): whether Ward resolution should leave the root hook, since the public map does ask Ward for every signed-in visitor.
+
+Baseline at audit time: `npm test` 54 pass + 3 todo, typecheck clean. No source file was changed.
+
 ## [2026-09-04] build | Total UI/UX rework — new visual world + place-centric public surface
 
 The user asked for a total UI/UX rework ("the main idea is good, I just don't like the ui/ux of it"). Ran the impeccable direction flow: captured product truth in `ui/PRODUCT.md`, derived four visual directions from the audience's own world, and presented them as **running coded mockups** rather than prose (a land-registry sheet, a tram diagram, an orienteering overprint, and the category standard). The user took the **standing exit deliberately** — the convention, played straight, "or even better" — with **Citymapper + Linear** as the craft bar. That is now locked in [decisions.md → Visual direction](wiki/decisions.md); the 2026-06-29 Fraunces/steel-blue world is retired without ever having been built.
