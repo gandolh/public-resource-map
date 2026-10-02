@@ -161,27 +161,6 @@ const ro: Dict = {
   "ev.exhibition": "Expoziție",
   "ev.workshop": "Atelier",
   "ev.other": "Eveniment",
-
-  "auth.loginTitle": "Bine ai revenit",
-  "auth.loginBody": "Intră în cont ca să-ți vezi locurile salvate.",
-  "auth.registerTitle": "Cont nou",
-  "auth.registerBody": "Salvează locuri și primești o notificare când apare ceva la ele.",
-  "auth.email": "Email",
-  "auth.password": "Parolă",
-  "auth.displayName": "Nume afișat",
-  "auth.optional": "opțional",
-  "auth.signIn": "Intră în cont",
-  "auth.signingIn": "Se conectează…",
-  "auth.createAccount": "Creează contul",
-  "auth.creating": "Se creează…",
-  "auth.noAccount": "N-ai cont?",
-  "auth.haveAccount": "Ai deja cont?",
-  "auth.failed": "Autentificarea a eșuat",
-  "auth.registerFailed": "Nu am putut crea contul",
-  "auth.checkEmail": "Verifică-ți emailul",
-  "auth.checkEmailBody":
-    "Ți-am trimis un link de confirmare. După ce confirmi, te poți autentifica.",
-  "auth.backToMap": "Înapoi la hartă",
 };
 
 const en: Dict = {
@@ -314,27 +293,6 @@ const en: Dict = {
   "ev.exhibition": "Exhibition",
   "ev.workshop": "Workshop",
   "ev.other": "Event",
-
-  "auth.loginTitle": "Welcome back",
-  "auth.loginBody": "Sign in to see the places you saved.",
-  "auth.registerTitle": "Create an account",
-  "auth.registerBody": "Save places and get told when something is on at them.",
-  "auth.email": "Email",
-  "auth.password": "Password",
-  "auth.displayName": "Display name",
-  "auth.optional": "optional",
-  "auth.signIn": "Sign in",
-  "auth.signingIn": "Signing in…",
-  "auth.createAccount": "Create account",
-  "auth.creating": "Creating…",
-  "auth.noAccount": "No account?",
-  "auth.haveAccount": "Already have an account?",
-  "auth.failed": "Sign-in failed",
-  "auth.registerFailed": "Couldn't create the account",
-  "auth.checkEmail": "Check your email",
-  "auth.checkEmailBody":
-    "We sent you a confirmation link. Once you confirm it, you can sign in.",
-  "auth.backToMap": "Back to the map",
 };
 
 const DICTS: Record<Lang, Dict> = { ro, en };

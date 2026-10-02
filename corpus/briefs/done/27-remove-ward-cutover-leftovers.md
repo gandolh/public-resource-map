@@ -38,3 +38,7 @@ The 2026-09-06 cutover ([log](../../log.md), [decisions.md → Identity is Ward'
 - `npm run typecheck`, `npm test`, `npm run build` green.
 - The API image still builds: `docker compose -f infrastructure/docker-compose.yml build prm-api`, if Docker is available. Otherwise say it was not run.
 - The UI in the browser: the Navbar sign-in/account menu behaves as before, and no missing-key text appears.
+
+## Outcome (2026-10-03)
+
+Done. Every row was re-grepped (no importers) and removed. The lockfile diff removes only the two packages' own dependency trees. typecheck, tests and build are green, and the Navbar was checked in a browser. **Not run: the Docker image build** (Docker unavailable on this machine). `mailer.ts`, `authApi.ts`, `authStore.ts` and the Dockerfile are untouched.

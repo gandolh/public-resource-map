@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-09-04_
+_Last updated: 2026-10-03_
 
 ## 🟢 The UI is now the new model
 
@@ -20,7 +20,7 @@ What actually exists to look at: a full-bleed map of Timișoara or București wi
 
 Mostly closed on the public surface. Already migrated:
 - ~~Schema: standalone `resource`/`event`~~ → **consolidated place-centric Drizzle schema.**
-- ~~No test runner~~ → **Vitest harness (unit + Fastify `.inject()`), 68 passing.**
+- ~~No test runner~~ → **Vitest harness (unit + Fastify `.inject()`), 104 passing (2026-10-03).**
 - ~~UI: `/map`, `/events`, `/resources/:id`~~ → **`/` (map is home), `/places/:id` nested under it, `/whats-on`; old URLs redirect.**
 - ~~NYC seed~~ → **Timișoara + București seed (38 real places, 14 synthetic events).**
 - ~~No place-events or citywide endpoint~~ → **`upcomingEventCount` on `/api/places`, `/api/places/:id/events`, `/api/whats-on`.**
@@ -44,7 +44,8 @@ Still open:
 | Dark mode | **done — both themes designed, not inverted; light/dark/system** |
 | Schema consolidation (07) | **done — consolidated 13-table place-centric Drizzle schema + fresh migration** |
 | Vitest harness (11) | **done — Vitest 4 (unit + Fastify `.inject()` integration), `test`/`test:watch`/`test:cov`, `it.todo` seams** |
-| Auth (02) | **done — email+password (argon2id), opaque `prm_session` cookie, verify/reset (dev=console), `requireAuth`/`requireAdmin` guards, env seed-admin, real Navbar dropdown** |
+| Auth (02) | **superseded by Ward (2026-09-06)** — identity, sign-in and grants are Ward's; prm keeps `requireAuth`/`requireAdmin` over Ward grants. Brief 02's argon2/cookie/AuthCard leftovers were removed by brief 27 |
+| Audit sweep (18–29) | **18–21, 22–27 done (2026-09-27 → 2026-10-03)** — admin-only writes, running events stay visible, the map pages through every place, JWKS failure = 503, 0001 snapshot, cross-city deep links, public-healthcare-only OSM sync, real Ward client tests, cutover leftovers gone. **Open: 28; 29** (0001 schema drift, before 05) |
 | Places + OSM sync (03) | **done — admin `POST /api/admin/osm/sync` (Overpass, tag→PlaceCategory map, centroid, non-clobbering upsert), public `GET /api/places`(+`:id`), ODbL attribution on map** |
 | RO seed data (08) | **partial — 38 real Timișoara/București places + 14 synthetic events seeded; OSM sync still the real path** |
 | Event ingestion (04) | not started |

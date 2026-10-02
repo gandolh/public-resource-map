@@ -143,7 +143,7 @@ The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Frau
 - **PKs: `randomUUID()` everywhere + unique natural-key constraints** for dedup (place osmType+osmId, geocode_cache address, favorites, notifications).
 - **No universal soft-delete:** lifecycle via **status enums**; hard-delete only transient rows.
 - **Two category enums:** `PlaceCategory` + `EventCategory` (separate taxonomies, color-coded per-enum).
-- **Dependency policy:** minimal, **exact-pinned**, justified per add in its brief; prefer a tiny helper over a heavy lib, but don't hand-roll mature solved problems (drawing). New this session: `vitest`, `@vitest/coverage-v8`, `@playwright/test` (brief 11), `argon2` (brief 02), `@geoman-io/leaflet-geoman-free` + `@turf/boolean-point-in-polygon` (brief 13). All exact-pinned; confirm latest stable versions at install time.
+- **Dependency policy:** minimal, **exact-pinned**, justified per add in its brief; prefer a tiny helper over a heavy lib, but don't hand-roll mature solved problems (drawing). New this session: `vitest`, `@vitest/coverage-v8`, `@playwright/test` (brief 11), `argon2` (brief 02; removed 2026-10-03 by brief 27, Ward holds credentials now), `@geoman-io/leaflet-geoman-free` + `@turf/boolean-point-in-polygon` (brief 13). All exact-pinned; confirm latest stable versions at install time.
 
 ## Auth (locked 2026-06-28 — **SUPERSEDED 2026-09-06, see "Identity is Ward's" below**)
 

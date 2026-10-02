@@ -1,5 +1,17 @@
 # Log
 
+## [2026-10-03] done | Brief 27 — the Ward cutover's leftovers are gone
+
+Re-grepped each item first; none had an importer. Removed:
+- `argon2` and `@fastify/cookie` (`npm uninstall -w @public-resource-map/backend`). The lockfile lost exactly their trees: argon2, `@phc/format`, `node-addon-api`, `node-gyp-build`, and `cross-env` with its `cross-spawn`/`which`/`isexe`/`path-key`/`shebang-*` chain; `@fastify/cookie` and its nested `cookie`. `npm ls argon2 @fastify/cookie` is empty.
+- `ui/app/components/shell/AuthCard.tsx`.
+- 19 dead `auth.*` keys in each language (only `auth.unavailable` is live).
+- `shared/src/types/auth.ts` and its barrel re-export.
+
+That file described itself as a deliberate signpost; its explanation already lives in decisions.md → Identity is Ward's. `tsc` leaves stale outputs, so the four `shared/dist/types/auth.*` files were deleted by hand (dist is gitignored).
+
+typecheck, tests (104 + 3 todo) and `npm run build` are green. **The API image build was not run: Docker is unavailable** (WSL integration off). In the browser on the dev stack, the Navbar account menu opens with Autentificare / Cont nou, and no raw i18n key appears on the page. status.md's Auth row, which still described argon2 and `prm_session`, now says Ward, and a row tracks the audit sweep.
+
 ## [2026-10-03] done | Brief 26 — prm's real Ward client has a test suite
 
 `ward.client.test.ts` grows from brief 21's 4 cases to 30, ported from Ward's reference suites and run entirely through the injected fetch, with real EdDSA keys and `SignJWT` tokens:
