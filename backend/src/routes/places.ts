@@ -14,6 +14,7 @@ import {
 import { boundingBox } from "../lib/geo.js";
 import { lensWindow } from "../lib/time.js";
 import { rowToEvent } from "./event-mapper.js";
+import { isForeignKeyViolation } from "../lib/fk.js";
 
 function rowToPlace(
   row: typeof place.$inferSelect & { upcomingEventCount?: number },
@@ -183,26 +184,47 @@ export async function placeRoutes(app: FastifyInstance) {
     return rowToPlace(row);
   });
 
-  app.post<{ Body: CreatePlaceInput }>("/places", async (req, reply) => {
-    const parsed = createPlaceSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
-    }
+  // The write routes are admin-only (brief 18): they were open to anyone, so
+  // a curl could delete every place or publish an unreviewed event. Kept, not
+  // removed, as an escape hatch for manual fixes until the admin UI exists.
+  app.post<{ Body: CreatePlaceInput }>(
+    "/places",
+    { preHandler: app.requireAdmin },
+    async (req, reply) => {
+      const parsed = createPlaceSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
+      }
 
-    const { lat, lng, ...rest } = parsed.data;
-    const id = randomUUID();
+      const { lat, lng, ...rest } = parsed.data;
+      const id = randomUUID();
 
-    await db.insert(place).values({ id, lat, lng, ...rest });
+      await db.insert(place).values({ id, lat, lng, ...rest });
 
-    const row = await db.select().from(place).where(eq(place.id, id)).get();
-    return reply.status(201).send(rowToPlace(row!));
-  });
+      const row = await db.select().from(place).where(eq(place.id, id)).get();
+      return reply.status(201).send(rowToPlace(row!));
+    },
+  );
 
-  app.delete<{ Params: { id: string } }>("/places/:id", async (req, reply) => {
-    const result = await db.delete(place).where(eq(place.id, req.params.id));
-    if (result.changes === 0) {
-      return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
-    }
-    return reply.status(204).send();
-  });
+  app.delete<{ Params: { id: string } }>(
+    "/places/:id",
+    { preHandler: app.requireAdmin },
+    async (req, reply) => {
+      let result;
+      try {
+        result = await db.delete(place).where(eq(place.id, req.params.id));
+      } catch (err) {
+        // Still referenced by an event, a staged event, a favorite or a
+        // notification: a refusal, not a 500.
+        if (isForeignKeyViolation(err)) {
+          return reply.status(409).send({ code: "PLACE_IN_USE", message: "Place is still referenced" });
+        }
+        throw err;
+      }
+      if (result.changes === 0) {
+        return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
+      }
+      return reply.status(204).send();
+    },
+  );
 }

@@ -1,5 +1,13 @@
 # Log
 
+## [2026-10-03] done | Brief 18 — the place and event write routes are admin-only
+
+`POST /api/places`, `DELETE /api/places/:id`, `POST /api/events` and `DELETE /api/events/:id` now carry `{ preHandler: app.requireAdmin }`, the same shape as the OSM sync route. Before this, anyone on the internet could delete every place without events, or publish an event straight to `live`, past the review gate, with a "Buy tickets" link on the trusted origin. The routes are kept as the brief decided, as a curl escape hatch until brief 16's admin UI.
+
+Deleting a still-referenced row is a **409** (`PLACE_IN_USE` / `EVENT_IN_USE`) instead of the FK error escaping as a 500. **Method chosen:** catch `SQLITE_CONSTRAINT_FOREIGNKEY` (new `backend/src/lib/fk.ts` walks Drizzle's cause chain) rather than checking each referencing table first. That covers every referencing table, present and future, and has no check-then-delete race.
+
+New `backend/src/routes/writes.api.test.ts`: on each of the four routes, anonymous gets 401, `prm:user` 403, an unavailable Ward 503, and `prm:admin` 201/204. Deleting a place that has an event gets 409 and the place is still there. `npm test` 59 pass + 3 todo, and `npm run typecheck` is clean. The architecture.md API table, which still listed the pre-reframe `/api/resources` routes, now lists the real routes and their guards.
+
 ## [2026-09-27] done | Brief 22 — a fresh clone boots, and local dev signs in through a local Ward
 
 Both dev scripts now load the repo-root `.env`: the backend through `tsx watch --env-file-if-exists=../.env` (tsx forwards the flag), the UI through `node --env-file-if-exists=../.env` in front of the react-router CLI, since Node refuses the flag in `NODE_OPTIONS`. A missing `.env` still ends in `config.ts`'s own `WARD_PUBLIC_ORIGIN is not set` error. New `.env.example` lists every variable the code reads; README has a Getting started; status.md's seed comment no longer says NYC.

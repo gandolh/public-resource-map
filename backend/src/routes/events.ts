@@ -10,6 +10,7 @@ import {
 } from "@public-resource-map/shared";
 import { boundingBox } from "../lib/geo.js";
 import { rowToEvent } from "./event-mapper.js";
+import { isForeignKeyViolation } from "../lib/fk.js";
 
 const eventsQuerySchema = nearbyQuerySchema.extend({
   from: z.string().optional(),
@@ -76,25 +77,43 @@ export async function eventRoutes(app: FastifyInstance) {
     return rowToEvent(row);
   });
 
-  app.post<{ Body: CreateEventInput }>("/events", async (req, reply) => {
-    const parsed = createEventSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
-    }
+  // Admin-only, like the place writes (brief 18). Anonymous POSTs used to
+  // publish straight to `live`, skipping the review gate.
+  app.post<{ Body: CreateEventInput }>(
+    "/events",
+    { preHandler: app.requireAdmin },
+    async (req, reply) => {
+      const parsed = createEventSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
+      }
 
-    const id = randomUUID();
+      const id = randomUUID();
 
-    await db.insert(event).values({ id, ...parsed.data });
+      await db.insert(event).values({ id, ...parsed.data });
 
-    const row = await db.select().from(event).where(eq(event.id, id)).get();
-    return reply.status(201).send(rowToEvent(row!));
-  });
+      const row = await db.select().from(event).where(eq(event.id, id)).get();
+      return reply.status(201).send(rowToEvent(row!));
+    },
+  );
 
-  app.delete<{ Params: { id: string } }>("/events/:id", async (req, reply) => {
-    const result = await db.delete(event).where(eq(event.id, req.params.id));
-    if (result.changes === 0) {
-      return reply.status(404).send({ code: "NOT_FOUND", message: "Event not found" });
-    }
-    return reply.status(204).send();
-  });
+  app.delete<{ Params: { id: string } }>(
+    "/events/:id",
+    { preHandler: app.requireAdmin },
+    async (req, reply) => {
+      let result;
+      try {
+        result = await db.delete(event).where(eq(event.id, req.params.id));
+      } catch (err) {
+        if (isForeignKeyViolation(err)) {
+          return reply.status(409).send({ code: "EVENT_IN_USE", message: "Event is still referenced" });
+        }
+        throw err;
+      }
+      if (result.changes === 0) {
+        return reply.status(404).send({ code: "NOT_FOUND", message: "Event not found" });
+      }
+      return reply.status(204).send();
+    },
+  );
 }

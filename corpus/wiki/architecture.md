@@ -71,14 +71,17 @@ app/
 | Method | Path | Description |
 |---|---|---|
 | GET | `/health` | liveness check |
-| GET | `/api/resources` | list nearby resources (lat/lng/radiusKm/category/page/pageSize) |
-| GET | `/api/resources/:id` | single resource |
-| POST | `/api/resources` | create resource |
-| DELETE | `/api/resources/:id` | delete resource |
-| GET | `/api/events` | list nearby events (+ from/to date filters) |
-| GET | `/api/events/:id` | single event |
-| POST | `/api/events` | create event |
-| DELETE | `/api/events/:id` | delete event |
+| GET | `/api/places` | places in a city / bbox, with category filters (public) |
+| GET | `/api/places/:id` | single place (public) |
+| POST | `/api/places` | create a place — **admin only** (`requireAdmin`, brief 18) |
+| DELETE | `/api/places/:id` | delete a place — **admin only**; 409 `PLACE_IN_USE` while anything references it |
+| GET | `/api/events` | events near a point (+ from/to date filters) (public) |
+| GET | `/api/events/:id` | single event (public) |
+| POST | `/api/events` | create an event — **admin only** (it publishes straight to `live`) |
+| DELETE | `/api/events/:id` | delete an event — **admin only**; 409 `EVENT_IN_USE` while referenced |
+| GET | `/api/whats-on` | the city's upcoming events, grouped (public) |
+| POST | `/api/admin/osm/sync` | OSM import for a city — **admin only** |
+| GET | `/api/me` | the signed-in Ward caller, narrowed |
 
 Proximity filtering uses a bounding-box approximation (not Haversine). Good enough for city-scale use.
 

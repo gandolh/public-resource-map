@@ -22,7 +22,7 @@ starred ones were reproduced by running something.
 ## Briefed (ranked)
 
 ### Now
-1. **Anonymous writes** — `POST`/`DELETE /api/places`, `POST`/`DELETE /api/events` carry no guard. → [brief 18](../briefs/todo/18-guard-anonymous-write-routes.md)
+1. **Anonymous writes** — `POST`/`DELETE /api/places`, `POST`/`DELETE /api/events` carry no guard. → [brief 18](../briefs/done/18-guard-anonymous-write-routes.md)
 2. **Events vanish the moment they start** — every surface filters `start_date >= now`, so a running exhibition is invisible for its whole run. → [brief 19](../briefs/todo/19-show-in-progress-events.md)
 3. ★ **The map silently drops places past 1000** — measured: a real București sync is 3,171 named places. → [brief 20](../briefs/todo/20-map-loads-every-place.md)
 4. ★ **A JWKS fetch failure reads as "signed out"** — reproduced; breaks the locked 503 semantics and Ward contract rule 5. → [brief 21](../briefs/todo/21-ward-jwks-failure-is-unavailable.md)
