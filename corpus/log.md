@@ -1,5 +1,13 @@
 # Log
 
+## [2026-10-03] done | Brief 21 — a Ward key-set failure answers 503, not "signed out"
+
+`verify()` wrapped every `jwtVerify` failure as `WardAuthenticationError`, including a failure to fetch Ward's JWKS. `jose` re-fetches the key set once it is older than 10 minutes or empty. So after ten minutes of Ward being down, or right after a restart, `/api/me` told signed-in people they were signed out, admin routes answered 401 instead of 503, and nothing was logged. The key resolver handed to `jwtVerify` is now wrapped. Any resolver error other than `JWKSNoMatchingKey`/`JWKSMultipleMatchingKeys` becomes `WardUnavailableError("jwks unavailable")`, and `verify()` rethrows it unchanged. The injected `fetch` now reaches the key set through `jose`'s `customFetch`, so the path is testable.
+
+New `ward.client.test.ts` (real EdDSA keys, Ward served from the injected fetch): a JWKS fetch that throws gives 503-class, a JWKS 500 gives 503-class, a valid token resolves, and a foreign key stays a 401-class error. New `ward.plugin.api.test.ts` through `buildApp` with the JWKS failing: `/api/me` 503 `IDENTITY_UNAVAILABLE`, `/api/places` 200, admin sync 503. With the client change reverted, 3 of 4 client tests and 2 of 3 plugin tests fail. The shared key/token/fetch helpers live in `backend/src/test/real-ward.ts`, not in a test file, so both suites (and brief 26) can import them without re-running each other. Tests 75 pass + 3 todo, and typecheck is clean.
+
+**For the Ward owner:** Ward's reference client (`wzd_auth/client/src/verify.ts`) has the same catch-all. It is not fixed here, by the brief's rule.
+
 ## [2026-10-03] done | Brief 20 — the map loads every place, not the first 1000
 
 The map took one 1000-row page as the whole city, and `GET /api/places` had no `ORDER BY`. After a real București sync (3,171 named places, measured 2026-09-27), two thirds of the pins would have vanished silently, from the map and from search, and the label would have said "1000 places". `usePlaces` now calls a new `fetchAllPlaces`, which fetches page 1 and then the rest in parallel, capped at 10 pages with a console warning past it. The list query orders by `place.id`, and what's-on breaks start-date ties on `event.id`.

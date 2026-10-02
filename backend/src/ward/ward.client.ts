@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { createRemoteJWKSet, customFetch, errors, jwtVerify, type JWTVerifyGetKey } from "jose";
 
 import {
   ACCESS_TOKEN_ALG,
@@ -125,7 +125,40 @@ export function createWardClient(options: WardClientOptions): WardClient {
     // picked up without a restart, just not within 30 seconds of the last
     // fetch.
     cooldownDuration: options.jwksCooldownMs ?? 30_000,
+    // The same seam as introspection. Without it the key set used global
+    // `fetch`, and no test could reach the JWKS failure path at all.
+    [customFetch]: fetchImpl,
   });
+
+  /**
+   * **A key set Ward cannot serve means Ward is unavailable, never "signed
+   * out".** Ward contract rule 5: an unreachable or broken Ward must not
+   * resolve as "not signed in".
+   *
+   * `jose` re-fetches the key set once its cache is older than `cacheMaxAge` or
+   * empty, so after ten minutes of Ward being down, or right after a restart,
+   * every token's verification hits the network. `verify()` used to wrap that
+   * failure as an authentication error. Then `/api/me` told a signed-in person
+   * they were signed out, admin routes answered 401 instead of 503, and nothing
+   * was logged.
+   *
+   * Only two resolver errors describe the *token*: no key in the set matches
+   * its `kid`, or several do. Everything else (a timeout, a non-200 or non-JSON
+   * key set, an invalid set, a fetch that threw) describes Ward.
+   */
+  const resolveKey: JWTVerifyGetKey = async (header, token) => {
+    try {
+      return await keyStore(header, token);
+    } catch (cause) {
+      if (
+        cause instanceof errors.JWKSNoMatchingKey ||
+        cause instanceof errors.JWKSMultipleMatchingKeys
+      ) {
+        throw cause;
+      }
+      throw new WardUnavailableError("jwks unavailable", { cause });
+    }
+  };
 
   /** Keyed per **token**, never per subject — see the header. */
   const cache = new Map<string, CacheEntry>();
@@ -133,7 +166,7 @@ export function createWardClient(options: WardClientOptions): WardClient {
 
   async function verify(token: string): Promise<AccessTokenClaims> {
     try {
-      const { payload } = await jwtVerify(token, keyStore, {
+      const { payload } = await jwtVerify(token, resolveKey, {
         /**
          * **Pinned, as a literal, never read from the token's own header.**
          *
@@ -151,6 +184,7 @@ export function createWardClient(options: WardClientOptions): WardClient {
       });
       return payload as unknown as AccessTokenClaims;
     } catch (cause) {
+      if (cause instanceof WardUnavailableError) throw cause;
       throw new WardAuthenticationError("access token is not valid", { cause });
     }
   }

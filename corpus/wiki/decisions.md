@@ -193,7 +193,11 @@ The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Frau
   and leaves the request anonymous otherwise; `requireAuth`/`requireAdmin` stay
   opt-in per route. A consequence worth keeping: **when Ward is down, the public
   map still works**, because it never asks Ward anything. Guarded routes answer
-  503 and fail closed.
+  503 and fail closed. "Ward is down" includes **Ward's key set being
+  unreachable** (brief 21, 2026-10-03): a failure to fetch or read the JWKS is
+  `WardUnavailableError`, not an invalid token; only "no key matches this
+  token's `kid`" stays a 401. The client's injected `fetch` reaches the key set
+  too (`jose`'s `customFetch`), so tests cover that path.
 - **prm hand-writes its Ward client** (`backend/src/ward/`) rather than
   importing a shared package — the estate decided against one because these
   repos are separate checkouts that `npm ci` independently. The contract is

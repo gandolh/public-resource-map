@@ -47,3 +47,7 @@ Plugin test (`buildApp({ db, ward: createWardClient({ …, fetch }) })`, JWKS fa
 - `POST /api/admin/osm/sync` with the cookie → 503.
 
 `npm test`, `npm run typecheck` green.
+
+## Outcome (2026-10-03)
+
+Done as specified. `ward.client.ts` passes `[customFetch]: fetchImpl` to `createRemoteJWKSet` and wraps the key resolver: anything but `JWKSNoMatchingKey`/`JWKSMultipleMatchingKeys` becomes `WardUnavailableError("jwks unavailable", { cause })`, and `verify()` rethrows that class unchanged. A contract-rule-5 comment sits beside the wrapper. All seven acceptance tests pass, and they were confirmed to fail with the client change reverted. One file beyond the brief's list: `backend/src/test/real-ward.ts` holds the key, token and fake-Ward-fetch helpers both test files share, since importing them from a `.test.ts` would re-run that suite. Ward's reference client has the same flaw and is untouched. That was reported to the owner in the run summary.
