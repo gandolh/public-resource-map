@@ -1,5 +1,22 @@
 # Log
 
+## [2026-10-03] done | Brief 24 — a shared place link adopts the place's city
+
+**Reproduced first** (dev stack on a freshly migrated and seeded scratch DB, headless Chrome, empty localStorage): `/prm/places/<MNAR id>` showed the panel and flew to București, but the picker said Timișoara, the count read Timișoara's "23 de locuri", and no app pin was on the map.
+
+Fix: a new store action `adoptCity` switches city without clearing the selection and persists it like `setCity`. Persisting is also what stops `hydrateCity` from undoing it, since hydration reads back the adopted city. The place route adopts `cityByName(place.city)` when it differs. `CityRecenter` skips while a place is selected, read at effect time so closing the panel does not recentre either. Navbar's `hydrateCity` effect needed no change.
+
+Checked in the browser:
+- **Fresh profile, București link:** picker București, 15 places, pin highlighted, centred on the museum.
+- **Closing the panel:** still București with its pins.
+- **Stored București, Timișoara link:** ends on Timișoara, centred on the museum, no jump.
+- **City picker with nothing selected:** recentres on the city as before.
+- **Pin click:** opens its panel.
+
+Typecheck clean; tests unchanged (77 + 3 todo). There is no UI test harness, so nothing automated covers this; brief 17 (e2e) is where it belongs.
+
+The same session cleared brief 19's owed demo check: the seeded exhibition shows under **AZI** with "până pe 12 nov." in MNAR's panel and in what's-on.
+
 ## [2026-10-03] done | Brief 23 — 0001 has a drizzle snapshot; found that 0001 drifted from schema.ts
 
 `backend/drizzle/meta/0001_snapshot.json` now exists, chained to 0000 (`prevId` `a0ad6566-…`). It was produced by running `drizzle-kit generate` from `schema.ts` into an empty scratch `out`, which gives a full-schema snapshot without prompts, and then re-chaining its ids. On a scratch copy of the repo's `drizzle/`:

@@ -67,7 +67,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 21 | [briefs/done/21-ward-jwks-failure-is-unavailable.md](briefs/done/21-ward-jwks-failure-is-unavailable.md) | done | Ward: a JWKS fetch failure means "unavailable", never "signed out" (audit) |
 | 22 | [briefs/done/22-fresh-clone-setup-path.md](briefs/done/22-fresh-clone-setup-path.md) | done | A fresh clone boots — `.env.example`, env loading, README (audit) |
 | 23 | [briefs/done/23-drizzle-snapshot-for-0001.md](briefs/done/23-drizzle-snapshot-for-0001.md) | done | Drizzle snapshot for `0001_ward_cutover` so `generate` is safe (audit) |
-| 24 | [briefs/todo/24-cross-city-deep-link.md](briefs/todo/24-cross-city-deep-link.md) | todo | A shared place link adopts the place's city (audit) |
+| 24 | [briefs/done/24-cross-city-deep-link.md](briefs/done/24-cross-city-deep-link.md) | done | A shared place link adopts the place's city (audit) |
 | 25 | [briefs/todo/25-osm-healthcare-taxonomy.md](briefs/todo/25-osm-healthcare-taxonomy.md) | todo | OSM sync: stop importing pharmacies/dentists as "clinic" (audit) |
 | 26 | [briefs/todo/26-ward-client-test-suite.md](briefs/todo/26-ward-client-test-suite.md) | todo | A test suite for prm's real Ward client (audit) |
 | 27 | [briefs/todo/27-remove-ward-cutover-leftovers.md](briefs/todo/27-remove-ward-cutover-leftovers.md) | todo | Remove Ward-cutover leftovers — dead UI/shared code, `argon2`, `@fastify/cookie` (audit) |

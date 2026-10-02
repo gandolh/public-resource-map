@@ -25,6 +25,12 @@ interface AppState {
   sheetSnap: "peek" | "full" | null;
 
   setCity: (city: City) => void;
+  /**
+   * Switch to the city a deep-linked place is in, keeping the selection and
+   * search that `setCity` clears. Persisted like `setCity`, which is also what
+   * keeps `hydrateCity` from undoing it: hydration reads back this city.
+   */
+  adoptCity: (city: City) => void;
   hydrateCity: () => void;
   toggleCategory: (category: PlaceCategory) => void;
   clearCategories: () => void;
@@ -51,6 +57,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     LocalStorage.set(CITY_KEY, city.id);
     // A drawn area or a selection from the previous city is meaningless here.
     set({ city, selectedId: null, search: "" });
+  },
+
+  adoptCity: (city) => {
+    LocalStorage.set(CITY_KEY, city.id);
+    set({ city });
   },
 
   hydrateCity: () => {

@@ -37,3 +37,7 @@ With two cities, roughly every shared link that crosses the city line hits this.
 - Stored city București → `/places/<Timișoara id>` → ends on Timișoara, centred on the place, no jump back to București's centre.
 - Normal pin clicks and the city picker behave as before.
 - `npm run typecheck` green.
+
+## Outcome (2026-10-03)
+
+Reproduced as described, then fixed per steps 2–5: `adoptCity` in `appStore.ts`, adoption in `place.tsx`, and a selection guard in `CityRecenter`. Step 5 needed no Navbar change, because `adoptCity` persists and `hydrateCity` therefore reads back the adopted city. All four acceptance checks passed in a headless browser against a scratch seeded DB; see the log entry. Typecheck is clean.

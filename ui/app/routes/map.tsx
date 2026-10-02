@@ -43,9 +43,17 @@ function MapBridge({ onReady }: { onReady: (map: LeafletMap) => void }) {
   return null;
 }
 
+/**
+ * Centre on the city when it changes, unless a place is open: then the place
+ * route's `flyTo` owns the camera, and a city switch (a deep link adopting the
+ * place's city, or hydration) must not yank the view to the city centre.
+ * Read at effect time, not as a dependency, so closing the panel does not
+ * recentre either.
+ */
 function CityRecenter({ lat, lng, zoom }: { lat: number; lng: number; zoom: number }) {
   const map = useMap();
   useEffect(() => {
+    if (useAppStore.getState().selectedId !== null) return;
     map.setView([lat, lng], zoom, { animate: true });
   }, [map, lat, lng, zoom]);
   return null;

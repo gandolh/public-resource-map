@@ -8,6 +8,7 @@ import { StateBlock } from "~/components/ui/StateBlock";
 import { Button } from "~/components/ui/Button";
 import { usePlace, usePlaceEvents } from "~/hooks/usePlaces";
 import { useAppStore } from "~/stores/appStore";
+import { cityByName } from "~/lib/cities";
 import { useI18n } from "~/lib/i18n";
 import { useIsMobile } from "~/hooks/useIsMobile";
 
@@ -29,6 +30,8 @@ export default function PlaceRoute() {
   const isMobile = useIsMobile();
   const { places, getMap } = useOutletContext<MapOutletContext>();
   const select = useAppStore((s) => s.select);
+  const cityId = useAppStore((s) => s.city.id);
+  const adoptCity = useAppStore((s) => s.adoptCity);
 
   const { data: place, isPending, isError, refetch } = usePlace(id);
   const { data: eventsPage, isPending: eventsPending } = usePlaceEvents(id);
@@ -38,6 +41,14 @@ export default function PlaceRoute() {
     select(id ?? null);
     return () => select(null);
   }, [id, select]);
+
+  // A shared link is to a place, not to the visitor's city. Without this, a
+  // București link opened by a Timișoara visitor flew to București over an
+  // empty map of Timișoara's pins, with the picker still saying Timișoara.
+  const placeCity = cityByName(place?.city ?? undefined);
+  useEffect(() => {
+    if (placeCity && placeCity.id !== cityId) adoptCity(placeCity);
+  }, [placeCity, cityId, adoptCity]);
 
   // Pan so the selected pin clears the panel (desktop) or the sheet (mobile),
   // rather than sitting underneath the thing describing it.

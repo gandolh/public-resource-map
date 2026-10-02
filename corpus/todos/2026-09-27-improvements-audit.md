@@ -30,7 +30,7 @@ starred ones were reproduced by running something.
 6. ★ **drizzle-kit has no snapshot for 0001** — reproduced; the next `generate` re-does the Ward cutover. → [brief 23](../briefs/done/23-drizzle-snapshot-for-0001.md)
 
 ### Next
-7. **A shared place link from the other city shows an empty map** → [brief 24](../briefs/todo/24-cross-city-deep-link.md)
+7. **A shared place link from the other city shows an empty map** → [brief 24](../briefs/done/24-cross-city-deep-link.md)
 8. ★ **OSM catch-all `healthcare` filter imports ~1,000 pharmacies/dentists as "clinic"** in București (measured) → [brief 25](../briefs/todo/25-osm-healthcare-taxonomy.md)
 9. **The real Ward client has no tests** (279 lines of hand-adapted security code) → [brief 26](../briefs/todo/26-ward-client-test-suite.md)
 10. **Ward-cutover leftovers** — dead UI/shared code, `argon2` (native, shipped in the prod image), `@fastify/cookie` → [brief 27](../briefs/todo/27-remove-ward-cutover-leftovers.md)
