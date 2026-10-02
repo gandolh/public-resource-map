@@ -36,3 +36,9 @@ A second, smaller defect has the same cause: offset pagination without a total o
 - New API test: insert 1,050 places in one city; `page=1&pageSize=1000` and `page=2&pageSize=1000` are disjoint and their union is all 1,050. Repeat the same request: identical order.
 - Manual check: against a scratch DB with more than 1,000 places in one city (run the migrator with `DATABASE_PATH` pointed at a scratch file and a short insert script), the map's count label shows the full number and search finds a place from the tail.
 - `npm test`, `npm run typecheck` green.
+
+## Outcome (2026-10-03)
+
+Done as specified. `GET /api/places` orders by `place.id`; what's-on orders by `start_date, event.id`. `fetchAllPlaces` (`ui/app/lib/api.ts`) fetches page 1, then pages 2…`ceil(total/1000)` in parallel with the query's `signal`, capped at 10 pages with a `console.warn` past it. `usePlaces` uses it, with its query key and `placeholderData` unchanged. The map's count label counts the loaded list, so it is now the full number.
+
+`backend/src/routes/paging.api.test.ts`: 1,050 places in one city; two pages are disjoint, their union is every place, the order repeats, and the rows are sorted by id across the page boundary. That last assertion was added because the brief's repeatability check **passes without the ORDER BY**: SQLite's plain scan follows insertion order today. Verified by removing the ORDER BY: the sorted-order test fails. `npm test` 68 pass + 3 todo, and typecheck is clean. The manual check (scratch DB with more than 1,000 places, map count and tail search) is still owed.

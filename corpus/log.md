@@ -1,5 +1,11 @@
 # Log
 
+## [2026-10-03] done | Brief 20 — the map loads every place, not the first 1000
+
+The map took one 1000-row page as the whole city, and `GET /api/places` had no `ORDER BY`. After a real București sync (3,171 named places, measured 2026-09-27), two thirds of the pins would have vanished silently, from the map and from search, and the label would have said "1000 places". `usePlaces` now calls a new `fetchAllPlaces`, which fetches page 1 and then the rest in parallel, capped at 10 pages with a console warning past it. The list query orders by `place.id`, and what's-on breaks start-date ties on `event.id`.
+
+`paging.api.test.ts` (1,050 places): two pages are disjoint and complete, the order repeats, and rows are sorted by id across the boundary. The last assertion is beyond the brief: its repeatability check alone passes without the ORDER BY, because SQLite's plain scan follows insertion order. Confirmed by removing the ORDER BY: only the sorted-order test fails. Tests 68 pass + 3 todo, and typecheck is clean. The manual map check on a scratch DB is still owed.
+
 ## [2026-10-03] done | Brief 19 — running events stay visible until they end
 
 Every user surface used to ask "does the event *start* inside the lens window?", and every window starts at now, so an event disappeared from the pin badge, the lens filter, the place panel and what's-on the minute it began. A three-month exhibition was invisible for its whole run. Now all of them call one predicate, `liveInWindow(from, to)` in `backend/src/routes/event-window.ts`: `live AND start <= to AND coalesce(end, start) >= from`. A null end date is deliberately a point event, so it behaves exactly as before.

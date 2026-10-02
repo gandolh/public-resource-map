@@ -49,7 +49,7 @@ export async function whatsOnRoutes(app: FastifyInstance) {
         .from(event)
         .innerJoin(place, eq(event.placeId, place.id))
         .where(where)
-        .orderBy(asc(event.startDate))
+        .orderBy(asc(event.startDate), asc(event.id))
         .limit(pageSize)
         .offset(offset),
       db

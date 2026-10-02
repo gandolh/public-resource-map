@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Event, EventLens, PaginatedResponse, Place, PlaceCategory, WhatsOnItem }
   from "@public-resource-map/shared";
-import { fetchPlace, fetchPlaceEvents, fetchPlaces, fetchWhatsOn } from "~/lib/api";
+import { fetchAllPlaces, fetchPlace, fetchPlaceEvents, fetchWhatsOn } from "~/lib/api";
 
 /**
  * The city's places for the map. Keyed on city + category chips + lens so the
@@ -16,7 +16,7 @@ export function usePlaces(input: {
 }) {
   return useQuery<PaginatedResponse<Place>>({
     queryKey: ["places", input.city, [...input.categories].sort().join(","), input.lens],
-    queryFn: ({ signal }) => fetchPlaces(input, signal),
+    queryFn: ({ signal }) => fetchAllPlaces(input, signal),
     placeholderData: (prev) => prev,
   });
 }

@@ -63,7 +63,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 17 | [briefs/todo/17-playwright-e2e-harness.md](briefs/todo/17-playwright-e2e-harness.md) | todo | Playwright e2e harness — config, fixtures, seeded-DB determinism (split from 11) |
 | 18 | [briefs/done/18-guard-anonymous-write-routes.md](briefs/done/18-guard-anonymous-write-routes.md) | done | Guard the anonymous POST/DELETE routes on places and events (audit) |
 | 19 | [briefs/done/19-show-in-progress-events.md](briefs/done/19-show-in-progress-events.md) | done | Show in-progress events — window overlap, not "starts after now" (audit) |
-| 20 | [briefs/todo/20-map-loads-every-place.md](briefs/todo/20-map-loads-every-place.md) | todo | The map loads every place in the city — no silent 1000 cap (audit) |
+| 20 | [briefs/done/20-map-loads-every-place.md](briefs/done/20-map-loads-every-place.md) | done | The map loads every place in the city — no silent 1000 cap (audit) |
 | 21 | [briefs/todo/21-ward-jwks-failure-is-unavailable.md](briefs/todo/21-ward-jwks-failure-is-unavailable.md) | todo | Ward: a JWKS fetch failure means "unavailable", never "signed out" (audit) |
 | 22 | [briefs/done/22-fresh-clone-setup-path.md](briefs/done/22-fresh-clone-setup-path.md) | done | A fresh clone boots — `.env.example`, env loading, README (audit) |
 | 23 | [briefs/todo/23-drizzle-snapshot-for-0001.md](briefs/todo/23-drizzle-snapshot-for-0001.md) | todo | Drizzle snapshot for `0001_ward_cutover` so `generate` is safe (audit) |

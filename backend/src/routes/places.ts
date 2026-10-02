@@ -109,6 +109,9 @@ export async function placeRoutes(app: FastifyInstance) {
         .select({ ...getTableColumns(place), upcomingEventCount: eventCount })
         .from(place)
         .where(where)
+        // A total order, so pages are disjoint and repeatable: without it SQLite
+        // returns scan order and offset paging can overlap or skip (brief 20).
+        .orderBy(asc(place.id))
         .limit(pageSize)
         .offset(offset),
       db.select({ count: sql<number>`count(*)` }).from(place).where(where),
