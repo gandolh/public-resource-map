@@ -1,5 +1,15 @@
 # Log
 
+## [2026-10-03] done | Brief 28 — SPA-template leftovers out, every manifest exact-pinned
+
+`@react-router/serve` is gone from `ui`, and with it `express` and its whole tree (`npm ls @react-router/serve express` is empty). **`start` was replaced, not dropped:** it is now `vite preview --outDir build/client`, with the root `.env` loaded. It serves the SPA under `/prm/` with deep-link fallback (`/prm/places/abc` → 200, index.html), and `preview.proxy` inherits the dev `/prm-api` proxy, so it is a working local preview once the backend runs. `ui/Dockerfile` and `ui/components.json` were deleted (no references), and `ui/README.md` (the template's) now describes how this UI runs and ships.
+
+Pins: `jose` is `6.2.10`; docs deps are their installed versions (starlight 0.41.11, archivo 5.3.0, astro 7.3.1, sharp 0.35.4, typedoc 0.28.20). No `^`/`~` remains in any manifest.
+
+**The docs `cookie` workaround is removed.** After the reinstall the repo root hoists no `cookie` at all. Express's 0.7.2 went with `@react-router/serve`, and Fastify's `light-my-request` keeps its `cookie@1.1.1` nested. With the devDependency and the `//cookie` note deleted, `npm run docs -w @prm/docs-site` built 14 pages clean.
+
+`npm run build`, typecheck, tests (104 + 3 todo) and the docs build are all green. `npm run dev` serves 200 on :5173. **The audit sweep 18–28 is complete**; 29 (from brief 23) remains.
+
 ## [2026-10-03] done | Brief 27 — the Ward cutover's leftovers are gone
 
 Re-grepped each item first; none had an importer. Removed:

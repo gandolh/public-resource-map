@@ -36,3 +36,7 @@ The UI started from the `create-react-router` SSR template and runs in SPA mode 
 - `npm ls @react-router/serve express` → empty.
 - `npm run build`, `npm run typecheck`, `npm test` green; `npm run docs -w @prm/docs-site` green.
 - `npm run dev` still serves the UI on :5173.
+
+## Outcome (2026-10-03)
+
+Done. `start` is now a `vite preview` of `build/client`, which serves under `PRM_BASE` with SPA fallback and the inherited `/prm-api` proxy. The template's Dockerfile and `components.json` are deleted and its README rewritten. `jose` and the docs deps are pinned to their installed versions. The docs `cookie` workaround is removed: nothing hoists `cookie` to the root any more, and `npm run docs` builds clean without it. All acceptance commands are green.

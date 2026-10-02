@@ -34,7 +34,7 @@ starred ones were reproduced by running something.
 8. ★ **OSM catch-all `healthcare` filter imports ~1,000 pharmacies/dentists as "clinic"** in București (measured) → [brief 25](../briefs/done/25-osm-healthcare-taxonomy.md)
 9. **The real Ward client has no tests** (279 lines of hand-adapted security code) → [brief 26](../briefs/done/26-ward-client-test-suite.md)
 10. **Ward-cutover leftovers** — dead UI/shared code, `argon2` (native, shipped in the prod image), `@fastify/cookie` → [brief 27](../briefs/done/27-remove-ward-cutover-leftovers.md)
-11. **SPA-template leftovers + pinning-policy breaches** — `@react-router/serve` (root cause of the docs `//cookie` hack), a broken `ui/Dockerfile`, `^` ranges on `jose` and all of `docs/` → [brief 28](../briefs/todo/28-spa-template-leftovers-and-pins.md)
+11. **SPA-template leftovers + pinning-policy breaches** — `@react-router/serve` (root cause of the docs `//cookie` hack), a broken `ui/Dockerfile`, `^` ranges on `jose` and all of `docs/` → [brief 28](../briefs/done/28-spa-template-leftovers-and-pins.md)
 
 ## Watch (named, not spec'd)
 
