@@ -32,14 +32,14 @@ export function signToken(keys: Keys, kid = keys.jwk.kid!): Promise<string> {
     .sign(keys.privateKey);
 }
 
-type Handler = (url: URL) => Response | Promise<Response>;
+type Handler = (url: URL, init?: RequestInit) => Response | Promise<Response>;
 
 /** A fake Ward behind the injected fetch: one handler per endpoint. */
 export function wardFetch(routes: { jwks: Handler; introspect?: Handler }): typeof fetch {
-  return (async (input: string | URL | Request) => {
+  return (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(typeof input === "string" || input instanceof URL ? input : input.url);
-    if (url.pathname === `${BASE}/.well-known/jwks.json`) return routes.jwks(url);
-    if (url.pathname === `${BASE}/introspect` && routes.introspect) return routes.introspect(url);
+    if (url.pathname === `${BASE}/.well-known/jwks.json`) return routes.jwks(url, init);
+    if (url.pathname === `${BASE}/introspect` && routes.introspect) return routes.introspect(url, init);
     return new Response("not found", { status: 404 });
   }) as typeof fetch;
 }

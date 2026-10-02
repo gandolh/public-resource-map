@@ -69,7 +69,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 23 | [briefs/done/23-drizzle-snapshot-for-0001.md](briefs/done/23-drizzle-snapshot-for-0001.md) | done | Drizzle snapshot for `0001_ward_cutover` so `generate` is safe (audit) |
 | 24 | [briefs/done/24-cross-city-deep-link.md](briefs/done/24-cross-city-deep-link.md) | done | A shared place link adopts the place's city (audit) |
 | 25 | [briefs/done/25-osm-healthcare-taxonomy.md](briefs/done/25-osm-healthcare-taxonomy.md) | done | OSM sync: stop importing pharmacies/dentists as "clinic" (audit) |
-| 26 | [briefs/todo/26-ward-client-test-suite.md](briefs/todo/26-ward-client-test-suite.md) | todo | A test suite for prm's real Ward client (audit) |
+| 26 | [briefs/done/26-ward-client-test-suite.md](briefs/done/26-ward-client-test-suite.md) | done | A test suite for prm's real Ward client (audit) |
 | 27 | [briefs/todo/27-remove-ward-cutover-leftovers.md](briefs/todo/27-remove-ward-cutover-leftovers.md) | todo | Remove Ward-cutover leftovers — dead UI/shared code, `argon2`, `@fastify/cookie` (audit) |
 | 28 | [briefs/todo/28-spa-template-leftovers-and-pins.md](briefs/todo/28-spa-template-leftovers-and-pins.md) | todo | SPA-template leftovers out, dependency pins back to policy (audit) |
 | 29 | [briefs/todo/29-reconcile-0001-with-schema.md](briefs/todo/29-reconcile-0001-with-schema.md) | todo | Reconcile the deployed schema with `schema.ts` — 0001 drift (**before 05**) |

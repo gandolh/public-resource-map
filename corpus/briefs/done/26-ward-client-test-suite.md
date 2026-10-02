@@ -35,3 +35,7 @@ Port the relevant cases from the reference suites, adapted to prm's single `crea
 - All the cases above pass, with no network (the injected fetch only).
 - Sanity check: temporarily removing `algorithms` from `jwtVerify`, or setting the cache TTL to 60s, makes at least one test fail. Say which in the log, then restore.
 - `npm test`, `npm run typecheck` green.
+
+## Outcome (2026-10-03)
+
+Every listed case is ported and passes with no network (30 client tests). Sanity: a 60s TTL fails the 30-second test. Removing `algorithms` fails the `alg: none` and HS256 tests, which see a 503-class error instead of a 401, not an acceptance; see the log for why, and for the small hardening suggestion it implies for the client, which this brief may not touch. One support file changed beyond the brief's list: `test/real-ward.ts`, so handlers can see the request init.

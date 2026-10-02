@@ -1,5 +1,19 @@
 # Log
 
+## [2026-10-03] done | Brief 26 — prm's real Ward client has a test suite
+
+`ward.client.test.ts` grows from brief 21's 4 cases to 30, ported from Ward's reference suites and run entirely through the injected fetch, with real EdDSA keys and `SignJWT` tokens:
+
+- **verify:** a valid token passes. Rejected: `alg: none`, HS256 keyed with the public key's bytes, wrong `iss`, wrong `aud`, missing `sid`, and expired 30s ago. Accepted: expired 2s ago, within the 5s tolerance.
+- **introspect:** active → session; inactive → `{active:false}`; 401 → `WardConfigurationError`; 500 → unavailable (and not the config subclass); non-JSON → unavailable; active without subject → unavailable; a request that never answers, with a 20ms timeout → unavailable.
+- **cache:** driven by the `now` option with no sleeps. A repeat inside 30s is one fetch, a call after 30s is a second, two tokens are two fetches, and three concurrent calls for a cold token are one.
+- **cookie:** absent header, cleared `ward_session=`, among several cookies, an array header, and look-alike names.
+- **authenticate:** an inactive session is an authentication error, and the `x-ward-app-key` header is sent.
+
+`test/real-ward.ts` handlers now receive the request init, for the abort signal and the headers.
+
+**Sanity checks, both restored afterwards.** TTL raised to 60s: "asks Ward again once 30 seconds have passed" fails. `algorithms` removed: the `alg: none` and HS256 tests fail, but **not because the token is accepted**. Without the pin, jose's key set throws on the unknown alg *inside the key resolver*, and brief 21's wrapper reports that as `WardUnavailableError("jwks unavailable")`, a 503 instead of a 401. With the pin (as shipped), jose rejects a disallowed alg before the resolver runs, so this cannot happen today. As defence in depth, the resolver wrapper could treat any failure on a token whose header `alg` is not `EdDSA` as an authentication error. Not changed here, because the brief forbids touching `ward.client.ts`; raised in the run summary. Tests 104 pass + 3 todo, and typecheck is clean.
+
 ## [2026-10-03] done | Brief 25 — OSM sync imports public healthcare only
 
 The bare `{ key: "healthcare" }` rule is now `healthcare=hospital|clinic|centre`, in the same priority position. The Overpass filter follows, since it is derived from the rules. Tests: no bare `["healthcare"]` filter; a pharmacy (`amenity=pharmacy` + `healthcare=pharmacy`) and a dentist map to `other`; `healthcare=hospital` maps to `clinic`. `osm-sync.test.ts` had the old bare filter as its example relation line and was updated to the new one. Tests 78 pass + 3 todo, and typecheck is clean.
