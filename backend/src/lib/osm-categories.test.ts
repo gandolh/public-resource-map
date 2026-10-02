@@ -41,10 +41,20 @@ describe("mapTagsToCategory (OSM tag → PlaceCategory)", () => {
     );
   });
 
+  it("imports public healthcare only, not pharmacies or private practices", () => {
+    // The bare key fetched every `healthcare=*` element (brief 25).
+    expect(OVERPASS_TAG_FILTERS).not.toContain('["healthcare"]');
+    expect(mapTagsToCategory({ healthcare: "hospital" })).toBe("clinic");
+    expect(mapTagsToCategory({ healthcare: "clinic" })).toBe("clinic");
+    // If one arrives anyway (via another tag), it is not called a clinic.
+    expect(mapTagsToCategory({ amenity: "pharmacy", healthcare: "pharmacy" })).toBe("other");
+    expect(mapTagsToCategory({ healthcare: "dentist" })).toBe("other");
+  });
+
   it("keeps the Overpass filters in sync with the rule list", () => {
     expect(OVERPASS_TAG_FILTERS).toHaveLength(CATEGORY_RULES.length);
     expect(OVERPASS_TAG_FILTERS).toContain('["amenity"="library"]');
-    expect(OVERPASS_TAG_FILTERS).toContain('["healthcare"]');
+    expect(OVERPASS_TAG_FILTERS).toContain('["healthcare"~"^(hospital|clinic|centre)$"]');
     expect(OVERPASS_TAG_FILTERS).toContain(
       '["amenity"~"^(clinic|hospital|doctors)$"]',
     );

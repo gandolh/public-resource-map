@@ -31,3 +31,7 @@ A pharmacy or dentist is **not** a public resource for this map. Narrow the bare
 ## Acceptance
 - Unit tests above pass; `npm test`, `npm run typecheck` green.
 - The log entry records before/after counts for București from a count query (before: 3,171 total / 1,016 non-clinic healthcare).
+
+## Outcome (2026-10-03)
+
+Done with the default decision. București 3,177 → 2,178 named places and Timișoara 719 → 521, from one Overpass count each. The `sport` measurement (București 286 named, 26 gyms, 10 shops; Timișoara 53, 3, 0) is in the log, and the rule is unchanged. `osm-sync.test.ts` needed its example filter line updated, which is outside the brief's file list but a one-line expectation. No reachable environment has synced, so the retire-SQL for deployed ones is written in the log and not run.

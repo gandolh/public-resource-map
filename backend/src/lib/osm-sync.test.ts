@@ -152,7 +152,7 @@ describe("buildOverpassQuery + resolveCity", () => {
     expect(q).toContain("out center tags;");
     expect(q).toContain('node["amenity"="library"](45.68,21.1,45.81,21.31);');
     expect(q).toContain('way["leisure"="park"](45.68,21.1,45.81,21.31);');
-    expect(q).toContain('relation["healthcare"](45.68,21.1,45.81,21.31);');
+    expect(q).toContain('relation["healthcare"~"^(hospital|clinic|centre)$"](45.68,21.1,45.81,21.31);');
   });
 
   it("resolves a city by key or display name (diacritics-insensitive)", () => {

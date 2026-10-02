@@ -1,5 +1,32 @@
 # Log
 
+## [2026-10-03] done | Brief 25 — OSM sync imports public healthcare only
+
+The bare `{ key: "healthcare" }` rule is now `healthcare=hospital|clinic|centre`, in the same priority position. The Overpass filter follows, since it is derived from the rules. Tests: no bare `["healthcare"]` filter; a pharmacy (`amenity=pharmacy` + `healthcare=pharmacy`) and a dentist map to `other`; `healthcare=hospital` maps to `clinic`. `osm-sync.test.ts` had the old bare filter as its example relation line and was updated to the new one. Tests 78 pass + 3 todo, and typecheck is clean.
+
+**Counts** (one Overpass `out count` query per city, app bboxes, named elements only, 2026-10-03):
+
+| City | Before (bare `healthcare`) | After | Named `sport=*` | …of which `leisure=fitness_centre` | …with a `shop` tag |
+|---|---|---|---|---|---|
+| București | 3,177 | **2,178** | 286 | 26 | 10 |
+| Timișoara | 719 | **521** | 53 | 3 | 0 |
+
+București's "before" was 3,171 on 2026-09-27; OSM moved. The bare `sport` rule is kept: about 12% of its București matches are gyms or shops, a small and mostly sports-relevant share, and changing it is a separate call per the brief. București is still over 1,000 places, which brief 20 now handles.
+
+**Already-synced databases keep their old rows** (the sync never retires). The local `backend/data/app.db` holds only seed rows (no `osm_id`), and no deployed DB was checked. For any environment that has synced, the one-off is: note `T = datetime('now')`, re-run `POST /api/admin/osm/sync` for the city, then delete that city's unprotected OSM rows the sync did not touch (every in-scope row gets `updated_at` bumped) and that nothing references:
+
+```sql
+DELETE FROM place
+WHERE source = 'osm' AND is_manual_pin = 0 AND osm_id IS NOT NULL
+  AND city = :city AND updated_at < :T
+  AND id NOT IN (SELECT place_id FROM event WHERE place_id IS NOT NULL)
+  AND id NOT IN (SELECT place_id FROM staged_event WHERE place_id IS NOT NULL)
+  AND id NOT IN (SELECT place_id FROM favorite_place)
+  AND id NOT IN (SELECT place_id FROM notification WHERE place_id IS NOT NULL);
+```
+
+Not run anywhere: it needs the owner's go-ahead per environment.
+
 ## [2026-10-03] done | Brief 24 — a shared place link adopts the place's city
 
 **Reproduced first** (dev stack on a freshly migrated and seeded scratch DB, headless Chrome, empty localStorage): `/prm/places/<MNAR id>` showed the panel and flew to București, but the picker said Timișoara, the count read Timișoara's "23 de locuri", and no app pin was on the map.
