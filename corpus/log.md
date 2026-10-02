@@ -1,5 +1,17 @@
 # Log
 
+## [2026-10-03] done | Brief 23 — 0001 has a drizzle snapshot; found that 0001 drifted from schema.ts
+
+`backend/drizzle/meta/0001_snapshot.json` now exists, chained to 0000 (`prevId` `a0ad6566-…`). It was produced by running `drizzle-kit generate` from `schema.ts` into an empty scratch `out`, which gives a full-schema snapshot without prompts, and then re-chaining its ids. On a scratch copy of the repo's `drizzle/`:
+
+```
+No schema changes, nothing to migrate 😴
+```
+
+`db:migrate` on an empty scratch DB succeeds. The new `backend/src/db/migrations.test.ts` checks that every journal entry has a snapshot and that the `prevId` chain holds, and it fails with the snapshot removed. Tests 77 pass + 3 todo, and typecheck is clean.
+
+**Found on the way, filed as brief 29:** the hand-written 0001 does not build what `schema.ts` says. Comparing an empty DB migrated through 0000+0001 with one built from `schema.ts` showed that `notification_event` lacks `id` (composite PK, cascade), that `favorite_place_place_idx` and `favorite_event_event_idx` are missing, and that `created_at` defaults differ cosmetically. Nothing writes those tables yet, but brief 05's first insert would fail on every deployed DB. The snapshot follows `schema.ts`, so drizzle-kit will not emit the fix by itself.
+
 ## [2026-10-03] done | Brief 21 — a Ward key-set failure answers 503, not "signed out"
 
 `verify()` wrapped every `jwtVerify` failure as `WardAuthenticationError`, including a failure to fetch Ward's JWKS. `jose` re-fetches the key set once it is older than 10 minutes or empty. So after ten minutes of Ward being down, or right after a restart, `/api/me` told signed-in people they were signed out, admin routes answered 401 instead of 503, and nothing was logged. The key resolver handed to `jwtVerify` is now wrapped. Any resolver error other than `JWKSNoMatchingKey`/`JWKSMultipleMatchingKeys` becomes `WardUnavailableError("jwks unavailable")`, and `verify()` rethrows it unchanged. The injected `fetch` now reaches the key set through `jose`'s `customFetch`, so the path is testable.

@@ -30,3 +30,11 @@
 - `npm run db:migrate -w backend` against an empty scratch `DATABASE_PATH` still succeeds (the SQL files are unchanged).
 - The guard test passes, and fails if you temporarily delete `0001_snapshot.json`.
 - `npm test`, `npm run typecheck` green.
+
+## Outcome (2026-10-03)
+
+Done. Route: neither of the two listed, but equivalent to the first. `drizzle-kit generate` against `schema.ts` into an **empty** scratch `out` gives a full-schema snapshot with no prompts at all. A snapshot is a whole-schema description, not a diff, so that file *is* the post-0001 snapshot once re-chained: new `id` `f7db1419-…`, `prevId` = 0000's `a0ad6566-…`. Only `meta/0001_snapshot.json` entered the repo. The SQL and the journal are untouched.
+
+Acceptance, run on a scratch copy of `backend/drizzle`: `drizzle-kit generate` printed `No schema changes, nothing to migrate 😴` with no prompt. `npm run db:migrate -w backend` on an empty scratch `DATABASE_PATH` printed `Migrations applied successfully`. `migrations.test.ts` passes, and both of its tests fail with `0001_snapshot.json` removed. Tests 77 pass + 3 todo, and typecheck is clean.
+
+**Found on the way:** the hand-written 0001 does not build what `schema.ts` describes. `notification_event` has no `id` and a composite PK, and two favourite indexes are missing. It is latent until brief 05 writes those tables, and filed as [brief 29](../todo/29-reconcile-0001-with-schema.md).

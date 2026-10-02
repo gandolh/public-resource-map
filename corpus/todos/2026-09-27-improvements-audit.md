@@ -27,7 +27,7 @@ starred ones were reproduced by running something.
 3. ★ **The map silently drops places past 1000** — measured: a real București sync is 3,171 named places. → [brief 20](../briefs/done/20-map-loads-every-place.md)
 4. ★ **A JWKS fetch failure reads as "signed out"** — reproduced; breaks the locked 503 semantics and Ward contract rule 5. → [brief 21](../briefs/done/21-ward-jwks-failure-is-unavailable.md)
 5. ★ **A fresh clone cannot boot the backend** — reproduced; Ward env required, `.env.example` referenced but absent. → [brief 22](../briefs/todo/22-fresh-clone-setup-path.md)
-6. ★ **drizzle-kit has no snapshot for 0001** — reproduced; the next `generate` re-does the Ward cutover. → [brief 23](../briefs/todo/23-drizzle-snapshot-for-0001.md)
+6. ★ **drizzle-kit has no snapshot for 0001** — reproduced; the next `generate` re-does the Ward cutover. → [brief 23](../briefs/done/23-drizzle-snapshot-for-0001.md)
 
 ### Next
 7. **A shared place link from the other city shows an empty map** → [brief 24](../briefs/todo/24-cross-city-deep-link.md)
