@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowUpRight, CalendarOff } from "lucide-react";
 import type { Event } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
-import { groupByDay } from "~/lib/dates";
+import { groupByDay, isRunning } from "~/lib/dates";
 import { eventCategoryColor, eventCategoryKey } from "~/lib/categories";
 import { Button } from "~/components/ui/Button";
 import { StateBlock } from "~/components/ui/StateBlock";
@@ -31,7 +31,11 @@ function EventRow({ event }: { event: Event }) {
           {event.title}
         </p>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-fg-muted">
-          <span className="tnum">{time(event.startDate)}</span>
+          <span className="tnum">
+            {isRunning(event.startDate, event.endDate)
+              ? t("event.until", { date: dayMonth(event.endDate!) })
+              : time(event.startDate)}
+          </span>
           <span aria-hidden="true" className="text-fg-faint">·</span>
           <span className="inline-flex items-center gap-1.5">
             <span
@@ -95,7 +99,7 @@ export function EventList({ events, loading, emptyTitle, emptyBody }: EventListP
   }
 
   const shown = expanded ? events : events.slice(0, INITIAL);
-  const groups = groupByDay(shown, (e) => e.startDate);
+  const groups = groupByDay(shown, (e) => ({ start: e.startDate, end: e.endDate }));
 
   return (
     <div className="px-4 pb-1">

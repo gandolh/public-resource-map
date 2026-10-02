@@ -307,6 +307,20 @@ const seedEvents = [
     buyUrl: null,
     sourcePlatform: "Primăria Municipiului București",
   },
+  // A run, not a moment: opened two weeks ago, closes in about forty days.
+  // Every other seed event is a point event (null end), which is how the
+  // "vanishes the minute it starts" bug hid until brief 19.
+  {
+    placeId: byName("Muzeul Național de Artă al României"),
+    title: "Brâncuși și contemporanii săi — expoziție temporară",
+    category: "exhibition",
+    startDate: at(-14, 10, 0),
+    endDate: at(40, 18, 0),
+    buyUrl: "https://mnar.arts.ro/bilete",
+    sourcePlatform: "MNAR",
+    price: 40,
+    currency: "RON",
+  },
 ];
 
 async function seed() {

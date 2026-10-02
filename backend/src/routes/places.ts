@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { and, asc, eq, gte, inArray, lte, sql, getTableColumns } from "drizzle-orm";
+import { and, asc, eq, inArray, sql, getTableColumns } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { event, place } from "../db/schema.js";
 import {
@@ -15,6 +15,7 @@ import { boundingBox } from "../lib/geo.js";
 import { lensWindow } from "../lib/time.js";
 import { rowToEvent } from "./event-mapper.js";
 import { isForeignKeyViolation } from "../lib/fk.js";
+import { liveInWindow } from "./event-window.js";
 
 function rowToPlace(
   row: typeof place.$inferSelect & { upcomingEventCount?: number },
@@ -43,7 +44,8 @@ function rowToPlace(
 }
 
 /**
- * Live, upcoming events at a place inside the lens window, as a correlated
+ * Live events at a place that are on during the lens window (starting in it, or
+ * already running through it: see `liveInWindow`), as a correlated
  * scalar subquery. This is what lets a pin show "3 things on here" without the
  * map firing one request per pin.
  *
@@ -56,14 +58,7 @@ function upcomingCountExpr(db: FastifyInstance["db"], from: string, to: string) 
   const sub = db
     .select({ c: sql<number>`count(*)` })
     .from(event)
-    .where(
-      and(
-        eq(event.placeId, place.id),
-        eq(event.status, "live"),
-        gte(event.startDate, from),
-        lte(event.startDate, to),
-      ),
-    );
+    .where(and(eq(event.placeId, place.id), liveInWindow(from, to)));
   return sql<number>`(${sub})`;
 }
 
@@ -130,7 +125,8 @@ export async function placeRoutes(app: FastifyInstance) {
   /**
    * What is on at one place. This is the other half of the place panel: the
    * panel's identity block comes from `/places/:id`, its programme from here.
-   * Upcoming and live only — a past or retracted event never reaches a user.
+   * Live and not yet over (upcoming, or running now) — a past or retracted
+   * event never reaches a user.
    */
   app.get<{ Params: { id: string }; Querystring: Record<string, string> }>(
     "/places/:id/events",
@@ -157,14 +153,7 @@ export async function placeRoutes(app: FastifyInstance) {
       const rows = await db
         .select()
         .from(event)
-        .where(
-          and(
-            eq(event.placeId, req.params.id),
-            eq(event.status, "live"),
-            gte(event.startDate, from),
-            lte(event.startDate, to),
-          ),
-        )
+        .where(and(eq(event.placeId, req.params.id), liveInWindow(from, to)))
         .orderBy(asc(event.startDate))
         .limit(limit);
 

@@ -54,3 +54,9 @@ The UI has the same flaw one layer up. `groupFor` (`ui/app/lib/dates.ts:37-52`) 
 - In the running app (`npm run dev` after re-seeding), the seeded exhibition shows in its museum's panel under **Today** with "until …", and in what's-on.
 - `npm test`, `npm run typecheck` green.
 - [decisions.md → Public API surface](../../wiki/decisions.md) gets one line: events are shown while `now` is inside `[start, end]`.
+
+## Outcome (2026-10-03)
+
+Done as specified. `backend/src/routes/event-window.ts` exports `liveInWindow(from, to)` (`live AND start <= to AND coalesce(end, start) >= from`), and the pin count, the lens hard-filter, the place programme and what's-on all call it. A null end date is a point event, written down in that file's comment. The UI puts a running event under **Today** (`isRunning` in `ui/app/lib/dates.ts`) and shows "până pe {date}" / "until {date}" in place of the start time, in the place panel and in what's-on. The seed has one running exhibition at MNAR (started 14 days ago, ends in 40).
+
+`backend/src/routes/in-progress.api.test.ts` covers the four cases. `npm test` 65 pass + 3 todo, and `npm run typecheck` is clean. Not checked in the running app: the browser check with the re-seeded demo is still owed. `lensWindow`'s comment ("only upcoming events surface") was left alone, since the brief fences off that function. It describes the windows, which are unchanged.

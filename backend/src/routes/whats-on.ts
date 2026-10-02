@@ -8,6 +8,7 @@ import {
 } from "@public-resource-map/shared";
 import { lensWindow } from "../lib/time.js";
 import { rowToEvent } from "./event-mapper.js";
+import { liveInWindow } from "./event-window.js";
 
 /**
  * `GET /api/whats-on` — the citywide, date-first lens on exactly the data the
@@ -32,11 +33,7 @@ export async function whatsOnRoutes(app: FastifyInstance) {
     const { city, category, lens, page, pageSize } = query.data;
     const { from, to } = lensWindow(lens);
 
-    const conditions = [
-      eq(event.status, "live"),
-      sql`${event.startDate} >= ${from}`,
-      sql`${event.startDate} <= ${to}`,
-    ];
+    const conditions = [liveInWindow(from, to)];
     if (city) conditions.push(eq(place.city, city));
 
     const categories = parseCsv(category);

@@ -1,5 +1,13 @@
 # Log
 
+## [2026-10-03] done | Brief 19 — running events stay visible until they end
+
+Every user surface used to ask "does the event *start* inside the lens window?", and every window starts at now, so an event disappeared from the pin badge, the lens filter, the place panel and what's-on the minute it began. A three-month exhibition was invisible for its whole run. Now all of them call one predicate, `liveInWindow(from, to)` in `backend/src/routes/event-window.ts`: `live AND start <= to AND coalesce(end, start) >= from`. A null end date is deliberately a point event, so it behaves exactly as before.
+
+UI: `groupFor`/`groupByDay` take the end date, a running event sorts under **Today**, and its row shows "până pe {date}" / "until {date}" instead of the start time (place panel and what's-on). The seed gains one running exhibition at MNAR (-14 → +40 days). Every other seed event has a null end, which is how the bug hid.
+
+New `in-progress.api.test.ts`: a running exhibition is counted under all/today/weekend, survives the today hard-filter, and is listed by the panel and by what's-on. An event that ended yesterday, a null-end event that started a minute ago, and one 100 days out are all excluded. `npm test` 65 pass + 3 todo, and typecheck is clean. The demo check in a browser is still owed. index.md also had brief 18 still as todo; that is fixed.
+
 ## [2026-10-03] done | Brief 18 — the place and event write routes are admin-only
 
 `POST /api/places`, `DELETE /api/places/:id`, `POST /api/events` and `DELETE /api/events/:id` now carry `{ preHandler: app.requireAdmin }`, the same shape as the OSM sync route. Before this, anyone on the internet could delete every place without events, or publish an event straight to `live`, past the review gate, with a "Buy tickets" link on the trusted origin. The routes are kept as the brief decided, as a curl escape hatch until brief 16's admin UI.

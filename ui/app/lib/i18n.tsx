@@ -95,6 +95,7 @@ const ro: Dict = {
   "event.tickets": "Bilete",
   "event.noTicketLink": "Fără link de bilete",
   "event.at": "la",
+  "event.until": "până pe {date}",
 
   "group.today": "Azi",
   "group.tomorrow": "Mâine",
@@ -247,6 +248,7 @@ const en: Dict = {
   "event.tickets": "Tickets",
   "event.noTicketLink": "No ticket link",
   "event.at": "at",
+  "event.until": "until {date}",
 
   "group.today": "Today",
   "group.tomorrow": "Tomorrow",

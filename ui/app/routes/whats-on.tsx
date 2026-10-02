@@ -2,7 +2,7 @@ import { Link, type MetaFunction } from "react-router";
 import { AlertTriangle, ArrowUpRight, CalendarOff, MapPin } from "lucide-react";
 import type { WhatsOnItem } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
-import { groupByDay } from "~/lib/dates";
+import { groupByDay, isRunning } from "~/lib/dates";
 import {
   categoryColor,
   categoryLabelKey,
@@ -26,8 +26,9 @@ export const meta: MetaFunction = () => [
 ];
 
 function Row({ item }: { item: WhatsOnItem }) {
-  const { t, time } = useI18n();
+  const { t, time, dayMonth } = useI18n();
   const { event, place } = item;
+  const running = isRunning(event.startDate, event.endDate);
 
   return (
     <li className="border-t border-line first:border-t-0">
@@ -35,9 +36,15 @@ function Row({ item }: { item: WhatsOnItem }) {
         to={`/places/${place.id}`}
         className="flex gap-3.5 py-3.5 transition-colors hover:bg-surface-2 md:gap-4 md:px-2 md:-mx-2 md:rounded-lg"
       >
-        <span className="tnum w-12 shrink-0 pt-0.5 text-[13.5px] font-semibold tracking-[-0.01em] text-fg">
-          {time(event.startDate)}
-        </span>
+        {running ? (
+          <span className="tnum w-12 shrink-0 pt-0.5 text-[11.5px] leading-tight font-semibold text-fg">
+            {t("event.until", { date: dayMonth(event.endDate!) })}
+          </span>
+        ) : (
+          <span className="tnum w-12 shrink-0 pt-0.5 text-[13.5px] font-semibold tracking-[-0.01em] text-fg">
+            {time(event.startDate)}
+          </span>
+        )}
 
         <span className="min-w-0 flex-1">
           <span className="block text-[14.5px] leading-snug font-semibold tracking-[-0.01em] text-fg">
@@ -96,7 +103,7 @@ export default function WhatsOnRoute() {
 
   const { data, isPending, isError, refetch } = useWhatsOn({ city: city.name, categories, lens });
   const items = data?.data ?? [];
-  const groups = groupByDay(items, (i) => i.event.startDate);
+  const groups = groupByDay(items, (i) => ({ start: i.event.startDate, end: i.event.endDate }));
 
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">

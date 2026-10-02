@@ -128,7 +128,8 @@ The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Frau
 ## Public API surface added for the place-centric UI (2026-09-04)
 
 - `GET /api/places` now takes a comma-separated `category` list and a `lens` (`today` | `weekend` | `all`), and every row carries **`upcomingEventCount`** — computed as a correlated subquery so a map of pins costs one request, not one per pin. `lens=today|weekend` **hard-filters** places to those holding an event in the window, per the locked UI decision.
-- `GET /api/places/:id/events` — a place's programme: live and upcoming only, in date order.
+- `GET /api/places/:id/events` — a place's programme: live and not yet over, in date order.
+- **An event is shown while `now` is inside `[start, end]`** (brief 19, 2026-10-03). Pin counts, the lens filter, the programme and what's-on all ask whether the event's span *overlaps* the lens window, through one predicate (`liveInWindow` in `backend/src/routes/event-window.ts`). A null end date is a point event: shown until it starts. A running event groups under **Today** in the UI with "until {date}".
 - `GET /api/whats-on` — the citywide date-first index, honouring the same city/category/lens filters so the map and the list can never disagree. Each row carries the place it happens at.
 - `backend/src/lib/time.ts` owns every Europe/Bucharest window calculation (`lensWindow`, `zonedTimeToInstant`), with the 90-day horizon. DST-correct via a two-pass offset, no dependency.
 - **Note on Drizzle:** a correlated subquery must be built with the query builder, not a raw `sql` template. A raw template renders its columns unqualified, so `place_id = id` silently resolves both sides to the subquery's own table and every count returns zero. This cost a debugging round; it is in the code as a comment.
