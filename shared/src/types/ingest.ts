@@ -151,4 +151,5 @@ export interface StagedEventDto {
 export interface AcceptResultDto {
   accepted: { stagedId: string; eventId: string }[];
   skipped: { id: string; reason: string }[];
+  notified: number;
 }

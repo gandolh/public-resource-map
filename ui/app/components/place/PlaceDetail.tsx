@@ -5,6 +5,7 @@ import { useI18n } from "~/lib/i18n";
 import { categoryNameKey } from "~/lib/categories";
 import { directionsUrl } from "~/lib/map";
 import { Button } from "~/components/ui/Button";
+import { FavoriteStar } from "~/components/FavoriteStar";
 import { CategoryBadge } from "~/components/ui/CategoryBadge";
 import { EventList } from "./EventList";
 
@@ -113,6 +114,7 @@ export function PlaceDetail({
                 </>
               )}
             </Button>
+            <FavoriteStar kind="place" id={place.id} name={place.name} />
           </div>
         </header>
 

@@ -1,4 +1,6 @@
 import { useEffect } from "react";
+import { Bell } from "./shell/Bell";
+import { usePendingFavorite } from "~/hooks/useFavorites";
 import { Link, useLocation } from "react-router";
 import { CalendarDays, Map as MapIcon, User } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
@@ -162,6 +164,9 @@ export function Navbar() {
     hydrateCity();
   }, [hydrateCity]);
 
+  // A favourite asked for while signed out, finished on the way back.
+  usePendingFavorite();
+
   return (
     <>
       <header className="relative z-[700] flex h-13 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-3 md:px-4">
@@ -185,6 +190,7 @@ export function Navbar() {
         <div className="flex shrink-0 items-center gap-1.5">
           <LangToggle />
           <ThemeToggle />
+          <Bell />
           <ProfileMenu />
         </div>
       </header>

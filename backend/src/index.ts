@@ -1,4 +1,5 @@
 import { buildApp } from "./app.js";
+import { startReminderSweep } from "./jobs/reminder-sweep.js";
 
 /*
  * There is no admin to seed any more.
@@ -20,3 +21,8 @@ try {
   app.log.error(err);
   process.exit(1);
 }
+
+// Day-before reminders (brief 05): in-process, here rather than in buildApp so
+// a test's app never starts a timer. The timer is unref'd, so it never holds
+// the process open.
+startReminderSweep(app.db, (msg) => app.log.info(msg));

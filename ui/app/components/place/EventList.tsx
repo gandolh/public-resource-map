@@ -5,6 +5,7 @@ import { useI18n } from "~/lib/i18n";
 import { groupByDay, isRunning } from "~/lib/dates";
 import { eventCategoryColor, eventCategoryKey } from "~/lib/categories";
 import { Button } from "~/components/ui/Button";
+import { FavoriteStar } from "~/components/FavoriteStar";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { EventRowSkeleton } from "~/components/ui/Skeleton";
 
@@ -66,9 +67,12 @@ function EventRow({ event }: { event: Event }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="text-[13.5px] leading-snug font-semibold tracking-[-0.005em] text-fg">
-          {event.title}
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-[13.5px] leading-snug font-semibold tracking-[-0.005em] text-fg">
+            {event.title}
+          </p>
+          <FavoriteStar kind="event" id={event.id} name={event.title} size="sm" />
+        </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-fg-muted">
           <span className="tnum">
             {isRunning(event.startDate, event.endDate)

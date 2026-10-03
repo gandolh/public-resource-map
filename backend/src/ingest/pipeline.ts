@@ -12,6 +12,7 @@ import type { DB } from "../db/index.js";
 import { event, eventSource, place, stagedEvent } from "../db/schema.js";
 import { resolveCity, type CityConfig } from "../lib/osm-sync.js";
 import { zonedParts } from "../lib/time.js";
+import { notifyNewEvents } from "../lib/notify.js";
 import { adapterFor, builtInAdapters, fetchText, type AdapterRegistry } from "./adapters.js";
 import { geocodeAddress, nominatimProvider, type GeocodeProvider } from "./geocode.js";
 import { matchVenue, normalizeText, normalizeVenue } from "./match.js";
@@ -406,17 +407,21 @@ async function markVanished(db: DB, sourceId: string, cutoff: string, runAt: str
 export interface AcceptResult {
   accepted: { stagedId: string; eventId: string }[];
   skipped: { id: string; reason: string }[];
+  /** Inbox items written for people who favourited a place that just got events. */
+  notified: number;
 }
 
 /**
  * Accept staged rows: each becomes (or updates) a live event, in its own
  * transaction. A row with no place yet is skipped with a reason: an event
- * always has a place (resolve it first, or drop a manual pin). The accepted
- * event ids are what brief 05's "new at a favourite place" trigger reads.
+ * always has a place (resolve it first, or drop a manual pin). Newly published
+ * events then notify the people who favourited their place (brief 05).
  */
 export function acceptStaged(db: DB, ids: string[], now: Date): AcceptResult {
-  const result: AcceptResult = { accepted: [], skipped: [] };
+  const result: AcceptResult = { accepted: [], skipped: [], notified: 0 };
   const at = now.toISOString();
+  // New and live only: a re-accepted change or a cancellation is not news.
+  const published: { eventId: string; placeId: string }[] = [];
   for (const id of ids) {
     db.transaction((tx) => {
       const row = tx.select().from(stagedEvent).where(eq(stagedEvent.id, id)).get();
@@ -455,6 +460,7 @@ export function acceptStaged(db: DB, ids: string[], now: Date): AcceptResult {
         tx.update(event).set(fields).where(eq(event.id, eventId)).run();
       } else {
         eventId = tx.insert(event).values(fields).returning({ id: event.id }).get().id;
+        if (!cancelled) published.push({ eventId, placeId });
       }
       tx.update(stagedEvent)
         .set({ status: "accepted", eventId, placeId, updatedAt: at })
@@ -463,6 +469,7 @@ export function acceptStaged(db: DB, ids: string[], now: Date): AcceptResult {
       result.accepted.push({ stagedId: id, eventId });
     });
   }
+  result.notified = notifyNewEvents(db, published, now);
   return result;
 }
 

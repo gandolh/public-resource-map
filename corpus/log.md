@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 05 — favourites, the bell, and day-before reminders (in-app)
+
+People can follow a place and ask to be reminded of an event. Signed out, the star sends them through Ward and completes the favourite on the way back. Accepting events now gives each follower of the place one item per batch, and a sweep (at startup, then 09:00 Bucharest) writes a reminder for every favourited event starting the next Bucharest day, idempotently. The bell lists both and marks them read when opened. All of it was walked against the local Ward. **Email is blocked:** prm holds no addresses since the cutover, so sending needs a Ward-side change (decisions.md).
+
 ## [2026-10-03] done | Brief 29 — the migrated schema is schema.ts again
 
 `notification_event` is keyed on (notification, event) with a cascade from its notification. That is the shape 0001 deployed, and `schema.ts` now says so; the call was taken by the brief run and is recorded in decisions.md for the owner. Migration 0003 adds the two favourite indexes 0001 never created. A new test builds one database from the migrations and one from `schema.ts` and compares them table by table. It caught this brief's drift, and one in brief 04's 0002 (column order). The real dev database is still at migration 0000.

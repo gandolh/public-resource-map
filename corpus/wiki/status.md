@@ -6,7 +6,7 @@ _Last updated: 2026-10-03_
 
 The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · the seed half of 08.** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
 
-Remaining build order: **vet and add real sources (owner; brief 04's pipeline is ready)** → 05 (favorites + notifications) → 14 (archive) → 10 (test plans rewrite).
+Remaining build order: **vet and add real sources (owner; brief 04's pipeline is ready)** → 14 (archive) → 10 (test plans rewrite).
 
 ## Where things stand
 
@@ -49,7 +49,7 @@ Still open:
 | Places + OSM sync (03) | **done — admin `POST /api/admin/osm/sync` (Overpass, tag→PlaceCategory map, centroid, non-clobbering upsert), public `GET /api/places`(+`:id`), ODbL attribution on map** |
 | RO seed data (08) | **partial — 38 real Timișoara/București places + 14 synthetic events seeded; OSM sync still the real path** |
 | Event ingestion (04) | **done 2026-10-03 (pipeline)** — iCal adapter, match/geocode/dedup/reconcile/health, staged diff + admin API, 45 tests. **No source configured:** vetting the first 2–4 is the owner's ([todo](../todos/2026-10-03-vet-first-event-sources.md)) |
-| Favorites + notifications (05) | not started |
+| Favorites + notifications (05) | **done 2026-10-03 (in-app)** — star/remind-me, signed-out → Ward → favourite completed, coalesced new-event items at accept, 09:00 Bucharest reminder sweep, bell. **Email blocked on Ward** (prm holds no addresses) |
 | Place-centric UI (06) | **mostly done — pins/panel/what's-on/city picker shipped; favorite star + notification bell wait on brief 05** |
 | Attribution (09) | **done 2026-10-03** — `© OpenStreetMap contributors` + CARTO, `/about-data`, per-event source credit. **Owed: `VITE_DATA_CONTACT`** (the takedown address) before launch; the page's "events are samples" callout goes when 04 lands |
 | Test plans (10) | stale — they describe a UI that no longer exists |
