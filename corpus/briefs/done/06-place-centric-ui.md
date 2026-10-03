@@ -48,3 +48,9 @@ Reshape the existing 3-surface UI (`/map` resource markers · standalone `/event
 - "What's on" index lists a city's upcoming events and links each back to its place on the map.
 - City picker switches between Timișoara/București, persists, and re-centers the map; the app works without native geolocation.
 - Favorite stars and the notification bell are wired; attribution is shown.
+
+## Outcome (2026-10-03)
+
+Closed. The remainder named above (the favourite star on the place and its
+events, and the notification bell) shipped with brief 05 on 2026-10-03, so
+nothing of this brief is left.

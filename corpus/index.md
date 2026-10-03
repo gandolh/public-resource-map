@@ -49,7 +49,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 03 | [briefs/done/03-place-model-and-osm-sync.md](briefs/done/03-place-model-and-osm-sync.md) | done | Place model & OSM resource sync (resources-first anchor) |
 | 04 | [briefs/done/04-event-ingestion-pipeline.md](briefs/done/04-event-ingestion-pipeline.md) | done | Event ingestion pipeline — refresh/match/geocode/reconcile/diff/accept |
 | 05 | [briefs/done/05-favorites-and-notifications.md](briefs/done/05-favorites-and-notifications.md) | done | Favorites & notifications — in-app + email (retention loop) |
-| 06 | [briefs/todo/06-place-centric-ui.md](briefs/todo/06-place-centric-ui.md) | todo | Place-centric map UI (refactor of the existing 3-surface UI) |
+| 06 | [briefs/done/06-place-centric-ui.md](briefs/done/06-place-centric-ui.md) | done | Place-centric map UI (refactor of the existing 3-surface UI) |
 | 07 | [briefs/done/07-schema-consolidation.md](briefs/done/07-schema-consolidation.md) | done | Schema consolidation & migration plan (**build first**) |
 | 08 | [briefs/todo/08-ro-seed-data.md](briefs/todo/08-ro-seed-data.md) | todo | Real RO seed data (Timișoara + București) |
 | 09 | [briefs/done/09-attribution-and-about-data.md](briefs/done/09-attribution-and-about-data.md) | done | Attribution & "about the data" transparency |
