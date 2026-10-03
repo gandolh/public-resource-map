@@ -4,6 +4,7 @@ import type { WhatsOnItem } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
 import { groupByDay, isRunning } from "~/lib/dates";
 import { inArea } from "~/lib/area";
+import { usingCarto } from "~/lib/map";
 import {
   categoryColor,
   categoryLabelKey,
@@ -19,6 +20,7 @@ import { Button } from "~/components/ui/Button";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { Skeleton } from "~/components/ui/Skeleton";
 import { useLensOptions } from "~/components/map/FilterBar";
+import { sourceName } from "~/components/place/EventList";
 import { placeCategories } from "@public-resource-map/shared";
 
 export const meta: MetaFunction = () => [
@@ -30,6 +32,7 @@ function Row({ item }: { item: WhatsOnItem }) {
   const { t, time, dayMonth } = useI18n();
   const { event, place } = item;
   const running = isRunning(event.startDate, event.endDate);
+  const source = sourceName(event);
 
   return (
     <li className="border-t border-line first:border-t-0">
@@ -72,6 +75,14 @@ function Row({ item }: { item: WhatsOnItem }) {
               <span className="truncate">{place.name}</span>
             </span>
           </span>
+
+          {/* Text, not a link: the whole row already links to the place,
+              whose panel links the original listing. */}
+          {source && (
+            <span className="mt-1 block text-[11.5px] text-fg-faint">
+              {t("event.source")} {source}
+            </span>
+          )}
 
           {event.buyUrl && (
             <span className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-accent">
@@ -216,7 +227,10 @@ export default function WhatsOnRoute() {
         </div>
 
         <p className="mt-10 border-t border-line pt-4 text-[11.5px] leading-relaxed text-fg-faint">
-          {t("place.sourceOsm")} (ODbL) · CARTO
+          {t("place.sourceOsm")} (ODbL){usingCarto && " · CARTO"} ·{" "}
+          <Link to="/about-data" className="underline underline-offset-2 hover:text-fg">
+            {t("nav.aboutData")}
+          </Link>
         </p>
       </div>
     </div>

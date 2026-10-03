@@ -28,8 +28,10 @@ export const DARK_TILES = usingCarto
   ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${cartoSuffix}`
   : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
+// "© OpenStreetMap contributors" is the wording the OSM Foundation's
+// attribution guidelines ask for (brief 09).
 const OSM_ATTR =
-  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> ' +
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> ' +
   '(<a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noreferrer">ODbL</a>)';
 
 /**

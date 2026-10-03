@@ -10,6 +10,45 @@ import { EventRowSkeleton } from "~/components/ui/Skeleton";
 
 const INITIAL = 5;
 
+/** The publisher's name, or failing that the listing's host. */
+export function sourceName(event: Pick<Event, "sourcePlatform" | "sourceUrl">): string | null {
+  if (event.sourcePlatform) return event.sourcePlatform;
+  if (!event.sourceUrl) return null;
+  try {
+    return new URL(event.sourceUrl).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Who published this event, linked to their original listing when there is
+ * one (brief 09): courtesy to the source, and the link-out posture made
+ * visible.
+ */
+function SourceCredit({ event }: { event: Event }) {
+  const { t } = useI18n();
+  const name = sourceName(event);
+  if (!name) return null;
+  return (
+    <p className="mt-1 text-[11.5px] text-fg-faint">
+      {t("event.source")}{" "}
+      {event.sourceUrl ? (
+        <a
+          href={event.sourceUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="font-medium text-fg-muted underline decoration-line-strong underline-offset-2 hover:text-fg"
+        >
+          {name}
+        </a>
+      ) : (
+        name
+      )}
+    </p>
+  );
+}
+
 function EventRow({ event }: { event: Event }) {
   const { t, time, dayMonth } = useI18n();
   const [day, month] = dayMonth(event.startDate).replace(".", "").split(" ");
@@ -46,6 +85,8 @@ function EventRow({ event }: { event: Event }) {
             {t(eventCategoryKey(event.category))}
           </span>
         </div>
+
+        <SourceCredit event={event} />
 
         {/* A ticket link exists only when the publisher provided one. We never
             manufacture one, so "no ticket link" is stated rather than implied. */}

@@ -6,7 +6,7 @@ _Last updated: 2026-10-03_
 
 The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · the seed half of 08.** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
 
-Remaining build order: **04 (event ingestion — the biggest gap, every event in the app is currently synthetic)** → 05 (favorites + notifications) → 16 (admin shell) → 14 (archive) → 17 (Playwright) → 09 (attribution page) → 10 (test plans rewrite).
+Remaining build order: **04 (event ingestion — the biggest gap, every event in the app is currently synthetic)** → 05 (favorites + notifications) → 16 (admin shell) → 14 (archive) → 17 (Playwright) → 10 (test plans rewrite).
 
 ## Where things stand
 
@@ -51,7 +51,7 @@ Still open:
 | Event ingestion (04) | not started |
 | Favorites + notifications (05) | not started |
 | Place-centric UI (06) | **mostly done — pins/panel/what's-on/city picker shipped; favorite star + notification bell wait on brief 05** |
-| Attribution (09) | not started |
+| Attribution (09) | **done 2026-10-03** — `© OpenStreetMap contributors` + CARTO, `/about-data`, per-event source credit. **Owed: `VITE_DATA_CONTACT`** (the takedown address) before launch; the page's "events are samples" callout goes when 04 lands |
 | Test plans (10) | stale — they describe a UI that no longer exists |
 | Platform optimization (12) | **closed 2026-10-03** — WAL + NORMAL + FKs + 5 s busy wait, tested; indexes verified; bbox-fetch superseded by whole-city loading (20/15); canvas/batching wait for a measured slowdown |
 | Public UI interactions (13) | **mostly done — grouped events, clustering, hard-filtering lens, guided zero-results, loading/empty/error, focus management; see the brief for the precise remainder** |

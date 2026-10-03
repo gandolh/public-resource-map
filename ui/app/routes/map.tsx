@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AttributionControl, MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Outlet, useNavigate } from "react-router";
+import type { Control } from "leaflet";
 import type { Map as LeafletMap } from "leaflet";
 import { AlertTriangle, Crosshair, Loader2, Minus, Plus, SearchX, X } from "lucide-react";
 import type { MetaFunction } from "react-router";
@@ -35,6 +36,32 @@ export const meta: MetaFunction = () => [
 export interface MapOutletContext {
   places: Place[];
   getMap: () => LeafletMap | null;
+}
+
+/**
+ * "About the data" rides in the attribution control (brief 09), the one corner
+ * that is always on screen beside the licence it explains. Leaflet takes the
+ * prefix as HTML, so the click is routed through the SPA by hand: a full page
+ * load would throw away the drawn area and the selection.
+ */
+function AboutDataLink({ control }: { control: Control.Attribution | null }) {
+  const { t, lang } = useI18n();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!control) return;
+    const href = `${import.meta.env.BASE_URL}about-data`;
+    control.setPrefix(`<a href="${href}" data-about-data>${t("nav.aboutData")}</a>`);
+    const container = control.getContainer();
+    const onClick = (e: MouseEvent) => {
+      if (!(e.target instanceof Element) || !e.target.closest("[data-about-data]")) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      navigate("/about-data");
+    };
+    container?.addEventListener("click", onClick);
+    return () => container?.removeEventListener("click", onClick);
+  }, [control, lang, t, navigate]);
+  return null;
 }
 
 /** Keeps the Leaflet instance reachable from the child (place) route. */
@@ -132,6 +159,7 @@ export default function MapRoute() {
   const clearArea = useAppStore((s) => s.clearArea);
 
   const mapRef = useRef<LeafletMap | null>(null);
+  const [attribution, setAttribution] = useState<Control.Attribution | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -201,7 +229,8 @@ export default function MapRoute() {
           {/* Bottom-left, not Leaflet's default bottom-right: the right edge is
               where the place panel docks, and attribution is a licence
               obligation that may not be parked under a panel. */}
-          <AttributionControl position="bottomleft" prefix={false} />
+          <AttributionControl position="bottomleft" prefix={false} ref={setAttribution} />
+          <AboutDataLink control={attribution} />
           <MapBridge onReady={(m) => { mapRef.current = m; }} />
           <CityRecenter lat={city.center.lat} lng={city.center.lng} zoom={city.zoom} />
           {coords && <UserLocationMarker coords={coords} />}

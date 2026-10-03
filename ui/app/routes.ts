@@ -9,6 +9,7 @@ export default [
   layout("./components/Layout.tsx", [
     route("/", "routes/map.tsx", [route("places/:id", "routes/place.tsx")]),
     route("whats-on", "routes/whats-on.tsx"),
+    route("about-data", "routes/about-data.tsx"),
     /*
      * `login` and `register` are gone. They are Ward's now — `/ward/login` and
      * `/ward/register?app=prm`, reached by a full navigation rather than a

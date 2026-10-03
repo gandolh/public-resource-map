@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 09 — attribution, an about-the-data page, and per-event source credit
+
+The map credits `© OpenStreetMap contributors` (it said `© OpenStreetMap`) and links "About the data", a new page with the licences, the link-out posture, the iaBilet disclaimer and the removal path. Every event now names its publisher, linked to the original listing in the place panel. **The takedown address is owed:** set `VITE_DATA_CONTACT` before launch. The page says plainly that today's events are samples, a callout to remove when brief 04 lands.
+
 ## [2026-10-03] done | Brief 12 — the database connection settings, and the rest closed
 
 The connection now also sets `synchronous = NORMAL` and a 5 s `busy_timeout`; a test reads all four pragmas back and checks that the city and lat/lng filters use their indexes. The brief's "fetch by viewport bbox" is superseded by whole-city loading (briefs 20, 13, 15), clustering already shipped with brief 13, and canvas markers and batching stay behind a slowdown nobody has measured.
