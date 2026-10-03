@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { LassoSelect, SlidersHorizontal, X } from "lucide-react";
 import { placeCategories, type EventLens, type PlaceCategory } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
 import { categoryColor, categoryLabelKey } from "~/lib/categories";
@@ -7,6 +7,7 @@ import { useAppStore } from "~/stores/appStore";
 import { Chip } from "~/components/ui/Chip";
 import { Segmented } from "~/components/ui/Segmented";
 import { SearchInput } from "~/components/ui/SearchInput";
+import { Button } from "~/components/ui/Button";
 import { cn } from "~/lib/utils";
 
 /** The categories a Romanian city actually has a lot of, first. */
@@ -73,6 +74,41 @@ function CategoryChips({ compact }: { compact?: boolean }) {
 }
 
 /**
+ * Draw-to-filter's entry point (brief 15): "Draw an area" until there is one,
+ * then the area as a removable filter chip, plus a redraw.
+ */
+function AreaControls({ onStart }: { onStart?: () => void }) {
+  const { t } = useI18n();
+  const area = useAppStore((s) => s.area);
+  const clearArea = useAppStore((s) => s.clearArea);
+  const setDrawMode = useAppStore((s) => s.setDrawMode);
+  const start = () => {
+    onStart?.();
+    setDrawMode("freehand");
+  };
+
+  if (!area) {
+    return (
+      <Button variant="ghost" size="sm" onClick={start} className="-ml-1">
+        <LassoSelect size={15} strokeWidth={2} />
+        {t("area.draw")}
+      </Button>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5">
+      <Chip active onClick={clearArea} aria-label={t("area.remove")}>
+        {t("area.chip")}
+        <X size={13} strokeWidth={2.4} aria-hidden="true" />
+      </Chip>
+      <Button variant="ghost" size="sm" onClick={start}>
+        {t("area.redraw")}
+      </Button>
+    </div>
+  );
+}
+
+/**
  * Map chrome. On desktop it stacks in the top-left corner and the timing lens
  * floats bottom-centre, within thumb reach of nothing and easy reach of the
  * cursor. On a phone the same controls collapse to one search field plus a
@@ -92,7 +128,13 @@ export function FilterBar({
   const setLens = useAppStore((s) => s.setLens);
   const lensOptions = useLensOptions();
   const categories = useAppStore((s) => s.categories);
+  const area = useAppStore((s) => s.area);
+  const drawing = useAppStore((s) => s.drawMode !== null);
   const [openOnMobile, setOpenOnMobile] = useState(false);
+  const hiddenFilters = categories.length + (area ? 1 : 0);
+
+  // While drawing, the draw bar is the only chrome: the map is the canvas.
+  if (drawing) return null;
 
   return (
     <>
@@ -108,6 +150,9 @@ export function FilterBar({
         </div>
         <div className="pointer-events-auto rounded-xl border border-line bg-surface p-2.5 shadow-e2">
           <CategoryChips />
+          <div className="mt-2">
+            <AreaControls />
+          </div>
           <p className="tnum mt-2.5 border-t border-line pt-2 text-[12px] text-fg-muted">
             {resultLabel}
           </p>
@@ -149,9 +194,9 @@ export function FilterBar({
           >
             {openOnMobile ? <X size={17} strokeWidth={2.2} /> : <SlidersHorizontal size={17} strokeWidth={2} />}
             {/* How many filters are hiding behind this button, stated on it. */}
-            {!openOnMobile && categories.length > 0 && (
+            {!openOnMobile && hiddenFilters > 0 && (
               <span className="tnum absolute -top-1.5 -right-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-[10px] font-bold text-fg-on-accent">
-                {categories.length}
+                {hiddenFilters}
               </span>
             )}
           </button>
@@ -177,6 +222,9 @@ export function FilterBar({
           <div className="pointer-events-auto rounded-xl border border-line bg-surface p-2.5 shadow-e2">
             <div className="scroll-fade-x -mx-2.5 overflow-x-auto px-2.5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <CategoryChips compact />
+            </div>
+            <div className="mt-2">
+              <AreaControls onStart={() => setOpenOnMobile(false)} />
             </div>
             <p className="tnum mt-2 border-t border-line pt-2 text-[12px] text-fg-muted">
               {resultLabel}

@@ -146,3 +146,40 @@ export function fetchWhatsOn(
     signal,
   );
 }
+
+/** The what's-on page size cap (`whatsOnQuerySchema`). */
+const WHATS_ON_PAGE_SIZE = 100;
+/** Past this many pages, the area-filtered list says it stopped short. */
+const MAX_WHATS_ON_PAGES = 10;
+
+/**
+ * Every page of what's-on, for a drawn area (brief 15): the area filters on
+ * the client, so filtering only the first page would undercount and miss
+ * later events inside the shape.
+ */
+export async function fetchAllWhatsOn(
+  input: WhatsOnQueryInput,
+  signal?: AbortSignal,
+): Promise<PaginatedResponse<WhatsOnItem>> {
+  const first = await fetchWhatsOn({ ...input, page: 1, pageSize: WHATS_ON_PAGE_SIZE }, signal);
+  const pages = Math.ceil(first.total / WHATS_ON_PAGE_SIZE);
+  if (pages <= 1) return first;
+
+  const fetched = Math.min(pages, MAX_WHATS_ON_PAGES);
+  if (pages > MAX_WHATS_ON_PAGES) {
+    console.warn(
+      `Loading ${fetched * WHATS_ON_PAGE_SIZE} of ${first.total} events: past the ${MAX_WHATS_ON_PAGES}-page cap.`,
+    );
+  }
+  const rest = await Promise.all(
+    Array.from({ length: fetched - 1 }, (_, i) =>
+      fetchWhatsOn({ ...input, page: i + 2, pageSize: WHATS_ON_PAGE_SIZE }, signal),
+    ),
+  );
+  return {
+    ...first,
+    data: [first, ...rest].flatMap((p) => p.data),
+    page: 1,
+    pageSize: first.total,
+  };
+}

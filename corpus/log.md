@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 15 — draw an area to filter the map and what's-on
+
+A drawn area (freehand or polygon) now ANDs with chips, the timing lens and search, on the map and on what's-on. It is cleared, with a notice, when the city changes. **The locked Geoman choice did not survive contact:** free Geoman has no freehand (Pro-only), so both modes are hand-rolled on Leaflet and no draw plugin or turf was installed. decisions.md records the revision. `ui` gained its first Vitest project, for the point-in-polygon helper. Browser-checked on desktop with a reseeded scratch DB; a phone and a real touch stroke are still unchecked.
+
 ## [2026-10-03] done | Brief 28 — SPA-template leftovers out, every manifest exact-pinned
 
 `@react-router/serve` is gone from `ui`, and with it `express` and its whole tree (`npm ls @react-router/serve express` is empty). **`start` was replaced, not dropped:** it is now `vite preview --outDir build/client`, with the root `.env` loaded. It serves the SPA under `/prm/` with deep-link fallback (`/prm/places/abc` → 200, index.html), and `preview.proxy` inherits the dev `/prm-api` proxy, so it is a working local preview once the backend runs. `ui/Dockerfile` and `ui/components.json` were deleted (no references), and `ui/README.md` (the template's) now describes how this UI runs and ships.

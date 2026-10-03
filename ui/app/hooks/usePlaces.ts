@@ -1,7 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Event, EventLens, PaginatedResponse, Place, PlaceCategory, WhatsOnItem }
   from "@public-resource-map/shared";
-import { fetchAllPlaces, fetchPlace, fetchPlaceEvents, fetchWhatsOn } from "~/lib/api";
+import {
+  fetchAllPlaces,
+  fetchAllWhatsOn,
+  fetchPlace,
+  fetchPlaceEvents,
+  fetchWhatsOn,
+} from "~/lib/api";
 
 /**
  * The city's places for the map. Keyed on city + category chips + lens so the
@@ -42,14 +48,21 @@ export function usePlaceEvents(id: string | null | undefined) {
   });
 }
 
+/**
+ * The citywide index. With `everything` (a drawn area is active) it loads
+ * every page, because the area filters on the client.
+ */
 export function useWhatsOn(input: {
   city: string;
   categories: PlaceCategory[];
   lens: EventLens;
+  everything?: boolean;
 }) {
+  const { everything = false, ...query } = input;
   return useQuery<PaginatedResponse<WhatsOnItem>>({
-    queryKey: ["whats-on", input.city, [...input.categories].sort().join(","), input.lens],
-    queryFn: ({ signal }) => fetchWhatsOn(input, signal),
+    queryKey: ["whats-on", query.city, [...query.categories].sort().join(","), query.lens, everything],
+    queryFn: ({ signal }) =>
+      everything ? fetchAllWhatsOn(query, signal) : fetchWhatsOn(query, signal),
     placeholderData: (prev) => prev,
   });
 }

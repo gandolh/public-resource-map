@@ -1,8 +1,9 @@
 import { Link, type MetaFunction } from "react-router";
-import { AlertTriangle, ArrowUpRight, CalendarOff, MapPin } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, CalendarOff, MapPin, X } from "lucide-react";
 import type { WhatsOnItem } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
 import { groupByDay, isRunning } from "~/lib/dates";
+import { inArea } from "~/lib/area";
 import {
   categoryColor,
   categoryLabelKey,
@@ -100,9 +101,18 @@ export default function WhatsOnRoute() {
   const lens = useAppStore((s) => s.lens);
   const setLens = useAppStore((s) => s.setLens);
   const lensOptions = useLensOptions();
+  const area = useAppStore((s) => s.area);
+  const clearArea = useAppStore((s) => s.clearArea);
 
-  const { data, isPending, isError, refetch } = useWhatsOn({ city: city.name, categories, lens });
-  const items = data?.data ?? [];
+  const { data, isPending, isError, refetch } = useWhatsOn({
+    city: city.name,
+    categories,
+    lens,
+    everything: area !== null,
+  });
+  // The map's drawn area applies here too (brief 15): the same filters, always.
+  const items = (data?.data ?? []).filter((i) => inArea(i.place.coordinates, area));
+  const total = area ? items.length : (data?.total ?? 0);
   const groups = groupByDay(items, (i) => ({ start: i.event.startDate, end: i.event.endDate }));
 
   return (
@@ -134,10 +144,16 @@ export default function WhatsOnRoute() {
               ))}
             </div>
           </div>
+          {area && (
+            <Chip active onClick={clearArea} aria-label={t("area.remove")} className="w-fit">
+              {t("area.chip")}
+              <X size={13} strokeWidth={2.4} aria-hidden="true" />
+            </Chip>
+          )}
         </div>
 
         {!isPending && !isError && items.length > 0 && (
-          <p className="tnum mt-4 text-[12.5px] text-fg-muted">{tn("count.events", data!.total)}</p>
+          <p className="tnum mt-4 text-[12.5px] text-fg-muted">{tn("count.events", total)}</p>
         )}
 
         <div className="mt-2">

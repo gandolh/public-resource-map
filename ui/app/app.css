@@ -406,6 +406,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Draw-to-filter (brief 15). Leaflet writes stroke and fill as SVG attributes,
+   which any CSS property outranks, so the tokens apply in both themes. */
+.cm-area { stroke: var(--accent); stroke-width: 2; fill: var(--accent); fill-opacity: 0.08; }
+.cm-area-draft { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+.cm-area-rubber { stroke-dasharray: 4 5; }
+.cm-area-corner { stroke: var(--accent); stroke-width: 2; fill: var(--surface); fill-opacity: 1; }
+/* While drawing, a press draws: no panning (touch-action), and pins cannot
+   swallow a click that was meant as a corner. */
+.leaflet-container.is-drawing { cursor: crosshair; touch-action: none; }
+.is-drawing .leaflet-marker-pane { pointer-events: none; }
+
 @keyframes cm-panel-in {
   from { opacity: 0; transform: translateX(10px); }
   to   { opacity: 1; transform: translateX(0); }

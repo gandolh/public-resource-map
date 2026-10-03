@@ -2,20 +2,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AttributionControl, MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Outlet, useNavigate } from "react-router";
 import type { Map as LeafletMap } from "leaflet";
-import { AlertTriangle, Crosshair, Loader2, Minus, Plus, SearchX } from "lucide-react";
+import { AlertTriangle, Crosshair, Loader2, Minus, Plus, SearchX, X } from "lucide-react";
 import type { MetaFunction } from "react-router";
 import type { Place } from "@public-resource-map/shared";
+import { AreaDraw } from "~/components/map/AreaDraw";
 import { FilterBar } from "~/components/map/FilterBar";
 import { PlaceMarkers } from "~/components/map/PlaceMarkers";
 import { UserLocationMarker } from "~/components/map/UserLocationMarker";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { Button } from "~/components/ui/Button";
+import { Chip } from "~/components/ui/Chip";
 import { useAppStore } from "~/stores/appStore";
 import { usePlaces } from "~/hooks/usePlaces";
 import { useUserLocation } from "~/hooks/useUserLocation";
 import { useI18n } from "~/lib/i18n";
 import { DARK_TILES, LIGHT_TILES, MAP_ATTRIBUTION, usingCarto, useIsDarkMode } from "~/lib/map";
 import { normalizeText } from "~/lib/utils";
+import { inArea } from "~/lib/area";
 import { nearestCity } from "~/lib/cities";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { cn } from "~/lib/utils";
@@ -125,6 +128,8 @@ export default function MapRoute() {
   const selectedId = useAppStore((s) => s.selectedId);
   const setCity = useAppStore((s) => s.setCity);
   const sheetSnap = useAppStore((s) => s.sheetSnap);
+  const area = useAppStore((s) => s.area);
+  const clearArea = useAppStore((s) => s.clearArea);
 
   const mapRef = useRef<LeafletMap | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -143,10 +148,11 @@ export default function MapRoute() {
 
   const { data, isPending, isError, refetch } = usePlaces({ city: city.name, categories, lens });
 
-  // Search runs over the already-loaded city rather than round-tripping: the
-  // whole city is in memory, so filtering is instant and works offline-ish.
+  // Search and the drawn area run over the already-loaded city rather than
+  // round-tripping: the whole city is in memory, so filtering is instant and
+  // works offline-ish.
   const places = useMemo(() => {
-    const all = data?.data ?? [];
+    const all = (data?.data ?? []).filter((p) => inArea(p.coordinates, area));
     const q = normalizeText(search.trim());
     if (!q) return all;
     return all.filter(
@@ -154,19 +160,21 @@ export default function MapRoute() {
         normalizeText(p.name).includes(q) ||
         (p.address ? normalizeText(p.address).includes(q) : false),
     );
-  }, [data, search]);
+  }, [data, search, area]);
 
   const withEvents = useMemo(
     () => places.filter((p) => (p.upcomingEventCount ?? 0) > 0).length,
     [places],
   );
 
+  // With an area drawn the count says so: "12 places in this area".
+  const placesKey = area ? "count.inArea" : "count.places";
   const resultLabel = isPending
     ? t("state.loading")
-    : `${tn("count.places", places.length)} · ${tn("count.withEvents", withEvents)}`;
+    : `${tn(placesKey, places.length)} · ${tn("count.withEvents", withEvents)}`;
   // The phone has no room for the full sentence, but it may not hide the count
   // the desktop shows — so it gets the short form, always visible.
-  const compactLabel = isPending ? t("state.loading") : tn("count.places", places.length);
+  const compactLabel = isPending ? t("state.loading") : tn(placesKey, places.length);
 
   const context: MapOutletContext = { places, getMap: () => mapRef.current };
   const noResults = !isPending && !isError && places.length === 0;
@@ -204,6 +212,7 @@ export default function MapRoute() {
             clusterLabel={(n) => t("map.cluster", { n })}
           />
           <MapControls />
+          <AreaDraw />
         </MapContainer>
       )}
 
@@ -236,13 +245,23 @@ export default function MapRoute() {
                 ? t("search.noMatch", { q: search.trim() })
                 : lens !== "all"
                   ? t("state.zeroLens", { lens: t(`lens.${lens}`).toLowerCase(), city: city.name })
-                  : t("state.zeroTitle")
+                  : area
+                    ? t("area.zeroTitle")
+                    : t("state.zeroTitle")
             }
             body={t("state.zeroBody")}
             action={
-              <Button variant="secondary" size="sm" onClick={clearFilters}>
-                {t("filters.clear")}
-              </Button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {area && (
+                  <Chip active onClick={clearArea} aria-label={t("area.remove")}>
+                    {t("area.chip")}
+                    <X size={13} strokeWidth={2.4} aria-hidden="true" />
+                  </Chip>
+                )}
+                <Button variant="secondary" size="sm" onClick={clearFilters}>
+                  {t("filters.clear")}
+                </Button>
+              </div>
             }
           />
         </div>
