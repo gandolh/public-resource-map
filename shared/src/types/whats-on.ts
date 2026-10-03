@@ -30,3 +30,13 @@ export const whatsOnItemSchema = z.object({
 });
 
 export type WhatsOnItem = z.infer<typeof whatsOnItemSchema>;
+
+/** `/api/archive` (brief 14): past events, newest first, by city and event category. */
+export const archiveQuerySchema = z.object({
+  city: z.string().optional(),
+  /** Comma-separated `EventCategory` list. */
+  category: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(30),
+});
+export type ArchiveQuery = z.infer<typeof archiveQuerySchema>;

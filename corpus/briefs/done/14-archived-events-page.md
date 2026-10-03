@@ -34,3 +34,45 @@ A public page where users browse **past events** and see **where each was held**
 - Logged-in users see a "My past events" tab of their favorited past events; logged-out users get a sign-in prompt on that tab only.
 - Rows link to the persisting place page; no past event is shown that's been pruned.
 - Empty/loading/error states + WCAG AA per surface.
+
+## Outcome (2026-10-03)
+
+Done.
+
+- **"Past" is computed, not stored.** `pastAt(now)` sits beside `liveInWindow`
+  in `event-window.ts`, built from the same columns: still `live`, and its end
+  (or its start, when it has none) is before now. So an event leaves what's on
+  exactly when it enters the archive. Nothing ever writes `status = 'past'`, and
+  nothing needs to. Cancelled (`ended`) and source-dropped (`stale`) events stay
+  out: they did not happen as listed.
+- **API** (`routes/archive.ts`):
+  - `GET /api/archive?city&category&page&pageSize` is public: newest first by
+    when it ended, filterable by event category, paged.
+  - `GET /api/archive/mine` (signed in) is the events you saved **and** those
+    at places you follow, across cities.
+  - Both return what's on's row shape, so each row still opens its place.
+- **`/archive`** (`routes/archive.tsx`):
+  - Tabs "My past events" and "All of {city}", the latter following the city
+    picker. Mine is the default when signed in, and asks for sign-in otherwise.
+  - Event-category chips, and month groups, newest first (an archive is read in
+    bigger steps than a week). "Show more" pages through.
+  - Empty, loading and error states per tab; `role="tablist"` / `tab` /
+    `tabpanel` wired with `aria-selected` and `aria-controls`.
+  - It links from the desktop nav ("Arhivă") and from what's on's footer ("Past
+    events"), which is how a phone reaches it: its tab bar is already full.
+- **The row.** What's on's row moved into `components/place/EventPlaceRow.tsx`
+  and both pages use it. In the archive it shows the date instead of the time,
+  and **no ticket link**, since tickets to something already over are noise.
+- **Not built:**
+  - **the prune.** decisions.md says very old archived rows are pruned, but no
+    prune exists yet, so the archive shows everything retained;
+  - the optional "past events here" section on a place page.
+
+**Tests:**
+- 4 API tests: newest first; upcoming, running and cancelled excluded; category
+  and paging; "mine" needs sign-in and spans saved events and followed places
+  but never another person's.
+- 2 e2e specs: the signed-out tabs and the sign-in prompt, and the two ways in.
+- `npm test` 168, e2e 17, typecheck clean.
+- Checked by eye on the reseeded scratch DB: 13 past events in Timișoara under
+  "octombrie 2026", ticket links gone.

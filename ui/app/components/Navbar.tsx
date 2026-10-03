@@ -183,6 +183,7 @@ export function Navbar() {
           <nav className="ml-1 hidden items-center gap-0.5 md:flex">
             <TopLink to="/">{t("nav.map")}</TopLink>
             <TopLink to="/whats-on">{t("nav.whatsOn")}</TopLink>
+            <TopLink to="/archive">{t("nav.archive")}</TopLink>
             <TopLink to="/about-data">{t("nav.aboutData")}</TopLink>
           </nav>
         </div>

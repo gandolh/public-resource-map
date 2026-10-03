@@ -183,3 +183,26 @@ export async function fetchAllWhatsOn(
     pageSize: first.total,
   };
 }
+
+export interface ArchiveQueryInput {
+  city?: string;
+  /** EventCategory values. */
+  categories?: string[];
+  page?: number;
+}
+
+/** Past events, newest first (brief 14). Public. */
+export function fetchArchive(
+  input: ArchiveQueryInput,
+  signal?: AbortSignal,
+): Promise<PaginatedResponse<WhatsOnItem>> {
+  return request(
+    `/api/archive${query({
+      city: input.city,
+      category: input.categories?.length ? input.categories.join(",") : undefined,
+      page: input.page ?? 1,
+      pageSize: 30,
+    })}`,
+    signal,
+  );
+}

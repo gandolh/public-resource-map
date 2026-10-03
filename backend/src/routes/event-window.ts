@@ -27,3 +27,14 @@ export function liveInWindow(from: string, to: string): SQL {
     gte(sql`coalesce(${event.endDate}, ${event.startDate})`, from),
   )!;
 }
+
+/**
+ * The archive's predicate (brief 14): the complement of `liveInWindow`'s end
+ * test, from the same columns, so an event leaves what's-on exactly when it
+ * enters the archive. Still `live` (a cancelled `ended` or a source-dropped
+ * `stale` event did not happen as listed), and its end, or its start when it
+ * has none, is behind `now`.
+ */
+export function pastAt(now: string): SQL {
+  return and(eq(event.status, "live"), sql`coalesce(${event.endDate}, ${event.startDate}) < ${now}`)!;
+}

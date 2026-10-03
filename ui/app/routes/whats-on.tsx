@@ -1,17 +1,10 @@
 import { Link, type MetaFunction } from "react-router";
-import { AlertTriangle, ArrowUpRight, CalendarOff, MapPin, X } from "lucide-react";
-import type { WhatsOnItem } from "@public-resource-map/shared";
+import { AlertTriangle, CalendarOff, X } from "lucide-react";
 import { useI18n } from "~/lib/i18n";
-import { groupByDay, isRunning } from "~/lib/dates";
+import { groupByDay } from "~/lib/dates";
 import { inArea } from "~/lib/area";
 import { usingCarto } from "~/lib/map";
-import {
-  categoryColor,
-  categoryLabelKey,
-  eventCategoryColor,
-  eventCategoryKey,
-  CategoryIcon,
-} from "~/lib/categories";
+import { categoryColor, categoryLabelKey } from "~/lib/categories";
 import { useAppStore } from "~/stores/appStore";
 import { useWhatsOn } from "~/hooks/usePlaces";
 import { Segmented } from "~/components/ui/Segmented";
@@ -20,83 +13,13 @@ import { Button } from "~/components/ui/Button";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { Skeleton } from "~/components/ui/Skeleton";
 import { useLensOptions } from "~/components/map/FilterBar";
-import { sourceName } from "~/components/place/EventList";
+import { EventPlaceRow } from "~/components/place/EventPlaceRow";
 import { placeCategories } from "@public-resource-map/shared";
 
 export const meta: MetaFunction = () => [
   { title: "Ce se întâmplă — CivicMap" },
   { name: "description", content: "Tot ce urmează la locurile publice din oraș." },
 ];
-
-function Row({ item }: { item: WhatsOnItem }) {
-  const { t, time, dayMonth } = useI18n();
-  const { event, place } = item;
-  const running = isRunning(event.startDate, event.endDate);
-  const source = sourceName(event);
-
-  return (
-    <li className="border-t border-line first:border-t-0">
-      <Link
-        to={`/places/${place.id}`}
-        className="flex gap-3.5 py-3.5 transition-colors hover:bg-surface-2 md:gap-4 md:px-2 md:-mx-2 md:rounded-lg"
-      >
-        {running ? (
-          <span className="tnum w-12 shrink-0 pt-0.5 text-[11.5px] leading-tight font-semibold text-fg">
-            {t("event.until", { date: dayMonth(event.endDate!) })}
-          </span>
-        ) : (
-          <span className="tnum w-12 shrink-0 pt-0.5 text-[13.5px] font-semibold tracking-[-0.01em] text-fg">
-            {time(event.startDate)}
-          </span>
-        )}
-
-        <span className="min-w-0 flex-1">
-          <span className="block text-[14.5px] leading-snug font-semibold tracking-[-0.01em] text-fg">
-            {event.title}
-          </span>
-
-          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-fg-muted">
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ background: eventCategoryColor(event.category) }}
-              />
-              {t(eventCategoryKey(event.category))}
-            </span>
-            <span aria-hidden="true" className="text-fg-faint">·</span>
-            <span className="inline-flex min-w-0 items-center gap-1.5">
-              <CategoryIcon
-                category={place.category}
-                size={13}
-                className="shrink-0"
-                strokeWidth={2.2}
-              />
-              <span className="truncate">{place.name}</span>
-            </span>
-          </span>
-
-          {/* Text, not a link: the whole row already links to the place,
-              whose panel links the original listing. */}
-          {source && (
-            <span className="mt-1 block text-[11.5px] text-fg-faint">
-              {t("event.source")} {source}
-            </span>
-          )}
-
-          {event.buyUrl && (
-            <span className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-accent">
-              {t("event.tickets")}
-              <ArrowUpRight size={12} strokeWidth={2.5} />
-            </span>
-          )}
-        </span>
-
-        <MapPin size={15} strokeWidth={2} className="mt-1 shrink-0 text-fg-faint" aria-hidden="true" />
-      </Link>
-    </li>
-  );
-}
 
 /**
  * The citywide index — a date-first lens on exactly what the map shows. It
@@ -219,7 +142,7 @@ export default function WhatsOnRoute() {
               </h2>
               <ul>
                 {rows.map((item) => (
-                  <Row key={item.event.id} item={item} />
+                  <EventPlaceRow key={item.event.id} item={item} />
                 ))}
               </ul>
             </section>
@@ -227,7 +150,10 @@ export default function WhatsOnRoute() {
         </div>
 
         <p className="mt-10 border-t border-line pt-4 text-[11.5px] leading-relaxed text-fg-faint">
-          {t("place.sourceOsm")} (ODbL){usingCarto && " · CARTO"} ·{" "}
+          <Link to="/archive" className="underline underline-offset-2 hover:text-fg">
+            {t("archive.link")}
+          </Link>{" "}
+          · {t("place.sourceOsm")} (ODbL){usingCarto && " · CARTO"} ·{" "}
           <Link to="/about-data" className="underline underline-offset-2 hover:text-fg">
             {t("nav.aboutData")}
           </Link>

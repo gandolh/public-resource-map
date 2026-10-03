@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 14 — the archive
+
+`/archive` lists what happened, newest first and grouped by month, each event still opening its place. There is a public tab for the city and a signed-in tab of your saved events plus those at places you follow. "Past" is computed beside the live window from the same columns, so an event leaves what's on exactly when it enters the archive; cancelled and stale events never appear. The prune decisions.md mentions does not exist yet.
+
 ## [2026-10-03] done | Brief 05 — favourites, the bell, and day-before reminders (in-app)
 
 People can follow a place and ask to be reminded of an event. Signed out, the star sends them through Ward and completes the favourite on the way back. Accepting events now gives each follower of the place one item per batch, and a sweep (at startup, then 09:00 Bucharest) writes a reminder for every favourited event starting the next Bucharest day, idempotently. The bell lists both and marks them read when opened. All of it was walked against the local Ward. **Email is blocked:** prm holds no addresses since the cutover, so sending needs a Ward-side change (decisions.md).

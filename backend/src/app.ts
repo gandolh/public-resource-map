@@ -9,6 +9,7 @@ import { eventRoutes } from "./routes/events.js";
 import { whatsOnRoutes } from "./routes/whats-on.js";
 import { meRoutes } from "./routes/me.js";
 import { favoriteRoutes } from "./routes/favorites.js";
+import { archiveRoutes } from "./routes/archive.js";
 import { registerWard } from "./ward/ward.plugin.js";
 import { wardConfig } from "./ward/config.js";
 import type { WardClient } from "./ward/ward.client.js";
@@ -86,6 +87,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   await app.register(whatsOnRoutes, { prefix: "/api" });
   await app.register(meRoutes, { prefix: "/api" });
   await app.register(favoriteRoutes, { prefix: "/api" });
+  await app.register(archiveRoutes, { prefix: "/api" });
 
   app.get("/health", async () => ({ status: "ok" }));
 
