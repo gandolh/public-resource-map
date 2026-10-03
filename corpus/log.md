@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] check | Brief 27's image build, now that Docker is available
+
+`docker compose -f infrastructure/docker-compose.yml build prm-api` succeeds (287 MB), and the image has no `argon2`, `@fastify/cookie` or `@react-router/serve`. Brief 27's one unverified acceptance item is closed.
+
 ## [2026-10-03] done | Brief 09 — attribution, an about-the-data page, and per-event source credit
 
 The map credits `© OpenStreetMap contributors` (it said `© OpenStreetMap`) and links "About the data", a new page with the licences, the link-out posture, the iaBilet disclaimer and the removal path. Every event now names its publisher, linked to the original listing in the place panel. **The takedown address is owed:** set `VITE_DATA_CONTACT` before launch. The page says plainly that today's events are samples, a callout to remove when brief 04 lands.

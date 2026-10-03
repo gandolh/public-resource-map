@@ -42,3 +42,8 @@ The 2026-09-06 cutover ([log](../../log.md), [decisions.md → Identity is Ward'
 ## Outcome (2026-10-03)
 
 Done. Every row was re-grepped (no importers) and removed. The lockfile diff removes only the two packages' own dependency trees. typecheck, tests and build are green, and the Navbar was checked in a browser. **Not run: the Docker image build** (Docker unavailable on this machine). `mailer.ts`, `authApi.ts`, `authStore.ts` and the Dockerfile are untouched.
+
+**Image build verified (2026-10-03, later):** with Docker back,
+`docker compose -f infrastructure/docker-compose.yml build prm-api` succeeds
+(`prm-api:1.0`, 287 MB). `node_modules/argon2`, `@fastify/cookie` and
+`@react-router/serve` are absent from the image.
