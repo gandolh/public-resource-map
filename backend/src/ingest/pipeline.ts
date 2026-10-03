@@ -176,6 +176,7 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
         title: typeof row.raw.title === "string" && row.raw.title.trim() ? row.raw.title : "(untitled)",
         startDate: typeof row.raw.startDate === "string" ? row.raw.startDate : runAt,
         venueName: typeof row.raw.venue === "string" ? row.raw.venue : null,
+        sourcePlatform: source.name,
         payload: JSON.stringify({ raw: row.raw, issues }),
         lastSeenAt: runAt,
         updatedAt: runAt,

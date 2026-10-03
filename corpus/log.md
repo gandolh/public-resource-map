@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 16 — the admin shell and the review queue
+
+`/admin` has its own sidebar shell, split from the public bundle and gated on `prm:admin`. The review queue puts what needs judgement first, pre-selects what is plainly fine, and bulk-accepts or rejects. A drawer per row shows a mini map, the match candidates and a manual pin. The sources page shows health (suspect is loud), refreshes one or all, adds an iCal source, and runs the OSM sync. Walked by hand against the local Ward: a local feed went from refresh to a public event, and an unmatched venue became a manual-pin place.
+
 ## [2026-10-03] done | Brief 04 — the event ingestion pipeline (no source yet)
 
 An admin adds a source, refreshes it, and gets a staged diff, with nothing public until accepted. The steps: validate (malformed rows quarantined), dedup within and across sources, match the venue to a place (auto, ambiguous with candidates, or unmatched), geocode only the unmatched (Nominatim at 1 req/s, cached forever, sanity-checked, off without an identifying User-Agent), and reconcile with what is live (start/venue/cancellation back to review; price and links silently; absent past 3 days means stale). Health is ok, suspect or error. The built-in adapter is a generic iCal reader, so a vetted feed is a database row, not code; no iaBilet adapter exists. Migration 0002 adds four staged-event columns. 45 new tests. Choosing and vetting real sources is the owner's: see the 2026-10-03 todo.

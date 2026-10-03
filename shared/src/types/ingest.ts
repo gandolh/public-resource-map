@@ -113,3 +113,42 @@ export const stagedQuerySchema = z.object({
   sourceId: z.string().optional(),
   status: stagedStatusSchema.optional(),
 });
+
+export interface MatchCandidateDto {
+  placeId: string;
+  name: string;
+  score: number;
+}
+
+/** One row of the review queue, as `GET /api/admin/staged-events` returns it. */
+export interface StagedEventDto {
+  id: string;
+  sourceId: string;
+  placeId: string | null;
+  eventId: string | null;
+  matchStatus: MatchStatus;
+  status: StagedStatus;
+  title: string;
+  description: string | null;
+  category: string | null;
+  venueName: string | null;
+  rawAddress: string | null;
+  startDate: string;
+  endDate: string | null;
+  buyUrl: string | null;
+  sourceUrl: string | null;
+  sourcePlatform: string | null;
+  price: number | null;
+  currency: string | null;
+  lat: number | null;
+  lng: number | null;
+  candidates: MatchCandidateDto[];
+  /** Why a needs-attention row was quarantined. */
+  issues: string | null;
+  cancelled: boolean;
+}
+
+export interface AcceptResultDto {
+  accepted: { stagedId: string; eventId: string }[];
+  skipped: { id: string; reason: string }[];
+}

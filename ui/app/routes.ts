@@ -22,4 +22,10 @@ export default [
     route("events", "routes/legacy.events.tsx"),
     route("resources/:id", "routes/legacy.resource.tsx"),
   ]),
+  // The admin shell (brief 16): its own layout, and its own chunks, which the
+  // public pages never load.
+  layout("./routes/admin/AdminLayout.tsx", [
+    route("admin", "routes/admin/review.tsx"),
+    route("admin/sources", "routes/admin/sources.tsx"),
+  ]),
 ] satisfies RouteConfig;
