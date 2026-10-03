@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import {
   index,
   integer,
+  primaryKey,
   real,
   sqliteTable,
   text,
@@ -168,6 +169,10 @@ export const stagedEvent = sqliteTable(
     currency: text("currency"),
     candidates: text("candidates"), // JSON: ambiguous match candidates
     payload: text("payload"), // JSON: raw parsed row (audit / re-parse)
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+    // Added by 0002 (brief 04), so they sit after the timestamps, as ALTER
+    // TABLE put them; the brief-29 drift check holds schema.ts to that order.
     // The source's own stable identity for this listing (its UID, or its URL
     // plus start): within-source dedup and the reconcile key across refreshes.
     externalKey: text("external_key"),
@@ -178,8 +183,6 @@ export const stagedEvent = sqliteTable(
     // When a refresh last saw this listing; past the grace window an accepted
     // event the source no longer lists turns `stale`.
     lastSeenAt: text("last_seen_at"),
-    createdAt: createdAt(),
-    updatedAt: updatedAt(),
   },
   (t) => [
     index("staged_event_source_idx").on(t.sourceId),
@@ -276,23 +279,24 @@ export const notification = sqliteTable(
   ],
 );
 
+/**
+ * The events a coalesced new-event notification covers. A join row with no
+ * identity of its own: the pair is the key, and it goes with its notification
+ * (brief 29, decisions.md → Data model). The pair key also serves lookups by
+ * notification; `event_id` gets its own index.
+ */
 export const notificationEvent = sqliteTable(
   "notification_event",
   {
-    id: id(),
     notificationId: text("notification_id")
       .notNull()
-      .references(() => notification.id),
+      .references(() => notification.id, { onDelete: "cascade" }),
     eventId: text("event_id")
       .notNull()
       .references(() => event.id),
   },
   (t) => [
-    uniqueIndex("notification_event_unique").on(
-      t.notificationId,
-      t.eventId,
-    ),
-    index("notification_event_notification_idx").on(t.notificationId),
+    primaryKey({ columns: [t.notificationId, t.eventId] }),
     index("notification_event_event_idx").on(t.eventId),
   ],
 );

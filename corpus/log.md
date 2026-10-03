@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 29 — the migrated schema is schema.ts again
+
+`notification_event` is keyed on (notification, event) with a cascade from its notification. That is the shape 0001 deployed, and `schema.ts` now says so; the call was taken by the brief run and is recorded in decisions.md for the owner. Migration 0003 adds the two favourite indexes 0001 never created. A new test builds one database from the migrations and one from `schema.ts` and compares them table by table. It caught this brief's drift, and one in brief 04's 0002 (column order). The real dev database is still at migration 0000.
+
 ## [2026-10-03] done | Brief 16 — the admin shell and the review queue
 
 `/admin` has its own sidebar shell, split from the public bundle and gated on `prm:admin`. The review queue puts what needs judgement first, pre-selects what is plainly fine, and bulk-accepts or rejects. A drawer per row shows a mini map, the match candidates and a manual pin. The sources page shows health (suspect is loud), refreshes one or all, adds an iCal source, and runs the OSM sync. Walked by hand against the local Ward: a local feed went from refresh to a public event, and an unmatched venue became a manual-pin place.

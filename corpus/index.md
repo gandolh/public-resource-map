@@ -72,7 +72,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 26 | [briefs/done/26-ward-client-test-suite.md](briefs/done/26-ward-client-test-suite.md) | done | A test suite for prm's real Ward client (audit) |
 | 27 | [briefs/done/27-remove-ward-cutover-leftovers.md](briefs/done/27-remove-ward-cutover-leftovers.md) | done | Remove Ward-cutover leftovers — dead UI/shared code, `argon2`, `@fastify/cookie` (audit) |
 | 28 | [briefs/done/28-spa-template-leftovers-and-pins.md](briefs/done/28-spa-template-leftovers-and-pins.md) | done | SPA-template leftovers out, dependency pins back to policy (audit) |
-| 29 | [briefs/todo/29-reconcile-0001-with-schema.md](briefs/todo/29-reconcile-0001-with-schema.md) | todo | Reconcile the deployed schema with `schema.ts` — 0001 drift (**before 05**) |
+| 29 | [briefs/done/29-reconcile-0001-with-schema.md](briefs/done/29-reconcile-0001-with-schema.md) | done | Reconcile the deployed schema with `schema.ts` — 0001 drift (**before 05**) |
 
 **Recommended build order:** 07 (schema) → **11 (Vitest harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → **16 (admin review UI)** → 05 (favorites/notifications) → 06 (place-centric UI) → **13 (public interactions)** → **15 (draw-filter)** → **14 (archive)** → **17 (e2e harness)** → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD).
 _Notes: 15 (draw) builds on 13's shared filter state. 16 (admin UI) follows 04 (its API) and can be built independently of the public-UI track. 17 (e2e) lands after the UI surfaces exist + the seed (08); 11's Vitest comes early for test-first backend work. 12 is cross-cutting (DB PRAGMAs with 07; rest opportunistic)._
