@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 12 — the database connection settings, and the rest closed
+
+The connection now also sets `synchronous = NORMAL` and a 5 s `busy_timeout`; a test reads all four pragmas back and checks that the city and lat/lng filters use their indexes. The brief's "fetch by viewport bbox" is superseded by whole-city loading (briefs 20, 13, 15), clustering already shipped with brief 13, and canvas markers and batching stay behind a slowdown nobody has measured.
+
 ## [2026-10-03] done | Brief 15 — draw an area to filter the map and what's-on
 
 A drawn area (freehand or polygon) now ANDs with chips, the timing lens and search, on the map and on what's-on. It is cleared, with a notice, when the city changes. **The locked Geoman choice did not survive contact:** free Geoman has no freehand (Pro-only), so both modes are hand-rolled on Leaflet and no draw plugin or turf was installed. decisions.md records the revision. `ui` gained its first Vitest project, for the point-in-polygon helper. Browser-checked on desktop with a reseeded scratch DB; a phone and a real touch stroke are still unchecked.

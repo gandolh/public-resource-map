@@ -24,8 +24,15 @@ export function createDb(dbPath: string = defaultDbPath): {
   sqlite: Database.Database;
 } {
   const sqlite = new Database(dbPath);
+  // Brief 12. WAL lets readers run while the admin refresh writes; NORMAL is
+  // safe under WAL (a power cut can lose the last commit, never corrupt the
+  // file) and skips most fsyncs; foreign keys are off in SQLite unless asked;
+  // and a writer waits up to 5 s for a lock instead of failing "database is
+  // locked" at once. WAL needs one host: never put app.db on a network share.
   sqlite.pragma("journal_mode = WAL");
+  sqlite.pragma("synchronous = NORMAL");
   sqlite.pragma("foreign_keys = ON");
+  sqlite.pragma("busy_timeout = 5000");
   const db = drizzle(sqlite, { schema });
   return { db, sqlite };
 }

@@ -50,3 +50,32 @@ Current model is a bounding-box approximation (decisions.md). **Trigger: real RO
 - Map fetches places by city + viewport bbox (server-side), debounced; not all-then-filter-client-side.
 - Clustering + canvas + clearLayers/addLayers introduced **only when** a measured slowdown appears, and documented when they are.
 - Admin UI is route-lazy-loaded (not in the public bundle).
+
+## Outcome (2026-10-03)
+
+Closed. What can be applied now is applied; everything else is either already
+true, superseded, or waiting on a trigger that has not fired.
+
+- **Applied: the connection pragmas.** `createDb` now adds `synchronous = NORMAL`
+  and `busy_timeout = 5000` to the WAL and `foreign_keys` it already set.
+  `db/connection.test.ts` reads all four back from a file database (WAL is
+  impossible in `:memory:`).
+- **Already true: the indexes.** `place_city_idx` and `place_lat_lng_idx` exist
+  (brief 07's schema). The same test asserts with `EXPLAIN QUERY PLAN` that a
+  city filter and a lat/lng box both use them.
+- **Superseded: "fetch by viewport bbox, not all-then-filter".** Brief 20 has
+  the map page through every place in the city on purpose, and briefs 13 and 15
+  build on the whole city being in memory (instant search, client-side
+  draw-to-filter). Reopen only if a city's place count makes that slow, which is
+  this brief's own trigger.
+- **Already done differently: clustering.** Brief 13 shipped it as a small
+  hand-rolled grid clusterer (`ui/app/lib/cluster.ts`), not
+  `Leaflet.markercluster`.
+- **Still trigger-only, untouched:** canvas markers, `clearLayers` plus
+  `addLayers` batching, a debounced bbox refetch and R-tree. No slowdown has
+  been measured: Timișoara has 46 places today.
+- **Admin lazy-loading:** React Router's framework mode already code-splits
+  every route module. Brief 16 should confirm that the admin chunk is absent
+  from the public entry when it lands.
+
+typecheck and `npm test` (113 + 3 todo) are green.

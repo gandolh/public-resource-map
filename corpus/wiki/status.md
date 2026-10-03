@@ -6,7 +6,7 @@ _Last updated: 2026-10-03_
 
 The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · the seed half of 08.** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
 
-Remaining build order: **04 (event ingestion — the biggest gap, every event in the app is currently synthetic)** → 05 (favorites + notifications) → 16 (admin shell) → 14 (archive) → 17 (Playwright) → 09 (attribution page) → 10 (test plans rewrite) → 12 (platform optimization).
+Remaining build order: **04 (event ingestion — the biggest gap, every event in the app is currently synthetic)** → 05 (favorites + notifications) → 16 (admin shell) → 14 (archive) → 17 (Playwright) → 09 (attribution page) → 10 (test plans rewrite).
 
 ## Where things stand
 
@@ -53,7 +53,7 @@ Still open:
 | Place-centric UI (06) | **mostly done — pins/panel/what's-on/city picker shipped; favorite star + notification bell wait on brief 05** |
 | Attribution (09) | not started |
 | Test plans (10) | stale — they describe a UI that no longer exists |
-| Platform optimization (12) | not started — DB PRAGMAs apply with 07 |
+| Platform optimization (12) | **closed 2026-10-03** — WAL + NORMAL + FKs + 5 s busy wait, tested; indexes verified; bbox-fetch superseded by whole-city loading (20/15); canvas/batching wait for a measured slowdown |
 | Public UI interactions (13) | **mostly done — grouped events, clustering, hard-filtering lens, guided zero-results, loading/empty/error, focus management; see the brief for the precise remainder** |
 | Archived events page (14) | not started — /archive: citywide past + my saved, links to place |
 | Draw-to-filter (15) | **done 2026-10-03** — freehand + polygon, hand-rolled on Leaflet (Geoman's freehand is Pro-only); map + what's-on, cleared on city change |
