@@ -3,6 +3,8 @@ import cors from "@fastify/cors";
 import { createDb, type DB } from "./db/index.js";
 import { placeRoutes } from "./routes/places.js";
 import { adminOsmRoutes } from "./routes/admin-osm.js";
+import { adminIngestRoutes } from "./routes/admin-ingest.js";
+import { defaultIngestDeps, type IngestDeps } from "./ingest/pipeline.js";
 import { eventRoutes } from "./routes/events.js";
 import { whatsOnRoutes } from "./routes/whats-on.js";
 import { meRoutes } from "./routes/me.js";
@@ -30,6 +32,12 @@ export interface BuildAppOptions {
    * a session and the real guards decide.
    */
   ward?: WardClient;
+  /**
+   * Replace parts of event ingestion (brief 04): a test injects adapters, a
+   * fake geocoder and a fixed clock, so nothing reaches a real source or
+   * Nominatim.
+   */
+  ingest?: Partial<IngestDeps>;
 }
 
 /**
@@ -72,6 +80,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
 
   await app.register(placeRoutes, { prefix: "/api" });
   await app.register(adminOsmRoutes, { prefix: "/api" });
+  await app.register(adminIngestRoutes({ ...defaultIngestDeps(), ...opts.ingest }), { prefix: "/api" });
   await app.register(eventRoutes, { prefix: "/api" });
   await app.register(whatsOnRoutes, { prefix: "/api" });
   await app.register(meRoutes, { prefix: "/api" });

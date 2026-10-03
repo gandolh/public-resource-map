@@ -168,11 +168,22 @@ export const stagedEvent = sqliteTable(
     currency: text("currency"),
     candidates: text("candidates"), // JSON: ambiguous match candidates
     payload: text("payload"), // JSON: raw parsed row (audit / re-parse)
+    // The source's own stable identity for this listing (its UID, or its URL
+    // plus start): within-source dedup and the reconcile key across refreshes.
+    externalKey: text("external_key"),
+    // Geocoded fallback coordinates for an unmatched venue; the event-venue
+    // place is created from them only on accept, so nothing is live before.
+    lat: real("lat"),
+    lng: real("lng"),
+    // When a refresh last saw this listing; past the grace window an accepted
+    // event the source no longer lists turns `stale`.
+    lastSeenAt: text("last_seen_at"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
     index("staged_event_source_idx").on(t.sourceId),
+    index("staged_event_source_key_idx").on(t.sourceId, t.externalKey),
     index("staged_event_place_idx").on(t.placeId),
     index("staged_event_event_idx").on(t.eventId),
     index("staged_event_status_idx").on(t.status),

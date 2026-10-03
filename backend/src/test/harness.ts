@@ -3,7 +3,7 @@ import type BetterSqlite3 from "better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { fileURLToPath } from "node:url";
 import { createDb, type DB } from "../db/index.js";
-import { buildApp } from "../app.js";
+import { buildApp, type BuildAppOptions } from "../app.js";
 import { createFakeWard, type FakeWard } from "./fake-ward.js";
 
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
@@ -35,12 +35,12 @@ export interface TestApp {
  *   ...
  *   await close();
  */
-export async function buildTestApp(): Promise<TestApp> {
+export async function buildTestApp(opts: Pick<BuildAppOptions, "ingest"> = {}): Promise<TestApp> {
   const { db, sqlite } = createDb(":memory:");
   migrate(db, { migrationsFolder });
 
   const ward = createFakeWard();
-  const app = await buildApp({ db, logger: false, ward });
+  const app = await buildApp({ db, logger: false, ward, ingest: opts.ingest });
   await app.ready();
 
   return {

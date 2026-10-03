@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 04 — the event ingestion pipeline (no source yet)
+
+An admin adds a source, refreshes it, and gets a staged diff, with nothing public until accepted. The steps: validate (malformed rows quarantined), dedup within and across sources, match the venue to a place (auto, ambiguous with candidates, or unmatched), geocode only the unmatched (Nominatim at 1 req/s, cached forever, sanity-checked, off without an identifying User-Agent), and reconcile with what is live (start/venue/cancellation back to review; price and links silently; absent past 3 days means stale). Health is ok, suspect or error. The built-in adapter is a generic iCal reader, so a vetted feed is a database row, not code; no iaBilet adapter exists. Migration 0002 adds four staged-event columns. 45 new tests. Choosing and vetting real sources is the owner's: see the 2026-10-03 todo.
+
 ## [2026-10-03] done | Brief 13 — the last public interactions
 
 Zero results now offers every active filter back as its own removable chip, with a hint for what dropping the area or the search would show. A banner states the timing lens and has a Show all. Other pins dim while a place is open, and on a phone the attribution folds behind a tappable "i". Five e2e specs cover them. Kept as is: the sheet's two snaps (a design call). Gone: `/verify` and `/reset` (Ward's now). Favorites and the bell move to brief 05.

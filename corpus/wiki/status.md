@@ -6,7 +6,7 @@ _Last updated: 2026-10-03_
 
 The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · the seed half of 08.** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
 
-Remaining build order: **04 (event ingestion — the biggest gap, every event in the app is currently synthetic)** → 05 (favorites + notifications) → 16 (admin shell) → 14 (archive) → 10 (test plans rewrite).
+Remaining build order: **vet and add real sources (owner; brief 04's pipeline is ready)** → 05 (favorites + notifications) → 16 (admin shell) → 14 (archive) → 10 (test plans rewrite).
 
 ## Where things stand
 
@@ -26,7 +26,7 @@ Mostly closed on the public surface. Already migrated:
 - ~~No place-events or citywide endpoint~~ → **`upcomingEventCount` on `/api/places`, `/api/places/:id/events`, `/api/whats-on`.**
 
 Still open:
-- **No event ingestion (brief 04)** — the one that matters.
+- **No real event source yet** — brief 04's pipeline exists; the sources are an owner decision.
 - **No favorites, no notification bell (brief 05)** — deliberately left out of the rebuild rather than shipped as dead controls.
 - No `/verify` or `/reset` UI routes yet (the backend flows exist).
 - Places are seeded, not OSM-synced; run `POST /api/admin/osm/sync` for real coverage.
@@ -48,7 +48,7 @@ Still open:
 | Audit sweep (18–29) | **18–28 done (2026-09-27 → 2026-10-03)** — admin-only writes, running events stay visible, the map pages through every place, JWKS failure = 503, 0001 snapshot, cross-city deep links, public-healthcare-only OSM sync, real Ward client tests, cutover leftovers gone, template leftovers gone and every manifest exact-pinned. **Open: 29** (0001 schema drift, before 05) |
 | Places + OSM sync (03) | **done — admin `POST /api/admin/osm/sync` (Overpass, tag→PlaceCategory map, centroid, non-clobbering upsert), public `GET /api/places`(+`:id`), ODbL attribution on map** |
 | RO seed data (08) | **partial — 38 real Timișoara/București places + 14 synthetic events seeded; OSM sync still the real path** |
-| Event ingestion (04) | not started |
+| Event ingestion (04) | **done 2026-10-03 (pipeline)** — iCal adapter, match/geocode/dedup/reconcile/health, staged diff + admin API, 45 tests. **No source configured:** vetting the first 2–4 is the owner's ([todo](../todos/2026-10-03-vet-first-event-sources.md)) |
 | Favorites + notifications (05) | not started |
 | Place-centric UI (06) | **mostly done — pins/panel/what's-on/city picker shipped; favorite star + notification bell wait on brief 05** |
 | Attribution (09) | **done 2026-10-03** — `© OpenStreetMap contributors` + CARTO, `/about-data`, per-event source credit. **Owed: `VITE_DATA_CONTACT`** (the takedown address) before launch; the page's "events are samples" callout goes when 04 lands |
