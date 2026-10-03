@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 17 — a Playwright e2e suite that boots its own stack
+
+`npm run test:e2e` starts its own API and UI on separate ports, against a database migrated and seeded fresh each run. It mocks Timișoara geolocation and runs nine specs over the map, what's on, place deep links, attribution and draw-to-filter, using real mouse input. Its first run caught a bug from brief 15: while drawing, a polygon corner on a pin opened that place, because Leaflet re-enables pointer events per icon. Signed-in e2e waits on a decision (a fake Ward or the local container), and the favorites and admin specs come with their features.
+
 ## [2026-10-03] check | Brief 27's image build, now that Docker is available
 
 `docker compose -f infrastructure/docker-compose.yml build prm-api` succeeds (287 MB), and the image has no `argon2`, `@fastify/cookie` or `@react-router/serve`. Brief 27's one unverified acceptance item is closed.

@@ -415,7 +415,11 @@
 /* While drawing, a press draws: no panning (touch-action), and pins cannot
    swallow a click that was meant as a corner. */
 .leaflet-container.is-drawing { cursor: crosshair; touch-action: none; }
-.is-drawing .leaflet-marker-pane { pointer-events: none; }
+/* Every marker, not just the pane: Leaflet's own `.leaflet-interactive` puts
+   pointer events back on each icon, which made a corner placed on a pin open
+   that place instead. Found by the e2e polygon spec (brief 17). */
+.is-drawing .leaflet-marker-pane,
+.is-drawing .leaflet-marker-pane * { pointer-events: none; }
 
 @keyframes cm-panel-in {
   from { opacity: 0; transform: translateX(10px); }

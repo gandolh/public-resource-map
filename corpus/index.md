@@ -60,7 +60,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 14 | [briefs/todo/14-archived-events-page.md](briefs/todo/14-archived-events-page.md) | todo | Archived events page — past events (citywide + my saved), link to place |
 | 15 | [briefs/done/15-draw-to-filter.md](briefs/done/15-draw-to-filter.md) | done | Draw-to-filter — free-hand/polygon spatial map filter (split from 13) |
 | 16 | [briefs/todo/16-admin-shell-and-review-ui.md](briefs/todo/16-admin-shell-and-review-ui.md) | todo | Admin shell & ingestion review UI — /admin, sources panel, review table (split from 13) |
-| 17 | [briefs/todo/17-playwright-e2e-harness.md](briefs/todo/17-playwright-e2e-harness.md) | todo | Playwright e2e harness — config, fixtures, seeded-DB determinism (split from 11) |
+| 17 | [briefs/done/17-playwright-e2e-harness.md](briefs/done/17-playwright-e2e-harness.md) | done | Playwright e2e harness — config, fixtures, seeded-DB determinism (split from 11) |
 | 18 | [briefs/done/18-guard-anonymous-write-routes.md](briefs/done/18-guard-anonymous-write-routes.md) | done | Guard the anonymous POST/DELETE routes on places and events (audit) |
 | 19 | [briefs/done/19-show-in-progress-events.md](briefs/done/19-show-in-progress-events.md) | done | Show in-progress events — window overlap, not "starts after now" (audit) |
 | 20 | [briefs/done/20-map-loads-every-place.md](briefs/done/20-map-loads-every-place.md) | done | The map loads every place in the city — no silent 1000 cap (audit) |

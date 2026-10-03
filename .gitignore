@@ -11,7 +11,10 @@ build/
 # Vitest coverage output (reported locally, not committed)
 coverage/
 
-# Playwright artifacts
+# Playwright artifacts (e2e: brief 17)
+e2e/.data/
+playwright-report/
+test-results/
 .playwright-mcp/
 playwright/
 # root-level screenshots from MCP browser tool

@@ -6,7 +6,7 @@ _Last updated: 2026-10-03_
 
 The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · the seed half of 08.** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
 
-Remaining build order: **04 (event ingestion — the biggest gap, every event in the app is currently synthetic)** → 05 (favorites + notifications) → 16 (admin shell) → 14 (archive) → 17 (Playwright) → 10 (test plans rewrite).
+Remaining build order: **04 (event ingestion — the biggest gap, every event in the app is currently synthetic)** → 05 (favorites + notifications) → 16 (admin shell) → 14 (archive) → 10 (test plans rewrite).
 
 ## Where things stand
 
@@ -58,7 +58,7 @@ Still open:
 | Archived events page (14) | not started — /archive: citywide past + my saved, links to place |
 | Draw-to-filter (15) | **done 2026-10-03** — freehand + polygon, hand-rolled on Leaflet (Geoman's freehand is Pro-only); map + what's-on, cleared on city change |
 | Admin shell & review UI (16) | not started — /admin, sources panel, review table (split from 13) |
-| Playwright e2e harness (17) | not started — config, fixtures, seeded-DB determinism (split from 11) |
+| Playwright e2e harness (17) | **done 2026-10-03** — `npm run test:e2e`: own ports, fresh seeded DB per run, 9 public-surface specs (found a draw-mode pin bug); signed-in e2e awaits a Ward-in-e2e decision; favorites/admin specs come with 05/16 |
 | i18n | **done — RO default + EN switch, `Intl.PluralRules`/`DateTimeFormat`, no framework** |
 | Deployment | decision locked; no brief yet; backend has no deploy setup |
 
