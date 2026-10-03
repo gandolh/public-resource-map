@@ -54,7 +54,7 @@ Still open:
 | Attribution (09) | **done 2026-10-03** — `© OpenStreetMap contributors` + CARTO, `/about-data`, per-event source credit. **Owed: `VITE_DATA_CONTACT`** (the takedown address) before launch; the page's "events are samples" callout goes when 04 lands |
 | Test plans (10) | stale — they describe a UI that no longer exists |
 | Platform optimization (12) | **closed 2026-10-03** — WAL + NORMAL + FKs + 5 s busy wait, tested; indexes verified; bbox-fetch superseded by whole-city loading (20/15); canvas/batching wait for a measured slowdown |
-| Public UI interactions (13) | **mostly done — grouped events, clustering, hard-filtering lens, guided zero-results, loading/empty/error, focus management; see the brief for the precise remainder** |
+| Public UI interactions (13) | **done 2026-10-03** — plus removable filter chips + widen hint on zero results, a lens banner, selection dimming, the phone's folded attribution. Two sheet snaps kept (owner's call); favorites/bell are 05's |
 | Archived events page (14) | not started — /archive: citywide past + my saved, links to place |
 | Draw-to-filter (15) | **done 2026-10-03** — freehand + polygon, hand-rolled on Leaflet (Geoman's freehand is Pro-only); map + what's-on, cleared on city change |
 | Admin shell & review UI (16) | not started — /admin, sources panel, review table (split from 13) |

@@ -95,3 +95,37 @@ These resolve real-world failure modes the happy-path spec glossed over. Several
 - Every listed surface has loading/empty/error states and meets WCAG AA.
 
 _(Draw-to-filter criteria → brief 15; /admin + review criteria → brief 16.)_
+
+## Outcome (2026-10-03) — the remainder
+
+Closed. Of the seven open items listed above:
+
+- **Built:**
+  - **Zero results → each active filter as a removable chip.** Search, lens,
+    every category, and the drawn area: `ActiveFilterChips` in `routes/map.tsx`.
+    "Clear filters" stays.
+  - **The widening hint.** "Without the drawn area: N places." / "Without the
+    search: N places." It is computed from the already-loaded city, so it costs
+    no request. Hints for dropping a category or the lens would each need
+    another fetch and were left out.
+  - **A timing-lens banner.** "Only places with events today: N places · Show
+    all" sits above the lens on desktop and below the compact row on a phone
+    (`LensBanner` in `FilterBar.tsx`).
+  - **Non-selected pins and clusters dim** to 45 % while a place is open (a
+    `has-selection` class on the map wrapper), and come back on hover.
+  - **On a phone, the attribution folds behind a tappable "i"** (`aria-expanded`).
+    It is a real Leaflet control in the same corner, so it keeps the corner's
+    offsets above the tab bar and the sheet. Desktop attribution is always open.
+- **Not built, deliberately:**
+  - **Three sheet snaps.** `PlaceSheet` has two (peek and full) on purpose, by
+    its own doc comment. A third is a design call for the owner, and nothing
+    here forces it.
+  - **`/verify` and `/reset`.** Obsolete: those flows are Ward's since the
+    cutover.
+  - **The favorite flow and the bell** belong to brief 05, as brief 06 already
+    says.
+
+Five e2e specs cover the built items, including a 375 px touch viewport for the
+"i" (`e2e/filters.spec.ts`; the suite is 13 specs, all passing). typecheck,
+`npm test` (113 + 3 todo) and the UI build are green, and the banner was checked
+by eye on the dev stack.

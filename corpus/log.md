@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-03] done | Brief 13 — the last public interactions
+
+Zero results now offers every active filter back as its own removable chip, with a hint for what dropping the area or the search would show. A banner states the timing lens and has a Show all. Other pins dim while a place is open, and on a phone the attribution folds behind a tappable "i". Five e2e specs cover them. Kept as is: the sheet's two snaps (a design call). Gone: `/verify` and `/reset` (Ward's now). Favorites and the bell move to brief 05.
+
 ## [2026-10-03] done | Brief 17 — a Playwright e2e suite that boots its own stack
 
 `npm run test:e2e` starts its own API and UI on separate ports, against a database migrated and seeded fresh each run. It mocks Timișoara geolocation and runs nine specs over the map, what's on, place deep links, attribution and draw-to-filter, using real mouse input. Its first run caught a bug from brief 15: while drawing, a polygon corner on a pin opened that place, because Leaflet re-enables pointer events per icon. Signed-in e2e waits on a decision (a fake Ward or the local container), and the favorites and admin specs come with their features.

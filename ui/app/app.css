@@ -406,6 +406,23 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* While a place is open, every other pin and cluster steps back (brief 13). */
+.has-selection .cmp:not(.is-selected),
+.has-selection .cmc { opacity: 0.45; transition: opacity var(--dur-2) var(--ease); }
+.has-selection .cm-pin:hover .cmp,
+.has-selection .cm-cluster:hover .cmc { opacity: 1; }
+
+/* The phone's folded attribution (brief 13): a small "i" that opens it. */
+.cm-attr-toggle {
+  display: grid; place-items: center;
+  width: 24px; height: 24px; margin: 0 0 4px 6px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--fg-muted);
+  font: italic 700 13px/1 Georgia, serif;
+  box-shadow: var(--shadow-e1);
+}
+.cm-attr-toggle[aria-expanded="true"] { color: var(--accent); border-color: var(--accent-line); }
+
 /* Draw-to-filter (brief 15). Leaflet writes stroke and fill as SVG attributes,
    which any CSS property outranks, so the tokens apply in both themes. */
 .cm-area { stroke: var(--accent); stroke-width: 2; fill: var(--accent); fill-opacity: 0.08; }

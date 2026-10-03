@@ -109,6 +109,36 @@ function AreaControls({ onStart }: { onStart?: () => void }) {
 }
 
 /**
+ * While a timing lens is on, say so (brief 13): it removes places rather than
+ * dimming them, so the map must state what it is hiding and offer the way back.
+ */
+function LensBanner({ placeCount, className }: { placeCount: number | null; className?: string }) {
+  const { t, tn } = useI18n();
+  const lens = useAppStore((s) => s.lens);
+  const setLens = useAppStore((s) => s.setLens);
+  if (lens === "all" || placeCount === null) return null;
+  const key = lens === "today" ? "lens.bannerToday" : "lens.bannerWeekend";
+  return (
+    <div
+      role="status"
+      className={cn(
+        "pointer-events-auto flex w-fit items-center gap-2 rounded-lg border border-accent-line bg-accent-weak py-1 pr-1 pl-3 text-[12.5px] text-fg shadow-e1",
+        className,
+      )}
+    >
+      <span className="tnum">{t(key, { places: tn("count.places", placeCount) })}</span>
+      <button
+        type="button"
+        onClick={() => setLens("all")}
+        className="rounded-md px-2 py-1 font-semibold text-accent transition-colors hover:bg-surface"
+      >
+        {t("lens.showAll")}
+      </button>
+    </div>
+  );
+}
+
+/**
  * Map chrome. On desktop it stacks in the top-left corner and the timing lens
  * floats bottom-centre, within thumb reach of nothing and easy reach of the
  * cursor. On a phone the same controls collapse to one search field plus a
@@ -117,9 +147,12 @@ function AreaControls({ onStart }: { onStart?: () => void }) {
 export function FilterBar({
   resultLabel,
   compactLabel,
+  placeCount,
 }: {
   resultLabel: string;
   compactLabel: string;
+  /** Places on the map now, or null while loading; the lens banner states it. */
+  placeCount: number | null;
 }) {
   const { t } = useI18n();
   const search = useAppStore((s) => s.search);
@@ -159,7 +192,8 @@ export function FilterBar({
         </div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 left-1/2 z-[400] hidden -translate-x-1/2 md:block">
+      <div className="pointer-events-none absolute bottom-4 left-1/2 z-[400] hidden -translate-x-1/2 flex-col items-center gap-2 md:flex">
+        <LensBanner placeCount={placeCount} />
         <div className="pointer-events-auto">
           <Segmented
             value={lens}
@@ -217,6 +251,8 @@ export function FilterBar({
             {compactLabel}
           </span>
         </div>
+
+        <LensBanner placeCount={placeCount} className="text-[12px]" />
 
         {openOnMobile && (
           <div className="pointer-events-auto rounded-xl border border-line bg-surface p-2.5 shadow-e2">

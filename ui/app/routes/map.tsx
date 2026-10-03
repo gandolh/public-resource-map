@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AttributionControl, MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Outlet, useNavigate } from "react-router";
-import type { Control } from "leaflet";
+import L, { type Control } from "leaflet";
 import type { Map as LeafletMap } from "leaflet";
 import { AlertTriangle, Crosshair, Loader2, Minus, Plus, SearchX, X } from "lucide-react";
 import type { MetaFunction } from "react-router";
@@ -20,6 +20,7 @@ import { useI18n } from "~/lib/i18n";
 import { DARK_TILES, LIGHT_TILES, MAP_ATTRIBUTION, usingCarto, useIsDarkMode } from "~/lib/map";
 import { normalizeText } from "~/lib/utils";
 import { inArea } from "~/lib/area";
+import { categoryColor, categoryLabelKey } from "~/lib/categories";
 import { nearestCity } from "~/lib/cities";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { cn } from "~/lib/utils";
@@ -32,6 +33,56 @@ export const meta: MetaFunction = () => [
       "Parcuri, biblioteci, muzee și instituții publice din Timișoara și București, cu ce se întâmplă la ele.",
   },
 ];
+
+function filterBySearch(places: Place[], search: string): Place[] {
+  const q = normalizeText(search.trim());
+  if (!q) return places;
+  return places.filter(
+    (p) =>
+      normalizeText(p.name).includes(q) ||
+      (p.address ? normalizeText(p.address).includes(q) : false),
+  );
+}
+
+/**
+ * Every active filter as a chip that removes just that filter (brief 13): the
+ * zero-results overlay's way back that does not throw everything away.
+ */
+function ActiveFilterChips() {
+  const { t } = useI18n();
+  const categories = useAppStore((s) => s.categories);
+  const toggleCategory = useAppStore((s) => s.toggleCategory);
+  const lens = useAppStore((s) => s.lens);
+  const setLens = useAppStore((s) => s.setLens);
+  const search = useAppStore((s) => s.search);
+  const setSearch = useAppStore((s) => s.setSearch);
+  const area = useAppStore((s) => s.area);
+  const clearArea = useAppStore((s) => s.clearArea);
+
+  const chip = (key: string, label: string, onRemove: () => void, dot?: string) => (
+    <Chip
+      key={key}
+      active
+      dotColor={dot}
+      onClick={onRemove}
+      aria-label={t("filters.remove", { filter: label })}
+    >
+      {label}
+      <X size={13} strokeWidth={2.4} aria-hidden="true" />
+    </Chip>
+  );
+
+  return (
+    <div className="flex flex-wrap justify-center gap-1.5">
+      {search.trim() && chip("search", `“${search.trim()}”`, () => setSearch(""))}
+      {lens !== "all" && chip("lens", t(`lens.${lens}`), () => setLens("all"))}
+      {categories.map((c) =>
+        chip(c, t(categoryLabelKey(c)), () => toggleCategory(c), categoryColor(c)),
+      )}
+      {area && chip("area", t("area.chip"), clearArea)}
+    </div>
+  );
+}
 
 export interface MapOutletContext {
   places: Place[];
@@ -61,6 +112,44 @@ function AboutDataLink({ control }: { control: Control.Attribution | null }) {
     container?.addEventListener("click", onClick);
     return () => container?.removeEventListener("click", onClick);
   }, [control, lang, t, navigate]);
+  return null;
+}
+
+/**
+ * On a phone the attribution folds behind a tappable "i" (brief 13), so the
+ * map stays the hero; on a desktop it is always open. A real Leaflet control
+ * in the same corner, so it inherits the corner's offsets above the tab bar
+ * and the sheet.
+ */
+function AttributionToggle({ control }: { control: Control.Attribution | null }) {
+  const { t } = useI18n();
+  const map = useMap();
+  const isMobile = useIsMobile();
+  useEffect(() => {
+    const panel = control?.getContainer();
+    if (!panel || !isMobile) return;
+    const button = L.DomUtil.create("button", "cm-attr-toggle");
+    button.type = "button";
+    button.textContent = "i";
+    button.setAttribute("aria-label", t("map.attribution"));
+    L.DomEvent.disableClickPropagation(button);
+    let open = false;
+    const apply = () => {
+      panel.style.display = open ? "" : "none";
+      button.setAttribute("aria-expanded", String(open));
+    };
+    button.addEventListener("click", () => {
+      open = !open;
+      apply();
+    });
+    apply();
+    const Toggle = L.Control.extend({ onAdd: () => button });
+    const toggle = new Toggle({ position: "bottomleft" }).addTo(map);
+    return () => {
+      toggle.remove();
+      panel.style.display = "";
+    };
+  }, [control, isMobile, map, t]);
   return null;
 }
 
@@ -156,7 +245,6 @@ export default function MapRoute() {
   const setCity = useAppStore((s) => s.setCity);
   const sheetSnap = useAppStore((s) => s.sheetSnap);
   const area = useAppStore((s) => s.area);
-  const clearArea = useAppStore((s) => s.clearArea);
 
   const mapRef = useRef<LeafletMap | null>(null);
   const [attribution, setAttribution] = useState<Control.Attribution | null>(null);
@@ -179,16 +267,10 @@ export default function MapRoute() {
   // Search and the drawn area run over the already-loaded city rather than
   // round-tripping: the whole city is in memory, so filtering is instant and
   // works offline-ish.
-  const places = useMemo(() => {
-    const all = (data?.data ?? []).filter((p) => inArea(p.coordinates, area));
-    const q = normalizeText(search.trim());
-    if (!q) return all;
-    return all.filter(
-      (p) =>
-        normalizeText(p.name).includes(q) ||
-        (p.address ? normalizeText(p.address).includes(q) : false),
-    );
-  }, [data, search, area]);
+  const places = useMemo(
+    () => filterBySearch((data?.data ?? []).filter((p) => inArea(p.coordinates, area)), search),
+    [data, search, area],
+  );
 
   const withEvents = useMemo(
     () => places.filter((p) => (p.upcomingEventCount ?? 0) > 0).length,
@@ -197,6 +279,20 @@ export default function MapRoute() {
 
   // With an area drawn the count says so: "12 places in this area".
   const placesKey = area ? "count.inArea" : "count.places";
+  // What widening would show, worked out from what is already loaded: the
+  // area and the search filter on the client, so their counts are free.
+  const withoutArea = useMemo(() => (area ? filterBySearch(data?.data ?? [], search).length : 0), [area, data, search]);
+  const withoutSearch = useMemo(
+    () => (search.trim() ? (data?.data ?? []).filter((p) => inArea(p.coordinates, area)).length : 0),
+    [area, data, search],
+  );
+  const widenHint =
+    area && withoutArea > 0
+      ? t("state.widenArea", { places: tn("count.places", withoutArea) })
+      : search.trim() && withoutSearch > 0
+        ? t("state.widenSearch", { places: tn("count.places", withoutSearch) })
+        : null;
+
   const resultLabel = isPending
     ? t("state.loading")
     : `${tn(placesKey, places.length)} · ${tn("count.withEvents", withEvents)}`;
@@ -211,6 +307,9 @@ export default function MapRoute() {
     <div
       className={cn(
         "absolute inset-0",
+        // Others fade while one place is open, so the selection reads at a
+        // glance (brief 13). The timing lens removes places; this only dims.
+        selectedId && "has-selection",
         sheetSnap === "peek" && "sheet-peek",
         sheetSnap === "full" && "sheet-full",
       )}
@@ -231,6 +330,7 @@ export default function MapRoute() {
               obligation that may not be parked under a panel. */}
           <AttributionControl position="bottomleft" prefix={false} ref={setAttribution} />
           <AboutDataLink control={attribution} />
+          <AttributionToggle control={attribution} />
           <MapBridge onReady={(m) => { mapRef.current = m; }} />
           <CityRecenter lat={city.center.lat} lng={city.center.lng} zoom={city.zoom} />
           {coords && <UserLocationMarker coords={coords} />}
@@ -245,7 +345,11 @@ export default function MapRoute() {
         </MapContainer>
       )}
 
-      <FilterBar resultLabel={resultLabel} compactLabel={compactLabel} />
+      <FilterBar
+        resultLabel={resultLabel}
+        compactLabel={compactLabel}
+        placeCount={isPending ? null : places.length}
+      />
 
       {isError && (
         <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-[450] mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
@@ -264,7 +368,8 @@ export default function MapRoute() {
       )}
 
       {/* Zero results is a guided recovery, never a blank map: it names what is
-          filtering things out and offers the way back. */}
+          filtering things out, offers each filter back as a removable chip, and
+          says what dropping the area or the search would show. */}
       {noResults && (
         <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-[450] mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
           <StateBlock
@@ -278,15 +383,10 @@ export default function MapRoute() {
                     ? t("area.zeroTitle")
                     : t("state.zeroTitle")
             }
-            body={t("state.zeroBody")}
+            body={widenHint ?? t("state.zeroBody")}
             action={
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {area && (
-                  <Chip active onClick={clearArea} aria-label={t("area.remove")}>
-                    {t("area.chip")}
-                    <X size={13} strokeWidth={2.4} aria-hidden="true" />
-                  </Chip>
-                )}
+              <div className="flex flex-col items-center gap-3">
+                <ActiveFilterChips />
                 <Button variant="secondary" size="sm" onClick={clearFilters}>
                   {t("filters.clear")}
                 </Button>

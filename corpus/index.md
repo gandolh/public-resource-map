@@ -56,7 +56,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 10 | [briefs/todo/10-test-plans-rewrite.md](briefs/todo/10-test-plans-rewrite.md) | todo | Test plans — rewrite place-centric + new-feature coverage (the *what*) |
 | 11 | [briefs/done/11-test-infrastructure-tdd-e2e.md](briefs/done/11-test-infrastructure-tdd-e2e.md) | done | Vitest harness (unit + integration) & TDD workflow (the *machinery*; **build early**) |
 | 12 | [briefs/done/12-platform-optimization.md](briefs/done/12-platform-optimization.md) | done | Platform optimization — DB PRAGMAs, spatial index, map/Leaflet, SPA (apply incrementally) |
-| 13 | [briefs/todo/13-ui-interactions-and-features.md](briefs/todo/13-ui-interactions-and-features.md) | todo | Public UI/UX interactions — place panel, filters, what's-on, city picker, states/a11y |
+| 13 | [briefs/done/13-ui-interactions-and-features.md](briefs/done/13-ui-interactions-and-features.md) | done | Public UI/UX interactions — place panel, filters, what's-on, city picker, states/a11y |
 | 14 | [briefs/todo/14-archived-events-page.md](briefs/todo/14-archived-events-page.md) | todo | Archived events page — past events (citywide + my saved), link to place |
 | 15 | [briefs/done/15-draw-to-filter.md](briefs/done/15-draw-to-filter.md) | done | Draw-to-filter — free-hand/polygon spatial map filter (split from 13) |
 | 16 | [briefs/todo/16-admin-shell-and-review-ui.md](briefs/todo/16-admin-shell-and-review-ui.md) | todo | Admin shell & ingestion review UI — /admin, sources panel, review table (split from 13) |
