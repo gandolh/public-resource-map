@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-04] decide | Owner answers after briefs 08 and 10
+
+Recorded in decisions.md. The data contact is a placeholder (`johndoe@example.com`) until the owner sets a real one. Notifications stay in-app only. Signed-in e2e gets a fake Ward. Cities are clipped to their municipal boundary. The phone sheet keeps two snaps. Past events are never pruned. The run researches a shortlist of sources for the owner to vet. Brief 29's table shape and brief 15's hand-rolled drawing are confirmed. Separately, Ward's sign-out bug (TP-05's failure) was fixed in Ward.
+
 ## [2026-10-04] done | Brief 10 — test plans for the place-centric app, and a run
 
 The seven plans (map, what's on, place, UI audit, sign-in, favourites, admin ingestion) name the automated test behind each case or mark it manual. The run walked the manual ones against the local Ward. It found and fixed six bugs: pins had no accessible name, Enter on a pin did nothing, Log in returned to the map instead of the page, a wrapped row left a dangling "·", the review drawer's candidate buttons were indistinguishable, and the iCal category guesser read "matched" as Sport. TP-05 fails on Ward's side: its Sign out does not end the session. The old "auth internals" suite is obsolete, since prm hashes nothing and issues no tokens.

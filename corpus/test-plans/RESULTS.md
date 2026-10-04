@@ -61,7 +61,7 @@
 | F-04 | The review drawer's candidate buttons were all named "Use this place" | **Fixed**: named "Use <place>" |
 | F-05 | The navbar's Log in and Create account always returned to the map, not the page they were opened on | **Fixed**: `next` is the current page; e2e |
 | F-06 | The iCal category guesser matched stems inside words ("matched" → Sport; also "transport", "concurs", "cooperare") | **Fixed**: stems match from a word start; tests |
-| F-07 | Ward's Sign out does not end the session | **Open, Ward-side** (already known; see the local Ward notes) |
+| F-07 | Ward's Sign out does not end the session | **Fixed in Ward** 2026-10-04 (wzd_auth `6b1e8ab`): the refresh cookie never reached `/logout`; logout is now also served at `/ward-api/refresh/logout`. TP-05 case 2 to be re-walked |
 | F-08 | The city bboxes take in neighbouring towns (Giroc, Dumbrăvița, Bragadiru…) | Open; noted by brief 08, a sync change |
 
 Screenshots stay out of git (they went to the session scratchpad).
