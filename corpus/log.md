@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-04] change | Signed-in e2e, through a fake Ward
+
+As the owner decided, the e2e stack now starts a stand-in Ward (`e2e/fake-ward/server.ts`). It serves a JWKS and `/introspect` behind prm's app key, plus a test-only sign-in that mints real EdDSA tokens. Specs set the token as `ward_session`, and the backend verifies and introspects it exactly as it does with Ward. Six new specs: the demo user's bell (now seeded in e2e as `e2e-demo`), following and unfollowing, the admin queue and sources, "no access" without the grant (the case TP-05 could not walk by hand), and the signed-in archive. e2e 26, tests 176.
+
 ## [2026-10-04] change | The OSM sync stops at the city limits
 
 As the owner decided, the sync queries inside each city's administrative boundary (an Overpass area from its OSM relation) instead of a bounding box. The bounding box stays only as the cheap plausibility check for geocoding and manual pins. The fixture was recaptured: 2,449 places, down from 2,676, with Giroc, Dumbrăvița, Bragadiru and the other neighbours gone. Tests: 176, e2e 20.

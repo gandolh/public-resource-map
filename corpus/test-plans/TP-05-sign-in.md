@@ -33,9 +33,10 @@ tests them, not this plan.
    - Signed out, `/prm/admin` asks for sign-in and returns there afterwards.
      e2e `admin.spec › a signed-out visitor at /admin is asked to sign in, …`.
    - Signed in without `prm:admin`, it shows "no access" and the API answers
-     403. api `admin-osm.api.test › 403s a non-admin user`; **manual** for the
-     page.
-   - With the grant, it shows the review queue. **Manual.**
+     403. api `admin-osm.api.test › 403s a non-admin user`; e2e
+     `signed-in.spec › a signed-in person without the admin grant is told so …`.
+   - With the grant, it shows the review queue and the sources. e2e
+     `signed-in.spec › an admin reaches the review queue and the sources`.
 5. **Ward down.** Stop Ward. `/api/me` is 503, not "signed out", and the
    public map still works.
    api `ward.plugin.api.test › Ward plugin: key set unreachable` (3 tests).

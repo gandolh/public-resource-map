@@ -23,10 +23,13 @@ event, a reminder arrives once. All of it is in-app; email waits on Ward
    the completed follow after Ward.
 2. **Follow and unfollow** a place, and save and unsave an event. Both are
    idempotent and per person.
-   api `favorites.api.test › favourites` (3 tests); **manual** in the UI.
+   api `favorites.api.test › favourites` (3 tests); e2e `signed-in.spec ›
+   following a place from its page sticks, …`.
 3. **The demo seed shows the loop.** The demo subject follows Muzeul de Artă
    and MNAR, has one saved event at the Timișoara theatre, and the bell shows 1
-   unread "new events at Muzeul de Artă". **Manual.**
+   unread "new events at Muzeul de Artă", read once opened. e2e
+   `signed-in.spec › the demo user's bell …`, `› the place a demo user follows
+   shows as followed` (the e2e seed's demo subject is `e2e-demo`).
 4. **Accept → bell.**
    - Steps: as admin (TP-07), accept an event at a place you follow. The bell
      gains one item for the batch, however many events it published there.
@@ -44,7 +47,8 @@ event, a reminder arrives once. All of it is in-app; email waits on Ward
    api `favorites.api.test › nobody can read or mark someone else's items`.
 7. **My past events.** Signed in, `/archive` opens on "My past events": saved
    events and those at followed places, once they are over.
-   api `archive.api.test`; e2e covers the signed-out tab.
+   api `archive.api.test`; e2e `archive.spec` (signed out) and
+   `signed-in.spec › signed in, the archive opens on My past events`.
 
 ## Pass criteria
 
