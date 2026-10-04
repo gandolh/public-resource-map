@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-04] done | Brief 08 — the seed is a frozen OSM sync with stable ids
+
+`db:seed` now resets the database and loads a committed capture of the real OSM sync for both cities: 2,676 places, offline and the same every run. `npm run db:capture-osm` refreshes the capture. One event venue OSM lacks (Piața Victoriei) and the 15 synthetic events sit on top. Every row has a name-based id, so the e2e specs fetch rows by id. `SEED_DEMO_SUBJECT` gives a Ward subject favourites and a bell item. Real curated events were dropped, since they would go stale in days and real events come through 04. Found: the city bboxes take in neighbouring towns.
+
 ## [2026-10-03] done | Brief 14 — the archive
 
 `/archive` lists what happened, newest first and grouped by month, each event still opening its place. There is a public tab for the city and a signed-in tab of your saved events plus those at places you follow. "Past" is computed beside the live window from the same columns, so an event leaves what's on exactly when it enters the archive; cancelled and stale events never appear. The prune decisions.md mentions does not exist yet.

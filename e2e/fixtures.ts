@@ -11,17 +11,14 @@ interface SeededPlace {
   upcomingEventCount?: number;
 }
 
-/**
- * Seed IDs are random today (brief 08 has not made them stable), so specs
- * find seeded rows by their real names instead.
- */
-export async function placeNamed(request: APIRequestContext, name: string): Promise<SeededPlace> {
-  const res = await request.get(`${API}/places`, { params: { pageSize: 1000 } });
-  expect(res.ok()).toBe(true);
-  const { data } = (await res.json()) as { data: SeededPlace[] };
-  const place = data.find((p) => p.name === name);
-  if (!place) throw new Error(`no seeded place named ${name}`);
-  return place;
+/** Seed ids are stable (brief 08), so specs name the rows they mean. */
+export { SEED } from "../backend/src/db/seed-ids";
+
+/** A seeded place, read back through the API the UI uses. */
+export async function seededPlace(request: APIRequestContext, id: string): Promise<SeededPlace> {
+  const res = await request.get(`${API}/places/${id}`);
+  expect(res.ok(), `seeded place ${id}`).toBe(true);
+  return (await res.json()) as SeededPlace;
 }
 
 export const test = base.extend({

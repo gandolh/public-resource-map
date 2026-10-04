@@ -1,4 +1,4 @@
-import { test, expect, placeNamed } from "./fixtures";
+import { test, expect, seededPlace, SEED } from "./fixtures";
 
 /**
  * Brief 05, signed out (the e2e stack has no Ward session; see brief 17): the
@@ -6,7 +6,7 @@ import { test, expect, placeNamed } from "./fixtures";
  * Ward, back to this page. The signed-in loop was walked against the local Ward.
  */
 test("a signed-out star offers sign-in that returns here with the favourite", async ({ page, request }) => {
-  const museum = await placeNamed(request, "Muzeul de Artă Timișoara");
+  const museum = await seededPlace(request, SEED.places.tmArtMuseum);
   await page.goto(`places/${museum.id}`);
   await page.getByRole("button", { name: `Follow ${museum.name}` }).click();
   await expect(page.getByRole("heading", { name: "Follow the places you like" })).toBeVisible();

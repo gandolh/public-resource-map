@@ -1,10 +1,10 @@
 # Status
 
-_Last updated: 2026-10-03_
+_Last updated: 2026-10-04_
 
 ## 🟢 The UI is now the new model
 
-The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · the seed half of 08.** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
+The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · 08 (RO seed).** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
 
 Remaining build order: **vet and add real sources (owner; brief 04's pipeline is ready)** → 10 (test plans rewrite).
 
@@ -14,7 +14,7 @@ Remaining build order: **vet and add real sources (owner; brief 04's pipeline is
 
 What actually exists to look at: a full-bleed map of Timișoara or București with clustered category pins that badge their upcoming-event count, a place panel (desktop) / draggable sheet (mobile) showing what is on at that place grouped Today / Tomorrow / This weekend / Later, a citywide what's-on index, category chips + a timing lens that hard-filters, Romanian by default with an English switch, and both themes.
 
-**The honest gap: there is still no event ingestion.** Every event in the app is seeded and synthetic (labelled as such in `backend/src/db/seed.ts`). The places are real Romanian institutions but hand-seeded rather than OSM-synced. Brief 04 is what makes this a product rather than a demo.
+**The honest gap: there is still no real event source.** The ingestion pipeline (04) exists, but every event in the app is seeded and synthetic (labelled as such in `backend/src/db/seed-data.ts`). The places are real: the seed loads a frozen OSM sync of both cities (2,676 places, captured 2026-10-04). Vetting the first sources is what makes this a product rather than a demo.
 
 ## Code vs. decisions gap
 
@@ -22,14 +22,13 @@ Mostly closed on the public surface. Already migrated:
 - ~~Schema: standalone `resource`/`event`~~ → **consolidated place-centric Drizzle schema.**
 - ~~No test runner~~ → **Vitest harness (unit + Fastify `.inject()`), 104 passing (2026-10-03).**
 - ~~UI: `/map`, `/events`, `/resources/:id`~~ → **`/` (map is home), `/places/:id` nested under it, `/whats-on`; old URLs redirect.**
-- ~~NYC seed~~ → **Timișoara + București seed (38 real places, 14 synthetic events).**
+- ~~NYC seed~~ → **Timișoara + București seed: a frozen OSM sync (2,676 places) + one event venue, 15 synthetic events, stable ids (brief 08).**
 - ~~No place-events or citywide endpoint~~ → **`upcomingEventCount` on `/api/places`, `/api/places/:id/events`, `/api/whats-on`.**
 
 Still open:
 - **No real event source yet** — brief 04's pipeline exists; the sources are an owner decision.
 - **No favorites, no notification bell (brief 05)** — deliberately left out of the rebuild rather than shipped as dead controls.
 - No `/verify` or `/reset` UI routes yet (the backend flows exist).
-- Places are seeded, not OSM-synced; run `POST /api/admin/osm/sync` for real coverage.
 - **CARTO now requires an API key** — the app falls back to filtered OSM tiles until `VITE_CARTO_API_KEY` is set (see [decisions.md → Basemap constraint](decisions.md)).
 
 ## Per-area snapshot
@@ -38,7 +37,7 @@ Still open:
 |---|---|
 | npm workspaces | done — shared/backend/ui wired |
 | shared types | **done (new shape) — `Place`/`Event`, two category enums (brief 07)** |
-| backend API | done — event-centric route *paths* still `/api/resources`+`/api/events` but now on the `place`/`event` tables (rename → brief 03); NYC seed |
+| backend API | done — event-centric route *paths* still `/api/resources`+`/api/events` but now on the `place`/`event` tables (rename → brief 03) |
 | UI routes | **done (new model) — `/` map home, `/places/:id` panel-over-map, `/whats-on`, `/login`, `/register`; legacy URLs redirect** |
 | Component library | **rebuilt — new token layer (`ui/app/app.css`), Button/Chip/Segmented/SearchInput/Skeleton/StateBlock/CategoryBadge, map pins + clusters, place panel/sheet, filter bar** |
 | Dark mode | **done — both themes designed, not inverted; light/dark/system** |
@@ -47,7 +46,7 @@ Still open:
 | Auth (02) | **superseded by Ward (2026-09-06)** — identity, sign-in and grants are Ward's; prm keeps `requireAuth`/`requireAdmin` over Ward grants. Brief 02's argon2/cookie/AuthCard leftovers were removed by brief 27 |
 | Audit sweep (18–29) | **18–28 done (2026-09-27 → 2026-10-03)** — admin-only writes, running events stay visible, the map pages through every place, JWKS failure = 503, 0001 snapshot, cross-city deep links, public-healthcare-only OSM sync, real Ward client tests, cutover leftovers gone, template leftovers gone and every manifest exact-pinned. **29 done 2026-10-03** (notification_event keyed on its pair; a drift check now compares migrated vs `schema.ts`) |
 | Places + OSM sync (03) | **done — admin `POST /api/admin/osm/sync` (Overpass, tag→PlaceCategory map, centroid, non-clobbering upsert), public `GET /api/places`(+`:id`), ODbL attribution on map** |
-| RO seed data (08) | **partial — 38 real Timișoara/București places + 14 synthetic events seeded; OSM sync still the real path** |
+| RO seed data (08) | **done 2026-10-04** — `db:seed` resets to a frozen OSM fixture of both cities (`npm run db:capture-osm` refreshes it) + an event venue + 15 synthetic events, all under stable v5 ids the e2e suite addresses (`SEED`); `SEED_DEMO_SUBJECT` gives a Ward subject favourites and a bell item. Real curated events dropped: they would be stale in days, and real events come through 04 |
 | Event ingestion (04) | **done 2026-10-03 (pipeline)** — iCal adapter, match/geocode/dedup/reconcile/health, staged diff + admin API, 45 tests. **No source configured:** vetting the first 2–4 is the owner's ([todo](../todos/2026-10-03-vet-first-event-sources.md)) |
 | Favorites + notifications (05) | **done 2026-10-03 (in-app)** — star/remind-me, signed-out → Ward → favourite completed, coalesced new-event items at accept, 09:00 Bucharest reminder sweep, bell. **Email blocked on Ward** (prm holds no addresses) |
 | Place-centric UI (06) | **done** — the last pieces (star, bell) shipped with 05 on 2026-10-03 |
@@ -70,7 +69,7 @@ npm install
 cp .env.example .env          # dev loads it into both processes
 npm run build -w shared       # must build first
 npm run db:migrate -w backend # first time only
-npm run db:seed -w backend    # Timișoara + București
+npm run db:seed -w backend    # resets to Timișoara + București (OSM fixture + synthetic events)
 npm run dev                   # backend (3001) + ui (5173) → http://localhost:5173/prm/
 npm run typecheck             # all workspaces
 npm test                      # Vitest (backend + shared): unit + Fastify .inject() integration

@@ -1,4 +1,4 @@
-import { test, expect, placeNamed } from "./fixtures";
+import { test, expect, seededPlace, SEED } from "./fixtures";
 
 /** Brief 13's public interactions: recovery, the lens banner, selection, the phone's attribution. */
 
@@ -29,7 +29,7 @@ test("the timing lens says what it hides, and Show all brings it back", async ({
 });
 
 test("opening a place dims the others", async ({ page, request }) => {
-  const museum = await placeNamed(request, "Muzeul de Artă Timișoara");
+  const museum = await seededPlace(request, SEED.places.tmArtMuseum);
   await page.goto("");
   await expect(page.locator(".has-selection")).toHaveCount(0);
   await page.goto(`places/${museum.id}`);

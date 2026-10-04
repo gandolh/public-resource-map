@@ -1,4 +1,4 @@
-import { API, test, expect, placeNamed } from "./fixtures";
+import { API, test, expect, seededPlace, SEED } from "./fixtures";
 
 /** A shared place link: the map, centred on the place, with its panel open. */
 
@@ -23,7 +23,7 @@ test("a cold deep link opens the place with its programme and sources", async ({
 });
 
 test("a link to a place in another city switches the city", async ({ page, request }) => {
-  const bucharest = await placeNamed(request, "Muzeul Național de Artă al României");
+  const bucharest = await seededPlace(request, SEED.places.buArtMuseum);
   await page.goto(`places/${bucharest.id}`);
   await expect(page.getByRole("heading", { name: bucharest.name })).toBeVisible();
   await expect(page.getByRole("button", { name: "Change city" })).toHaveText(/București/);

@@ -12,7 +12,7 @@ npm install
 cp .env.example .env
 npm run build -w shared         # the other workspaces import its build
 npm run db:migrate -w backend
-npm run db:seed -w backend      # Timișoara + București
+npm run db:seed -w backend      # resets to Timișoara + București (offline OSM fixture)
 npm run dev                     # backend on :3001, UI on :5173
 ```
 

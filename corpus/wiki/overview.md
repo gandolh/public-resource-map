@@ -8,9 +8,9 @@ It is a **proof-of-concept**, not a launch-ready business — see [decisions.md 
 
 Pins are **places**, from two sources: **OSM** (parks/libraries/clinics/museums/town halls — ODbL, reuse-permitted, the clean anchor) and **event-venue** (created when an event's venue can't be matched to an OSM place). Events attach to places. Events come from **public primary publishers** (venue/museum/municipal calendars), **API-first, scrape-last** — never from scraping a ticketing aggregator.
 
-## Status (as of 2026-06-28)
+## Status (as of 2026-10-04)
 
-The existing code is functional but was built for an **earlier event-centric model** and predates the place-centric pivot: the UI has `/map` (resource markers), a standalone `/events` grid, and `/resources/:id`; the backend serves seeded **NYC** placeholder data. The 2026-06-28 grilling session re-shaped the product (legal pivot → POC, place-centric model, public-source ingestion, in-app notifications, geocoding-as-fallback, unified place UI). Those decisions are locked in [decisions.md](decisions.md); the **code and brief 02 now need to catch up** to them.
+The code has caught up with the 2026-06-28 reframe (legal pivot → POC, place-centric model, public-source ingestion, in-app notifications, geocoding-as-fallback, unified place UI; locked in [decisions.md](decisions.md)): the map is home, pins are places, events live inside them, and the ingestion pipeline, favourites, bell, archive and admin review exist. The data is Timișoara + București: real OSM places, synthetic events until the owner vets the first sources. Details in [status.md](status.md).
 
 ## Major components
 
@@ -25,7 +25,7 @@ The existing code is functional but was built for an **earlier event-centric mod
 - **Mapping**: Leaflet + react-leaflet, CARTO basemaps (light/dark)
 - **Resource data**: OpenStreetMap via the **Overpass API** (ODbL), ingested per-city into SQLite (admin-triggered sync)
 - **Geocoding**: **Nominatim** (public server, POC) — fallback only, for event-venues not matched to an OSM place; cached per address
-- **Event data**: public **primary-publisher** sources per city (API/feed preferred, scrape last). Currently still seeded NYC placeholder; real ingestion is brief 02.
+- **Event data**: public **primary-publisher** sources per city (API/feed preferred, scrape last). The pipeline exists (brief 04); no source is configured yet, so the seeded events are synthetic.
 
 ## Repo layout
 
