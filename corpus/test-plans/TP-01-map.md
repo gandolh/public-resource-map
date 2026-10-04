@@ -1,50 +1,58 @@
-# TP-01 — Map Page
+# TP-01 — The map
 
-Setup: [../../playwright/README.md](../../playwright/README.md).
-Mock geolocation to `{ lat: 40.7851, lng: -73.9683 }` (Central Park, NYC).
+Seed: `db:seed` (a frozen OSM sync of both cities + synthetic events). The
+visitor stands in Piața Victoriei, Timișoara (`45.7537, 21.2257`).
 
 ## Goal
 
-Verify the map page renders correctly with seeded data: tiles load, resource pins
-appear, filter chips function, radius slider responds, and the detail drawer opens.
+The map is home. A pin is a place, coloured by its category and badged with its
+count of upcoming events. A click opens the place, and the city picker switches
+between Timișoara and București. All of it works without geolocation.
 
 ## Cases
 
-1. **Page loads** — navigating to `/map` renders a full-height Leaflet map with CartoDB
-   tiles. No blank tile grid. The 64px top navbar is visible above the map.
+Each case names the test that covers it: **e2e** `npm run test:e2e`, **api**
+`npm test`, or **manual**.
 
-2. **Filter overlay present** — the search input and filter bar are visible, overlaid
-   top-left on the map. Search input has placeholder "Search CivicMap".
-
-3. **Resource pins visible** — with geolocation mocked to Central Park and default
-   5 km radius, at least 3–5 colored resource pins appear on the map.
-
-4. **Category filter chip — activate** — clicking a category chip (e.g. "Libraries")
-   toggles it active (filled background). The map should update to show only
-   that category's pins.
-
-5. **Category filter chip — deactivate** — clicking the active chip again deactivates
-   it (returns to outlined state). All-category pins reappear.
-
-6. **Radius slider** — dragging the radius slider changes the displayed distance
-   label. Moving it inward reduces visible pins; outward may reveal more.
-
-7. **Pin click → detail drawer opens** — clicking a resource pin opens the detail
-   drawer (slides in from the right on desktop; bottom sheet on mobile). The drawer
-   shows: category badge, resource name, address, and a "Get Directions" button.
-
-8. **Detail drawer close** — clicking the × button or clicking outside the drawer
-   closes it. The drawer disappears.
-
-9. **User location dot** — if geolocation is granted, a pulsing blue dot appears at
-   the mocked location.
-
-10. **Navbar links** — clicking "Events" in the navbar navigates to `/events`.
+1. **Opens on Timișoara.** `/prm/` renders the map, the city picker reads
+   Timișoara, and there are clustered pins and a "N places" count.
+   e2e `map.spec › opens on Timișoara with its places on the map`.
+2. **Pins are places.** Each pin's colour is its place category. A place with
+   upcoming events wears a count badge, and clusters sum their children.
+   **Manual**, at street zoom near Piața Unirii.
+3. **Category chips and the timing lens narrow the same count.** A chip, then
+   Today / Weekend / Anytime, change the count and the pins together.
+   e2e `map.spec › a category chip and the timing lens narrow the same count`.
+4. **The lens says what it hides.** A banner states the lens, and Show all
+   brings everything back.
+   e2e `filters.spec › the timing lens says what it hides, …`.
+5. **Zero results** offer each active filter back as its own removable chip.
+   e2e `filters.spec › zero results offers each filter back …`.
+6. **A pin click opens the place** (a panel on desktop, a sheet on a phone),
+   and the other pins dim.
+   e2e `filters.spec › opening a place dims the others`; TP-03 for the panel.
+7. **The city picker** switches to București: the map recentres and the count
+   changes. Switching back restores Timișoara. **Manual.**
+8. **Without geolocation** (permission denied) the map still opens on the
+   chosen city with its pins, and "locate me" explains itself. **Manual.**
+9. **Draw to filter.** A freehand loop, or a polygon by clicks, narrows the
+   pins to the area. The area carries over to what's on, and a city change
+   clears it with a notice.
+   e2e `draw-to-filter.spec` (2 specs).
+10. **Keyboard and screen readers.**
+    - A pin is named for its place and what is on there ("Muzeul de Artă · 3
+      events"), and a cluster for its count.
+    - Enter or Space on a focused pin opens the place, and on a cluster it
+      zooms in. Escape closes the place.
+    - e2e `map.spec › pins and clusters are named …`, `› Enter on a focused pin
+      opens its place, …`.
+11. **Attribution.** "© OpenStreetMap contributors" and CARTO are credited,
+    with a link to About the data. On a phone they fold behind an "i".
+    e2e `map.spec › the attribution credits …`,
+    `filters.spec › on a phone › the attribution folds …`.
 
 ## Pass criteria
 
-- Map tiles render (not grey boxes).
-- At least one resource pin visible with mocked NYC location.
-- Filter chip toggle changes visual state and visible pins.
-- Detail drawer opens on pin click and shows real data from the seed.
-- No JS console errors from the app (benign Leaflet/HMR noise is acceptable).
+- Every e2e spec named above is green.
+- Manual cases 2, 7 and 8 behave as described.
+- No app errors in the console (Leaflet and HMR noise is fine).

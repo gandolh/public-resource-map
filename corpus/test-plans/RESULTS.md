@@ -1,63 +1,67 @@
-# Test Results — Run 2026-06-26
+# Test Results — Run 2026-10-04
 
-App: `npm run dev` — backend http://localhost:3001, UI http://localhost:5173  
-Data: 8 seeded resources + 8 seeded events (NYC area)  
-Geolocation: defaulted to Bucharest (mock didn't survive navigation); events/map tested against Bucharest default coords
-
----
+- **Automated:**
+  - `npm test` 176 passed;
+  - `npm run test:e2e` 20 passed;
+  - `npm run typecheck` clean.
+- **Manual:**
+  - `npm run dev` on a scratch database seeded by brief 08 (2,677 places, 15
+    synthetic events), against the local Ward container (`localhost:8792`).
+  - Signed in as the local owner account, which holds `prm:admin`.
+  - Seeded with `SEED_DEMO_SUBJECT` set to that account's subject.
+- **Not available:** a second Ward account without `prm:admin`, so the
+  non-admin page was not walked (the API's 403 is under test).
 
 ## Summary
 
 | Plan | Result | Notes |
 |---|---|---|
-| TP-01 Map page | PASS w/ findings | Map renders, chips toggle, dark mode works; chip overflow clipping on mobile (F-01) |
-| TP-02 Events list | PASS | Empty state renders correctly; loading state and filter chips functional |
-| TP-03 Resource detail | PASS (after fix) | Not-found works; hours JSON bug fixed during run (F-02 — fixed) |
-| TP-04 UI/UX audit | PASS w/ findings | Dark mode solid; mobile layouts good except map chip overflow (F-01) |
+| TP-01 Map | **PASS** after fixes | e2e green. Found that pins had no accessible name, clusters were named by a bare digit, and Enter on a pin did nothing (F-01, F-02, fixed). Cases 7 and 8 (city picker, geolocation denied) not walked by hand this run |
+| TP-02 What's on | **PASS** after fix | e2e green; at 375 px a wrapped row left its "·" dangling (F-03, fixed). Cases 3, 5 and 7 not walked by hand |
+| TP-03 Place | **PASS** | e2e green; ticket link present and absent seen on Muzeul de Artă. Cases 4 to 6 not walked by hand |
+| TP-04 UI audit | **PASS w/ findings** (partial) | Walked: dark theme at 375 (map, what's on; no horizontal scroll), keyboard on the map, accessible names. F-01, F-02 and F-04 came from here. Not walked: light theme at 375, admin at 375, the error states, a contrast measurement |
+| TP-05 Sign-in | **FAIL (Ward)** | Log in now returns to the page it left (F-05, fixed). **Sign out at Ward does not end the session**: after Ward's Sign out, `/api/me` still names the person past prm's 30 s introspection cache. This is the known Ward bug (its refresh cookie's path never reaches `/logout`), not prm's |
+| TP-06 Favourites | **PASS** | Signed-out star → Ward → back with the follow completed; the demo seed's bell item; accepting at a followed place added one new unread item, and opening the bell marked the old one read |
+| TP-07 Admin ingestion | **PASS** after fix | Walked with a local `.ics` of 5 events. The category guesser read "matched" as Sport (F-06, fixed) |
 
----
+## Walk details
 
-## Evidence
+**TP-07**, refreshing a five-event feed:
+- First refresh: "3 read, 3 new, 2 unreadable". The unreadable rows were the
+  `RRULE` event (by design: recurring events are not expanded) and the
+  untitled one.
+- Queue buckets: unreadable 2, unsure place 2, ready 1, with ready
+  pre-selected.
+- Accept selection put "Walk: matched at the art museum" on what's on at
+  Muzeul de Artă.
+- The county-library row offered three named candidates (100 / 90 / 88 %).
+  Choosing the first enabled Accept, and it went live there.
+- "Club Nicăieri", an invented venue, came out *unsure* rather than *no place*:
+  among 2,677 real places, "Club Norișor" is close enough to offer. That is the
+  matcher working as designed. A click on the drawer map, Use this pin and
+  Accept created an `event-venue` place with `isManualPin: true` inside the
+  city.
+- Bulk reject: "Rejected: 2".
+- A second refresh: 0 new, and the queue stayed empty (rejected rows stay
+  rejected even when re-quarantined).
+- An empty feed showed **Suspect** on Sources.
 
-| Screenshot | What it shows |
-|---|---|
-| `TP-01-map-initial.png` | Map page loaded, CartoDB tiles, search + filter overlay, navbar |
-| `TP-01-map-filter-parks-active.png` | Parks chip active (filled blue), Libraries/Healthcare/Community outlined |
-| `TP-02-events-empty-state.png` | Empty state — calendar icon, "No events found", friendly copy |
-| `TP-03-resource-detail-dark.png` | Resource detail with raw JSON in Hours — pre-fix evidence |
-| `TP-03-resource-detail-fixed.png` | Hours rendered as day/time table — post-fix |
-| `TP-03-not-found.png` | Not-found state with "Back to Map" button |
-| `TP-04-dark-mode-map.png` | Dark mode map — CartoDB Dark Matter tiles, dark surface, filter chips |
-| `TP-04-dark-mode-events.png` | Dark mode events — dark background, chip styles, empty state |
-| `TP-04-mobile-map.png` | Mobile 375px map — bottom nav, search full-width, chip overflow visible |
-| `TP-04-mobile-events.png` | Mobile 375px events — chips wrap 3 rows cleanly |
-| `TP-04-mobile-resource-detail.png` | Mobile resource detail — 1-col layout, hours table, "Closed" muted |
-
----
+**TP-05:**
+- Logged in from `/prm/whats-on?city=x` and came back to exactly that URL.
+- Signed out, `/api/me` answers `{"user": null}` with 200. The plan first said
+  401, which was the plan's error, not the app's.
 
 ## Findings
 
-### F-01 — Map filter chips overflow on mobile (fixed)
+| # | Finding | Status |
+|---|---|---|
+| F-01 | Place pins were `role="button"` with **no accessible name** (Leaflet ignores `alt` on a div icon), and clusters were named by their digit, not their `title` | **Fixed**: inner markup `aria-hidden`, pins titled "Place · N events"; e2e |
+| F-02 | **Enter or Space on a focused pin did nothing.** Leaflet answers Enter only on markers with a popup | **Fixed**: keydown activates pins (open) and clusters (zoom); e2e |
+| F-03 | What's on / archive rows at 375 px wrapped and left "·" dangling at the line end | **Fixed**: one line, the place name truncates |
+| F-04 | The review drawer's candidate buttons were all named "Use this place" | **Fixed**: named "Use <place>" |
+| F-05 | The navbar's Log in and Create account always returned to the map, not the page they were opened on | **Fixed**: `next` is the current page; e2e |
+| F-06 | The iCal category guesser matched stems inside words ("matched" → Sport; also "transport", "concurs", "cooperare") | **Fixed**: stems match from a word start; tests |
+| F-07 | Ward's Sign out does not end the session | **Open, Ward-side** (already known; see the local Ward notes) |
+| F-08 | The city bboxes take in neighbouring towns (Giroc, Dumbrăvița, Bragadiru…) | Open; noted by brief 08, a sync change |
 
-**Severity:** Low  
-**Screen:** `/map`, mobile 375px  
-**Observed:** The last visible chip in the horizontal scroll row ("Community") was visually clipped at the right edge. Users couldn't tell the row was scrollable.  
-**Fix:** Wrapped chip row in a relative container; added a `pointer-events-none` right-edge gradient overlay (`from-cm-surface to-transparent`) that fades the last chip, signalling scroll affordance. Uses CSS variable so it works in both light and dark mode.  
-**File:** `ui/app/routes/map.tsx`  
-**Status:** Fixed and verified.
-
-### F-02 — Resource detail: openingHours rendered as raw JSON (fixed)
-
-**Severity:** High (was)  
-**Screen:** `/resources/:id`  
-**Observed:** `openingHours` was a JSON string stored as `{"Mon":"8:00 AM – 8:00 PM",...}` and rendered raw in a `<p>` tag.  
-**Fix applied:** Added `HoursDisplay` component in `ui/app/routes/resources.$id.tsx` — parses JSON, renders as `<ul>` with day/hours rows. "Closed" days shown in muted `text-cm-outline` color.  
-**Status:** Fixed and verified in this run.
-
----
-
-## Observations (not bugs, worth noting)
-
-- **Geolocation default (Bucharest):** When geo is denied or unavailable, the map centers on Bucharest (`44.4268, 26.1025`). No NYC seeded data is visible without granted geolocation. This is expected given the current hook design — but worth noting that the events page will always show empty for users who deny geo. See `corpus/wiki/open-questions.md` for the geo/location discussion.
-- **Console errors on not-found:** Two `404` fetch errors logged to console when visiting `/resources/nonexistent-id`. These are expected API responses, not app errors — the UI handles them gracefully.
-- **Title tag (fixed):** Resource detail now sets `document.title` to `"{name} — CivicMap"` via `useEffect` once loaded, and resets to `"CivicMap"` on unmount.
+Screenshots stay out of git (they went to the session scratchpad).

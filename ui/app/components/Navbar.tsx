@@ -46,12 +46,22 @@ function TopLink({ to, children }: { to: string; children: React.ReactNode }) {
  * this app** and must be full page loads. A client-side `<Link>` would try to
  * resolve `/ward/login` inside prm's router and 404.
  */
+/**
+ * This page, as Ward's `next`: signing in or registering from the navbar comes
+ * back where it started, not to the map (brief 10's TP-05 walk).
+ */
+function useReturnHere(): string {
+  const { pathname, search } = useLocation();
+  return `${import.meta.env.BASE_URL.replace(/\/$/, "")}${pathname}${search}`;
+}
+
 function ProfileMenu() {
   const { t } = useI18n();
   const user = useAuthStore((s) => s.user);
   const status = useAuthStore((s) => s.status);
   const authed = status === "authenticated" && user;
   const fallback = (user?.username ?? "?").charAt(0).toUpperCase();
+  const here = useReturnHere();
 
   return (
     <DropdownMenu
@@ -87,8 +97,8 @@ function ProfileMenu() {
       ) : (
         <>
           <DropdownMenuLabel>{t("nav.account")}</DropdownMenuLabel>
-          <DropdownMenuItem render={<a href={wardLoginUrl()} />}>{t("nav.login")}</DropdownMenuItem>
-          <DropdownMenuItem render={<a href={wardRegisterUrl()} />}>
+          <DropdownMenuItem render={<a href={wardLoginUrl(here)} />}>{t("nav.login")}</DropdownMenuItem>
+          <DropdownMenuItem render={<a href={wardRegisterUrl(here)} />}>
             {t("nav.register")}
           </DropdownMenuItem>
         </>
@@ -108,7 +118,8 @@ function ProfileMenu() {
 function AccountTab() {
   const { t } = useI18n();
   const status = useAuthStore((s) => s.status);
-  const href = status === "authenticated" ? wardAccountUrl() : wardLoginUrl();
+  const here = useReturnHere();
+  const href = status === "authenticated" ? wardAccountUrl() : wardLoginUrl(here);
 
   return (
     <a

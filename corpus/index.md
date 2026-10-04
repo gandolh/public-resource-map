@@ -53,7 +53,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 07 | [briefs/done/07-schema-consolidation.md](briefs/done/07-schema-consolidation.md) | done | Schema consolidation & migration plan (**build first**) |
 | 08 | [briefs/done/08-ro-seed-data.md](briefs/done/08-ro-seed-data.md) | done | Real RO seed data (Timișoara + București) |
 | 09 | [briefs/done/09-attribution-and-about-data.md](briefs/done/09-attribution-and-about-data.md) | done | Attribution & "about the data" transparency |
-| 10 | [briefs/todo/10-test-plans-rewrite.md](briefs/todo/10-test-plans-rewrite.md) | todo | Test plans — rewrite place-centric + new-feature coverage (the *what*) |
+| 10 | [briefs/done/10-test-plans-rewrite.md](briefs/done/10-test-plans-rewrite.md) | done | Test plans — rewrite place-centric + new-feature coverage (the *what*) |
 | 11 | [briefs/done/11-test-infrastructure-tdd-e2e.md](briefs/done/11-test-infrastructure-tdd-e2e.md) | done | Vitest harness (unit + integration) & TDD workflow (the *machinery*; **build early**) |
 | 12 | [briefs/done/12-platform-optimization.md](briefs/done/12-platform-optimization.md) | done | Platform optimization — DB PRAGMAs, spatial index, map/Leaflet, SPA (apply incrementally) |
 | 13 | [briefs/done/13-ui-interactions-and-features.md](briefs/done/13-ui-interactions-and-features.md) | done | Public UI/UX interactions — place panel, filters, what's-on, city picker, states/a11y |

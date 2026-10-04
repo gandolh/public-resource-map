@@ -4,9 +4,9 @@ _Last updated: 2026-10-04_
 
 ## 🟢 The UI is now the new model
 
-The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · 08 (RO seed).** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
+The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · 08 (RO seed) · 10 (test plans).** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
 
-Remaining build order: **vet and add real sources (owner; brief 04's pipeline is ready)** → 10 (test plans rewrite).
+Remaining build order: **vet and add real sources (owner; brief 04's pipeline is ready)** → deployment (decision locked; no brief yet). Every brief is done.
 
 ## Where things stand
 
@@ -51,7 +51,7 @@ Still open:
 | Favorites + notifications (05) | **done 2026-10-03 (in-app)** — star/remind-me, signed-out → Ward → favourite completed, coalesced new-event items at accept, 09:00 Bucharest reminder sweep, bell. **Email blocked on Ward** (prm holds no addresses) |
 | Place-centric UI (06) | **done** — the last pieces (star, bell) shipped with 05 on 2026-10-03 |
 | Attribution (09) | **done 2026-10-03** — `© OpenStreetMap contributors` + CARTO, `/about-data`, per-event source credit. **Owed: `VITE_DATA_CONTACT`** (the takedown address) before launch; the page's "events are samples" callout goes when 04 lands |
-| Test plans (10) | stale — they describe a UI that no longer exists |
+| Test plans (10) | **done 2026-10-04** — TP-01…07 rewritten place-centric + sign-in/favourites/ingestion, each case mapped to its test or marked manual; walked against the local Ward ([RESULTS](../test-plans/RESULTS.md)): six bugs fixed (unnamed pins, Enter on a pin, login return, category guesser…), TP-05 fails on Ward's sign-out |
 | Platform optimization (12) | **closed 2026-10-03** — WAL + NORMAL + FKs + 5 s busy wait, tested; indexes verified; bbox-fetch superseded by whole-city loading (20/15); canvas/batching wait for a measured slowdown |
 | Public UI interactions (13) | **done 2026-10-03** — plus removable filter chips + widen hint on zero results, a lens banner, selection dimming, the phone's folded attribution. Two sheet snaps kept (owner's call); favorites/bell are 05's |
 | Archived events page (14) | **done 2026-10-03** — /archive: citywide + mine (saved events and followed places), month-grouped, category chips, paged; "past" computed beside the live window. No prune yet |
@@ -75,5 +75,5 @@ npm run typecheck             # all workspaces
 npm test                      # Vitest (backend + shared): unit + Fastify .inject() integration
 npm run test:watch            # TDD inner loop
 npm run test:cov              # coverage (reported, not gated)
-# e2e (@playwright/test) still to come — brief 17
+npm run test:e2e              # Playwright: own API + UI on :3101/:5174, fresh seeded DB
 ```

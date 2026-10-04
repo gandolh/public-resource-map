@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-04] done | Brief 10 — test plans for the place-centric app, and a run
+
+The seven plans (map, what's on, place, UI audit, sign-in, favourites, admin ingestion) name the automated test behind each case or mark it manual. The run walked the manual ones against the local Ward. It found and fixed six bugs: pins had no accessible name, Enter on a pin did nothing, Log in returned to the map instead of the page, a wrapped row left a dangling "·", the review drawer's candidate buttons were indistinguishable, and the iCal category guesser read "matched" as Sport. TP-05 fails on Ward's side: its Sign out does not end the session. The old "auth internals" suite is obsolete, since prm hashes nothing and issues no tokens.
+
 ## [2026-10-04] done | Brief 08 — the seed is a frozen OSM sync with stable ids
 
 `db:seed` now resets the database and loads a committed capture of the real OSM sync for both cities: 2,676 places, offline and the same every run. `npm run db:capture-osm` refreshes the capture. One event venue OSM lacks (Piața Victoriei) and the 15 synthetic events sit on top. Every row has a name-based id, so the e2e specs fetch rows by id. `SEED_DEMO_SUBJECT` gives a Ward subject favourites and a bell item. Real curated events were dropped, since they would go stale in days and real events come through 04. Found: the city bboxes take in neighbouring towns.

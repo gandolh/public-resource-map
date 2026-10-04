@@ -1,92 +1,82 @@
-# TP-04 — UI/UX Audit
+# TP-04 — UI audit
 
-Setup: [../../playwright/README.md](../../playwright/README.md).
-Design reference: [../../corpus/wiki/design.md](../wiki/design.md) and
-[../../corpus/wiki/stitch-screens.md](../wiki/stitch-screens.md).
+Reference: [`ui/DESIGN.md`](../../ui/DESIGN.md), which is recorded from the
+shipped UI; the code in `ui/app/app.css` wins where they disagree. Product
+truth: [`ui/PRODUCT.md`](../../ui/PRODUCT.md).
 
 ## Goal
 
-Audit all three routes for design fidelity (vs. CivicMap tokens and Stitch screens),
-typography, empty/loading states, responsive layout, and basic accessibility.
+A by-eye and keyboard pass over every public route (map, place, what's on,
+archive, about the data) and the admin shell, in both themes, on desktop and
+at phone width. Everything in this plan is **manual**; it is the one plan the
+e2e suite does not stand in for.
 
 ## Cases
 
-### Design Fidelity
+### The load-bearing rules (DESIGN.md)
 
-1. **Token colors** — primary, surface, on-surface, outline-variant all match the
-   CivicMap palette (`primary: #1c6090`, `surface: #f9f9ff`, `background: #f9f9ff`).
-   Screenshot the navbar, filter bar, and a detail drawer for visual comparison.
+1. **One accent for "selected".** Chips, the timing lens, the language toggle
+   and the selected pin's ring use the accent, and nothing else invents a
+   second selection colour.
+2. **Pills only filter.** Counts, category badges and disclosures are
+   `rounded-md`, not pills.
+3. **Category is never colour alone.** Every pin and badge carries an icon and
+   a written label. A cluster's event marker is a counted chip.
+4. **A 1px border separates; shadow is only for what floats** (the search box,
+   the panel, the sheet, popovers).
 
-2. **Map pins** — resource pins are 32px circles with white 2px border and category
-   color fill. Selected pin scales up. Compare to Stitch screen spec.
+### Themes
 
-3. **Filter chips** — inactive chips: outlined, neutral. Active chips: `bg-primary`
-   fill, white text, no border. Matches Stitch spec exactly.
+5. **Dark and light are both designed.** The basemap switches with the theme,
+   and text, chips, pins and the panel stay legible in both. System follows
+   the OS.
 
-4. **Event cards** — title uses `headline-md` weight, date/venue use `label-md`
-   muted. Card has `rounded-xl`, shadow, 1px border. Hover lifts the card.
+### Responsive (375 × 740)
 
-5. **Detail drawer** — desktop: 400px fixed right panel. Mobile: bottom sheet with
-   drag handle. Category badge: colored dot + uppercase label. CTA button full-width.
+6. **The map**: the filter bar fits without clipping (chips scroll
+   sideways), the place opens as a sheet that drags between its snaps, and the
+   tab bar reaches map, what's on and about.
+7. **What's on, archive, about**: one column, no horizontal page scroll.
+8. **Admin** is desktop-first, but readable at 375 without a broken layout.
 
-6. **Navbar** — "CivicMap" wordmark in primary color. Active nav link has bottom
-   border indicator. Theme toggle and profile menu visible.
+### States
 
-### Typography
-
-7. **Scale usage** — headings use `font-semibold` or `font-bold`. Body copy uses
-   `text-base` / `text-sm`. No unlabeled unstyled text.
-
-8. **Line heights** — body text is readable (not cramped). Generous spacing between
-   sections.
-
-### Dark mode
-
-9. **Dark mode toggle** — clicking the theme toggle in the navbar switches to dark
-   mode. Map tiles change to CartoDB Dark Matter. Surface colors invert to dark tones.
-   All text remains legible (no white-on-white or black-on-black).
-
-10. **Dark mode — events page** — event cards in dark mode use appropriate surface
-    tones and don't lose border/contrast.
-
-### Responsive layout
-
-11. **Mobile (375px width)** — resize browser to 375px. Map page: filter bar
-    collapses correctly, pins still visible, detail drawer becomes bottom sheet.
-    Navbar shows mobile layout.
-
-12. **Events page mobile** — grid drops to 1 column. Filter chips wrap correctly.
-    "Upcoming Events" shows mobile heading size.
-
-13. **Resource detail mobile** — 3-column layout collapses to 1 column. Hero image
-    height reduces. Breadcrumb visible.
-
-### Empty / loading states
-
-14. **Events — empty state** — with geolocation at a location far from seeded data
-    (or an impossible category), the events page shows a friendly empty message
-    (not a blank grid or undefined count).
-
-15. **Map — no location** — when geolocation is denied, the map defaults to the
-    Bucharest center. No crash. Filter chips still function.
+9. **Empty, loading, error.** Each list has a skeleton while loading, a
+   written empty state, and an error state with Retry (stop the API to see
+   it).
 
 ### Accessibility (basic)
 
-16. **Keyboard navigation** — tab through the map page. Filter chips should be
-    focusable and activatable with Enter/Space. Detail drawer should trap focus.
+10. **Keyboard.**
+    - Tab reaches the search, every chip, the lens, the city picker, the pins
+      and the panel's controls.
+    - Enter opens a pin, and Escape closes the panel and dialogs.
+    - Focus is visible throughout.
+    - The pin path is under e2e (TP-01 case 10).
+11. **Names.**
+    - Pins, clusters, the star, the bell and the icon buttons have accessible
+      names.
+    - Repeated buttons say what they act on (the review drawer's "Use <place>").
+    - Archive tabs are a `tablist` with `aria-selected`.
+12. **Contrast.** `--fg-faint` placeholders and labels clear 4.5:1 in both
+    themes (DESIGN.md records 4.72 and 6.12).
 
-17. **Color contrast** — primary blue `#1c6090` on white `#f9f9ff` meets WCAG AA
-    (contrast ≥ 4.5:1 for normal text). Category badge text on tinted background
-    should also pass.
+### Attribution (brief 09)
 
-18. **Alt text / aria** — map pins should have aria-labels with the resource name.
-    Images (if any) should have meaningful alt attributes.
+13. **Present wherever data is shown.**
+    - The map credits "© OpenStreetMap contributors (ODbL)" and CARTO, and
+      links About the data.
+    - Every event row and place event names its source.
+    - `/about-data` states the licences, says that events are samples, and
+      gives the takedown contact once `VITE_DATA_CONTACT` is set.
+    - The map and source credits are also under e2e (TP-01 case 10, TP-02
+      case 1).
 
 ## Pass criteria
 
-- Visual design matches CivicMap token spec for colors, spacing, and components.
-- Dark mode is consistent and readable across all three routes.
-- Mobile layout doesn't overflow or break at 375px.
-- Empty states exist and are friendly.
-- Keyboard navigation reaches all interactive elements.
-- No critical a11y failures (missing labels, keyboard traps without escape).
+- No rule in cases 1 to 4 broken on any route.
+- Both themes legible.
+- No overflow at 375.
+- Every list has its three states.
+- Keyboard reaches everything interactive.
+- Attribution present on every data surface.

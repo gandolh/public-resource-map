@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseIcal } from "./ical.js";
+import { guessCategory, parseIcal } from "./ical.js";
 
 const feed = (...events: string[]) =>
   ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//test//EN", ...events, "END:VCALENDAR"].join("\r\n");
@@ -80,5 +80,25 @@ describe("parseIcal (brief 04)", () => {
     expect(row.raw.cancelled).toBe(true);
     expect(row.raw.description).toBeUndefined();
     expect(row.raw.venue).toBe("x");
+  });
+});
+
+// Found walking TP-07 (brief 10): "Walk: matched at the art museum" came out
+// Sport, because `match` matched inside "matched". Words match from their start.
+describe("guessCategory", () => {
+  it("reads a source's own words, in Romanian or English, with or without diacritics", () => {
+    expect(guessCategory("Concert de jazz")).toBe("concert");
+    expect(guessCategory("Spectacol de teatru")).toBe("theater");
+    expect(guessCategory("Vernisaj: Expoziție de grafică")).toBe("exhibition");
+    expect(guessCategory("Meciul de fotbal")).toBe("sport");
+    expect(guessCategory("Lansare de carte")).toBe("community");
+    expect(guessCategory("Ateliere pentru copii")).toBe("workshop");
+  });
+
+  it("does not find a word inside another one", () => {
+    expect(guessCategory("Walk: matched at the art museum")).toBeUndefined();
+    expect(guessCategory("Transportul public în dezbatere")).toBe("community");
+    expect(guessCategory("Concurs de desen")).toBeUndefined();
+    expect(guessCategory("Cooperare culturală")).toBeUndefined();
   });
 });

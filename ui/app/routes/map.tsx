@@ -339,6 +339,9 @@ export default function MapRoute() {
             selectedId={selectedId}
             onSelect={(place) => navigate(`/places/${place.id}`)}
             clusterLabel={(n) => t("map.cluster", { n })}
+            pinLabel={(p) =>
+              p.upcomingEventCount ? `${p.name} · ${tn("count.events", p.upcomingEventCount)}` : p.name
+            }
           />
           <MapControls />
           <AreaDraw />

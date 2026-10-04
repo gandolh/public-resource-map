@@ -466,7 +466,13 @@ function Drawer({
                             {c.placeId === row.placeId ? (
                               <span className="text-[12px] font-semibold text-accent">{t("admin.chosen")}</span>
                             ) : (
-                              <Button variant="secondary" size="sm" disabled={resolve.isPending} onClick={() => choosePlace(c.placeId)}>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={resolve.isPending}
+                                onClick={() => choosePlace(c.placeId)}
+                                aria-label={t("admin.useThisPlaceNamed", { name: c.name })}
+                              >
                                 {t("admin.useThisPlace")}
                               </Button>
                             )}

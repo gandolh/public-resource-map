@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect, SEED } from "./fixtures";
 
 /** The place-centric map: pins and clusters, chips and the timing lens. */
 
@@ -13,6 +13,24 @@ test("opens on Timișoara with its places on the map", async ({ page }) => {
   expect(await count(label(page).textContent())).toBeGreaterThan(0);
   // Pins or clusters: at city zoom, nearby places collapse into counts.
   await expect(page.locator(".cm-pin, .cm-cluster").first()).toBeVisible();
+});
+
+// Brief 10's audit: pins were buttons named nothing, clusters a bare digit.
+test("pins and clusters are named for screen readers and keyboards", async ({ page }) => {
+  await page.goto("");
+  await expect(page.getByRole("button", { name: /^\d+ places — zoom in to separate them$/ }).first()).toBeVisible();
+  await page.goto(`places/${SEED.places.tmArtMuseum}`);
+  await expect(page.getByRole("button", { name: /^Muzeul de Artă · \d+ events?$/ })).toBeVisible();
+});
+
+test("Enter on a focused pin opens its place, and Escape closes it", async ({ page }) => {
+  await page.goto(`places/${SEED.places.tmArtMuseum}`);
+  await expect(page.getByRole("heading", { name: "Muzeul de Artă" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page).toHaveURL(/\/prm\/$/);
+  await page.getByRole("button", { name: /^Muzeul de Artă · / }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(new RegExp(`places/${SEED.places.tmArtMuseum}$`));
 });
 
 test("a category chip and the timing lens narrow the same count", async ({ page }) => {

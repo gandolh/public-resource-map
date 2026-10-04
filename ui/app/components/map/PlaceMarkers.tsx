@@ -13,7 +13,10 @@ function pinIcon(place: Place, selected: boolean): L.DivIcon {
   const glyph = Math.round(size * 0.46);
   const count = place.upcomingEventCount ?? 0;
   const html =
-    `<div class="cmp${selected ? " is-selected" : ""}" ` +
+    // The marker element is the button; its name is the Marker's title, so
+    // the drawing inside is hidden from assistive tech (brief 10's audit found
+    // pins named nothing and clusters named by a bare digit).
+    `<div class="cmp${selected ? " is-selected" : ""}" aria-hidden="true" ` +
     `style="width:${size}px;height:${size}px;--c:${categoryColor(place.category)}">` +
     `<div class="cmp-drop"><span class="cmp-ico">` +
     categoryIconMarkup(place.category, glyph, "currentColor") +
@@ -38,7 +41,7 @@ function clusterIcon(cluster: PlaceCluster): L.DivIcon {
   const font = n < 10 ? 13 : n < 100 ? 13.5 : 12.5;
   const events = cluster.eventCount;
   const html =
-    `<div style="position:relative;width:${size}px;height:${size}px">` +
+    `<div aria-hidden="true" style="position:relative;width:${size}px;height:${size}px">` +
     `<div class="cmc" style="width:${size}px;height:${size}px;font-size:${font}px">${n}</div>` +
     (events > 0
       ? `<span class="cmc-badge">${events > 99 ? "99+" : events}</span>`
@@ -52,11 +55,27 @@ function clusterIcon(cluster: PlaceCluster): L.DivIcon {
   });
 }
 
+/**
+ * Enter and Space on a focused marker do what a click does. Leaflet makes a
+ * keyboard marker a `role="button"` but only answers Enter when a popup is
+ * bound, and ours have none (found by brief 10's keyboard pass).
+ */
+function onActivateKey(activate: () => void) {
+  return (e: L.LeafletEvent) => {
+    const key = (e as L.LeafletKeyboardEvent).originalEvent.key;
+    if (key !== "Enter" && key !== " ") return;
+    (e as L.LeafletKeyboardEvent).originalEvent.preventDefault();
+    activate();
+  };
+}
+
 interface PlaceMarkersProps {
   places: Place[];
   selectedId: string | null;
   onSelect: (place: Place) => void;
   clusterLabel: (n: number) => string;
+  /** The pin's accessible name and hover title: the place, and what is on. */
+  pinLabel: (place: Place) => string;
 }
 
 /**
@@ -64,7 +83,7 @@ interface PlaceMarkersProps {
  * zoom, so it only has to be rebuilt when the zoom changes — panning reuses it,
  * which is what stops markers churning while the user drags.
  */
-export function PlaceMarkers({ places, selectedId, onSelect, clusterLabel }: PlaceMarkersProps) {
+export function PlaceMarkers({ places, selectedId, onSelect, clusterLabel, pinLabel }: PlaceMarkersProps) {
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
 
@@ -88,6 +107,13 @@ export function PlaceMarkers({ places, selectedId, onSelect, clusterLabel }: Pla
     [places, project, zoom],
   );
 
+  const zoomTo = (cluster: PlaceCluster) => {
+    const bounds = L.latLngBounds(
+      cluster.places.map((p) => [p.coordinates.lat, p.coordinates.lng] as [number, number]),
+    );
+    map.flyToBounds(bounds, { padding: [72, 72], maxZoom: 17, duration: 0.45 });
+  };
+
   return (
     <>
       {clusters.map((cluster) => {
@@ -100,9 +126,9 @@ export function PlaceMarkers({ places, selectedId, onSelect, clusterLabel }: Pla
               position={[place.coordinates.lat, place.coordinates.lng]}
               icon={pinIcon(place, selected)}
               zIndexOffset={selected ? 1000 : 0}
-              alt={place.name}
+              title={pinLabel(place)}
               keyboard
-              eventHandlers={{ click: () => onSelect(place) }}
+              eventHandlers={{ click: () => onSelect(place), keydown: onActivateKey(() => onSelect(place)) }}
             />
           );
         }
@@ -112,16 +138,11 @@ export function PlaceMarkers({ places, selectedId, onSelect, clusterLabel }: Pla
             key={cluster.id}
             position={[cluster.center.lat, cluster.center.lng]}
             icon={clusterIcon(cluster)}
-            alt={clusterLabel(cluster.places.length)}
             title={clusterLabel(cluster.places.length)}
             keyboard
             eventHandlers={{
-              click: () => {
-                const bounds = L.latLngBounds(
-                  cluster.places.map((p) => [p.coordinates.lat, p.coordinates.lng] as [number, number]),
-                );
-                map.flyToBounds(bounds, { padding: [72, 72], maxZoom: 17, duration: 0.45 });
-              },
+              click: () => zoomTo(cluster),
+              keydown: onActivateKey(() => zoomTo(cluster)),
             }}
           />
         );

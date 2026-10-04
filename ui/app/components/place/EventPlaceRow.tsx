@@ -38,8 +38,10 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
             {event.title}
           </span>
 
-          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-fg-muted">
-            <span className="inline-flex items-center gap-1.5">
+          {/* One line: wrapped, the "·" was left dangling at the end of the
+              first. A long place name truncates instead (TP-04, brief 10). */}
+          <span className="mt-1 flex items-center gap-x-2 text-[12.5px] text-fg-muted">
+            <span className="inline-flex shrink-0 items-center gap-1.5">
               <span
                 aria-hidden="true"
                 className="h-1.5 w-1.5 rounded-full"

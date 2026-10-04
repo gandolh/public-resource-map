@@ -63,15 +63,20 @@ export function icalTime(prop: Prop): { iso: string } | { problem: string } {
   return { iso: zonedTimeToInstant(+y, +m, +d, +hh, +mm, +ss).toISOString() };
 }
 
-/** Best-effort: a source's own category words to ours; unknown stays unset ("other"). */
+/**
+ * Best-effort: a source's own category words to ours; unknown stays unset
+ * ("other"). Each stem matches from the start of a word, so Romanian endings
+ * still match ("meciul", "ateliere") but a stem inside another word does not
+ * ("transport" is not sport, "concurs" is not a course); a few are whole words.
+ */
 const CATEGORY_WORDS: [RegExp, EventCategory][] = [
-  [/concert|muzic|music|recital|jazz|opera/, "concert"],
-  [/teatru|theat|spectacol|stand.?up|comedy/, "theater"],
-  [/expozit|exhibit|vernisaj|galerie|gallery/, "exhibition"],
-  [/festival/, "festival"],
-  [/atelier|workshop|curs|training/, "workshop"],
-  [/sport|maraton|alergare|meci|match|fotbal/, "sport"],
-  [/comunitat|community|dezbatere|consultare|lansare|conferint|conference/, "community"],
+  [/\b(?:concert|muzic|music|recital|jazz|opera\b|operet)/, "concert"],
+  [/\b(?:teatru|theat|spectacol|stand.?up|comedy)/, "theater"],
+  [/\b(?:expozit|exhibit|vernisaj|galerie|gallery)/, "exhibition"],
+  [/\bfestival/, "festival"],
+  [/\b(?:atelier|workshop|curs|training)/, "workshop"],
+  [/\b(?:sport|maraton|alergare|meci|match(?:es)?\b|fotbal)/, "sport"],
+  [/\b(?:comunitat|community|dezbatere|consultare|lansare|conferint|conference)/, "community"],
 ];
 
 export function guessCategory(text: string): EventCategory | undefined {
