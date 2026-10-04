@@ -22,3 +22,5 @@ aggregator):
 
 Before the first real refresh in production, set `NOMINATIM_USER_AGENT` with a
 real contact, or every unmatched venue waits for a manual pin.
+
+**2026-10-04:** step 1 is done for the obvious venues in [the shortlist](2026-10-04-source-shortlist.md). Two Timișoara feeds (Filarmonica Banatul, Teatrul Național) parse cleanly today; București has none.

@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-04] research | A shortlist of event sources
+
+As the owner asked, the obvious public venues in both cities were probed for feeds ([todo](todos/2026-10-04-source-shortlist.md)). There are two real iCal feeds the built-in adapter reads with no problems: Filarmonica Banatul (30 events) and Teatrul Național Timișoara (27). Several sites have RSS (news, not events), and no București venue among 18 has a feed. Nothing was added; the terms and the choice are the owner's.
+
 ## [2026-10-04] change | Signed-in e2e, through a fake Ward
 
 As the owner decided, the e2e stack now starts a stand-in Ward (`e2e/fake-ward/server.ts`). It serves a JWKS and `/introspect` behind prm's app key, plus a test-only sign-in that mints real EdDSA tokens. Specs set the token as `ward_session`, and the backend verifies and introspects it exactly as it does with Ward. Six new specs: the demo user's bell (now seeded in e2e as `e2e-demo`), following and unfollowing, the admin queue and sources, "no access" without the grant (the case TP-05 could not walk by hand), and the signed-in archive. e2e 26, tests 176.
