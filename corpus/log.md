@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-04] change | The OSM sync stops at the city limits
+
+As the owner decided, the sync queries inside each city's administrative boundary (an Overpass area from its OSM relation) instead of a bounding box. The bounding box stays only as the cheap plausibility check for geocoding and manual pins. The fixture was recaptured: 2,449 places, down from 2,676, with Giroc, Dumbrăvița, Bragadiru and the other neighbours gone. Tests: 176, e2e 20.
+
 ## [2026-10-04] decide | Owner answers after briefs 08 and 10
 
 Recorded in decisions.md. The data contact is a placeholder (`johndoe@example.com`) until the owner sets a real one. Notifications stay in-app only. Signed-in e2e gets a fake Ward. Cities are clipped to their municipal boundary. The phone sheet keeps two snaps. Past events are never pruned. The run researches a shortlist of sources for the owner to vet. Brief 29's table shape and brief 15's hand-rolled drawing are confirmed. Separately, Ward's sign-out bug (TP-05's failure) was fixed in Ward.

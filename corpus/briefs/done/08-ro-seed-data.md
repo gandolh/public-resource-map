@@ -98,3 +98,9 @@ brief were dropped on purpose; both are explained below.
 - `npm test` 174, e2e 17 (now against 2,676 places), typecheck clean.
 - Checked by eye: the map opens on 518 Timișoara places, clustered, 7 with a
   programme.
+
+**Addendum (2026-10-04): clipped to the city limits.** The owner chose the
+municipal boundary over the bounding box (decisions.md). The sync now queries
+inside each city's OSM administrative relation (Timișoara 6927733, București
+377733), and the fixture was recaptured: 2,449 places (453 and 1,996), with no
+neighbouring town halls. Every place the seeded events use is still there.

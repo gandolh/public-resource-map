@@ -16,6 +16,15 @@ import {
 export interface CityConfig {
   key: string;
   name: string;
+  /**
+   * The city's OSM administrative boundary (a relation). The OSM sync queries
+   * inside it, so a neighbouring town's town hall is not this city's.
+   */
+  osmRelation: number;
+  /**
+   * A box around the city: the cheap "is this point plausibly here" check for
+   * geocoding and manual pins. Not the sync's extent any more.
+   */
   bbox: { south: number; west: number; north: number; east: number };
 }
 
@@ -23,11 +32,13 @@ export const CITIES: Record<string, CityConfig> = {
   timisoara: {
     key: "timisoara",
     name: "Timișoara",
+    osmRelation: 6927733,
     bbox: { south: 45.68, west: 21.1, north: 45.81, east: 21.31 },
   },
   bucuresti: {
     key: "bucuresti",
     name: "București",
+    osmRelation: 377733,
     bbox: { south: 44.33, west: 25.96, north: 44.55, east: 26.23 },
   },
 };
@@ -54,14 +65,23 @@ export function resolveCity(input: string): CityConfig | null {
 // ---------------------------------------------------------------------------
 // Overpass query
 // ---------------------------------------------------------------------------
-export function buildOverpassQuery(bbox: CityConfig["bbox"]): string {
-  const b = `${bbox.south},${bbox.west},${bbox.north},${bbox.east}`;
+// Overpass derives an area from a relation as its id plus this offset.
+const OVERPASS_RELATION_AREA = 3_600_000_000;
+
+/**
+ * Every place the category map knows, inside the city's administrative
+ * boundary. Decided 2026-10-04 (decisions.md → OSM resource ingestion): the
+ * old bounding box took in neighbouring towns, so Giroc's town hall was
+ * Timișoara's and Bragadiru's was București's.
+ */
+export function buildOverpassQuery(city: Pick<CityConfig, "osmRelation">): string {
+  const area = `area(id:${OVERPASS_RELATION_AREA + city.osmRelation})->.city;`;
   const clauses = OVERPASS_TAG_FILTERS.flatMap((filter) => [
-    `  node${filter}(${b});`,
-    `  way${filter}(${b});`,
-    `  relation${filter}(${b});`,
+    `  node${filter}(area.city);`,
+    `  way${filter}(area.city);`,
+    `  relation${filter}(area.city);`,
   ]).join("\n");
-  return `[out:json][timeout:90];\n(\n${clauses}\n);\nout center tags;`;
+  return `[out:json][timeout:90];\n${area}\n(\n${clauses}\n);\nout center tags;`;
 }
 
 // ---------------------------------------------------------------------------
@@ -314,7 +334,7 @@ export async function syncOsmForCity(
   deps: SyncDeps = {},
 ): Promise<OsmSyncResult> {
   const fetcher = deps.fetchOverpass ?? fetchOverpass;
-  const query = buildOverpassQuery(city.bbox);
+  const query = buildOverpassQuery(city);
   const response = await fetcher(query);
   const elements = response.elements ?? [];
 

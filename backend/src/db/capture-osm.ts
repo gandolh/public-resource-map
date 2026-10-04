@@ -46,7 +46,7 @@ async function withRetry<T>(run: () => Promise<T>, attempts = 4): Promise<T> {
 async function capture() {
   const places: OsmPlaceInput[] = [];
   for (const city of Object.values(CITIES)) {
-    const response = await withRetry(() => fetchOverpass(buildOverpassQuery(city.bbox)));
+    const response = await withRetry(() => fetchOverpass(buildOverpassQuery(city)));
     const result = elementsToPlaces(response.elements ?? [], city.name);
     console.log(
       `${city.name}: ${response.elements.length} fetched, ${result.places.length} kept ` +

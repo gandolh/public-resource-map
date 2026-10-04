@@ -14,7 +14,7 @@ Remaining build order: **vet and add real sources (owner; brief 04's pipeline is
 
 What actually exists to look at: a full-bleed map of Timișoara or București with clustered category pins that badge their upcoming-event count, a place panel (desktop) / draggable sheet (mobile) showing what is on at that place grouped Today / Tomorrow / This weekend / Later, a citywide what's-on index, category chips + a timing lens that hard-filters, Romanian by default with an English switch, and both themes.
 
-**The honest gap: there is still no real event source.** The ingestion pipeline (04) exists, but every event in the app is seeded and synthetic (labelled as such in `backend/src/db/seed-data.ts`). The places are real: the seed loads a frozen OSM sync of both cities (2,676 places, captured 2026-10-04). Vetting the first sources is what makes this a product rather than a demo.
+**The honest gap: there is still no real event source.** The ingestion pipeline (04) exists, but every event in the app is seeded and synthetic (labelled as such in `backend/src/db/seed-data.ts`). The places are real: the seed loads a frozen OSM sync of both cities (2,449 places inside the two municipal boundaries, captured 2026-10-04). Vetting the first sources is what makes this a product rather than a demo.
 
 ## Code vs. decisions gap
 
@@ -22,7 +22,7 @@ Mostly closed on the public surface. Already migrated:
 - ~~Schema: standalone `resource`/`event`~~ → **consolidated place-centric Drizzle schema.**
 - ~~No test runner~~ → **Vitest harness (unit + Fastify `.inject()`), 104 passing (2026-10-03).**
 - ~~UI: `/map`, `/events`, `/resources/:id`~~ → **`/` (map is home), `/places/:id` nested under it, `/whats-on`; old URLs redirect.**
-- ~~NYC seed~~ → **Timișoara + București seed: a frozen OSM sync (2,676 places) + one event venue, 15 synthetic events, stable ids (brief 08).**
+- ~~NYC seed~~ → **Timișoara + București seed: a frozen OSM sync clipped to the city limits (2,449 places) + one event venue, 15 synthetic events, stable ids (brief 08).**
 - ~~No place-events or citywide endpoint~~ → **`upcomingEventCount` on `/api/places`, `/api/places/:id/events`, `/api/whats-on`.**
 
 Still open:

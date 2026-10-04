@@ -146,13 +146,19 @@ describe("elementsToPlaces", () => {
 });
 
 describe("buildOverpassQuery + resolveCity", () => {
-  it("builds a bbox query covering node/way/relation for every filter", () => {
-    const q = buildOverpassQuery(CITIES.timisoara.bbox);
+  // Decided 2026-10-04: a city is its municipal boundary, not a box. The box
+  // took in Giroc's and Dumbrăvița's town halls as Timișoara's.
+  it("queries inside the city's administrative boundary, for every filter", () => {
+    const q = buildOverpassQuery(CITIES.timisoara);
     expect(q).toContain("[out:json]");
     expect(q).toContain("out center tags;");
-    expect(q).toContain('node["amenity"="library"](45.68,21.1,45.81,21.31);');
-    expect(q).toContain('way["leisure"="park"](45.68,21.1,45.81,21.31);');
-    expect(q).toContain('relation["healthcare"~"^(hospital|clinic|centre)$"](45.68,21.1,45.81,21.31);');
+    // Overpass area ids are the relation id plus 3,600,000,000.
+    expect(q).toContain("area(id:3606927733)->.city;");
+    expect(q).toContain('node["amenity"="library"](area.city);');
+    expect(q).toContain('way["leisure"="park"](area.city);');
+    expect(q).toContain('relation["healthcare"~"^(hospital|clinic|centre)$"](area.city);');
+    expect(q).not.toMatch(/\(\d+\.\d+,/);
+    expect(buildOverpassQuery(CITIES.bucuresti)).toContain("area(id:3600377733)->.city;");
   });
 
   it("resolves a city by key or display name (diacritics-insensitive)", () => {
