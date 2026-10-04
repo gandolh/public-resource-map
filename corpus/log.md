@@ -1,5 +1,9 @@
 # Log
 
+## [2026-10-04] maintenance | decisions.md split; a done brief left as it was
+
+decisions.md had grown to 302 lines, past the corpus's ~200-line rule. Three groups moved unchanged into decisions-identity.md, decisions-ui.md and decisions-engineering.md, with a pointer left behind and wiki links updated. Separately, an addendum appended to the done brief 08 was taken back out, because done briefs are immutable here. Its content (the city-limits recapture) is in this log and status.md.
+
 ## [2026-10-04] research | A shortlist of event sources
 
 As the owner asked, the obvious public venues in both cities were probed for feeds ([todo](todos/2026-10-04-source-shortlist.md)). There are two real iCal feeds the built-in adapter reads with no problems: Filarmonica Banatul (30 events) and Teatrul Național Timișoara (27). Several sites have RSS (news, not events), and no București venue among 18 has a feed. Nothing was added; the terms and the choice are the owner's.

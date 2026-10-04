@@ -4,7 +4,7 @@
 > system is **[`ui/DESIGN.md`](../../ui/DESIGN.md)**, derived from the built UI
 > rather than written ahead of it. Product truth lives in
 > [`ui/PRODUCT.md`](../../ui/PRODUCT.md). The *why* is in
-> [decisions.md → Visual direction](decisions.md).
+> [decisions-ui.md → Visual direction](decisions-ui.md).
 
 ## What happened to the old design system
 
@@ -27,7 +27,7 @@ Four replacement directions were designed and shown as *running coded mockups*:
 The user took the standing exit deliberately, asking for the convention
 "or even better", with **Citymapper and Linear** as the craft bar. Convention is
 therefore the commitment — see
-[decisions.md → Visual direction](decisions.md) for the binding rules.
+[decisions-ui.md → Visual direction](decisions-ui.md) for the binding rules.
 
 ## The short version of the built system
 

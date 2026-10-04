@@ -15,7 +15,7 @@ ui  ──►  shared  ◄──  backend
 - **Framework**: React Router 8 (SPA mode — `ssr: false`)
 - **Build**: Vite 7 + `@react-router/dev`
 - **Styling**: Tailwind CSS 4 (Vite plugin), `tw-animate-css`, CSS custom properties for theming
-- **Components**: `@base-ui/react` primitives + lucide-react icons (the original Stitch brief specified shadcn/ui; replaced during brief 01 — see [decisions.md → Code conventions](decisions.md))
+- **Components**: `@base-ui/react` primitives + lucide-react icons (the original Stitch brief specified shadcn/ui; replaced during brief 01 — see [decisions-engineering.md → Code conventions](decisions-engineering.md))
 - **Theme**: dark/light/system — persisted to localStorage as `"vite-ui-theme"`, toggled via `ThemeProvider` context
 - **Route config** (`app/routes.ts`): layout wrapper wrapping four routes — index (`/`), `map`, `events`, `resources/:id`. Home redirects to `/map`.
 - **Alias**: `~/*` and `@/*` both resolve to `./app/*`

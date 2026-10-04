@@ -6,7 +6,7 @@ Recorded from the **shipped** UI, not from intentions. Where this document and
 the code disagree, the code in `ui/app/app.css` is right and this file is stale.
 
 Product truth: [`PRODUCT.md`](PRODUCT.md). Why this world exists and what it
-replaced: [`../corpus/wiki/decisions.md` → Visual direction](../corpus/wiki/decisions.md).
+replaced: [`../corpus/wiki/decisions-ui.md` → Visual direction](../corpus/wiki/decisions-ui.md).
 
 ## The direction, in one paragraph
 

@@ -2,6 +2,13 @@
 
 Locked tech and design choices. Don't relitigate without an explicit revisit + log entry.
 
+## Split-out pages (2026-10-04)
+
+This page passed ~200 lines, so three groups moved, unchanged:
+- [decisions-identity.md](decisions-identity.md): the original auth design and "Identity is Ward's".
+- [decisions-ui.md](decisions-ui.md): visual direction, interface language, the basemap constraint, the 2026-06-29 design direction.
+- [decisions-engineering.md](decisions-engineering.md): the stack and code conventions.
+
 ## Product direction (locked 2026-06-28, revised 2026-06-28 after ToS check)
 
 - **This is a proof-of-concept**, not a launch-ready business. The tech is demonstrable end-to-end; **commercial/public launch of the iaBilet integration is BLOCKED on obtaining permission** (see Legal posture below). Prioritize real data, deployment, and a usable core loop over polish.
@@ -104,30 +111,6 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Notifications:** Navbar **bell + unread badge + dropdown** (items link to place/event) + mark-all-read + full view.
 - **States & a11y on every surface:** loading (skeleton) / empty (copy+action) / error (retry); WCAG AA — keyboard map+panel nav, focus management, ARIA, 4.5:1 category contrast, category never color-only.
 
-## Visual direction (locked 2026-09-04 — REPLACES the earlier CivicMap design system)
-
-The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Fraunces + Inter, amber accent) is **retired**. It was never built, and the UI it was written for is gone.
-
-- **The direction is the category convention, executed at full fidelity.** Four visual directions were designed and shown as running coded mockups (a land-registry sheet, a transit diagram, an orienteering overprint, and the standard). The user chose **the standard, deliberately**, as the permanent standing exit — floating search, pill filter chips, teardrop pins, a docked side panel on desktop, a draggable bottom sheet on mobile. This is a commitment, not a fallback: **future work does not "rescue" it with a novel visual world.**
-- **The craft bar is Citymapper and Linear.** Precise and dense over soft and generous: tight type, crisp 1px borders in preference to diffuse shadows, restrained colour with one accent, tabular numerals wherever digits align, motion at 150–220ms ease-out with no bounce or spring. "Looks like every other map app" is an accepted trade. "Looks less finished than Citymapper" is not.
-- **Typeface: Archivo** (variable, Google Fonts), one family for everything. Chosen over Geist/Inter — both are on the overused-face list, and Archivo is a signage grotesque with a large x-height that holds at 12px and real Romanian diacritics rather than fallback glyphs. **No webfont monospace:** monospace is reserved for genuine identifiers (an OSM way id, a stack trace), and the small tracked-uppercase utility labels use the UI face.
-- **Colour: restrained.** Cool-biased neutrals plus **one** blue accent (`#2a5bef` light / `#6d9bff` dark). Eleven `PlaceCategory` hues are *information*, and **`EventCategory` reuses the same eleven** rather than adding eight more — two taxonomies, one palette, and the two enums never appear on the same mark.
-- **Elevation by role:** a 1px border is the default separator; `--sh-1` for resting chrome, `--sh-2` for floating overlays, `--sh-3` for the panel and sheet, and a separate tight `--sh-pin`. A chip, a panel and a pin must not share a shadow.
-- **Radii cap at 12px**; pills are reserved for filter chips and badges, so the pill shape keeps meaning "this narrows what you see".
-- **Both themes ship.** The use scene forces it: bright daylight outdoors on a phone, and a laptop indoors.
-- The authoritative token reference is **`ui/DESIGN.md`**, derived from the built system. [design.md](design.md) is now a pointer, not a spec.
-
-## Interface language (locked 2026-09-04)
-
-- **Romanian by default, English behind a switch.** RO leads because the audience is residents and the UI should agree with the place names; EN exists so the POC can be demoed to a non-Romanian stakeholder. Browser language is deliberately **ignored** — a Romanian with an English-locale phone still lands in Romanian.
-- **No translation framework.** `Intl.PluralRules` handles Romanian's three plural forms including the "de" form above nineteen (*1 loc · 3 locuri · 23 de locuri*), and `Intl.DateTimeFormat` handles dates in Europe/Bucharest. Adding i18next to reach platform APIs would be a dependency for a lookup table. Lives in `ui/app/lib/i18n.tsx`.
-
-## Basemap constraint (discovered 2026-09-04)
-
-- **CARTO's keyless raster endpoints no longer serve maps.** `basemaps.cartocdn.com/light_all/...` answers HTTP 200 with a ~2.5KB "API KEY REQUIRED" watermark tile. Leaflet + CARTO stays the locked stack, but the style is now behind `VITE_CARTO_API_KEY`.
-- **Fallback while no key is set:** standard OpenStreetMap raster tiles, filtered in CSS toward the same quiet low-saturation register (`.map-fallback` in `app.css`, including a dark-mode inversion). Attribution changes with the provider, because naming CARTO for tiles CARTO did not serve would be false. Getting a CARTO key is a small open task before any public deploy.
-- **Basemap style: Positron / Dark Matter**, not Voyager — the map carries eleven category hues plus an accent, and the quieter the basemap the more the pins mean. _(Supersedes the Voyager choice in the retired design system.)_
-
 ## Public API surface added for the place-centric UI (2026-09-04)
 
 - `GET /api/places` now takes a comma-separated `category` list and a `lens` (`today` | `weekend` | `all`), and every row carries **`upcomingEventCount`** — computed as a correlated subquery so a map of pins costs one request, not one per pin. `lens=today|weekend` **hard-filters** places to those holding an event in the window, per the locked UI decision.
@@ -145,76 +128,6 @@ The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Frau
 - **No universal soft-delete:** lifecycle via **status enums**; hard-delete only transient rows.
 - **Two category enums:** `PlaceCategory` + `EventCategory` (separate taxonomies, color-coded per-enum).
 - **Dependency policy:** minimal, **exact-pinned**, justified per add in its brief; prefer a tiny helper over a heavy lib, but don't hand-roll mature solved problems (drawing). New this session: `vitest`, `@vitest/coverage-v8`, `@playwright/test` (brief 11), `argon2` (brief 02; removed 2026-10-03 by brief 27, Ward holds credentials now), ~~`@geoman-io/leaflet-geoman-free` + `@turf/boolean-point-in-polygon` (brief 13)~~ (neither installed: brief 15 hand-rolled the drawing and the ray cast, 2026-10-03). All exact-pinned; confirm latest stable versions at install time.
-
-## Auth (locked 2026-06-28 — **SUPERSEDED 2026-09-06, see "Identity is Ward's" below**)
-
-> Every bullet in this section describes machinery prm no longer has. It is
-> kept because the *reasoning* still explains why prm has end-user accounts at
-> all, which the replacement inherited unchanged; only the implementation moved.
-
-- **Full end-user auth is in scope now** (not deferred), because favorites + notifications are the **retention loop the POC is meant to demonstrate** — not just admin gating. (Re-confirmed 2026-06-28 against the POC reframe: kept deliberately, as a demoed feature.)
-- **Email + password, self-hosted** — matches the house style of hand-rolling over dependencies (better-sqlite3, no UUID lib, Zod). No managed provider (Clerk/Auth0) for v1.
-- **Hashing: argon2id** (or bcrypt) — never plaintext/SHA.
-- **Sessions: opaque session id in an httpOnly + Secure + SameSite cookie**, stored server-side in SQLite. **Not** a JWT in localStorage (XSS-stealable). Use `@fastify/cookie`.
-- **Verify + reset flows are built now**, but email delivery is **console-logged links in dev**; swap in a transactional email provider (Resend/Postmark/SES) before launch.
-- The Navbar profile dropdown is currently **decorative**; it becomes real when auth lands.
-
-## Identity is Ward's (locked 2026-09-06 — supersedes "Auth" above)
-
-- **prm authenticates nobody.** The `user`, `session`, `verification_token` and
-  `reset_token` tables are dropped; `plugins/auth.ts`, `routes/auth.ts`,
-  `lib/auth-internals.ts`, `lib/ensure-admin.ts` and the login/register screens
-  are deleted. prm holds **no credential of any kind** — no password hash, no
-  session id, no reset token. Sign-in, registration, email verification and
-  password reset are [Ward's](../../../wzd_auth/corpus/wiki/overview.md), at one
-  login page for the estate.
-- **prm is the reason Ward has public registration at all.** The estate's first
-  design had no self-signup; prm ships it, and that collision is what moved the
-  security boundary from *registration* to *authorization*. Anyone may hold a
-  Ward account; a **grant** is what lets them reach anything. prm's app row is
-  the only one in the estate with `public_registration` on, and registering at
-  `/ward/register?app=prm` confers exactly `prm:user` and nothing anywhere else.
-- **Roles became grants.** `user.role` is gone. Authority is the Ward triple
-  `(subject, "prm", role)`; Ward stores it and never interprets it. `requireAuth`
-  now means *holds a prm grant*, not merely *has a session* — a live Ward
-  account with no prm grant is not signed in as far as prm is concerned, which
-  is exactly what keeps open registration here from opening atrium.
-  **`prm:admin` does not imply `prm:user`**: grants are a set, not a ladder, so
-  `requireAuth` accepts either explicitly rather than assuming a hierarchy Ward
-  does not have.
-- **`emailVerified` was never prm's.** It is an account-level fact, not an
-  app-level one, and Ward records it once instead of every app recording it
-  separately.
-- **Per-person rows are re-keyed onto the subject.** `favorite_place`,
-  `favorite_event` and `notification` swap `user_id` for `subject` — an opaque
-  Ward identifier, with **no foreign key**, because the table it would reference
-  does not exist here and a local `user` table would be a second, stale answer
-  to "who exists".
-- **Nothing is gated by default, and that is deliberate.** Every other app in
-  the estate gates its whole surface; prm is a *public resource map* and does
-  the opposite. The root hook resolves a session only when a cookie is present
-  and leaves the request anonymous otherwise; `requireAuth`/`requireAdmin` stay
-  opt-in per route. A consequence worth keeping: **when Ward is down, the public
-  map still works**, because it never asks Ward anything. Guarded routes answer
-  503 and fail closed. "Ward is down" includes **Ward's key set being
-  unreachable** (brief 21, 2026-10-03): a failure to fetch or read the JWKS is
-  `WardUnavailableError`, not an invalid token; only "no key matches this
-  token's `kid`" stays a 401. The client's injected `fetch` reaches the key set
-  too (`jose`'s `customFetch`), so tests cover that path.
-- **prm hand-writes its Ward client** (`backend/src/ward/`) rather than
-  importing a shared package — the estate decided against one because these
-  repos are separate checkouts that `npm ci` independently. The contract is
-  `wzd_auth/corpus/wiki/integrating.md`.
-- **There is no seeded admin.** `ensureAdmin` promoted an account from
-  `ADMIN_EMAIL`/`ADMIN_PASSWORD` on every boot; `prm:admin` is now issued by
-  hand from Ward's console. An admin a redeploy can recreate is an admin an
-  environment variable can silently grant.
-- **The cutover destroys every account and everything keyed on one** — the
-  favourites and notifications go with them. prm keyed people on **email** and
-  Ward keys them on a minted subject, so no mapping exists that was not invented
-  at cutover time; the estate chose a full prune. Places, events, sources and
-  the geocode cache are untouched. **Take a database copy first** — `0001_ward_cutover.sql`
-  has no down.
 
 ## Favorites & notifications (locked 2026-06-28)
 
@@ -243,44 +156,9 @@ The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Frau
 - **No separate cron process** (corrects the earlier plan): ingestion is admin-triggered (no cron); the only scheduled job — the day-before reminder — runs **in-process inside the Fastify API** (see Favorites & notifications). The previously-planned "separate ingestion cron pm2 process" no longer exists — don't provision it.
 - Not serverless/PaaS for v1 — SQLite persistence + cron + a real filesystem fit a VPS far better.
 
-## Stack
-
-- **npm workspaces** (not pnpm/yarn) — `workspace:*` protocol not supported; use `"*"` for local package refs.
-- **React Router 8** (not v7) — latest stable as of 2026-06-26; requires Vite 7+.
-- **Vite 7** (not Vite 8 beta) — stable build tool for React Router 8.
-- **Tailwind CSS 4** — Vite plugin approach (`@tailwindcss/vite`), not PostCSS.
-- **Fastify 5** (not Express) — chosen for performance and TypeScript-first plugin system.
-- **better-sqlite3** (not `node:sqlite` or `libsql`) — synchronous, battle-tested, native addon; fits single-server deployment.
-- **Drizzle ORM** (not Prisma) — lightweight, SQL-close, no separate runtime process.
-- **Zod** for validation — schemas live in `shared/` and TS types are derived via `z.infer`; backend imports them so shape + validation have one source of truth.
-- **TanStack Query** for all UI→backend reads — replaces hand-rolled `useEffect`+fetch; provider in `Layout.tsx`, client in `ui/app/lib/queryClient.ts`.
-- **Zustand** for UI state — `locationStore` (geolocation requested once, shared across pages) and `mapFilterStore` (category/radius/search/selection).
-- **SPA mode** for the UI (`ssr: false` in `react-router.config.ts`) — simplifies deployment; no server-side rendering needed for an interactive map app. Note: route modules must use `clientLoader`, not `loader` (a `loader` export fails the build in SPA mode).
-- **SQLite** (not Postgres) — appropriate for single-server / local-first deployments at this scale.
-- **Exact pinned dependency versions** (no `^` ranges) in every `package.json` — reproducible installs.
-
 ## Known/accepted issues
 
 - **`npm audit`: 4 moderate (esbuild GHSA-67mh-4wv8-2f99).** Sole source is `drizzle-kit`'s transitive `@esbuild-kit/core-utils → esbuild@~0.18.20`. Accepted, not fixed: (1) dev-tooling only — `drizzle-kit` never ships to production and isn't used by any npm script (migrations run via `drizzle-orm`'s migrator through `tsx`; drizzle-kit is only for manual `generate`); (2) the advisory requires running esbuild's dev server, which `drizzle-kit generate` does not; (3) `0.31.10` is the latest stable and still pins the vulnerable esbuild — only `1.0.0-beta`/`rc` drop it; (4) an `esbuild` override won't apply because `@esbuild-kit/core-utils` uses the incompatible 0.18 platform-package layout. `npm audit fix --force` would *downgrade* drizzle-kit to 0.18.1 — do not run it.
-
-## Code conventions
-
-- **Import extensions are package-specific** (corrected 2026-06-28 — the old "no `.js` suffixes anywhere" was wrong and would break the backend at runtime):
-  - **`backend/` + `shared/`** run as **Node ESM** (`"type": "module"`, executed via `tsx`/`node dist`), so relative imports **MUST keep the `.js` suffix** (the existing code already does). Per research, code that runs directly in Node wants `moduleResolution: "nodenext"`, which *requires* the extension; the current `"bundler"` setting tolerates the suffix but is philosophically for bundled code — consider switching backend/shared to `nodenext` during brief 07. **Do not strip `.js` from backend/shared imports.**
-  - **`ui/`** is bundled by **Vite**, so imports are **extensionless** (current state). 
-- **OKLCH color tokens** in CSS custom properties — future-proof color space, already in place via `app.css`.
-- **`cn()` utility** (`clsx` + `tailwind-merge`) as the canonical class-building function.
-- **UI primitives: `@base-ui/react`** (Button, Avatar, Menu, Toggle, Slider, Input) + lucide-react icons. _(History: the original Stitch brief said shadcn/ui new-york; it was replaced by `@base-ui/react` during brief 01 implementation — see log 2026-06-26.)_
-
-## Design direction (locked 2026-06-29 — full spec in [design.md](design.md))
-
-Deliberately steered away from the "generic AI" aesthetic (research-driven). The visual direction is **Warmer Editorial-Civic** (was "Minimalist-Professional"):
-- **Typography (the biggest personality lever): two families** — **Fraunces** (variable serif, Google Fonts) for display/headings/brand/place-titles; **Inter** for body/UI. New font dependency: Fraunces.
-- **Color:** dominant **civic blue** + a deliberate **warm amber accent** (the tertiary token, used as sparing punctuation); slightly warm neutrals (not pure slate); **category meaning never carried by color alone**.
-- **Geometry:** tightened rounding (cards ≤8px, drawers 12px, **pills reserved for chips/badges only**); crisp 1px borders preferred over diffuse shadows.
-- **Elevation: role-differentiated** — a card, button, badge, and map pin must NOT share one shadow value.
-- **Map pins: icon-led + event-aware + zoom-aware** (per-category SVG icon primary, color secondary; event-presence accent ring; dot↔teardrop by zoom; unmistakable selected state). Clusters styled to the system, not default Leaflet.
-- **Basemap: CARTO Voyager (light) / DarkMatter (dark)** — warmer than Positron, still clean. Self-hosted brand-tinted style = future, not POC.
 
 ## Data model
 

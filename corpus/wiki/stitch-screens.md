@@ -7,7 +7,7 @@ _Captured: 2026-06-26 — source was `stitch_output/stitch_civic_mapper/` (now d
 > Material Symbols). That world was replaced in the UI/UX rework; nothing here
 > describes the shipped UI. Kept as a record of where the design started.
 > Current system: [`ui/DESIGN.md`](../../ui/DESIGN.md) ·
-> [decisions.md → Visual direction](decisions.md).
+> [decisions-ui.md → Visual direction](decisions-ui.md).
 
 Four HTML reference screens were generated from the Stitch brief. They share the same CivicMap token set (see [design.md](design.md)) but differ in layout and state. The originals are removed; this page preserves all structural and pattern notes needed for implementation.
 

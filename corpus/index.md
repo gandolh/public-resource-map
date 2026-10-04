@@ -31,6 +31,9 @@ The front door for **public-resource-map** project knowledge. Read this first.
 | [wiki/glossary.md](wiki/glossary.md) | **Project jargon defined** — place, OSM, Overpass, staged event, etc. |
 | [wiki/architecture.md](wiki/architecture.md) | Package structure, API routes, UI file map, data layer |
 | [wiki/decisions.md](wiki/decisions.md) | Locked tech/design choices — don't relitigate |
+| [wiki/decisions-identity.md](wiki/decisions-identity.md) | Identity: the original auth design and "Identity is Ward's" (split out 2026-10-04) |
+| [wiki/decisions-ui.md](wiki/decisions-ui.md) | Visual direction, interface language, the basemap constraint (split out 2026-10-04) |
+| [wiki/decisions-engineering.md](wiki/decisions-engineering.md) | Stack and code conventions (split out 2026-10-04) |
 | [wiki/status.md](wiki/status.md) | Current state dashboard, per-area snapshot, dev commands |
 | [wiki/open-questions.md](wiki/open-questions.md) | Genuinely unresolved: extraction mechanics, matching, spatial index |
 | [wiki/design.md](wiki/design.md) | Pointer to the built design system (`ui/DESIGN.md`) + the record of the four directions and why the standard was chosen |

@@ -10,7 +10,7 @@ Remaining build order: **vet and add real sources (owner; brief 04's pipeline is
 
 ## Where things stand
 
-**The old design system is gone, and so is the event-centric UI.** The 2026-06-29 "Warmer Editorial-Civic" world (Fraunces + steel-blue Material tokens) was retired without ever being built; the user asked for a total UI/UX rework, chose the category convention played straight at a Citymapper/Linear craft bar, and that is now locked ([decisions.md → Visual direction](decisions.md)).
+**The old design system is gone, and so is the event-centric UI.** The 2026-06-29 "Warmer Editorial-Civic" world (Fraunces + steel-blue Material tokens) was retired without ever being built; the user asked for a total UI/UX rework, chose the category convention played straight at a Citymapper/Linear craft bar, and that is now locked ([decisions-ui.md → Visual direction](decisions-ui.md)).
 
 What actually exists to look at: a full-bleed map of Timișoara or București with clustered category pins that badge their upcoming-event count, a place panel (desktop) / draggable sheet (mobile) showing what is on at that place grouped Today / Tomorrow / This weekend / Later, a citywide what's-on index, category chips + a timing lens that hard-filters, Romanian by default with an English switch, and both themes.
 
