@@ -1,5 +1,22 @@
 # Log
 
+## [2026-10-06] done | Two June todos closed: the place's tab title, and the chip row
+
+Both were filed against the event-centric UI of 2026-06-26, which the place-centric redesign
+replaced, so each was checked against today's code first.
+
+- **Resource title tag.** `resources/:id` is a redirect now; the page it named is `/places/:id`,
+  which still showed the map's title. `place.tsx` now sets `"{name} — CivicMap"` once the place
+  loads. `meta` cannot, because the place is fetched on the client. On the way out it restores the
+  previous title only if the title is still its own: leaving for What's on, React writes that
+  page's title before the cleanup runs, and the first version overwrote it. A new e2e test covers
+  open, close and leave, and fails without the guard.
+- **Map chip overflow.** Already fixed in code: the mobile category row is `flex-nowrap` with
+  `shrink-0` chips inside a `scroll-fade-x` scroller (`FilterBar.tsx`). Retired with no change.
+
+Typecheck, 176 unit tests and the 27-test e2e suite pass. The other seven todos are research notes,
+the 09-27 audit record, and the event-source choice, which is the owner's.
+
 ## [2026-10-04] maintenance | decisions.md split; a done brief left as it was
 
 decisions.md had grown to 302 lines, past the corpus's ~200-line rule. Three groups moved unchanged into decisions-identity.md, decisions-ui.md and decisions-engineering.md, with a pointer left behind and wiki links updated. Separately, an addendum appended to the done brief 08 was taken back out, because done briefs are immutable here. Its content (the city-limits recapture) is in this log and status.md.

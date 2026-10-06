@@ -28,3 +28,21 @@ test("a link to a place in another city switches the city", async ({ page, reque
   await expect(page.getByRole("heading", { name: bucharest.name })).toBeVisible();
   await expect(page.getByRole("button", { name: "Change city" })).toHaveText(/București/);
 });
+
+test("the tab names the place, and leaving it gives the right title back", async ({ page, request }) => {
+  const place = await seededPlace(request, SEED.places.tmArtMuseum);
+
+  await page.goto(`places/${place.id}`);
+  await expect(page).toHaveTitle(`${place.name} — CivicMap`);
+
+  // Closing returns to the map, whose meta did not change, so React does not
+  // rewrite the title; the place gives the map's back itself.
+  await page.getByRole("button", { name: "Close panel" }).click();
+  await expect(page).toHaveTitle(/^CivicMap — /);
+
+  // Leaving for a page with a title of its own must not be overwritten by it.
+  await page.goto(`places/${place.id}`);
+  await expect(page).toHaveTitle(`${place.name} — CivicMap`);
+  await page.getByRole("link", { name: "What's on" }).first().click();
+  await expect(page).toHaveTitle("Ce se întâmplă — CivicMap");
+});

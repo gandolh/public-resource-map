@@ -50,6 +50,23 @@ export default function PlaceRoute() {
     if (placeCity && placeCity.id !== cityId) adoptCity(placeCity);
   }, [placeCity, cityId, adoptCity]);
 
+  // The tab names the place. `meta` cannot do it: the place is fetched on the
+  // client, so no loader data reaches a `meta` export, and `<Meta />` keeps
+  // rendering the map's title. On the way out the previous title comes back,
+  // because closing a place leaves the map's meta unchanged and React does not
+  // rewrite `<title>`. But only if the title is still ours: leaving for What's
+  // on, React has already written that page's title before this cleanup runs.
+  const placeName = place?.name;
+  useEffect(() => {
+    if (!placeName) return;
+    const previous = document.title;
+    const ours = `${placeName} — CivicMap`;
+    document.title = ours;
+    return () => {
+      if (document.title === ours) document.title = previous;
+    };
+  }, [placeName]);
+
   // Pan so the selected pin clears the panel (desktop) or the sheet (mobile),
   // rather than sitting underneath the thing describing it.
   const known = place ?? places.find((p) => p.id === id);
