@@ -1,3 +1,8 @@
+---
+summary: Only the genuinely unresolved: per-publisher event sources, threshold tuning that needs real data, Ward on the public path, and secondary items.
+updated: 2026-09-27
+---
+
 # Open Questions
 
 Only genuinely unresolved questions. Delete an entry the moment it's answered — its history goes in `log.md`. For decided items, see [decisions.md](decisions.md).

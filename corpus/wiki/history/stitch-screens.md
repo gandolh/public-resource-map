@@ -1,3 +1,8 @@
+---
+summary: HISTORICAL — the 2026-06-26 Stitch reference screens for the retired CivicMap Material design; nothing here describes the shipped UI.
+updated: 2026-10-06
+---
+
 # Stitch Screens — CivicMap Reference Implementations
 
 _Captured: 2026-06-26 — source was `stitch_output/stitch_civic_mapper/` (now deleted from root)._
@@ -6,10 +11,10 @@ _Captured: 2026-06-26 — source was `stitch_output/stitch_civic_mapper/` (now d
 > CivicMap Material design system (steel blue, Fraunces, `surface-container-*`,
 > Material Symbols). That world was replaced in the UI/UX rework; nothing here
 > describes the shipped UI. Kept as a record of where the design started.
-> Current system: [`ui/DESIGN.md`](../../ui/DESIGN.md) ·
-> [decisions-ui.md → Visual direction](decisions-ui.md).
+> Current system: [`ui/DESIGN.md`](../../../ui/DESIGN.md) ·
+> [decisions-ui.md → Visual direction](../decisions-ui.md).
 
-Four HTML reference screens were generated from the Stitch brief. They share the same CivicMap token set (see [design.md](design.md)) but differ in layout and state. The originals are removed; this page preserves all structural and pattern notes needed for implementation.
+Four HTML reference screens were generated from the Stitch brief. They share the same CivicMap token set (see [design.md](../design.md)) but differ in layout and state. The originals are removed; this page preserves all structural and pattern notes needed for implementation.
 
 ---
 

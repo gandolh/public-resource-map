@@ -66,13 +66,16 @@ export default defineConfig({
           label: 'Design',
           items: [
             { label: 'The design system', link: '/wiki/design/' },
-            { label: 'Screens', link: '/wiki/stitch-screens/' },
+            { label: 'Screens (historical)', link: '/wiki/stitch-screens/' },
           ],
         },
         {
           label: 'Decisions and state',
           items: [
             { label: 'Decisions', link: '/wiki/decisions/' },
+            { label: 'Decisions: identity', link: '/wiki/decisions-identity/' },
+            { label: 'Decisions: interface', link: '/wiki/decisions-ui/' },
+            { label: 'Decisions: stack', link: '/wiki/decisions-engineering/' },
             { label: 'Glossary', link: '/wiki/glossary/' },
             { label: 'Open questions', link: '/wiki/open-questions/' },
             { label: 'Status', link: '/wiki/status/' },

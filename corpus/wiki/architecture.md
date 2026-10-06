@@ -1,3 +1,8 @@
+---
+summary: How the code is put together: the ui → shared ← backend workspaces, the UI file map, backend routes and services, and what lives in shared.
+updated: 2026-10-04
+---
+
 # Architecture
 
 ## Workspace layout

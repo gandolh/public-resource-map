@@ -1,3 +1,8 @@
+---
+summary: Identity decisions: the superseded original auth design, and why sign-in, accounts and public registration are Ward's since 2026-09-06.
+updated: 2026-10-04
+---
+
 # Decisions — identity
 
 Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~200 lines (corpus/CLAUDE.md). Unchanged in the move. Same rule: a change needs an explicit revisit and a `log.md` entry.

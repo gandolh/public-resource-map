@@ -1,3 +1,8 @@
+---
+summary: The current-state dashboard: what is built and verified, the gap between code and decisions, a per-area snapshot, and the dev commands.
+updated: 2026-10-04
+---
+
 # Status
 
 _Last updated: 2026-10-04_

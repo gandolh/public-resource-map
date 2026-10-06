@@ -25,21 +25,32 @@ The front door for **public-resource-map** project knowledge. Read this first.
 
 ## Wiki
 
+Generated from each page's `summary:` frontmatter by `bash corpus/lint.sh --index`; do not edit
+between the markers. Read the summary first and open at most two or three pages (see
+[CLAUDE.md](CLAUDE.md)).
+
+<!-- BEGIN CATALOG -->
+
+- [wiki/architecture.md](wiki/architecture.md) — How the code is put together: the ui → shared ← backend workspaces, the UI file map, backend routes and services, and what lives in shared.
+- [wiki/decisions-engineering.md](wiki/decisions-engineering.md) — Locked stack (npm workspaces, React Router 8, pinned versions…) and code conventions — check before changing tooling or style.
+- [wiki/decisions-identity.md](wiki/decisions-identity.md) — Identity decisions: the superseded original auth design, and why sign-in, accounts and public registration are Ward's since 2026-09-06.
+- [wiki/decisions-ui.md](wiki/decisions-ui.md) — Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, and the basemap constraint.
+- [wiki/decisions.md](wiki/decisions.md) — Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's 2026-10-04 answers — check before relitigating anything; identity, UI and stack live in split-out pages.
+- [wiki/design.md](wiki/design.md) — A pointer to the built design system (ui/DESIGN.md) and product truth (ui/PRODUCT.md), with the record of the four directions considered and why the standard one won.
+- [wiki/glossary.md](wiki/glossary.md) — Project vocabulary, one definition per term — place, OSM, Overpass, staged event, reconcile and the rest; read it before using a domain word.
+- [wiki/open-questions.md](wiki/open-questions.md) — Only the genuinely unresolved: per-publisher event sources, threshold tuning that needs real data, Ward on the public path, and secondary items.
+- [wiki/overview.md](wiki/overview.md) — What prm is (a place-centric map of public resources and their events in Timișoara and București, a proof of concept), its major components, external dependencies and repo layout.
+- [wiki/status.md](wiki/status.md) — The current-state dashboard: what is built and verified, the gap between code and decisions, a per-area snapshot, and the dev commands.
+
+<!-- END CATALOG -->
+
+Outside the wiki, but read alongside it:
+
 | Page | What it answers |
 |---|---|
-| [wiki/overview.md](wiki/overview.md) | What this project is, major components, repo layout |
-| [wiki/glossary.md](wiki/glossary.md) | **Project jargon defined** — place, OSM, Overpass, staged event, etc. |
-| [wiki/architecture.md](wiki/architecture.md) | Package structure, API routes, UI file map, data layer |
-| [wiki/decisions.md](wiki/decisions.md) | Locked tech/design choices — don't relitigate |
-| [wiki/decisions-identity.md](wiki/decisions-identity.md) | Identity: the original auth design and "Identity is Ward's" (split out 2026-10-04) |
-| [wiki/decisions-ui.md](wiki/decisions-ui.md) | Visual direction, interface language, the basemap constraint (split out 2026-10-04) |
-| [wiki/decisions-engineering.md](wiki/decisions-engineering.md) | Stack and code conventions (split out 2026-10-04) |
-| [wiki/status.md](wiki/status.md) | Current state dashboard, per-area snapshot, dev commands |
-| [wiki/open-questions.md](wiki/open-questions.md) | Genuinely unresolved: extraction mechanics, matching, spatial index |
-| [wiki/design.md](wiki/design.md) | Pointer to the built design system (`ui/DESIGN.md`) + the record of the four directions and why the standard was chosen |
 | [../ui/DESIGN.md](../ui/DESIGN.md) | **The design system** — tokens, type scale, elevation, component anatomy, derived from the shipped UI |
 | [../ui/PRODUCT.md](../ui/PRODUCT.md) | **Product truth** — users, positioning, constraints, brand commitments, accessibility |
-| [wiki/stitch-screens.md](wiki/stitch-screens.md) | Reference HTML screens from Stitch — layout, component classes, patterns for all 4 views |
+| [wiki/history/stitch-screens.md](wiki/history/stitch-screens.md) | HISTORICAL — the 2026-06-26 Stitch reference screens for the retired CivicMap design |
 
 ## Briefs
 
@@ -95,6 +106,5 @@ _Notes: 15 (draw) builds on 13's shared filter state. 16 (admin UI) follows 04 (
 |---|---|
 | [todos/2026-06-28-competitor-research-findings.md](todos/2026-06-28-competitor-research-findings.md) | Competitor/source landscape research + ideas |
 | [todos/2026-06-28-optimization-research.md](todos/2026-06-28-optimization-research.md) | Platform-optimization + corpus-UX research (feeds brief 12) |
-| [todos/2026-06-28-corpus-ux-improvements.md](todos/2026-06-28-corpus-ux-improvements.md) | Corpus-UX improvements (done + proposed) |
 | [todos/2026-06-29-pin-map-aesthetic-research.md](todos/2026-06-29-pin-map-aesthetic-research.md) | Pin/map UX + design.md aesthetic research (feeds design.md revision) |
 | [todos/2026-09-27-improvements-audit.md](todos/2026-09-27-improvements-audit.md) | Whole-repo improvements audit — ranked findings (→ briefs 18–28), watch list, drops |

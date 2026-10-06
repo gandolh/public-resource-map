@@ -1,5 +1,27 @@
 # Log
 
+## [2026-10-06] maintenance | The corpus gets frontmatter, a lint, and a generated catalog
+
+The owner chose to adopt the corpus-flow conventions that the June corpus-UX
+todo had proposed. Every page under `wiki/` now opens with `summary:` and
+`updated:` (the date of its last commit); `index.md`'s wiki list is generated
+from the summaries by `bash corpus/lint.sh --index`; `CLAUDE.md` states the
+retrieval budget and the lint rules. The docs site already read both keys, so
+its pages now carry a description and an "updated" note.
+
+`lint.sh` (adapted from sports-app's) found eleven broken links on its first
+run. Nine were wiki and todo links still pointing at `briefs/todo/` for briefs
+long done, now fixed. Two were inside done briefs, which are immutable, so the
+link check skips done and superseded briefs. Its path check also looks inside
+the workspaces, sibling repos and corpus, and ignores hostnames.
+
+`stitch-screens.md` (213 lines, marked HISTORICAL since 2026-09-04) moved to
+`wiki/history/` rather than being split. Routing no longer sends UI work to it;
+it points at `decisions-ui.md` and `ui/DESIGN.md`. The docs sidebar gained the
+three decision pages split out on 2026-10-04, which had been rendering only as
+GitHub links. The todo's other proposals: the per-page footer is what `updated:`
+does, and `status.md` is current. Decision IDs were not adopted. Todo retired.
+
 ## [2026-10-06] done | Two June todos closed: the place's tab title, and the chip row
 
 Both were filed against the event-centric UI of 2026-06-26, which the place-centric redesign

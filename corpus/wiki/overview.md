@@ -1,3 +1,8 @@
+---
+summary: What prm is (a place-centric map of public resources and their events in Timișoara and București, a proof of concept), its major components, external dependencies and repo layout.
+updated: 2026-10-04
+---
+
 # Overview
 
 **Public Resource Map** is a **place-centric** web app for Romanian cities (POC scope: **Timișoara + București**). The map's unit is a **place** — a public resource (park, library, clinic, museum, town hall) and/or an event host. A user picks a city, sees nearby places on the map, selects a place, and sees **what's on there** (temporary exhibitions, town-hall public events, etc.), with a buy-tickets link **only when the public source itself provides one**.

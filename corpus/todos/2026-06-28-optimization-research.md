@@ -1,6 +1,6 @@
 # Research: smoother corpus + platform optimization (2026-06-28)
 
-Online research into (1) making the corpus easier to use and (2) optimizing the app. Findings feed [brief 12 — platform optimization](../briefs/todo/12-platform-optimization.md) and [the corpus-UX todo](2026-06-28-corpus-ux-improvements.md).
+Online research into (1) making the corpus easier to use and (2) optimizing the app. Findings feed [brief 12 — platform optimization](../briefs/done/12-platform-optimization.md) and the corpus-UX todo (adopted and retired 2026-10-06; see log.md).
 
 ## Platform optimization findings
 

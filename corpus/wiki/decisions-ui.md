@@ -1,3 +1,8 @@
+---
+summary: Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, and the basemap constraint.
+updated: 2026-10-04
+---
+
 # Decisions — visual direction and interface
 
 Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~200 lines. Unchanged in the move. The full design spec is [`ui/DESIGN.md`](../../ui/DESIGN.md).

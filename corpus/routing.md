@@ -35,6 +35,6 @@ Remaining briefs 02–06, 08–10, 12–17 sequence by dependency — plan-split
 | schema/data (07,08) | corpus/wiki/decisions.md, corpus/wiki/architecture.md, the brief, shared/, backend/ | ui/ styling | — |
 | backend/ingestion (03,04,05) | decisions.md, architecture.md, the brief, backend/, shared/ | ui/ | — |
 | auth (02) | decisions.md, the brief, backend/, ui/ | — | — |
-| UI (06,13,14,15,16) | decisions.md, design.md, stitch-screens.md, the brief, ui/ | backend internals | impeccable / design-taste-frontend for visual work |
+| UI (06,13,14,15,16) | decisions-ui.md, design.md, `ui/DESIGN.md`, the brief, ui/ | backend internals | impeccable / design-taste-frontend for visual work |
 | test harness (10,11,17) | the brief, status.md (dev commands), shared/backend/ui test setup | — | — |
 | optimization (12) | decisions.md, architecture.md, the brief | — | — |

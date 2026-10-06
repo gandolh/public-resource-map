@@ -1,3 +1,8 @@
+---
+summary: Project vocabulary, one definition per term — place, OSM, Overpass, staged event, reconcile and the rest; read it before using a domain word.
+updated: 2026-06-28
+---
+
 # Glossary
 
 Project-specific terms and jargon. New to the corpus? Read this alongside [overview.md](overview.md).

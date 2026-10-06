@@ -1,3 +1,8 @@
+---
+summary: A pointer to the built design system (ui/DESIGN.md) and product truth (ui/PRODUCT.md), with the record of the four directions considered and why the standard one won.
+updated: 2026-10-04
+---
+
 # Design
 
 > **This page is a pointer, not a spec** (2026-09-04). The authoritative design

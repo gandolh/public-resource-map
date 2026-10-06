@@ -1,3 +1,8 @@
+---
+summary: Locked stack (npm workspaces, React Router 8, pinned versions…) and code conventions — check before changing tooling or style.
+updated: 2026-10-04
+---
+
 # Decisions — stack and code conventions
 
 Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~200 lines. Unchanged in the move.
