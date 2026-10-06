@@ -1,6 +1,11 @@
+---
+summary: HISTORICAL — the 2026-06-28 SQLite/Leaflet/SPA and corpus-UX research that fed brief 12 (done).
+updated: 2026-10-06
+---
+
 # Research: smoother corpus + platform optimization (2026-06-28)
 
-Online research into (1) making the corpus easier to use and (2) optimizing the app. Findings feed [brief 12 — platform optimization](../briefs/done/12-platform-optimization.md) and the corpus-UX todo (adopted and retired 2026-10-06; see log.md).
+Online research into (1) making the corpus easier to use and (2) optimizing the app. Findings feed [brief 12 — platform optimization](../../briefs/done/12-platform-optimization.md) and the corpus-UX todo (adopted and retired 2026-10-06; see log.md).
 
 ## Platform optimization findings
 

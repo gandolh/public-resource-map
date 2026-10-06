@@ -318,7 +318,7 @@ Researched (A) best-UX map pins + basemap and (B) what makes design.md read as "
 - **Geometry:** tightened rounding (cards ≤8px, drawers 12px not 16px, pills reserved for chips/badges), crisp borders over soft shadows.
 - **Elevation:** role-differentiated (card vs drawer vs pin must not share one shadow).
 - **Map Pins → icon-led + event-aware + zoom-aware:** per-category SVG icon as primary signal (color secondary), event-presence accent ring/badge, dot↔teardrop by zoom, unmistakable selected state. Added **Map Clusters** (styled divIcon, event hint) + **Basemap** (CARTO **Voyager** light / DarkMatter dark; self-hosted tinted style = future).
-- Synced brief 06 pin bullet → points to design.md pin system. Captured full findings + sources in `todos/2026-06-29-pin-map-aesthetic-research.md`.
+- Synced brief 06 pin bullet → points to design.md pin system. Captured full findings + sources in `wiki/history/2026-06-29-pin-map-aesthetic-research.md`.
 
 ## [2026-06-29] brief | Split briefs 13 + 11 along real seams (→ 15, 16, 17)
 
@@ -389,7 +389,7 @@ Brief 13 added (build order: after 06). Fixed a stale `briefs/todo/02-admin-sour
 
 ## [2026-06-28] research + brief + corpus-UX | Optimization research, brief 12, glossary + index front door
 
-Online research into making the corpus smoother + optimizing the platform (sources in `todos/2026-06-28-optimization-research.md`).
+Online research into making the corpus smoother + optimizing the platform (sources in `wiki/history/2026-06-28-optimization-research.md`).
 
 **Platform → brief 12 (platform optimization):** evidence-based, apply-incrementally optimizations. DB: WAL + synchronous=NORMAL + foreign_keys + busy_timeout PRAGMAs at startup (apply with schema brief 07); prepared statements. Spatial: `(lat,lng)`+`city` indexes, server-side bbox+city filtering, R-tree as a noted future option. Map: viewport-only markers, Leaflet.markercluster + chunkedLoading, canvas renderer, clearLayers/addLayers — all gated on *measured* slowdown (real data, brief 08). SPA: debounced bbox refetch, route-lazy admin UI. Explicit "do NOT pre-optimize" section. WAL caveat (same-host) noted — aligns with single-VPS deployment.
 
@@ -411,7 +411,7 @@ Numbers are stable ≠ build order. Recommended order recorded in `index.md`: 07
 
 ## [2026-06-28] research + decision | Competitor/source landscape scan → three decisions (two reversals)
 
-Scanned comparable platforms + probed the real RO event-source landscape (full findings: `todos/2026-06-28-competitor-research-findings.md`). Key learnings: Bandsintown is our retention-loop mirror (wins via push+email); Localist confirms API-first/scrape-last is industry-standard; **but** probing showed RO sources are almost all static HTML (data.gov.ro cultural calendar is a dead static XLSX; museums/OneEvent expose no feeds), and the comprehensive layer (ZileșiNopți/OneEvent) are reuse-restricted competitors. Net: no RO source is clean + machine-readable + comprehensive — pick 2 of 3.
+Scanned comparable platforms + probed the real RO event-source landscape (full findings: `wiki/history/2026-06-28-competitor-research-findings.md`). Key learnings: Bandsintown is our retention-loop mirror (wins via push+email); Localist confirms API-first/scrape-last is industry-standard; **but** probing showed RO sources are almost all static HTML (data.gov.ro cultural calendar is a dead static XLSX; museums/OneEvent expose no feeds), and the comprehensive layer (ZileșiNopți/OneEvent) are reuse-restricted competitors. Net: no RO source is clean + machine-readable + comprehensive — pick 2 of 3.
 
 Three decisions (recorded in `wiki/decisions.md`; briefs 04/05 updated):
 - **Event sourcing = clean + sparse.** Scrape only defensible primary publishers (municipal/publicly-funded calendars + venues/museums); accept sparse coverage; **OSM resources carry the map**. Do NOT scrape commercial aggregators.
@@ -618,3 +618,14 @@ a `//cookie` key in `docs/package.json` so nobody removes it as unused.
 
 Typecheck clean, 54 tests pass. `docs` added to the root `workspaces` array;
 `build` and `typecheck` name their workspaces explicitly, so neither picks it up.
+
+## 2026-10-06 — Open questions answered, one at a time
+
+The owner went through every open question and research todo:
+
+- **Ward on the public path:** resolve lazily, only in the guards and `/api/me` (brief 30). Revises decisions-identity.md.
+- **First event sources:** after a terms read (both public institutions, no terms-of-use page, nothing like iaBilet's art. 28.3), Filarmonica Banatul and Teatrul Național Timișoara are approved with descriptions. Brief 31 strips TNTM's WordPress `[DKB …]` shortcodes and lifts their eventim link as `buyUrl`; the owner adds both sources after it. `NOMINATIM_USER_AGENT` was already set by vps-deploy.
+- **Email:** Ward sends it on prm's behalf (wzd_auth brief 17, then brief 32). Revises 2026-10-04's "in-app only for now".
+- **No "tickets now available" trigger.**
+- **The audit's watch list is promoted** whole: briefs 33 and 34.
+- The three June research notes moved to `wiki/history/`; every idea in them is decided, and the pin/basemap note was already superseded by the 2026-09-04 visual direction. The vetting todo is closed.

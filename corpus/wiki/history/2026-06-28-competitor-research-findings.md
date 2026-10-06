@@ -1,3 +1,8 @@
+---
+summary: HISTORICAL — the 2026-06-28 competitor and RO source-landscape scan; every idea in it is now decided (decisions.md, 2026-10-06).
+updated: 2026-10-06
+---
+
 # Research: similar platforms & improvement ideas (2026-06-28)
 
 Captured from a competitive/landscape scan. Source links at the bottom. Actionable items are flagged **[ACTION]**; some challenge locked decisions (flagged **[REVISIT]**).

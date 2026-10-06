@@ -1,3 +1,8 @@
+---
+summary: HISTORICAL — the 2026-06-29 pin, basemap and "generic AI" design research; superseded by the 2026-09-04 visual direction in decisions-ui.md.
+updated: 2026-10-06
+---
+
 # Research: pin/map customization + design.md aesthetics (2026-06-29)
 
 Two topics: (A) best-UX map pins + basemap for our place-centric app, (B) what in `design.md` would lift the platform out of the "generic AI" look. Findings feed a proposed design.md revision (pending grill answers). Sources at bottom.

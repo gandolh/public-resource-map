@@ -1,6 +1,6 @@
 ---
 summary: Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's 2026-10-04 answers — check before relitigating anything; identity, UI and stack live in split-out pages.
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Decisions
@@ -24,7 +24,7 @@ This page passed ~200 lines, so three groups moved, unchanged:
 - **Venue↔event join:** match an event's venue string to an existing OSM place; **ambiguous matches are NOT auto-merged** — they surface in the admin diff/accept step for a human to resolve (consistent with the admin-curated model).
 - **Core loop:** open app → pick my city → see nearby places on the map → select a place → see what's on there → (if the source provides it) click through to buy. The product no longer depends on any legally-blocked source.
 - **Geographic scope (locked): Timișoara + București only** for now; architecture must stay extendable to more cities (city is config, not hardcoded).
-- **Adapter scope (revised 2026-06-28 after source research — was "build all"): build a FEW (2–4) high-value, legally-defensible adapters well.** Research confirmed every RO source is bespoke **HTML scraping** (the API/iCal/RSS/JSON-LD rungs are mostly empty — see [research todo](../todos/2026-06-28-competitor-research-findings.md)), so "build all" meant many fragile parsers for a POC. Reversed: build a small clean set; **"all sources" is post-POC expansion**. Per-source terms vetted individually as each adapter is added.
+- **Adapter scope (revised 2026-06-28 after source research — was "build all"): build a FEW (2–4) high-value, legally-defensible adapters well.** Research confirmed every RO source is bespoke **HTML scraping** (the API/iCal/RSS/JSON-LD rungs are mostly empty — see [research todo](history/2026-06-28-competitor-research-findings.md)), so "build all" meant many fragile parsers for a POC. Reversed: build a small clean set; **"all sources" is post-POC expansion**. Per-source terms vetted individually as each adapter is added.
 - **Event coverage is intentionally SPARSE for the POC; OSM resources carry the map.** Because no RO event source is simultaneously clean + machine-readable + comprehensive (you get 2 of 3), the POC takes **clean + sparse**: scrape only defensible **primary publishers** — municipal / publicly-funded calendars (Centrul de Proiecte Timișoara, timisoara-info.ro) + individual venues/museums. **Do NOT scrape the commercial aggregators** (ZileșiNopți / OneEvent) — that recreates the iaBilet ToS problem one level up. This is why resources-first is essential, not cosmetic: the map must stand on OSM since events are thin.
 - **Location model: city picker is primary** — user selects/defaults to a Romanian city (persisted to localStorage via `locationStore`), with a sensible default radius. Native GPS is an *optional* "center on me" enhancement, never a dependency. This sidesteps the "works without geolocation" problem and matches how users think ("what's on in Cluj this weekend").
 - **Recommended build order:** (1) ~~investigate iabilet ingestion~~ **done 2026-06-28** — sources probed, JSON-LD path confirmed; (2) city picker + replace seed with real RO data; (3) auth + admin gate (prerequisite for the admin ingestion UI); (4) admin source-ingestion pipeline (brief 02 — refresh/diff/accept/dedup); (5) e2e harness on seeded data; (6) VPS deploy. Note: auth moved earlier than originally planned because the admin ingestion UI sits behind the admin gate.
@@ -140,7 +140,7 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
   - `favorite_place` (subject → placeId) — drives "new here" notifications.
   - `favorite_event` (subject → eventId) — drives day-before reminders. _Distinct from favoriting a place; "remind me before this" only makes sense for a specific event the user intends to attend._
 - **Notifications: IN-APP inbox + EMAIL (revised 2026-06-28 after research — was in-app-only).** The in-app inbox/bell stays (testable, natural read-model); **email is added as a second delivery channel on the same notification rows**, reusing the auth verify/reset email infra (console-logged in dev, provider before launch). Rationale: Bandsintown/Apple Music confirm the **away-from-app ping** is the core of the retention loop the POC exists to demo; in-app-only was the weakest part of the story and email is cheap given the infra already exists.
-- **Decided 2026-10-04 (owner): in-app only for now.** The bell is the delivery channel; email is not built and not owed. Revisit after launch, and then choose between Ward exposing a verified address to an app's key and Ward sending on the app's behalf.
+- **Revised 2026-10-06 (owner): Ward sends the email.** Replaces 2026-10-04's "in-app only for now". Ward mails a granted, verified user on prm's behalf; prm never holds an address ([Ward brief 17](../../../wzd_auth/corpus/briefs/todo/17-app-notification-mail.md), [brief 32](../briefs/todo/32-notification-email-through-ward.md)). Rejected: Ward exposing addresses to app keys.
 - **Email is blocked on Ward (found 2026-10-03, brief 05).** prm knows people only by Ward's opaque subject and holds no addresses, and the "auth email infra" it would reuse was removed with the cutover. The in-app inbox shipped; email needs Ward to expose a verified address to an app's key, or to send on the app's behalf. `notification.emailed_at` is the idempotency marker either way.
 - **Web/native push is still OUT** for the POC — the noted #1 post-POC retention upgrade (service worker + VAPID, iOS caveats).
 - Email sends are best-effort/idempotent off the same `notification` rows (don't double-send on retries).
@@ -183,3 +183,10 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Past events are kept for good**; there is no prune (see Ingestion & data mechanics).
 - **First event sources:** the run researches a shortlist of public calendars (museums, theatres, city halls in both cities) with their feed type and terms, into a todo. The owner vets and adds them; nothing is added without that.
 - **Confirmed as taken by the brief runs:** brief 29's `notification_event` shape, and brief 15's hand-rolled drawing instead of Geoman.
+
+## Owner decisions, 2026-10-06 (open questions, one at a time)
+
+- **Ward is asked only on routes that need a user** ([brief 30](../briefs/todo/30-resolve-ward-only-where-needed.md)). Revises the root `preHandler` in [decisions-identity.md](decisions-identity.md).
+- **First sources: Filarmonica Banatul and Teatrul Național Timișoara, with descriptions.** Terms read 2026-10-06: both are public institutions with no terms-of-use page and nothing like iaBilet's art. 28.3; robots.txt allows the feeds; TNTM's footer says "Toate drepturile rezervate". The owner accepted republishing descriptions with the source link shown. Added by the owner after [brief 31](../briefs/todo/31-ical-wordpress-shortcodes.md).
+- **No "tickets now available" trigger.** Two triggers are enough.
+- **The audit's watch list is promoted** ([33](../briefs/todo/33-watch-list-hardening.md), [34](../briefs/todo/34-osm-retires-deleted-places.md)).

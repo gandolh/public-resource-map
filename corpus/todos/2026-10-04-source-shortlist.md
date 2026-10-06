@@ -2,9 +2,8 @@
 
 The owner asked for this research (decisions.md, 2026-10-04). It works through
 step 1 ("probe API-first") of
-[the vetting todo](2026-10-03-vet-first-event-sources.md) for the obvious
-public venues. **Nothing has been added as a source.** Reading each site's terms
-(step 2) and deciding are still the owner's job.
+the vetting todo (closed 2026-10-06; the two Timișoara feeds are approved, see decisions.md) for the obvious
+public venues. **2026-10-06:** the owner approved the two Timișoara feeds below after a terms read; they are added after brief 31. București still has no ready feed.
 
 **How it was probed:** each home page was fetched once, then `?ical=1`. Pages
 were checked for `.ics`/`webcal` links, RSS, schema.org `Event` JSON-LD, and the
