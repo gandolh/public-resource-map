@@ -1,5 +1,13 @@
 # Log
 
+## [2026-10-07] maintenance | The 2026-09-27 audit is retired
+
+With briefs 33 and 34 done, every item the audit found is a done brief: 18–28 from its ranked
+list, and 30, 33 and 34 from its watch list. It moves to `wiki/history/`, as the source shortlist
+did today, with a note at the top that points to the briefs and this log. Its "Dropped in
+vetting" section is kept there because nothing else records why those eight were dropped.
+`todos/` is now empty.
+
 ## [2026-10-07] done | Brief 34 — an OSM re-sync retires places OSM no longer has
 
 A place gets `retired_at` (migration 0004). A sync retires the city's listed OSM places its
@@ -298,7 +306,7 @@ Found on the way, not prm's: Ward's Sign out does nothing in a browser. `/logout
 
 ## [2026-09-27] audit + brief | Improvements sweep → briefs 18–28
 
-A read-only survey of the whole repo, vetted against `decisions.md` and the existing queue. **26 raw candidates → 11 briefed, 7 on a watch list, 8 dropped.** The full ranked list, watch items and drop reasons are in [todos/2026-09-27-improvements-audit.md](todos/2026-09-27-improvements-audit.md). The five lens finders were dispatched but all died on a rate limit before reporting, so every finding was read and vetted directly. The ones marked ★ in the audit were reproduced.
+A read-only survey of the whole repo, vetted against `decisions.md` and the existing queue. **26 raw candidates → 11 briefed, 7 on a watch list, 8 dropped.** The full ranked list, watch items and drop reasons are in [the audit](wiki/history/2026-09-27-improvements-audit.md). The five lens finders were dispatched but all died on a rate limit before reporting, so every finding was read and vetted directly. The ones marked ★ in the audit were reproduced.
 
 The headline findings: `POST`/`DELETE` on places and events are open to anonymous callers (18). Every surface drops an event the moment it **starts**, which hides temporary exhibitions for their whole run and contradicts the locked lifecycle (19). The map fetches at most 1000 places with no ordering, while a real București sync is **3,171** (20, measured with one Overpass count query). A JWKS fetch failure resolves as "signed out" instead of 503, with nothing logged, contrary to prm's own rule and Ward contract rule 5 (21, reproduced). A fresh clone's backend dies at boot on missing Ward env, and the `.env.example` it points to does not exist (22). drizzle-kit has no snapshot for the hand-written `0001`, so the next `generate` re-does the cutover (23, reproduced on a scratch copy).
 

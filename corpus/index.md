@@ -96,7 +96,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 **Recommended build order:** 07 (schema) → **11 (Vitest harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → **16 (admin review UI)** → 05 (favorites/notifications) → 06 (place-centric UI) → **13 (public interactions)** → **15 (draw-filter)** → **14 (archive)** → **17 (e2e harness)** → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD).
 _Notes: 15 (draw) builds on 13's shared filter state. 16 (admin UI) follows 04 (its API) and can be built independently of the public-UI track. 17 (e2e) lands after the UI surfaces exist + the seed (08); 11's Vitest comes early for test-first backend work. 12 is cross-cutting (DB PRAGMAs with 07; rest opportunistic)._
 
-**Audit briefs 18–28 (2026-09-27, [audit](todos/2026-09-27-improvements-audit.md)) — do these before resuming 04:** 18 → 19 → 20 (share route files) · 21 → 26 (share the Ward test file) · 22 → 27 → 28 (share manifests/lockfile) · 23 before any schema edit · 24 and 25 independent. 18, 21, 22, 23 are the cheap urgent ones.
+**Audit briefs 18–28 (2026-09-27, [audit](wiki/history/2026-09-27-improvements-audit.md)) — do these before resuming 04:** 18 → 19 → 20 (share route files) · 21 → 26 (share the Ward test file) · 22 → 27 → 28 (share manifests/lockfile) · 23 before any schema edit · 24 and 25 independent. 18, 21, 22, 23 are the cheap urgent ones.
 
 ## Test Plans
 
@@ -113,4 +113,4 @@ _Notes: 15 (draw) builds on 13's shared filter state. 16 (admin UI) follows 04 (
 | [wiki/history/2026-06-28-optimization-research.md](wiki/history/2026-06-28-optimization-research.md) | Platform-optimization + corpus-UX research (feeds brief 12) |
 | [wiki/history/2026-06-29-pin-map-aesthetic-research.md](wiki/history/2026-06-29-pin-map-aesthetic-research.md) | Pin/map UX + design.md aesthetic research (feeds design.md revision) |
 | [wiki/history/2026-10-04-source-shortlist.md](wiki/history/2026-10-04-source-shortlist.md) | Event-feed probe of public venues in both cities (retired 2026-10-07) |
-| [todos/2026-09-27-improvements-audit.md](todos/2026-09-27-improvements-audit.md) | Whole-repo improvements audit — ranked findings (→ briefs 18–28), watch list, drops |
+| [wiki/history/2026-09-27-improvements-audit.md](wiki/history/2026-09-27-improvements-audit.md) | Whole-repo improvements audit — ranked findings (→ briefs 18–28), watch list (→ 30, 33, 34), drops (retired 2026-10-07) |

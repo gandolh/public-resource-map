@@ -1,7 +1,17 @@
+---
+summary: HISTORICAL — the 2026-09-27 whole-repo audit; every finding became a brief (18–28, then 30, 33 and 34 from its watch list), all done by 2026-10-07. Kept for the reasons items were dropped.
+updated: 2026-10-07
+---
+
 # Improvements audit — 2026-09-27
 
+> **Retired 2026-10-07.** Every briefed and watch item is now a done brief: 18–28 for the ranked
+> findings, 30, 33 and 34 for the watch list (brief 19 covered the seed's null end dates). What
+> happened to each is in its brief's outcome and in [log.md](../../log.md). The "Dropped in
+> vetting" section below is the one part recorded nowhere else.
+
 A read-only survey of the whole repo (backend, shared, ui, infrastructure,
-docs build), vetted against [decisions.md](../wiki/decisions.md) and the
+docs build), vetted against [decisions.md](../decisions.md) and the
 existing brief queue. The winners are written up as briefs 18–28; the rest is
 recorded here so it is not rediscovered.
 
@@ -22,23 +32,23 @@ starred ones were reproduced by running something.
 ## Briefed (ranked)
 
 ### Now
-1. **Anonymous writes** — `POST`/`DELETE /api/places`, `POST`/`DELETE /api/events` carry no guard. → [brief 18](../briefs/done/18-guard-anonymous-write-routes.md)
-2. **Events vanish the moment they start** — every surface filters `start_date >= now`, so a running exhibition is invisible for its whole run. → [brief 19](../briefs/done/19-show-in-progress-events.md)
-3. ★ **The map silently drops places past 1000** — measured: a real București sync is 3,171 named places. → [brief 20](../briefs/done/20-map-loads-every-place.md)
-4. ★ **A JWKS fetch failure reads as "signed out"** — reproduced; breaks the locked 503 semantics and Ward contract rule 5. → [brief 21](../briefs/done/21-ward-jwks-failure-is-unavailable.md)
-5. ★ **A fresh clone cannot boot the backend** — reproduced; Ward env required, `.env.example` referenced but absent. → [brief 22](../briefs/done/22-fresh-clone-setup-path.md)
-6. ★ **drizzle-kit has no snapshot for 0001** — reproduced; the next `generate` re-does the Ward cutover. → [brief 23](../briefs/done/23-drizzle-snapshot-for-0001.md)
+1. **Anonymous writes** — `POST`/`DELETE /api/places`, `POST`/`DELETE /api/events` carry no guard. → [brief 18](../../briefs/done/18-guard-anonymous-write-routes.md)
+2. **Events vanish the moment they start** — every surface filters `start_date >= now`, so a running exhibition is invisible for its whole run. → [brief 19](../../briefs/done/19-show-in-progress-events.md)
+3. ★ **The map silently drops places past 1000** — measured: a real București sync is 3,171 named places. → [brief 20](../../briefs/done/20-map-loads-every-place.md)
+4. ★ **A JWKS fetch failure reads as "signed out"** — reproduced; breaks the locked 503 semantics and Ward contract rule 5. → [brief 21](../../briefs/done/21-ward-jwks-failure-is-unavailable.md)
+5. ★ **A fresh clone cannot boot the backend** — reproduced; Ward env required, `.env.example` referenced but absent. → [brief 22](../../briefs/done/22-fresh-clone-setup-path.md)
+6. ★ **drizzle-kit has no snapshot for 0001** — reproduced; the next `generate` re-does the Ward cutover. → [brief 23](../../briefs/done/23-drizzle-snapshot-for-0001.md)
 
 ### Next
-7. **A shared place link from the other city shows an empty map** → [brief 24](../briefs/done/24-cross-city-deep-link.md)
-8. ★ **OSM catch-all `healthcare` filter imports ~1,000 pharmacies/dentists as "clinic"** in București (measured) → [brief 25](../briefs/done/25-osm-healthcare-taxonomy.md)
-9. **The real Ward client has no tests** (279 lines of hand-adapted security code) → [brief 26](../briefs/done/26-ward-client-test-suite.md)
-10. **Ward-cutover leftovers** — dead UI/shared code, `argon2` (native, shipped in the prod image), `@fastify/cookie` → [brief 27](../briefs/done/27-remove-ward-cutover-leftovers.md)
-11. **SPA-template leftovers + pinning-policy breaches** — `@react-router/serve` (root cause of the docs `//cookie` hack), a broken `ui/Dockerfile`, `^` ranges on `jose` and all of `docs/` → [brief 28](../briefs/done/28-spa-template-leftovers-and-pins.md)
+7. **A shared place link from the other city shows an empty map** → [brief 24](../../briefs/done/24-cross-city-deep-link.md)
+8. ★ **OSM catch-all `healthcare` filter imports ~1,000 pharmacies/dentists as "clinic"** in București (measured) → [brief 25](../../briefs/done/25-osm-healthcare-taxonomy.md)
+9. **The real Ward client has no tests** (279 lines of hand-adapted security code) → [brief 26](../../briefs/done/26-ward-client-test-suite.md)
+10. **Ward-cutover leftovers** — dead UI/shared code, `argon2` (native, shipped in the prod image), `@fastify/cookie` → [brief 27](../../briefs/done/27-remove-ward-cutover-leftovers.md)
+11. **SPA-template leftovers + pinning-policy breaches** — `@react-router/serve` (root cause of the docs `//cookie` hack), a broken `ui/Dockerfile`, `^` ranges on `jose` and all of `docs/` → [brief 28](../../briefs/done/28-spa-template-leftovers-and-pins.md)
 
 ## Watch (named, not spec'd)
 
-> **Promoted 2026-10-06 by the owner.** Ward on the public path is [brief 30](../briefs/done/30-resolve-ward-only-where-needed.md) (done 2026-10-07); the cache, URL schemes, Overpass and DST items are [brief 33](../briefs/done/33-watch-list-hardening.md) (done 2026-10-07); OSM retirement is [brief 34](../briefs/done/34-osm-retires-deleted-places.md) (done 2026-10-07). Seed events' null end dates were covered by brief 19.
+> **Promoted 2026-10-06 by the owner.** Ward on the public path is [brief 30](../../briefs/done/30-resolve-ward-only-where-needed.md) (done 2026-10-07); the cache, URL schemes, Overpass and DST items are [brief 33](../../briefs/done/33-watch-list-hardening.md) (done 2026-10-07); OSM retirement is [brief 34](../../briefs/done/34-osm-retires-deleted-places.md) (done 2026-10-07). Seed events' null end dates were covered by brief 19.
 
 - **The public map asks Ward on every request from a signed-in visitor.** The
   root preHandler resolves the session whenever a `ward_session` cookie is
@@ -48,28 +58,28 @@ starred ones were reproduced by running something.
   introspection/JWKS timeout to public-map requests for those visitors. Resolving
   the session lazily inside the guards and `/api/me` would make the property
   literal. This touches a locked mechanism, so it is logged in
-  [open-questions.md](../wiki/open-questions.md), not briefed.
+  [open-questions.md](../open-questions.md), not briefed.
 - ~~**Introspection cache never evicts.** `ward.client.ts` stores one entry per
   token and only ignores expired ones; with 15-minute tokens every active
   session adds ~4 entries an hour until restart. Bounded by legitimately minted
   tokens (verification runs first), cleared on every deploy. Matters only at real
-  traffic.~~ Fixed by [brief 33](../briefs/done/33-watch-list-hardening.md), part 4.
+  traffic.~~ Fixed by [brief 33](../../briefs/done/33-watch-list-hardening.md), part 4.
 - ~~**URL fields accept any scheme.** `z.string().url()` (Zod 3) accepts
   `javascript:` and `data:`. React 19 blocks `javascript:` hrefs at render, so
   there is no live XSS; tighten to http(s) when brief 04's adapters start writing
   scraped URLs (its sanity validation reuses these schemas).~~ Fixed by
-  [brief 33](../briefs/done/33-watch-list-hardening.md), part 1.
+  [brief 33](../../briefs/done/33-watch-list-hardening.md), part 1.
 - ~~**OSM re-sync never retires places deleted from OSM.** A closed library stays
   on the map forever. Events have reconcile; OSM has none.~~ Fixed by
-  [brief 34](../briefs/done/34-osm-retires-deleted-places.md).
+  [brief 34](../../briefs/done/34-osm-retires-deleted-places.md).
 - ~~**`fetchOverpass` has no client-side timeout** and two concurrent syncs of one
   city can collide on the partial unique index (500 mid-sync). Admin-only,
-  rare.~~ Fixed by [brief 33](../briefs/done/33-watch-list-hardening.md), part 3.
+  rare.~~ Fixed by [brief 33](../../briefs/done/33-watch-list-hardening.md), part 3.
 - **Seed events are all `endDate: null`** — covered for the multi-day case by
   brief 19, which adds one.
 - ~~**UI "tomorrow" grouping adds 24h**, so for one hour around each DST switch
   it picks the wrong calendar day (`ui/app/lib/dates.ts:27-29`).~~ Fixed by
-  [brief 33](../briefs/done/33-watch-list-hardening.md), part 2.
+  [brief 33](../../briefs/done/33-watch-list-hardening.md), part 2.
 
 ## Dropped in vetting
 
