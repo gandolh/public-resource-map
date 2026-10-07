@@ -340,6 +340,66 @@ describe("Ward client: introspection cache eviction", () => {
   });
 });
 
+// Brief 32: Ward's POST /notify, mirrored from wzd_auth/client/src/notify.ts.
+describe("Ward client: sendNotification", () => {
+  const mail = { subject: "subject-1", mailSubject: "Mâine: Concert, la Filarmonica", text: "Începe la 19:00." };
+  const notifyWith = (handler: (url: URL, init?: RequestInit) => Response | Promise<Response>, timeoutMs?: number) =>
+    createWardClient({
+      publicOrigin: ORIGIN,
+      apiBasePath: BASE,
+      appKey: "k",
+      notifyTimeoutMs: timeoutMs,
+      fetch: (async (input: string | URL | Request, init?: RequestInit) => {
+        const url = new URL(typeof input === "string" || input instanceof URL ? input : input.url);
+        if (url.pathname === `${BASE}/notify`) return handler(url, init);
+        return new Response("not found", { status: 404 });
+      }) as typeof fetch,
+    });
+
+  it("posts exactly the three fields with prm's app key, and resolves Ward's answer", async () => {
+    let seen: RequestInit | undefined;
+    const ward = notifyWith((_url, init) => {
+      seen = init;
+      return json({ sent: true });
+    });
+    await expect(ward.sendNotification(mail)).resolves.toEqual({ sent: true });
+    expect(JSON.parse(String(seen?.body))).toEqual(mail);
+    expect((seen?.headers as Record<string, string>)["x-ward-app-key"]).toBe("k");
+  });
+
+  it("a refusal is { sent: false }", async () => {
+    await expect(notifyWith(() => json({ sent: false })).sendNotification(mail)).resolves.toEqual({ sent: false });
+  });
+
+  it("401 is prm's own key being refused: a configuration error", async () => {
+    const err = await notifyWith(() => json({ error: "invalid_app_key" }, 401)).sendNotification(mail).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(WardConfigurationError);
+  });
+
+  it("503 mail_unavailable, a network error, a bad body and a timeout are Ward unavailable", async () => {
+    const outages = [
+      notifyWith(() => json({ error: "mail_unavailable" }, 503)),
+      notifyWith(() => {
+        throw new TypeError("fetch failed");
+      }),
+      notifyWith(() => json({ ok: true })),
+      notifyWith(() => new Response("<html>", { status: 200 })),
+      notifyWith(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) =>
+            init?.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError"))),
+          ),
+        20,
+      ),
+    ];
+    for (const ward of outages) {
+      const err = await ward.sendNotification(mail).catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(WardUnavailableError);
+      expect(err).not.toBeInstanceOf(WardConfigurationError);
+    }
+  });
+});
+
 describe("Ward client: cookie", () => {
   const ward = client(wardFetch({ jwks: () => json({ keys: [] }) }));
 

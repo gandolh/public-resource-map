@@ -1,4 +1,4 @@
-import type { WardClient } from "../ward/ward.client.js";
+import type { NotificationInput, WardClient } from "../ward/ward.client.js";
 import {
   WardAuthenticationError,
   type SessionResolution,
@@ -23,6 +23,10 @@ export interface FakeWard extends WardClient {
   signIn(token: string, subject: string, grants: Record<string, string[]>): void;
   /** Make every call throw `WardUnavailableError`, for the fail-closed tests. */
   breakWith(error: Error): void;
+  /** Every mail Ward accepted (brief 32), in order. */
+  readonly mails: NotificationInput[];
+  /** Answer `{ sent: false }` for this subject, as Ward does for, say, an unverified address. */
+  refuseMailTo(subject: string): void;
 }
 
 const COOKIE = "ward_session";
@@ -43,6 +47,8 @@ function tokenFrom(header: string | string[] | undefined): string | undefined {
 export function createFakeWard(): FakeWard {
   const sessions = new Map<string, WardCaller>();
   let broken: Error | undefined;
+  const mails: NotificationInput[] = [];
+  const refused = new Set<string>();
 
   function resolve(token: string | undefined): WardCaller {
     if (broken) throw broken;
@@ -63,6 +69,16 @@ export function createFakeWard(): FakeWard {
     },
     breakWith(error) {
       broken = error;
+    },
+    mails,
+    refuseMailTo(subject) {
+      refused.add(subject);
+    },
+    async sendNotification(input) {
+      if (broken) throw broken;
+      if (refused.has(input.subject)) return { sent: false };
+      mails.push(input);
+      return { sent: true };
     },
     async verify() {
       throw new WardAuthenticationError("the fake client does not verify signatures");

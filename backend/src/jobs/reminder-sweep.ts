@@ -45,9 +45,15 @@ export const SWEEP_HOUR = 9;
 /**
  * Run the sweep now (it is idempotent, so a restart just catches up), then
  * every day at 09:00 Bucharest. In-process inside the API, as decisions.md
- * locks it: no separate worker, no OS cron. Returns a stop function.
+ * locks it: no separate worker, no OS cron. `afterRun` follows every run, even
+ * one that wrote nothing: it is how mail Ward could not take yesterday is
+ * retried (brief 32). Returns a stop function.
  */
-export function startReminderSweep(db: DB, log: (msg: string) => void): () => void {
+export function startReminderSweep(
+  db: DB,
+  log: (msg: string) => void,
+  afterRun: () => void = () => {},
+): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const run = () => {
     try {
@@ -56,6 +62,7 @@ export function startReminderSweep(db: DB, log: (msg: string) => void): () => vo
     } catch (err) {
       log(`reminder sweep failed: ${err instanceof Error ? err.message : String(err)}`);
     }
+    afterRun();
   };
   const schedule = () => {
     const now = new Date();

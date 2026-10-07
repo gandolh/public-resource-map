@@ -63,6 +63,14 @@ async function main() {
         return send(res, 200, { active: true, subject, username, grants });
       }
 
+      // Notification mail (brief 32): accepted and dropped. Ward's real one
+      // mails the subject's verified address.
+      if (req.method === "POST" && path === `${BASE}/notify`) {
+        if (req.headers["x-ward-app-key"] !== APP_KEY) return send(res, 401, { error: "invalid_app_key" });
+        await body(req);
+        return send(res, 200, { sent: true });
+      }
+
       // Test-only: mint a session the way Ward's login would.
       if (req.method === "POST" && path === `${BASE}/test/sign-in`) {
         const input = await body(req);

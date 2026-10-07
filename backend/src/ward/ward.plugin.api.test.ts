@@ -78,6 +78,7 @@ function stubWard(answer: () => Promise<WardCaller> = () => new Promise(() => {}
       return undefined;
     },
     authenticate: () => call(answer),
+    sendNotification: () => call(() => new Promise(() => {})),
   };
   return { client, calls: () => calls };
 }

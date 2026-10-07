@@ -131,7 +131,10 @@ export function adminIngestRoutes(deps: IngestDeps) {
     app.post("/admin/staged-events/accept", guard, async (req, reply) => {
       const parsed = stagedIdsSchema.safeParse(req.body);
       if (!parsed.success) return invalid(reply, parsed.error.message);
-      return acceptStaged(db, parsed.data.ids, deps.now());
+      const result = acceptStaged(db, parsed.data.ids, deps.now());
+      // New inbox rows also go out as mail, after this response (brief 32).
+      if (result.notified > 0) app.notifyMail.kick();
+      return result;
     });
 
     app.post("/admin/staged-events/reject", guard, async (req, reply) => {

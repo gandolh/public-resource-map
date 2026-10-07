@@ -94,6 +94,8 @@ declare module "fastify" {
      * anonymous visitors too (`/api/me`). Public routes never do.
      */
     resolveWard: (req: FastifyRequest) => Promise<void>;
+    /** The Ward client itself, for work outside a request: notification mail (brief 32). */
+    wardClient: WardClient;
   }
 }
 
@@ -118,6 +120,7 @@ export async function registerWard(
     });
 
   app.decorateRequest("ward", null);
+  app.decorate("wardClient", ward);
 
   /** One resolution per request, however many guards and handlers ask. */
   const resolutions = new WeakMap<FastifyRequest, Promise<void>>();

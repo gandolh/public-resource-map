@@ -14,10 +14,13 @@ import { registerWard } from "./ward/ward.plugin.js";
 import { wardConfig } from "./ward/config.js";
 import type { WardClient } from "./ward/ward.client.js";
 import type { SyncDeps } from "./lib/osm-sync.js";
+import { createMailSweeper, type MailSweeper } from "./lib/notify-mail.js";
 
 declare module "fastify" {
   interface FastifyInstance {
     db: DB;
+    /** Notification email through Ward (brief 32): kicked after an accept and the daily sweep. */
+    notifyMail: MailSweeper;
   }
 }
 
@@ -81,6 +84,12 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
       ? { publicOrigin: "", apiBasePath: "", appKey: "", client: opts.ward }
       : wardConfig(),
   );
+
+  // Mail goes out in the background, never inside a request. Closing the app
+  // waits for a sweep in flight, so a test never closes the database under it.
+  const mail = createMailSweeper(app.db, (input) => app.wardClient.sendNotification(input), app.log);
+  app.decorate("notifyMail", mail);
+  app.addHook("onClose", () => mail.idle());
 
   await app.register(placeRoutes, { prefix: "/api" });
   await app.register(adminOsmRoutes(opts.osm), { prefix: "/api" });

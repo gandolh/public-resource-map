@@ -58,10 +58,27 @@ export interface WardClientOptions {
   /** Test seam. Defaults to 30s; do not raise in production. */
   introspectionCacheTtlMs?: number;
   introspectTimeoutMs?: number;
+  /** Defaults to 15 s: Ward answers once its mail transport has the message. */
+  notifyTimeoutMs?: number;
   jwksTimeoutMs?: number;
   jwksCacheMaxAgeMs?: number;
   jwksCooldownMs?: number;
   now?: () => number;
+}
+
+/** A mail Ward sends to one of prm's users (brief 32; Ward's `POST /notify`). */
+export interface NotificationInput {
+  /** The recipient's Ward subject. */
+  subject: string;
+  /** One line, at most 200 characters. Ward prefixes "[prm]". */
+  mailSubject: string;
+  /** Plain text, at most 20,000 characters. Ward appends a footer naming the app. */
+  text: string;
+}
+
+export interface NotificationResult {
+  /** `false` is a refusal, and final: no account, no verified address, no grant, or the rate limit. */
+  sent: boolean;
 }
 
 export interface WardClient {
@@ -73,6 +90,12 @@ export interface WardClient {
   readAccessCookie(header: string | string[] | undefined): string | undefined;
   /** Cookie → verified → live, or throw. The guard's one call. */
   authenticate(cookieHeader: string | string[] | undefined): Promise<WardCaller>;
+  /**
+   * Ask Ward to mail one of prm's users. Resolves `{ sent }`; throws
+   * `WardConfigurationError` on a refused key and `WardUnavailableError` on
+   * anything else that is not Ward's answer. From a background sweep only.
+   */
+  sendNotification(input: NotificationInput): Promise<NotificationResult>;
 }
 
 /**
@@ -122,6 +145,8 @@ export function createWardClient(options: WardClientOptions): CachingWardClient 
   const base = options.apiBasePath.replace(/\/+$/, "");
   const jwksEndpoint = new URL(`${base}/.well-known/jwks.json`, options.publicOrigin);
   const introspectEndpoint = new URL(`${base}/introspect`, options.publicOrigin);
+  const notifyEndpoint = new URL(`${base}/notify`, options.publicOrigin);
+  const notifyTimeoutMs = options.notifyTimeoutMs ?? 15_000;
 
   const keyStore = createRemoteJWKSet(jwksEndpoint, {
     timeoutDuration: options.jwksTimeoutMs ?? 5_000,
@@ -314,6 +339,68 @@ export function createWardClient(options: WardClientOptions): CachingWardClient 
     return pending;
   }
 
+  /**
+   * `POST /notify` (brief 32), adapted from `wzd_auth/client/src/notify.ts`.
+   *
+   * `{ sent: false }` covers every refusal (no such account, no verified
+   * address, no prm grant, a malformed body, the rate limit) and is final. A
+   * 401 is prm's key, which retrying cannot fix. Everything else, Ward's 503
+   * when its mail transport fails included, means the mail was not confirmed
+   * and may be retried. A timeout is ambiguous: Ward may still have sent it,
+   * so a retry can deliver twice, which for a notification is the right side
+   * to fail on. No cache and no retry here; the sweep decides.
+   */
+  async function sendNotification(input: NotificationInput): Promise<NotificationResult> {
+    let response: Response;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), notifyTimeoutMs);
+    try {
+      try {
+        response = await fetchImpl(notifyEndpoint, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            [APP_KEY_HEADER]: options.appKey,
+          },
+          // Exactly these three fields: Ward refuses any other key.
+          body: JSON.stringify({
+            subject: input.subject,
+            mailSubject: input.mailSubject,
+            text: input.text,
+          }),
+          signal: controller.signal,
+        });
+      } catch (cause) {
+        throw new WardUnavailableError("notify request failed", { cause });
+      }
+
+      if (response.status === 401) {
+        throw new WardConfigurationError(
+          "Ward rejected prm's app key on /notify (401). Check WARD_APP_KEY: it is absent, wrong, " +
+            "or has been revoked in Ward's console.",
+        );
+      }
+      if (response.status !== 200) {
+        throw new WardUnavailableError(`notify returned unexpected status ${response.status}`);
+      }
+
+      let body: unknown;
+      try {
+        body = await response.json();
+      } catch (cause) {
+        throw new WardUnavailableError("notify response was not valid JSON", { cause });
+      }
+      const sent = (body as { sent?: unknown } | null)?.sent;
+      if (typeof sent !== "boolean") {
+        throw new WardUnavailableError("notify response did not match Ward's contract");
+      }
+      return { sent };
+    } finally {
+      // Cleared after the body is read, so a body that stalls also times out.
+      clearTimeout(timer);
+    }
+  }
+
   async function authenticate(
     cookieHeader: string | string[] | undefined,
   ): Promise<WardCaller> {
@@ -343,6 +430,7 @@ export function createWardClient(options: WardClientOptions): CachingWardClient 
     introspect,
     readAccessCookie: (header) => readCookie(header, ACCESS_COOKIE_NAME),
     authenticate,
+    sendNotification,
     cachedSessions: () => cache.size,
   };
 }
