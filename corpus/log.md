@@ -1,5 +1,14 @@
 # Log
 
+## [2026-10-07] maintenance | Deployed; the Timișoara sources step is dropped
+
+The owner deployed Ward, then prm. The owner dropped the open step of adding the
+two Timișoara feeds and testing them: brief 31 is complete as built, and the
+feeds stay approved for whenever the owner adds them in the admin. The first
+deploy left migration 0004 unapplied, because vps-deploy ran migrations from a
+four-week-old `prm-migrate` image; `/api/places` answered 500 (`no such column:
+"retired_at"`). Fixed in vps-deploy (`228bec0`); a `server` redeploy applies it.
+
 ## [2026-10-07] done | Brief 32 — notification email through Ward
 
 Ward's brief 17 landed, so prm now mails its inbox. The Ward client gains `sendNotification`,
