@@ -38,7 +38,7 @@ starred ones were reproduced by running something.
 
 ## Watch (named, not spec'd)
 
-> **Promoted 2026-10-06 by the owner.** Ward on the public path is [brief 30](../briefs/todo/30-resolve-ward-only-where-needed.md); the cache, URL schemes, Overpass and DST items are [brief 33](../briefs/done/33-watch-list-hardening.md) (done 2026-10-07); OSM retirement is [brief 34](../briefs/todo/34-osm-retires-deleted-places.md). Seed events' null end dates were covered by brief 19.
+> **Promoted 2026-10-06 by the owner.** Ward on the public path is [brief 30](../briefs/done/30-resolve-ward-only-where-needed.md) (done 2026-10-07); the cache, URL schemes, Overpass and DST items are [brief 33](../briefs/done/33-watch-list-hardening.md) (done 2026-10-07); OSM retirement is [brief 34](../briefs/todo/34-osm-retires-deleted-places.md). Seed events' null end dates were covered by brief 19.
 
 - **The public map asks Ward on every request from a signed-in visitor.** The
   root preHandler resolves the session whenever a `ward_session` cookie is

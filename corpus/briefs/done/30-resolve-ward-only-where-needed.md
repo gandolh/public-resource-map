@@ -46,3 +46,24 @@ guards), `routes/me.ts`, and the two guarded routes `favorites.ts` and
   `WardUnavailableError`, 401 without a cookie, 403 without the grant.
 - One request through a guard and `/api/me`-style reuse calls Ward at most once.
 - `npm test` and `npm run typecheck` pass.
+
+## Outcome (2026-10-07)
+
+Shipped as specified. The root `preHandler` is gone. `resolveWard(req)`, decorated on the root
+instance, resolves a request's session at most once (a `WeakMap` of promises keyed on the
+request) with the same cookie short cut and error handling. `requireAuth` and `requireAdmin`
+await it first, then decide as before. `/api/me` calls `app.resolveWard(req)` itself.
+`favorites.ts` and `archive.ts` are unchanged. The comment in `app.ts` that described the hook
+is updated.
+
+Verified in `ward.plugin.api.test.ts` with a stub client that counts calls:
+- With a `ward_session` cookie and a Ward that never answers, eight public reads (`/api/places`,
+  a place, its events, what's on, `/api/events`, an event, the archive, `/health`) answer 200 and
+  the stub is never called. Against the old plugin this test hangs until it times out.
+- A guarded route answers 503 when Ward throws `WardUnavailableError`, 401 without a cookie
+  (Ward not called), 403 without the grant.
+- A route behind both guards whose handler also calls `resolveWard` asks Ward once.
+
+`npm test` 232 passed, `npm run typecheck` clean. The e2e suite passes 27/27 run serially. In
+parallel, two to four public-surface specs time out at Playwright's 5 s waiting for the place
+panel on a cold dev server, a different set each run; they do not touch Ward and pass alone.

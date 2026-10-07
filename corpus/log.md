@@ -1,5 +1,15 @@
 # Log
 
+## [2026-10-07] done | Brief 30 — Ward is asked only where a user is needed
+
+The root `preHandler` resolved the Ward session whenever a `ward_session` cookie came in, and
+that cookie is estate-wide, so a slow Ward slowed the public map for anyone signed in anywhere in
+the estate. Now `resolveWard` resolves a session at most once per request, and only
+`requireAuth`, `requireAdmin` and `/api/me` call it. The revision is in decisions-identity.md.
+With a Ward that never answers, eight public reads still answer and Ward is never called; the
+guards still give 503, 401 and 403. Tests 232. The e2e suite passes serially; in parallel a few
+public specs time out on a cold dev server, a different few each run.
+
 ## [2026-10-07] decide | București stays places-only; the source shortlist is retired
 
 The owner decided București gets no event sources for now. Its OSM places carry the map there.

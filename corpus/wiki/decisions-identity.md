@@ -1,6 +1,6 @@
 ---
 summary: Identity decisions: the superseded original auth design, and why sign-in, accounts and public registration are Ward's since 2026-09-06.
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Decisions — identity
@@ -55,10 +55,12 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
   the estate gates its whole surface; prm is a *public resource map* and does
   the opposite. The root hook resolves a session only when a cookie is present
   and leaves the request anonymous otherwise; `requireAuth`/`requireAdmin` stay
-  opt-in per route. **Revised 2026-10-06 (owner):** the root hook goes, and only
-  the guards and `/api/me` resolve a session ([brief 30](../briefs/todo/30-resolve-ward-only-where-needed.md)),
-  because the estate-wide cookie made signed-in visitors' public requests wait on
-  Ward. A consequence worth keeping: **when Ward is down, the public
+  opt-in per route. **Revised 2026-10-06 (owner), built 2026-10-07
+  ([brief 30](../briefs/done/30-resolve-ward-only-where-needed.md)):** there is no
+  root hook. `resolveWard` resolves a request's session at most once, and only the
+  guards and `/api/me` call it. Why: the `ward_session` cookie is estate-wide, so
+  anyone signed in to any estate app made every public-map request wait on Ward,
+  up to its 5 s timeout when Ward was slow. A consequence worth keeping: **when Ward is down, the public
   map still works**, because it never asks Ward anything. Guarded routes answer
   503 and fail closed. "Ward is down" includes **Ward's key set being
   unreachable** (brief 21, 2026-10-03): a failure to fetch or read the JWKS is

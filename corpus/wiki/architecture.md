@@ -1,6 +1,6 @@
 ---
 summary: How the code is put together: the ui → shared ← backend workspaces, the UI file map, backend routes and services, and what lives in shared.
-updated: 2026-10-04
+updated: 2026-10-07
 ---
 
 # Architecture
@@ -85,8 +85,12 @@ app/
 | POST | `/api/events` | create an event — **admin only** (it publishes straight to `live`) |
 | DELETE | `/api/events/:id` | delete an event — **admin only**; 409 `EVENT_IN_USE` while referenced |
 | GET | `/api/whats-on` | the city's upcoming events, grouped (public) |
-| POST | `/api/admin/osm/sync` | OSM import for a city — **admin only** |
+| POST | `/api/admin/osm/sync` | OSM import for a city — **admin only**; 409 while that city is syncing, 504 when Overpass does not answer in 100 s (brief 33) |
 | GET | `/api/me` | the signed-in Ward caller, narrowed |
+
+Ward is asked only by `requireAuth`, `requireAdmin` and `/api/me`, through `resolveWard`, at
+most once per request. A public route never asks, even when a `ward_session` cookie comes in
+(brief 30).
 
 Proximity filtering uses a bounding-box approximation (not Haversine). Good enough for city-scale use.
 

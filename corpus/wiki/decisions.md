@@ -140,7 +140,7 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
   - `favorite_place` (subject → placeId) — drives "new here" notifications.
   - `favorite_event` (subject → eventId) — drives day-before reminders. _Distinct from favoriting a place; "remind me before this" only makes sense for a specific event the user intends to attend._
 - **Notifications: IN-APP inbox + EMAIL (revised 2026-06-28 after research — was in-app-only).** The in-app inbox/bell stays (testable, natural read-model); **email is added as a second delivery channel on the same notification rows**, reusing the auth verify/reset email infra (console-logged in dev, provider before launch). Rationale: Bandsintown/Apple Music confirm the **away-from-app ping** is the core of the retention loop the POC exists to demo; in-app-only was the weakest part of the story and email is cheap given the infra already exists.
-- **Revised 2026-10-06 (owner): Ward sends the email.** Replaces 2026-10-04's "in-app only for now". Ward mails a granted, verified user on prm's behalf; prm never holds an address ([Ward brief 17](../../../wzd_auth/corpus/briefs/todo/17-app-notification-mail.md), [brief 32](../briefs/todo/32-notification-email-through-ward.md)). Rejected: Ward exposing addresses to app keys.
+- **Revised 2026-10-06 (owner): Ward sends the email.** Replaces 2026-10-04's "in-app only for now". Ward mails a granted, verified user on prm's behalf; prm never holds an address ([Ward brief 17](../../../wzd_auth/corpus/briefs/done/17-app-notification-mail.md), [brief 32](../briefs/todo/32-notification-email-through-ward.md)). Rejected: Ward exposing addresses to app keys.
 - **Email is blocked on Ward (found 2026-10-03, brief 05).** prm knows people only by Ward's opaque subject and holds no addresses, and the "auth email infra" it would reuse was removed with the cutover. The in-app inbox shipped; email needs Ward to expose a verified address to an app's key, or to send on the app's behalf. `notification.emailed_at` is the idempotency marker either way.
 - **Web/native push is still OUT** for the POC — the noted #1 post-POC retention upgrade (service worker + VAPID, iOS caveats).
 - Email sends are best-effort/idempotent off the same `notification` rows (don't double-send on retries).
@@ -186,7 +186,7 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 
 ## Owner decisions, 2026-10-06 (open questions, one at a time)
 
-- **Ward is asked only on routes that need a user** ([brief 30](../briefs/todo/30-resolve-ward-only-where-needed.md)). Revises the root `preHandler` in [decisions-identity.md](decisions-identity.md).
+- **Ward is asked only on routes that need a user** ([brief 30](../briefs/done/30-resolve-ward-only-where-needed.md), built 2026-10-07). Revises the root `preHandler` in [decisions-identity.md](decisions-identity.md).
 - **First sources: Filarmonica Banatul and Teatrul Național Timișoara, with descriptions.** Terms read 2026-10-06: both are public institutions with no terms-of-use page and nothing like iaBilet's art. 28.3; robots.txt allows the feeds; TNTM's footer says "Toate drepturile rezervate". The owner accepted republishing descriptions with the source link shown. Added by the owner after [brief 31](../briefs/done/31-ical-wordpress-shortcodes.md).
 - **No "tickets now available" trigger.** Two triggers are enough.
 - **The audit's watch list is promoted** ([33](../briefs/done/33-watch-list-hardening.md), [34](../briefs/todo/34-osm-retires-deleted-places.md)).
