@@ -44,3 +44,27 @@ In production's admin, Sources → Add a source, twice, city Timișoara, mechani
 
 Then refresh each and review the diff. Filarmonica's `LOCATION` is a full address,
 so expect venue rows in review until a place is chosen or pinned.
+
+## Outcome (2026-10-07)
+
+Shipped in `ical.ts` as specified. `stripShortcodes` removes a bracketed tag that has
+`name="value"` attributes, is a closing `[/name]`, or opens a tag closed later in the text.
+"[sold out]" and "[Premieră] …" stay. The first `https:` `url` from a removed shortcode becomes
+`buyUrl`; `javascript:` and `http:` links are never lifted. Blank lines collapse, each line is
+trimmed, and an empty description is dropped.
+
+The real feed differs from the excerpt above in three ways, all handled or noted:
+- A second `[DKB …]` links to a questionnaire (questionpro.eu). The ticket button always comes
+  first, so "first https URL" picks eventim.
+- Seven events carry `&nbsp\;` on a line of its own. It would have shown as literal text, so it
+  now counts as a space. No other HTML entity appears in either feed.
+- Every TNTM description ends with "Regulamentul spectatorului", the leftover text of a link to
+  the theatre's rules. It is not a shortcode and stays. Worth a look if it reads badly.
+
+Verified: the brief's three cases plus enclosing tags and plain brackets in `ical.test.ts`.
+Both approved feeds, fetched once on 2026-10-07 and run through `parseIcal` and
+`rawEventSchema`: TNTM 25 events, all valid, all with an eventim `buyUrl`, no shortcode text
+left; Filarmonica 30 events, all valid, unchanged. `npm test` 226 passed, `npm run typecheck`
+clean.
+
+The owner steps above (adding the two sources in production's admin) are still to do.

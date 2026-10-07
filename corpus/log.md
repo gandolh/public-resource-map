@@ -1,5 +1,15 @@
 # Log
 
+## [2026-10-07] done | Brief 31 — iCal descriptions lose their WordPress shortcodes
+
+Teatrul Național's feed puts its ticket button in every description as a raw `[DKB url="…"]`
+shortcode, then a second one for a questionnaire. The iCal adapter now strips shortcode-shaped
+tags, keeps other bracketed text, and lifts the first https `url` as the event's buy link.
+A stray `&nbsp;` counts as a space. Run against both approved feeds as served today: all 25
+TNTM events come out clean with an eventim link, and Filarmonica's 30 are unchanged. Each TNTM
+description still ends with "Regulamentul spectatorului", a leftover link text, left as it is.
+Tests 226. The owner adds the two sources in production's admin next.
+
 ## [2026-10-07] done | Brief 33 — four fixes from the audit's watch list
 
 Each part is its own commit. Stored links (event buy, source and image links, a place's
