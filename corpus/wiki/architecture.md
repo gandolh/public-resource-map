@@ -120,7 +120,7 @@ One Drizzle schema (`backend/src/db/schema.ts`) owns the **full table set** so b
 | `notification` | 05 | `kind` (`new-event`\|`reminder`), nullable `placeId`/`eventId`, `batchId` (coalesces a new-event batch), `readAt`, `emailedAt` | **unique `(userId,eventId,kind)`** (reminder idempotency; new-event rows have null `eventId`) | `user`, `place`, `event` |
 | `notification_event` | 05 | join: `notificationId`, `eventId` | unique `(notificationId,eventId)`; FK indexes | `notification`, `event` |
 
-**Lifecycle:** an `event` is never hard-deleted when it ends — it flips `status` to `past` (powers brief 14 archive); OSM re-sync upserts only `source='osm'` places (never clobbers `event-venue` or manual pins); new-event notifications are coalesced per `(place, batch)` and fan out via `notification_event`, reminders are per-event.
+**Lifecycle:** an `event` is never hard-deleted when it ends — it flips `status` to `past` (powers brief 14 archive); OSM re-sync upserts only `source='osm'` places (never clobbers `event-venue` or manual pins); new-event notifications are coalesced per `(place, batch)` and fan out via `notification_event`, reminders are per-event. Each row is mailed once through Ward's `POST /notify` by `lib/notify-mail.ts`, kicked after an accept and after the daily reminder run; `emailedAt` marks it (brief 32).
 
 ## Shared (`shared/`)
 

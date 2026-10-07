@@ -25,4 +25,5 @@ The *mechanisms* are decided; the exact numbers must be tuned once real RO data 
 
 ## Secondary (revisit if it bites)
 
+- **Notification mail mixes languages** (brief 32, 2026-10-07). prm writes the mail in Romanian, and Ward wraps every app's text in an English footer naming the app. A Ward-side change (a per-app or per-language footer) would fix it; prm cannot.
 - **R-tree / spatialite spatial index** — NOT needed for the POC (city-scoped bbox + `(lat,lng)`+city index is sufficient — see [decisions.md](decisions.md) / brief 12). Documented future option only; revisit if query latency shows up at real volume.

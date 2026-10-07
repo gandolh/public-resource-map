@@ -89,7 +89,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 29 | [briefs/done/29-reconcile-0001-with-schema.md](briefs/done/29-reconcile-0001-with-schema.md) | done | Reconcile the deployed schema with `schema.ts` — 0001 drift (**before 05**) |
 | 30 | [briefs/done/30-resolve-ward-only-where-needed.md](briefs/done/30-resolve-ward-only-where-needed.md) | done | Ask Ward only on the routes that need a user |
 | 31 | [briefs/done/31-ical-wordpress-shortcodes.md](briefs/done/31-ical-wordpress-shortcodes.md) | done | Strip WordPress shortcodes from iCal descriptions; keep their ticket link |
-| 32 | [briefs/todo/32-notification-email-through-ward.md](briefs/todo/32-notification-email-through-ward.md) | todo | Send notification email through Ward (waits on wzd_auth brief 17) |
+| 32 | [briefs/done/32-notification-email-through-ward.md](briefs/done/32-notification-email-through-ward.md) | done | Send notification email through Ward (after wzd_auth brief 17) |
 | 33 | [briefs/done/33-watch-list-hardening.md](briefs/done/33-watch-list-hardening.md) | done | Four fixes from the audit's watch list: links, "tomorrow", Overpass, the Ward cache |
 | 34 | [briefs/done/34-osm-retires-deleted-places.md](briefs/done/34-osm-retires-deleted-places.md) | done | An OSM re-sync retires places OSM no longer has |
 

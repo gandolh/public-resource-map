@@ -1,5 +1,16 @@
 # Log
 
+## [2026-10-07] done | Brief 32 — notification email through Ward
+
+Ward's brief 17 landed, so prm now mails its inbox. The Ward client gains `sendNotification`,
+mirrored from Ward's reference client. A sweep in `lib/notify-mail.ts` sends one Romanian mail
+per unmailed notification row, in the bell's words with a link to the place. New-event rows are
+already one per follower per place per batch, so a batch is one mail. A refusal is marked and
+final; an outage or a refused app key leaves the row for the next sweep. Past news is marked
+without a mail, so the first run does not mail old items. The sweep runs after an accept and
+after each daily reminder run, never inside a request. The dead pre-Ward mailer is gone. Ward's
+English footer around Romanian text is an open question. Tests 256, e2e 27/27 serially.
+
 ## [2026-10-07] maintenance | The 2026-09-27 audit is retired
 
 With briefs 33 and 34 done, every item the audit found is a done brief: 18–28 from its ranked
