@@ -82,12 +82,18 @@ function Item({ item }: { item: NotificationDto }) {
   );
   return (
     <li className={cn("border-b border-line last:border-b-0", !item.readAt && "bg-accent-weak/50")}>
-      {item.place ? (
+      {item.place?.listed ? (
         <Link to={`/places/${item.place.id}`} className="block px-3.5 py-2.5 hover:bg-surface-2">
           {content}
         </Link>
       ) : (
-        <div className="px-3.5 py-2.5">{content}</div>
+        // No place, or one OSM no longer has (brief 34): named, not a broken link.
+        <div className="px-3.5 py-2.5">
+          {content}
+          {item.place && (
+            <span className="mt-0.5 block text-[12px] text-fg-faint">{t("place.unlisted")}</span>
+          )}
+        </div>
       )}
     </li>
   );

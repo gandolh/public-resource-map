@@ -22,6 +22,11 @@ export const osmSyncResultSchema = z.object({
   skippedUnnamed: z.number(), // features with no `name` tag (dropped as noise)
   skippedNoGeometry: z.number(), // features Overpass returned without a point/center
   skippedProtected: z.number(), // matching osm rows left untouched (manual pin)
+  // Brief 34: places OSM no longer has leave the map softly (`retired_at`).
+  retired: z.number(), // listed osm places missing from this answer, now hidden
+  unretired: z.number(), // retired places this answer contained again, listed again
+  retirementHeld: z.number(), // > 0: the answer would have retired more than 10%, so nothing was
+  eventsToReview: z.number(), // upcoming events at newly retired places, back in admin review
 });
 
 export type OsmSyncResult = z.infer<typeof osmSyncResultSchema>;

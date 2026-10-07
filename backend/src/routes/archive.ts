@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { desc, eq, inArray, or, sql, type SQL } from "drizzle-orm";
+import { desc, eq, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { archiveQuerySchema, parseCsv, type ArchiveQuery, type WhatsOnItem } from "@public-resource-map/shared";
 import { event, favoriteEvent, favoritePlace, place } from "../db/schema.js";
 import { rowToEvent } from "./event-mapper.js";
@@ -42,6 +42,8 @@ export async function archiveRoutes(app: FastifyInstance) {
         address: r.place.address,
         city: r.place.city,
         coordinates: { lat: r.place.lat, lng: r.place.lng },
+        // Only "mine" can hold a retired place; it shows as no longer listed.
+        ...(r.place.retiredAt ? { listed: false } : {}),
       },
     }));
     return { data, total: count?.n ?? 0, page: q.page, pageSize: q.pageSize };
@@ -64,7 +66,8 @@ export async function archiveRoutes(app: FastifyInstance) {
   app.get("/archive", async (req, reply) => {
     const q = parse(req.query, reply);
     if (!q) return reply;
-    const conditions = [pastAt(new Date().toISOString()), ...categoryFilter(q)];
+    // Public: a retired place's past events go with it (brief 34).
+    const conditions = [pastAt(new Date().toISOString()), isNull(place.retiredAt), ...categoryFilter(q)];
     if (q.city) conditions.push(eq(place.city, q.city));
     return page(sql.join(conditions, sql` AND `), q);
   });

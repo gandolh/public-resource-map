@@ -1,0 +1,1 @@
+ALTER TABLE `place` ADD `retired_at` text;

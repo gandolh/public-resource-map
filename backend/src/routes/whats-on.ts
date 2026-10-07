@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { asc, eq, inArray, sql } from "drizzle-orm";
+import { asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { event, place } from "../db/schema.js";
 import {
   parseCsv,
@@ -33,7 +33,7 @@ export async function whatsOnRoutes(app: FastifyInstance) {
     const { city, category, lens, page, pageSize } = query.data;
     const { from, to } = lensWindow(lens);
 
-    const conditions = [liveInWindow(from, to)];
+    const conditions = [liveInWindow(from, to), isNull(place.retiredAt)];
     if (city) conditions.push(eq(place.city, city));
 
     const categories = parseCsv(category);

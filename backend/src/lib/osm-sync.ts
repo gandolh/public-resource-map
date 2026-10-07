@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import type { OsmSyncResult } from "@public-resource-map/shared";
 import type { DB } from "../db/index.js";
-import { place } from "../db/schema.js";
+import { event, place, stagedEvent } from "../db/schema.js";
 import {
   OVERPASS_TAG_FILTERS,
   mapTagsToCategory,
@@ -279,6 +279,8 @@ export interface UpsertResult {
   inserted: number;
   updated: number;
   skippedProtected: number;
+  /** Retired places this sync found in OSM again, and listed again. */
+  unretired: number;
 }
 
 export async function upsertOsmPlaces(
@@ -288,6 +290,7 @@ export async function upsertOsmPlaces(
   let inserted = 0;
   let updated = 0;
   let skippedProtected = 0;
+  let unretired = 0;
 
   for (const p of places) {
     const existing = await db
@@ -320,10 +323,12 @@ export async function upsertOsmPlaces(
           website: p.website,
           phone: p.phone,
           openingHours: p.openingHours,
+          retiredAt: null,
           updatedAt: sql`(datetime('now'))`,
         })
         .where(eq(place.id, existing.id));
       updated++;
+      if (existing.retiredAt) unretired++;
     } else {
       await db.insert(place).values({
         id: randomUUID(),
@@ -335,11 +340,109 @@ export async function upsertOsmPlaces(
     }
   }
 
-  return { inserted, updated, skippedProtected };
+  return { inserted, updated, skippedProtected, unretired };
 }
 
 // ---------------------------------------------------------------------------
-// Orchestrator — build query → fetch (stubbable) → normalize → upsert.
+// Retirement (brief 34) — a place OSM no longer has leaves the map, softly.
+// ---------------------------------------------------------------------------
+
+/**
+ * The safety valve: a sync that would retire more than this share of a city's
+ * listed OSM places retires nothing. Real closures arrive a few at a time
+ * between syncs, while a truncated or failed Overpass answer drops far more,
+ * and it must not empty a city.
+ */
+export const RETIRE_MAX_SHARE = 0.1;
+
+export interface RetireResult {
+  retired: number;
+  /** Non-zero when the valve held: how many places this answer would have retired. */
+  retirementHeld: number;
+  /** Upcoming events at newly retired places, sent back to the admin review queue. */
+  eventsToReview: number;
+}
+
+/**
+ * Retire the city's listed `source:osm` places that this sync's answer did
+ * not contain. Never an event venue, never a manual pin. The row stays, with
+ * its favourites and past events; `retired_at` hides it from every public
+ * read (decisions.md → OSM resource ingestion).
+ */
+export async function retireMissingPlaces(
+  db: DB,
+  cityName: string,
+  seen: OsmPlaceInput[],
+  now: string,
+): Promise<RetireResult> {
+  const seenKeys = new Set(seen.map((p) => `${p.osmType}/${p.osmId}`));
+  const listed = await db
+    .select({ id: place.id, osmType: place.osmType, osmId: place.osmId, isManualPin: place.isManualPin })
+    .from(place)
+    .where(and(eq(place.source, "osm"), eq(place.city, cityName), isNull(place.retiredAt)))
+    .all();
+  const missing = listed.filter((p) => !p.isManualPin && !seenKeys.has(`${p.osmType}/${p.osmId}`));
+  if (missing.length === 0) return { retired: 0, retirementHeld: 0, eventsToReview: 0 };
+  if (missing.length > listed.length * RETIRE_MAX_SHARE) {
+    return { retired: 0, retirementHeld: missing.length, eventsToReview: 0 };
+  }
+
+  const ids = missing.map((p) => p.id);
+  await db.update(place).set({ retiredAt: now, updatedAt: now }).where(inArray(place.id, ids)).run();
+  return { retired: ids.length, retirementHeld: 0, eventsToReview: await reviewEventsAt(db, ids, now) };
+}
+
+/**
+ * Upcoming (or running) live events at places that just retired go back to the
+ * admin as `changed`, with no place: the admin picks a new one or drops a pin,
+ * and accepting moves the event there. Only an ingested event has a staged row
+ * to review; one created by hand stays where it is, hidden with its place.
+ */
+async function reviewEventsAt(db: DB, placeIds: string[], now: string): Promise<number> {
+  const upcoming = await db
+    .select({ id: event.id, placeName: place.name })
+    .from(event)
+    .innerJoin(place, eq(place.id, event.placeId))
+    .where(
+      and(
+        inArray(event.placeId, placeIds),
+        eq(event.status, "live"),
+        gte(sql`coalesce(${event.endDate}, ${event.startDate})`, now),
+      ),
+    )
+    .all();
+  let sent = 0;
+  for (const e of upcoming) {
+    const rows = await db
+      .select({ id: stagedEvent.id, payload: stagedEvent.payload })
+      .from(stagedEvent)
+      .where(and(eq(stagedEvent.eventId, e.id), eq(stagedEvent.status, "accepted")))
+      .all();
+    for (const row of rows) {
+      const payload = row.payload ? (JSON.parse(row.payload) as Record<string, unknown>) : {};
+      payload.issues = `Its place, ${e.placeName}, is no longer in OpenStreetMap and was retired. Pick a place or drop a pin.`;
+      await db
+        .update(stagedEvent)
+        .set({
+          status: "changed",
+          placeId: null,
+          matchStatus: "unmatched",
+          candidates: null,
+          lat: null,
+          lng: null,
+          payload: JSON.stringify(payload),
+          updatedAt: now,
+        })
+        .where(eq(stagedEvent.id, row.id))
+        .run();
+      sent++;
+    }
+  }
+  return sent;
+}
+
+// ---------------------------------------------------------------------------
+// Orchestrator — build query → fetch (stubbable) → normalize → upsert → retire.
 // ---------------------------------------------------------------------------
 export interface SyncDeps {
   fetchOverpass?: OverpassFetcher;
@@ -410,9 +513,15 @@ async function runSync(
     elements,
     city.name,
   );
-  const { inserted, updated, skippedProtected } = await upsertOsmPlaces(
+  const { inserted, updated, skippedProtected, unretired } = await upsertOsmPlaces(
     db,
     places,
+  );
+  const { retired, retirementHeld, eventsToReview } = await retireMissingPlaces(
+    db,
+    city.name,
+    places,
+    new Date().toISOString(),
   );
 
   return {
@@ -424,5 +533,9 @@ async function runSync(
     skippedUnnamed,
     skippedNoGeometry,
     skippedProtected,
+    retired,
+    unretired,
+    retirementHeld,
+    eventsToReview,
   };
 }

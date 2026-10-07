@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, inArray, isNotNull, lt } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, lt } from "drizzle-orm";
 import {
   rawEventSchema,
   type RawEvent,
@@ -148,10 +148,11 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
     return { ...summary, status: "error", error: message };
   }
 
+  // A retired place (brief 34) is no venue for a new listing.
   const cityPlaces = await db
     .select({ id: place.id, name: place.name })
     .from(place)
-    .where(eq(place.city, city.name))
+    .where(and(eq(place.city, city.name), isNull(place.retiredAt)))
     .all();
   const existingFor = async (key: string) =>
     db
@@ -530,7 +531,7 @@ export async function resolveStagedPlace(db: DB, id: string, input: ResolvePlace
 
   if ("placeId" in input) {
     const target = await db.select().from(place).where(eq(place.id, input.placeId)).get();
-    if (!target || target.city !== city.name) {
+    if (!target || target.city !== city.name || target.retiredAt) {
       throw new IngestError("PLACE_NOT_IN_CITY", `No such place in ${city.name}`, 400);
     }
     await db

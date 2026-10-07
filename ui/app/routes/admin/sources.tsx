@@ -276,7 +276,17 @@ function OsmSync() {
       </div>
       {sync.data && (
         <p role="status" className="mt-3 text-[13px] text-fg-muted">
-          {t("admin.osmResult", { city: sync.data.city, upserted: sync.data.upserted, inserted: sync.data.inserted })}
+          {t("admin.osmResult", { city: sync.data.city, upserted: sync.data.upserted, inserted: sync.data.inserted })}{" "}
+          {t("admin.osmRetired", {
+            retired: sync.data.retired,
+            unretired: sync.data.unretired,
+            review: sync.data.eventsToReview,
+          })}
+        </p>
+      )}
+      {sync.data && sync.data.retirementHeld > 0 && (
+        <p role="alert" className="mt-2 text-[12.5px] text-danger">
+          {t("admin.osmHeld", { held: sync.data.retirementHeld })}
         </p>
       )}
       {sync.isError && <p role="alert" className="mt-3 text-[12.5px] text-danger">{sync.error.message}</p>}

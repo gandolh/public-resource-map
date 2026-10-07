@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { and, asc, eq, inArray, sql, getTableColumns } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql, getTableColumns } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { event, place } from "../db/schema.js";
 import {
@@ -83,7 +83,8 @@ export async function placeRoutes(app: FastifyInstance) {
     const { from, to } = lensWindow(lens);
     const eventCount = upcomingCountExpr(db, from, to);
 
-    const conditions = [];
+    // A retired place (brief 34: OSM no longer has it) is on no public surface.
+    const conditions = [isNull(place.retiredAt)];
     if (city) conditions.push(eq(place.city, city));
     if (lat !== undefined && lng !== undefined) {
       const box = boundingBox(lat, lng, radiusKm);
@@ -99,9 +100,7 @@ export async function placeRoutes(app: FastifyInstance) {
     // density a dimmed pin is invisible (locked 2026-06-28 stress test).
     if (lens !== "all") conditions.push(sql`${eventCount} > 0`);
 
-    const where = conditions.length
-      ? sql.join(conditions, sql` AND `)
-      : undefined;
+    const where = sql.join(conditions, sql` AND `);
     const offset = (page - 1) * pageSize;
 
     const [rows, countRows] = await Promise.all([
@@ -144,7 +143,7 @@ export async function placeRoutes(app: FastifyInstance) {
       const exists = await db
         .select({ id: place.id })
         .from(place)
-        .where(eq(place.id, req.params.id))
+        .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
         .get();
       if (!exists) {
         return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
@@ -169,7 +168,7 @@ export async function placeRoutes(app: FastifyInstance) {
     const row = await db
       .select()
       .from(place)
-      .where(eq(place.id, req.params.id))
+      .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
       .get();
 
     if (!row) return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });

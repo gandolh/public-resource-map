@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { event, place } from "../db/schema.js";
@@ -32,6 +32,7 @@ export async function eventRoutes(app: FastifyInstance) {
 
     // Events attach to a place; proximity is filtered via the place's coords.
     const conditions = [
+      isNull(place.retiredAt),
       sql`${place.lat} BETWEEN ${box.minLat} AND ${box.maxLat}`,
       sql`${place.lng} BETWEEN ${box.minLng} AND ${box.maxLng}`,
     ];
@@ -67,14 +68,16 @@ export async function eventRoutes(app: FastifyInstance) {
   });
 
   app.get<{ Params: { id: string } }>("/events/:id", async (req, reply) => {
+    // An event at a retired place (brief 34) is hidden with it.
     const row = await db
-      .select()
+      .select({ event })
       .from(event)
-      .where(eq(event.id, req.params.id))
+      .innerJoin(place, eq(place.id, event.placeId))
+      .where(and(eq(event.id, req.params.id), isNull(place.retiredAt)))
       .get();
 
     if (!row) return reply.status(404).send({ code: "NOT_FOUND", message: "Event not found" });
-    return rowToEvent(row);
+    return rowToEvent(row.event);
   });
 
   // Admin-only, like the place writes (brief 18). Anonymous POSTs used to

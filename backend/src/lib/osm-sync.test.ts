@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { buildTestApp, type TestApp } from "../test/harness.js";
-import { place } from "../db/schema.js";
+import { event, eventSource, place, stagedEvent } from "../db/schema.js";
 import {
   CITIES,
   OverpassTimeoutError,
@@ -268,7 +268,7 @@ describe("upsertOsmPlaces + syncOsmForCity (no clobber)", () => {
       },
     ]);
 
-    expect(result).toEqual({ inserted: 1, updated: 1, skippedProtected: 1 });
+    expect(result).toEqual({ inserted: 1, updated: 1, skippedProtected: 1, unretired: 0 });
 
     // event-venue row untouched
     const ev = await t.db
@@ -421,5 +421,118 @@ describe("syncOsmForCity: timeout and one sync per city (brief 33)", () => {
     ).rejects.toThrow("429");
     const again = await syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => library });
     expect(again.inserted).toBe(1);
+  });
+});
+
+describe("syncOsmForCity: retiring places OSM no longer has (brief 34)", () => {
+  let t: TestApp;
+  beforeEach(async () => {
+    t = await buildTestApp();
+  });
+  afterEach(async () => {
+    await t.close();
+  });
+
+  /** Libraries with OSM node ids `ids`, as Overpass would answer. */
+  const answer = (ids: number[]): OverpassResponse => ({
+    elements: ids.map((id) => ({
+      type: "node" as const,
+      id,
+      lat: 45.75 + id / 10_000,
+      lon: 21.22,
+      tags: { name: `Biblioteca ${id}`, amenity: "library" },
+    })),
+  });
+  const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
+  const sync = (ids: number[]) =>
+    syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => answer(ids) });
+  const byOsmId = (osmId: string) =>
+    t.db.select().from(place).where(and(eq(place.source, "osm"), eq(place.osmId, osmId))).get();
+  const listedIds = async () =>
+    (await t.db.select({ osmId: place.osmId }).from(place).where(isNull(place.retiredAt)).all()).map((r) => r.osmId);
+
+  it("retires a place missing from the next answer, and lists it again when it is back", async () => {
+    await sync(range(20));
+    const second = await sync(range(20).filter((id) => id !== 5));
+    expect(second).toMatchObject({ retired: 1, unretired: 0, retirementHeld: 0 });
+
+    const gone = await byOsmId("5");
+    expect(gone?.retiredAt).not.toBeNull(); // the row stays
+    expect(await listedIds()).not.toContain("5");
+    const res = await t.app.inject({ method: "GET", url: `/api/places/${gone!.id}` });
+    expect(res.statusCode).toBe(404);
+
+    const third = await sync(range(20));
+    expect(third).toMatchObject({ retired: 0, unretired: 1 });
+    expect((await byOsmId("5"))?.retiredAt).toBeNull();
+    expect((await byOsmId("5"))?.id).toBe(gone!.id);
+  });
+
+  it("never retires a manual pin, an event venue, or another city's place", async () => {
+    await t.db.insert(place).values([
+      { id: "venue", name: "Club", category: "other", source: "event-venue", city: "Timișoara", lat: 45.7, lng: 21.2 },
+      {
+        id: "pin", name: "Pinned by hand", category: "other", source: "osm", osmType: "node", osmId: "999",
+        isManualPin: true, city: "Timișoara", lat: 45.71, lng: 21.21,
+      },
+      {
+        id: "buc", name: "Biblioteca din București", category: "library", source: "osm", osmType: "node",
+        osmId: "777", city: "București", lat: 44.43, lng: 26.1,
+      },
+    ]);
+    await sync(range(20));
+    const again = await sync(range(20));
+    expect(again.retired).toBe(0);
+    const kept = await t.db.select({ id: place.id, retiredAt: place.retiredAt }).from(place).all();
+    for (const id of ["venue", "pin", "buc"]) {
+      expect(kept.find((p) => p.id === id)?.retiredAt, id).toBeNull();
+    }
+  });
+
+  it("retires nothing when the answer would retire more than 10% of the city, and says so", async () => {
+    await sync(range(20));
+    const truncated = await sync(range(17)); // 3 of 20 missing: 15%
+    expect(truncated).toMatchObject({ retired: 0, retirementHeld: 3 });
+    expect(await listedIds()).toHaveLength(20);
+
+    const empty = await sync([]); // a failed query that still answered
+    expect(empty).toMatchObject({ retired: 0, retirementHeld: 20 });
+    expect(await listedIds()).toHaveLength(20);
+
+    const two = await sync(range(18)); // 2 of 20: exactly 10% is allowed
+    expect(two).toMatchObject({ retired: 2, retirementHeld: 0 });
+  });
+
+  it("sends upcoming events at a retired place back to review, and leaves past ones", async () => {
+    await sync(range(20));
+    const lib = (await byOsmId("5"))!;
+    await t.db.insert(eventSource).values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" });
+    const day = 86_400_000;
+    await t.db.insert(event).values([
+      { id: "soon", placeId: lib.id, title: "Lectură", category: "community", startDate: new Date(Date.now() + day).toISOString() },
+      { id: "past", placeId: lib.id, title: "Lectură veche", category: "community", startDate: new Date(Date.now() - day).toISOString() },
+    ]);
+    await t.db.insert(stagedEvent).values(
+      ["soon", "past"].map((id) => ({
+        id: `staged-${id}`, sourceId: "src", placeId: lib.id, eventId: id, matchStatus: "auto-matched",
+        status: "accepted", title: id, startDate: new Date().toISOString(), payload: JSON.stringify({ title: id }),
+      })),
+    );
+
+    const result = await sync(range(20).filter((id) => id !== 5));
+    expect(result).toMatchObject({ retired: 1, eventsToReview: 1 });
+
+    const soon = await t.db.select().from(stagedEvent).where(eq(stagedEvent.id, "staged-soon")).get();
+    expect(soon).toMatchObject({ status: "changed", placeId: null, matchStatus: "unmatched" });
+    expect(JSON.parse(soon!.payload!).issues).toMatch(/Biblioteca 5.*no longer in OpenStreetMap/);
+    const past = await t.db.select().from(stagedEvent).where(eq(stagedEvent.id, "staged-past")).get();
+    expect(past?.status).toBe("accepted");
+
+    // In the review queue, with its reason.
+    const token = randomUUID();
+    t.ward.signIn(token, "admin-1", { prm: ["admin"] });
+    const queue = await t.app.inject({ method: "GET", url: "/api/admin/staged-events", headers: { cookie: `ward_session=${token}` } });
+    const row = (queue.json() as { data: { id: string; issues: string | null }[] }).data.find((r) => r.id === "staged-soon");
+    expect(row?.issues).toMatch(/retired/);
   });
 });

@@ -50,6 +50,11 @@ export const place = sqliteTable(
     openingHours: text("opening_hours"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
+    // Added by 0004 (brief 34), so it sits after the timestamps, as ALTER TABLE
+    // put it. Set when an OSM re-sync no longer finds this place: the row, its
+    // favourites and its past events stay, but no public read returns it. A
+    // later sync that finds it again clears this.
+    retiredAt: text("retired_at"),
   },
   (t) => [
     uniqueIndex("place_osm_unique")

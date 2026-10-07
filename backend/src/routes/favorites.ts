@@ -23,7 +23,11 @@ export async function favoriteRoutes(app: FastifyInstance) {
   });
 
   app.post<{ Params: { placeId: string } }>("/favorites/places/:placeId", guard, async (req, reply) => {
-    const target = await db.select({ id: place.id }).from(place).where(eq(place.id, req.params.placeId)).get();
+    const target = await db
+      .select({ id: place.id })
+      .from(place)
+      .where(and(eq(place.id, req.params.placeId), isNull(place.retiredAt)))
+      .get();
     if (!target) return notFound(reply, "place");
     await db.insert(favoritePlace).values({ subject: subjectOf(req), placeId: target.id }).onConflictDoNothing().run();
     return reply.status(204).send();
@@ -64,6 +68,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
         eventId: notification.eventId,
         placeId: place.id,
         placeName: place.name,
+        placeRetiredAt: place.retiredAt,
       })
       .from(notification)
       .leftJoin(place, eq(place.id, notification.placeId))
@@ -95,7 +100,8 @@ export async function favoriteRoutes(app: FastifyInstance) {
       kind: r.kind as NotificationDto["kind"],
       createdAt: r.createdAt,
       readAt: r.readAt,
-      place: r.placeId ? { id: r.placeId, name: r.placeName! } : null,
+      // A followed place OSM dropped (brief 34) is named, not linked.
+      place: r.placeId ? { id: r.placeId, name: r.placeName!, listed: r.placeRetiredAt === null } : null,
       events: (r.eventId ? [r.eventId] : links.filter((l) => l.notificationId === r.id).map((l) => l.eventId))
         .flatMap((id) => (byId.has(id) ? [byId.get(id)!] : []))
         .sort((a, b) => a.startDate.localeCompare(b.startDate)),

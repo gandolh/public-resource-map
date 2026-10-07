@@ -16,71 +16,86 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
   const { event, place } = item;
   const running = when === "time" && isRunning(event.startDate, event.endDate);
   const source = sourceName(event);
+  // A place OSM no longer has (brief 34) appears only in "my past events":
+  // the row names it and says so, and links nowhere.
+  const unlisted = place.listed === false;
+  const rowClass = "flex gap-3.5 py-3.5 md:gap-4 md:px-2 md:-mx-2 md:rounded-lg";
+  const body = (
+    <>
+      {running ? (
+        <span className="tnum w-12 shrink-0 pt-0.5 text-[11.5px] leading-tight font-semibold text-fg">
+          {t("event.until", { date: dayMonth(event.endDate!) })}
+        </span>
+      ) : (
+        <span className="tnum w-12 shrink-0 pt-0.5 text-[13.5px] font-semibold tracking-[-0.01em] text-fg">
+          {when === "date" ? dayMonth(event.startDate) : time(event.startDate)}
+        </span>
+      )}
 
-  return (
-    <li className="border-t border-line first:border-t-0">
-      <Link
-        to={`/places/${place.id}`}
-        className="flex gap-3.5 py-3.5 transition-colors hover:bg-surface-2 md:gap-4 md:px-2 md:-mx-2 md:rounded-lg"
-      >
-        {running ? (
-          <span className="tnum w-12 shrink-0 pt-0.5 text-[11.5px] leading-tight font-semibold text-fg">
-            {t("event.until", { date: dayMonth(event.endDate!) })}
+      <span className="min-w-0 flex-1">
+        <span className="block text-[14.5px] leading-snug font-semibold tracking-[-0.01em] text-fg">
+          {event.title}
+        </span>
+
+        {/* One line: wrapped, the "·" was left dangling at the end of the
+            first. A long place name truncates instead (TP-04, brief 10). */}
+        <span className="mt-1 flex items-center gap-x-2 text-[12.5px] text-fg-muted">
+          <span className="inline-flex shrink-0 items-center gap-1.5">
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: eventCategoryColor(event.category) }}
+            />
+            {t(eventCategoryKey(event.category))}
           </span>
-        ) : (
-          <span className="tnum w-12 shrink-0 pt-0.5 text-[13.5px] font-semibold tracking-[-0.01em] text-fg">
-            {when === "date" ? dayMonth(event.startDate) : time(event.startDate)}
+          <span aria-hidden="true" className="text-fg-faint">·</span>
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <CategoryIcon
+              category={place.category}
+              size={13}
+              className="shrink-0"
+              strokeWidth={2.2}
+            />
+            <span className="truncate">{place.name}</span>
+          </span>
+        </span>
+
+        {unlisted && (
+          <span className="mt-1 block text-[11.5px] text-fg-faint">{t("place.unlisted")}</span>
+        )}
+
+        {/* Text, not a link: the whole row already links to the place,
+            whose panel links the original listing. */}
+        {source && (
+          <span className="mt-1 block text-[11.5px] text-fg-faint">
+            {t("event.source")} {source}
           </span>
         )}
 
-        <span className="min-w-0 flex-1">
-          <span className="block text-[14.5px] leading-snug font-semibold tracking-[-0.01em] text-fg">
-            {event.title}
+        {/* Tickets to something already over are noise: not in the archive. */}
+        {event.buyUrl && when === "time" && (
+          <span className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-accent">
+            {t("event.tickets")}
+            <ArrowUpRight size={12} strokeWidth={2.5} />
           </span>
+        )}
+      </span>
 
-          {/* One line: wrapped, the "·" was left dangling at the end of the
-              first. A long place name truncates instead (TP-04, brief 10). */}
-          <span className="mt-1 flex items-center gap-x-2 text-[12.5px] text-fg-muted">
-            <span className="inline-flex shrink-0 items-center gap-1.5">
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ background: eventCategoryColor(event.category) }}
-              />
-              {t(eventCategoryKey(event.category))}
-            </span>
-            <span aria-hidden="true" className="text-fg-faint">·</span>
-            <span className="inline-flex min-w-0 items-center gap-1.5">
-              <CategoryIcon
-                category={place.category}
-                size={13}
-                className="shrink-0"
-                strokeWidth={2.2}
-              />
-              <span className="truncate">{place.name}</span>
-            </span>
-          </span>
-
-          {/* Text, not a link: the whole row already links to the place,
-              whose panel links the original listing. */}
-          {source && (
-            <span className="mt-1 block text-[11.5px] text-fg-faint">
-              {t("event.source")} {source}
-            </span>
-          )}
-
-          {/* Tickets to something already over are noise: not in the archive. */}
-          {event.buyUrl && when === "time" && (
-            <span className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-accent">
-              {t("event.tickets")}
-              <ArrowUpRight size={12} strokeWidth={2.5} />
-            </span>
-          )}
-        </span>
-
+      {!unlisted && (
         <MapPin size={15} strokeWidth={2} className="mt-1 shrink-0 text-fg-faint" aria-hidden="true" />
-      </Link>
+      )}
+    </>
+  );
+
+  return (
+    <li className="border-t border-line first:border-t-0">
+      {unlisted ? (
+        <div className={rowClass}>{body}</div>
+      ) : (
+        <Link to={`/places/${place.id}`} className={`${rowClass} transition-colors hover:bg-surface-2`}>
+          {body}
+        </Link>
+      )}
     </li>
   );
 }
-

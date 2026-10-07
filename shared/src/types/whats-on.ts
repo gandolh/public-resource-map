@@ -15,6 +15,8 @@ export const whatsOnPlaceSchema = z.object({
   address: z.string().nullable(),
   city: z.string(),
   coordinates: coordinatesSchema,
+  /** `false` only in "my past events", for a place OSM dropped (brief 34): no link. */
+  listed: z.literal(false).optional(),
 });
 
 export type WhatsOnPlace = z.infer<typeof whatsOnPlaceSchema>;
