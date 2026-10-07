@@ -35,10 +35,10 @@ between the markers. Read the summary first and open at most two or three pages 
 - [wiki/decisions-engineering.md](wiki/decisions-engineering.md) — Locked stack (npm workspaces, React Router 8, pinned versions…) and code conventions — check before changing tooling or style.
 - [wiki/decisions-identity.md](wiki/decisions-identity.md) — Identity decisions: the superseded original auth design, and why sign-in, accounts and public registration are Ward's since 2026-09-06.
 - [wiki/decisions-ui.md](wiki/decisions-ui.md) — Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, and the basemap constraint.
-- [wiki/decisions.md](wiki/decisions.md) — Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's 2026-10-04 answers — check before relitigating anything; identity, UI and stack live in split-out pages.
+- [wiki/decisions.md](wiki/decisions.md) — Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's dated answers since 2026-10-04 — check before relitigating anything; identity, UI and stack live in split-out pages.
 - [wiki/design.md](wiki/design.md) — A pointer to the built design system (ui/DESIGN.md) and product truth (ui/PRODUCT.md), with the record of the four directions considered and why the standard one won.
 - [wiki/glossary.md](wiki/glossary.md) — Project vocabulary, one definition per term — place, OSM, Overpass, staged event, reconcile and the rest; read it before using a domain word.
-- [wiki/open-questions.md](wiki/open-questions.md) — Only the genuinely unresolved: București event sources, threshold tuning that needs real data, and secondary items.
+- [wiki/open-questions.md](wiki/open-questions.md) — Only the genuinely unresolved: per-source terms as sources are added, threshold tuning that needs real data, and secondary items.
 - [wiki/overview.md](wiki/overview.md) — What prm is (a place-centric map of public resources and their events in Timișoara and București, a proof of concept), its major components, external dependencies and repo layout.
 - [wiki/status.md](wiki/status.md) — The current-state dashboard: what is built and verified, the gap between code and decisions, a per-area snapshot, and the dev commands.
 
@@ -112,4 +112,5 @@ _Notes: 15 (draw) builds on 13's shared filter state. 16 (admin UI) follows 04 (
 | [wiki/history/2026-06-28-competitor-research-findings.md](wiki/history/2026-06-28-competitor-research-findings.md) | Competitor/source landscape research + ideas |
 | [wiki/history/2026-06-28-optimization-research.md](wiki/history/2026-06-28-optimization-research.md) | Platform-optimization + corpus-UX research (feeds brief 12) |
 | [wiki/history/2026-06-29-pin-map-aesthetic-research.md](wiki/history/2026-06-29-pin-map-aesthetic-research.md) | Pin/map UX + design.md aesthetic research (feeds design.md revision) |
+| [wiki/history/2026-10-04-source-shortlist.md](wiki/history/2026-10-04-source-shortlist.md) | Event-feed probe of public venues in both cities (retired 2026-10-07) |
 | [todos/2026-09-27-improvements-audit.md](todos/2026-09-27-improvements-audit.md) | Whole-repo improvements audit — ranked findings (→ briefs 18–28), watch list, drops |

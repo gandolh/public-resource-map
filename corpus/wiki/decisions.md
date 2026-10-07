@@ -1,6 +1,6 @@
 ---
-summary: Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's 2026-10-04 answers — check before relitigating anything; identity, UI and stack live in split-out pages.
-updated: 2026-10-06
+summary: Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's dated answers since 2026-10-04 — check before relitigating anything; identity, UI and stack live in split-out pages.
+updated: 2026-10-07
 ---
 
 # Decisions
@@ -190,3 +190,7 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **First sources: Filarmonica Banatul and Teatrul Național Timișoara, with descriptions.** Terms read 2026-10-06: both are public institutions with no terms-of-use page and nothing like iaBilet's art. 28.3; robots.txt allows the feeds; TNTM's footer says "Toate drepturile rezervate". The owner accepted republishing descriptions with the source link shown. Added by the owner after [brief 31](../briefs/done/31-ical-wordpress-shortcodes.md).
 - **No "tickets now available" trigger.** Two triggers are enough.
 - **The audit's watch list is promoted** ([33](../briefs/done/33-watch-list-hardening.md), [34](../briefs/todo/34-osm-retires-deleted-places.md)).
+
+## Owner decisions, 2026-10-07
+
+- **București stays places-only for now, with no event sources.** Its OSM places carry the map there; no feed is added. Rejected for now: asking publishers to switch on an iCal export, a JSON-LD adapter for event pages, and retrying the venues that did not answer the 2026-10-04 probe ([shortlist](history/2026-10-04-source-shortlist.md)).

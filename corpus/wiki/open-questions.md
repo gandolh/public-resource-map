@@ -1,6 +1,6 @@
 ---
-summary: Only the genuinely unresolved: București event sources, threshold tuning that needs real data, and secondary items.
-updated: 2026-10-06
+summary: Only the genuinely unresolved: per-source terms as sources are added, threshold tuning that needs real data, and secondary items.
+updated: 2026-10-07
 ---
 
 # Open Questions
@@ -11,9 +11,8 @@ Only genuinely unresolved questions. Delete an entry the moment it's answered �
 
 ## Event sources — per-publisher landscape (Timișoara + București)
 
-The *approach* is locked (place-centric, public primary publishers, **API-first/scrape-last**, a **few clean defensible adapters**, OSM carries the map — see [decisions.md](decisions.md)). Timișoara's first two sources are decided (Filarmonica Banatul and Teatrul Național, 2026-10-06; added after [brief 31](../briefs/done/31-ical-wordpress-shortcodes.md)). Still open:
+The *approach* is locked (place-centric, public primary publishers, **API-first/scrape-last**, a **few clean defensible adapters**, OSM carries the map — see [decisions.md](decisions.md)). Timișoara's first two sources are decided (Filarmonica Banatul and Teatrul Național, 2026-10-06; added after [brief 31](../briefs/done/31-ical-wordpress-shortcodes.md)). București stays places-only for now (2026-10-07). Still open:
 
-- **București has no ready feed.** None of the probed venues exposes iCal; the routes left are asking a publisher to switch on their calendar plugin's export, or a JSON-LD adapter if event pages carry schema.org data ([shortlist](../todos/2026-10-04-source-shortlist.md)).
 - **Per-source terms** — vet reuse by hand as each further source is added.
 - **iaBilet (blocked)** — POC-only adapter; permission/official feed is a hard launch blocker; do not enable in production.
 

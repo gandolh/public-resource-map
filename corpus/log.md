@@ -1,5 +1,15 @@
 # Log
 
+## [2026-10-07] decide | București stays places-only; the source shortlist is retired
+
+The owner decided București gets no event sources for now. Its OSM places carry the map there.
+Rejected for now: asking publishers for an iCal export, a JSON-LD adapter for event pages, and
+retrying the venues that did not answer. Recorded in decisions.md; the open question is gone.
+The 2026-10-04 shortlist's only open part was București, and its two Timișoara feeds are now the
+owner's step in production's admin, so it is retired. Like the June research notes, it moves to
+`wiki/history/` rather than being deleted: its probe results are what a later revisit of
+București would start from.
+
 ## [2026-10-07] done | Brief 31 — iCal descriptions lose their WordPress shortcodes
 
 Teatrul Național's feed puts its ticket button in every description as a raw `[DKB url="…"]`
@@ -67,7 +77,7 @@ decisions.md had grown to 302 lines, past the corpus's ~200-line rule. Three gro
 
 ## [2026-10-04] research | A shortlist of event sources
 
-As the owner asked, the obvious public venues in both cities were probed for feeds ([todo](todos/2026-10-04-source-shortlist.md)). There are two real iCal feeds the built-in adapter reads with no problems: Filarmonica Banatul (30 events) and Teatrul Național Timișoara (27). Several sites have RSS (news, not events), and no București venue among 18 has a feed. Nothing was added; the terms and the choice are the owner's.
+As the owner asked, the obvious public venues in both cities were probed for feeds ([shortlist](wiki/history/2026-10-04-source-shortlist.md)). There are two real iCal feeds the built-in adapter reads with no problems: Filarmonica Banatul (30 events) and Teatrul Național Timișoara (27). Several sites have RSS (news, not events), and no București venue among 18 has a feed. Nothing was added; the terms and the choice are the owner's.
 
 ## [2026-10-04] change | Signed-in e2e, through a fake Ward
 

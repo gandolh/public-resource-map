@@ -1,9 +1,14 @@
+---
+summary: HISTORICAL — the 2026-10-04 probe of public venues in both cities for event feeds; the two Timișoara feeds were approved (2026-10-06) and București stays places-only (2026-10-07).
+updated: 2026-10-07
+---
+
 # A shortlist of event sources, for the owner to vet — 2026-10-04
 
 The owner asked for this research (decisions.md, 2026-10-04). It works through
 step 1 ("probe API-first") of
 the vetting todo (closed 2026-10-06; the two Timișoara feeds are approved, see decisions.md) for the obvious
-public venues. **2026-10-06:** the owner approved the two Timișoara feeds below after a terms read; they are added after brief 31. București still has no ready feed.
+public venues. **2026-10-06:** the owner approved the two Timișoara feeds below after a terms read; they are added after brief 31. **2026-10-07:** București stays places-only for now (decisions.md); none of the routes listed at the bottom is being taken.
 
 **How it was probed:** each home page was fetched once, then `?ical=1`. Pages
 were checked for `.ics`/`webcal` links, RSS, schema.org `Event` JSON-LD, and the

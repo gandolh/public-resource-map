@@ -1,6 +1,6 @@
 ---
 summary: What prm is (a place-centric map of public resources and their events in Timișoara and București, a proof of concept), its major components, external dependencies and repo layout.
-updated: 2026-10-04
+updated: 2026-10-07
 ---
 
 # Overview
@@ -15,7 +15,7 @@ Pins are **places**, from two sources: **OSM** (parks/libraries/clinics/museums/
 
 ## Status (as of 2026-10-04)
 
-The code has caught up with the 2026-06-28 reframe (legal pivot → POC, place-centric model, public-source ingestion, in-app notifications, geocoding-as-fallback, unified place UI; locked in [decisions.md](decisions.md)): the map is home, pins are places, events live inside them, and the ingestion pipeline, favourites, bell, archive and admin review exist. The data is Timișoara + București: real OSM places, synthetic events until the owner vets the first sources. Details in [status.md](status.md).
+The code has caught up with the 2026-06-28 reframe (legal pivot → POC, place-centric model, public-source ingestion, in-app notifications, geocoding-as-fallback, unified place UI; locked in [decisions.md](decisions.md)): the map is home, pins are places, events live inside them, and the ingestion pipeline, favourites, bell, archive and admin review exist. The data is Timișoara + București: real OSM places, and synthetic events until the owner adds the two approved Timișoara feeds. București stays places-only for now (2026-10-07). Details in [status.md](status.md).
 
 ## Major components
 
