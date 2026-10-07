@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { httpUrlSchema } from "./common.js";
 
 export const eventCategories = [
   "concert",
@@ -47,10 +48,10 @@ export const createEventSchema = z.object({
   status: eventStatusSchema.default("live"),
   startDate: z.string().datetime(),
   endDate: z.string().datetime().optional(),
-  buyUrl: z.string().url().optional(),
-  sourceUrl: z.string().url().optional(),
+  buyUrl: httpUrlSchema.optional(),
+  sourceUrl: httpUrlSchema.optional(),
   sourcePlatform: z.string().optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: httpUrlSchema.optional(),
   price: z.number().min(0).optional(),
   currency: z.string().length(3).optional(),
 });

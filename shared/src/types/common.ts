@@ -7,6 +7,26 @@ export const coordinatesSchema = z.object({
 
 export type Coordinates = z.infer<typeof coordinatesSchema>;
 
+/**
+ * A link we store and later render as an `href`: http or https only.
+ * `z.string().url()` alone accepts any scheme, `javascript:` and `data:`
+ * included, and feeds write these fields (brief 33).
+ */
+export const httpUrlSchema = z
+  .string()
+  .url()
+  .refine(
+    (value) => {
+      try {
+        const { protocol } = new URL(value);
+        return protocol === "http:" || protocol === "https:";
+      } catch {
+        return false;
+      }
+    },
+    { message: "Must be an http or https URL" },
+  );
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;

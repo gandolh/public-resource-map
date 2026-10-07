@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { httpUrlSchema } from "./common.js";
 import { eventCategorySchema } from "./event.js";
 
 /**
@@ -29,8 +30,8 @@ export const rawEventSchema = z.object({
   description: z.string().optional(),
   category: eventCategorySchema.optional(),
   /** Only when the source itself provides one; we never manufacture a ticket link. */
-  buyUrl: z.string().url().optional(),
-  sourceUrl: z.string().url().optional(),
+  buyUrl: httpUrlSchema.optional(),
+  sourceUrl: httpUrlSchema.optional(),
   price: z.number().nonnegative().optional(),
   currency: z.string().length(3).optional(),
   cancelled: z.boolean().optional(),
@@ -72,7 +73,7 @@ export const createSourceSchema = z.object({
   /** `<adapter>:<slug>`, e.g. `ical:centrul-de-proiecte`; the part before ":" picks the adapter. */
   adapterKey: z.string().regex(/^[a-z0-9-]+(:[a-z0-9-]+)?$/),
   mechanism: sourceMechanismSchema,
-  url: z.string().url().optional(),
+  url: httpUrlSchema.optional(),
   city: z.string().trim().min(1),
   enabled: z.boolean().optional(),
 });

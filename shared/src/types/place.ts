@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { coordinatesSchema } from "./common.js";
+import { coordinatesSchema, httpUrlSchema } from "./common.js";
 
 export const placeCategories = [
   "park",
@@ -61,7 +61,7 @@ export const createPlaceSchema = z.object({
   city: z.string().min(1),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
-  website: z.string().url().optional(),
+  website: httpUrlSchema.optional(),
   phone: z.string().optional(),
   openingHours: z.string().optional(),
 });
