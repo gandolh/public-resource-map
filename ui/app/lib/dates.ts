@@ -9,23 +9,25 @@ const dayKeyFmt = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
-const weekdayFmt = new Intl.DateTimeFormat("en-US", {
-  timeZone: APP_TZ,
-  weekday: "short",
-});
-
 /** Bucharest calendar day, as a sortable key. */
 export function dayKey(date: Date): string {
   return dayKeyFmt.format(date);
 }
 
-function weekday(date: Date): number {
-  const names: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-  return names[weekdayFmt.format(date)] ?? 0;
+/**
+ * The key of the Bucharest calendar day `days` after `date`'s. Calendar
+ * arithmetic, not `days * 24 h`: the days the clocks change are 23 and 25
+ * hours long, and adding 24 h near either switch lands on the wrong date.
+ */
+function dayKeyAfter(date: Date, days: number): string {
+  const [y, m, d] = dayKey(date).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
 
-function addDays(date: Date, days: number): Date {
-  return new Date(date.getTime() + days * 86_400_000);
+/** Day of the week (0 = Sunday) of `date`'s Bucharest calendar day. */
+function weekday(date: Date): number {
+  const [y, m, d] = dayKey(date).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 }
 
 /**
@@ -60,13 +62,13 @@ export function groupFor(
   const key = dayKey(start);
 
   if (key === dayKey(now)) return "today";
-  if (key === dayKey(addDays(now, 1))) return "tomorrow";
+  if (key === dayKeyAfter(now, 1)) return "tomorrow";
 
   const today = weekday(now);
   // Days from today until the coming Saturday (0 when today is Saturday).
   const untilSaturday = (6 - today + 7) % 7;
-  const saturdayKey = dayKey(addDays(now, today === 0 ? -1 : untilSaturday));
-  const sundayKey = dayKey(addDays(now, today === 0 ? 0 : untilSaturday + 1));
+  const saturdayKey = dayKeyAfter(now, today === 0 ? -1 : untilSaturday);
+  const sundayKey = dayKeyAfter(now, today === 0 ? 0 : untilSaturday + 1);
 
   if (key === saturdayKey || key === sundayKey) return "weekend";
   return "later";
