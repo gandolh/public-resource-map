@@ -84,6 +84,63 @@ export function guessCategory(text: string): EventCategory | undefined {
   return CATEGORY_WORDS.find(([re]) => re.test(t))?.[1];
 }
 
+/**
+ * WordPress shortcodes (brief 31). The Events Calendar's export can carry a
+ * page's raw shortcodes in DESCRIPTION. Teatrul Național's ticket button is
+ * `[DKB url="https://www.eventim.ro/…" text="Cumpără bilet" …]`, and without
+ * this every one of its events would show that as text.
+ *
+ * A bracketed tag counts as a shortcode when it has `name="value"` attributes,
+ * is a closing `[/name]`, or opens a tag that is closed later in the text.
+ * "[sold out]" is none of these and stays.
+ */
+const ATTR = String.raw`[\w-]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'\]]+)`;
+const SHORTCODE_WITH_ATTRS = new RegExp(String.raw`\[[A-Za-z][\w-]*((?:\s+${ATTR})+)\s*\/?\]`, "g");
+const SHORTCODE_CLOSE = /\[\/([A-Za-z][\w-]*)\]/g;
+const SHORTCODE_BARE = /\[([A-Za-z][\w-]*)\s*\/?\]/g;
+const URL_ATTR = /(?:^|\s)url\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'\]]+))/i;
+
+/** A description without its shortcodes, and the `url` each removed one carried. */
+export function stripShortcodes(text: string): { text: string | undefined; urls: string[] } {
+  const urls: string[] = [];
+  const closed = new Set([...text.matchAll(SHORTCODE_CLOSE)].map((m) => m[1].toLowerCase()));
+  const stripped = text
+    .replace(SHORTCODE_WITH_ATTRS, (_tag, attrs: string) => {
+      const url = URL_ATTR.exec(attrs);
+      const value = url?.[1] ?? url?.[2] ?? url?.[3];
+      if (value) urls.push(value);
+      return "";
+    })
+    .replace(SHORTCODE_CLOSE, "")
+    .replace(SHORTCODE_BARE, (tag, name: string) => (closed.has(name.toLowerCase()) ? "" : tag));
+  return { text: tidy(stripped), urls };
+}
+
+/**
+ * Trim each line and collapse the blank runs a removed shortcode leaves.
+ * `&nbsp;` is the one HTML entity these feeds send, on a line of its own, so it
+ * counts as a space. An empty result is no description at all.
+ */
+function tidy(text: string): string | undefined {
+  const out = text
+    .replace(/&nbsp;/gi, " ")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return out || undefined;
+}
+
+/** Only an https link may become a ticket link (brief 31; brief 33 part 1). */
+function isHttps(value: string): boolean {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 /** Every VEVENT in a feed, as rows for the pipeline. */
 export function parseIcal(text: string): IcalRow[] {
   const rows: IcalRow[] = [];
@@ -122,12 +179,16 @@ function toRow(props: Map<string, Prop>): IcalRow {
     const p = props.get(name);
     return p ? unescapeText(p.value) || undefined : undefined;
   };
+  const description = stripShortcodes(text("DESCRIPTION") ?? "");
   const raw: Record<string, unknown> = {
     externalId: text("UID"),
     title: text("SUMMARY"),
     venue: text("LOCATION"),
-    description: text("DESCRIPTION"),
+    description: description.text,
     sourceUrl: text("URL"),
+    // A ticket button in the description is a buy link the source itself
+    // provides (decisions.md), so it may become one here.
+    buyUrl: description.urls.find(isHttps),
     cancelled: props.get("STATUS")?.value.trim().toUpperCase() === "CANCELLED" || undefined,
   };
   const category = guessCategory(`${text("CATEGORIES") ?? ""} ${text("SUMMARY") ?? ""}`);

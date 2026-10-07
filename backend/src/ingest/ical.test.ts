@@ -83,6 +83,67 @@ describe("parseIcal (brief 04)", () => {
   });
 });
 
+// Brief 31: Teatrul Național Timișoara's export carries a WordPress button
+// plugin's shortcodes in DESCRIPTION. Lines below are as its feed sends them
+// (2026-10-07), with iCal's own escaping.
+const TICKET = "https://www.eventim.ro/event/o-scrisoare-pierduta-teatrul-national-mihai-eminescu-22097293/";
+const DKB_TICKET =
+  `[DKB url="${TICKET}" text="Cumpără bilet" title="Cumpără bilet" type="large" style="gradient" ` +
+  `color="red" height="10" width="200" opennewwindow="yes" nofollow="yes"]`;
+const DKB_SURVEY =
+  '[DKB url="https://questionpro.eu/t/AB3u5VGZB3wa2W" text="Chestionar" title="Chestionar" type="large" ' +
+  'style="gradient" color="blue" height="10" width="200" opennewwindow="yes" nofollow="yes"]';
+
+const describedAs = (description: string) =>
+  parseIcal(
+    feed(vevent("UID:tntm-1", "SUMMARY:O SCRISOARE PIERDUTĂ", "DTSTART:20261007T160000Z", "LOCATION:Sala Mare", `DESCRIPTION:${description}`)),
+  )[0].raw;
+
+describe("parseIcal: WordPress shortcodes (brief 31)", () => {
+  it("strips the shortcodes and lifts the first ticket link as buyUrl", () => {
+    const raw = describedAs(`O SCRISOARE PIERDUTĂ\\n\\n${DKB_TICKET}\\n\\n${DKB_SURVEY}`);
+    expect(raw.description).toBe("O SCRISOARE PIERDUTĂ");
+    expect(raw.buyUrl).toBe(TICKET);
+  });
+
+  it("reads a whole TNTM description: the text around the buttons stays, a stray &nbsp; goes", () => {
+    const raw = describedAs(
+      `durata spectacolului: 1h 10\\n\\nO SCRISOARE PIERDUTĂ\\n\\n${DKB_TICKET}\\n\\n${DKB_SURVEY}` +
+        "\\n\\n&nbsp\\;\\n\\n Regulamentul spectatorului",
+    );
+    expect(raw.description).toBe(
+      "durata spectacolului: 1h 10\n\nO SCRISOARE PIERDUTĂ\n\nRegulamentul spectatorului",
+    );
+    expect(raw.buyUrl).toBe(TICKET);
+  });
+
+  it("drops a description that was only a shortcode", () => {
+    const raw = describedAs(DKB_TICKET);
+    expect(raw.description).toBeUndefined();
+    expect(raw.buyUrl).toBe(TICKET);
+  });
+
+  it("never lifts a javascript: or http: link, and takes the first https one", () => {
+    expect(describedAs('Text [button url="javascript:alert(1)" text="x"]').buyUrl).toBeUndefined();
+    expect(describedAs('Text [button url="http://bilete.ro/a" text="x"]').buyUrl).toBeUndefined();
+    const raw = describedAs(`[button url="javascript:alert(1)"] ${DKB_SURVEY.replace("questionpro.eu/t/AB3u5VGZB3wa2W", "bilete.ro/b")}`);
+    expect(raw.buyUrl).toBe("https://bilete.ro/b");
+  });
+
+  it("removes an enclosing shortcode's tags but keeps its text", () => {
+    const raw = describedAs("[vc_row][vc_column]Intrare liberă[/vc_column][/vc_row]");
+    expect(raw.description).toBe("Intrare liberă");
+    expect(raw.buyUrl).toBeUndefined();
+  });
+
+  it("leaves bracketed text that is not a shortcode", () => {
+    expect(describedAs("Spectacol [sold out]").description).toBe("Spectacol [sold out]");
+    expect(describedAs("[Premieră] Ce-i lipsește lui Shakespeare").description).toBe(
+      "[Premieră] Ce-i lipsește lui Shakespeare",
+    );
+  });
+});
+
 // Found walking TP-07 (brief 10): "Walk: matched at the art museum" came out
 // Sport, because `match` matched inside "matched". Words match from their start.
 describe("guessCategory", () => {
