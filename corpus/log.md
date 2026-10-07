@@ -1,5 +1,17 @@
 # Log
 
+## [2026-10-07] done | Brief 33 — four fixes from the audit's watch list
+
+Each part is its own commit. Stored links (event buy, source and image links, a place's
+website, a feed row's links, a source's URL) accept only http and https, so a `javascript:`
+or `data:` link from a feed lands in needs-attention. "Tomorrow" and the weekend are counted
+in Bucharest calendar days, not 24-hour steps, which were wrong for an hour near each DST
+switch. The Overpass call gives up after 100 s with a 504 that says nothing changed, and a
+second sync of a city already syncing gets a 409. The Ward introspection cache drops an entry
+read expired and sweeps all expired entries once per 30 s TTL, paced by lookups. A sweep was
+chosen over a size cap because a cap would evict live answers under load. The four items are
+struck from the audit's watch list. Tests 220 (from 176), typecheck clean.
+
 ## [2026-10-06] maintenance | The corpus gets frontmatter, a lint, and a generated catalog
 
 The owner chose to adopt the corpus-flow conventions that the June corpus-UX

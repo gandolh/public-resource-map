@@ -38,7 +38,7 @@ starred ones were reproduced by running something.
 
 ## Watch (named, not spec'd)
 
-> **Promoted 2026-10-06 by the owner.** Ward on the public path is [brief 30](../briefs/todo/30-resolve-ward-only-where-needed.md); the cache, URL schemes, Overpass and DST items are [brief 33](../briefs/todo/33-watch-list-hardening.md); OSM retirement is [brief 34](../briefs/todo/34-osm-retires-deleted-places.md). Seed events' null end dates were covered by brief 19.
+> **Promoted 2026-10-06 by the owner.** Ward on the public path is [brief 30](../briefs/todo/30-resolve-ward-only-where-needed.md); the cache, URL schemes, Overpass and DST items are [brief 33](../briefs/done/33-watch-list-hardening.md) (done 2026-10-07); OSM retirement is [brief 34](../briefs/todo/34-osm-retires-deleted-places.md). Seed events' null end dates were covered by brief 19.
 
 - **The public map asks Ward on every request from a signed-in visitor.** The
   root preHandler resolves the session whenever a `ward_session` cookie is
@@ -49,24 +49,26 @@ starred ones were reproduced by running something.
   the session lazily inside the guards and `/api/me` would make the property
   literal. This touches a locked mechanism, so it is logged in
   [open-questions.md](../wiki/open-questions.md), not briefed.
-- **Introspection cache never evicts.** `ward.client.ts` stores one entry per
+- ~~**Introspection cache never evicts.** `ward.client.ts` stores one entry per
   token and only ignores expired ones; with 15-minute tokens every active
   session adds ~4 entries an hour until restart. Bounded by legitimately minted
   tokens (verification runs first), cleared on every deploy. Matters only at real
-  traffic.
-- **URL fields accept any scheme.** `z.string().url()` (Zod 3) accepts
+  traffic.~~ Fixed by [brief 33](../briefs/done/33-watch-list-hardening.md), part 4.
+- ~~**URL fields accept any scheme.** `z.string().url()` (Zod 3) accepts
   `javascript:` and `data:`. React 19 blocks `javascript:` hrefs at render, so
   there is no live XSS; tighten to http(s) when brief 04's adapters start writing
-  scraped URLs (its sanity validation reuses these schemas).
+  scraped URLs (its sanity validation reuses these schemas).~~ Fixed by
+  [brief 33](../briefs/done/33-watch-list-hardening.md), part 1.
 - **OSM re-sync never retires places deleted from OSM.** A closed library stays
   on the map forever. Events have reconcile; OSM has none.
-- **`fetchOverpass` has no client-side timeout** and two concurrent syncs of one
+- ~~**`fetchOverpass` has no client-side timeout** and two concurrent syncs of one
   city can collide on the partial unique index (500 mid-sync). Admin-only,
-  rare.
+  rare.~~ Fixed by [brief 33](../briefs/done/33-watch-list-hardening.md), part 3.
 - **Seed events are all `endDate: null`** — covered for the multi-day case by
   brief 19, which adds one.
-- **UI "tomorrow" grouping adds 24h**, so for one hour around each DST switch
-  it picks the wrong calendar day (`ui/app/lib/dates.ts:27-29`).
+- ~~**UI "tomorrow" grouping adds 24h**, so for one hour around each DST switch
+  it picks the wrong calendar day (`ui/app/lib/dates.ts:27-29`).~~ Fixed by
+  [brief 33](../briefs/done/33-watch-list-hardening.md), part 2.
 
 ## Dropped in vetting
 

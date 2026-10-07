@@ -189,4 +189,4 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Ward is asked only on routes that need a user** ([brief 30](../briefs/todo/30-resolve-ward-only-where-needed.md)). Revises the root `preHandler` in [decisions-identity.md](decisions-identity.md).
 - **First sources: Filarmonica Banatul and Teatrul Național Timișoara, with descriptions.** Terms read 2026-10-06: both are public institutions with no terms-of-use page and nothing like iaBilet's art. 28.3; robots.txt allows the feeds; TNTM's footer says "Toate drepturile rezervate". The owner accepted republishing descriptions with the source link shown. Added by the owner after [brief 31](../briefs/todo/31-ical-wordpress-shortcodes.md).
 - **No "tickets now available" trigger.** Two triggers are enough.
-- **The audit's watch list is promoted** ([33](../briefs/todo/33-watch-list-hardening.md), [34](../briefs/todo/34-osm-retires-deleted-places.md)).
+- **The audit's watch list is promoted** ([33](../briefs/done/33-watch-list-hardening.md), [34](../briefs/todo/34-osm-retires-deleted-places.md)).

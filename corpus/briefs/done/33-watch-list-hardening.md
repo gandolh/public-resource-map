@@ -50,3 +50,28 @@ ignores expired ones (`expiresAt`), so the map grows until restart.
 - Each part's test above, plus `npm test` and `npm run typecheck`.
 - The four items are struck from the audit's watch list with a pointer here, and
   `log.md` has an entry.
+
+## Outcome (2026-10-07)
+
+All four parts shipped as specified, one commit each.
+
+1. **Links.** `httpUrlSchema` in `shared/src/types/common.ts` (named to match the other schemas)
+   guards all seven fields. A feed row with another scheme now lands in needs-attention.
+   `common.test.ts` runs `javascript:`, `data:` and `https:` through each field.
+2. **Tomorrow.** `dates.ts` adds whole days to the Bucharest date (`dayKeyAfter`), and the
+   weekday comes from that date too. The new `dates.test.ts` failed three cases on the old code
+   (2026-03-28 23:30, 2026-10-25 00:30, and a weekend spanning 03-29) and passes all eight
+   instants now.
+3. **Overpass.** The HTTP call aborts after 100 s (the query asks for 90 s). The admin gets a
+   504 `OVERPASS_TIMEOUT` saying nothing changed. A second sync of a city that is still syncing
+   gets a 409 `SYNC_IN_PROGRESS`; another city is not blocked. The guard is a module-level set in
+   `osm-sync.ts`, released in `finally`. `buildApp` gained an `osm` option so route tests can stub
+   Overpass.
+4. **Cache.** An entry read after it expired is deleted, and once per 30 s TTL the next lookup
+   sweeps every expired entry. **Chosen: a sweep on a schedule, not a size cap.** A cap needs a
+   number picked in advance and, under load, evicts live answers and sends those tokens back to
+   Ward. The sweep removes only dead entries. It runs from the lookup path, not a timer, so
+   there is nothing to unref or stop and nothing runs while prm is idle. The real client exposes
+   `cachedSessions()` for the tests.
+
+Verified: `npm test` 220 passed (176 before), `npm run typecheck` clean.

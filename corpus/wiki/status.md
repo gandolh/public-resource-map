@@ -1,11 +1,11 @@
 ---
 summary: The current-state dashboard: what is built and verified, the gap between code and decisions, a per-area snapshot, and the dev commands.
-updated: 2026-10-04
+updated: 2026-10-07
 ---
 
 # Status
 
-_Last updated: 2026-10-04_
+_Last updated: 2026-10-07_
 
 ## 🟢 The UI is now the new model
 
@@ -50,7 +50,7 @@ Still open:
 | Vitest harness (11) | **done — Vitest 4 (unit + Fastify `.inject()` integration), `test`/`test:watch`/`test:cov`, `it.todo` seams** |
 | Auth (02) | **superseded by Ward (2026-09-06)** — identity, sign-in and grants are Ward's; prm keeps `requireAuth`/`requireAdmin` over Ward grants. Brief 02's argon2/cookie/AuthCard leftovers were removed by brief 27 |
 | Audit sweep (18–29) | **18–28 done (2026-09-27 → 2026-10-03)** — admin-only writes, running events stay visible, the map pages through every place, JWKS failure = 503, 0001 snapshot, cross-city deep links, public-healthcare-only OSM sync, real Ward client tests, cutover leftovers gone, template leftovers gone and every manifest exact-pinned. **29 done 2026-10-03** (notification_event keyed on its pair; a drift check now compares migrated vs `schema.ts`) |
-| Owner Q&A briefs (30–34) | **todo (2026-10-06)** — 30 Ward only on guarded routes; 31 iCal shortcodes + the first two sources; 32 notification email through Ward (after wzd_auth 17); 33 four watch-list fixes; 34 OSM retires deleted places |
+| Owner Q&A briefs (30–34) | **written 2026-10-06** — 30 Ward only on guarded routes; 31 iCal shortcodes + the first two sources; 32 notification email through Ward (after wzd_auth 17); 34 OSM retires deleted places. **33 done 2026-10-07:** http(s)-only links, calendar-day "tomorrow", a 100 s Overpass timeout and one sync per city, an introspection cache that sweeps expired entries |
 | Places + OSM sync (03) | **done — admin `POST /api/admin/osm/sync` (Overpass, tag→PlaceCategory map, centroid, non-clobbering upsert), public `GET /api/places`(+`:id`), ODbL attribution on map** |
 | RO seed data (08) | **done 2026-10-04** — `db:seed` resets to a frozen OSM fixture of both cities (`npm run db:capture-osm` refreshes it) + an event venue + 15 synthetic events, all under stable v5 ids the e2e suite addresses (`SEED`); `SEED_DEMO_SUBJECT` gives a Ward subject favourites and a bell item. Real curated events dropped: they would be stale in days, and real events come through 04 |
 | Event ingestion (04) | **done 2026-10-03 (pipeline)** — iCal adapter, match/geocode/dedup/reconcile/health, staged diff + admin API, 45 tests. **First sources decided 2026-10-06:** Filarmonica Banatul and Teatrul Național Timișoara, added by the owner after [brief 31](../briefs/todo/31-ical-wordpress-shortcodes.md) |
