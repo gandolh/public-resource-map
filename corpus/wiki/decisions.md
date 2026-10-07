@@ -58,6 +58,10 @@ This page passed ~200 lines, so three groups moved, unchanged:
 - **Admin-triggered + infrequent.** A **"sync OSM for this city" button** (reuses the admin gate + manual-trigger muscle), run on demand / ~monthly — NOT on the frequent event cadence (libraries don't move; OSM changes slowly). This also serves as the **first load** for Timișoara/București.
 - **Upserts ONLY `source: osm` places.** An OSM re-sync must **never clobber** `source: event-venue` places or admin **manual-pin** corrections — it touches OSM-sourced rows only.
 - **A city is its municipal boundary, not a box (owner, 2026-10-04).** The sync queries inside the city's administrative area, so Giroc, Dumbrăvița or Bragadiru town halls no longer count as Timișoara's or București's. Rejected: keeping the bounding boxes (the metro area). Found by brief 08's capture.
+- **A re-sync retires what OSM no longer has, softly** (brief 34, 2026-10-07). `place.retired_at` hides the place from every public read; the row, its favourites and its past events stay, and a follower sees it as "no longer listed". Rejected: deleting, which would break favourites and events.
+- **Only the synced city's listed `source = 'osm'` places that are missing from the answer retire.** Never event venues, never manual pins. A retired place that reappears is listed again by the next sync.
+- **Safety valve: an answer that would retire more than 10% of a city's listed OSM places retires nothing** and reports it (owner, 2026-10-07). Real closures arrive a few at a time between syncs; a truncated or failed Overpass answer drops far more.
+- **Upcoming events at a retired place go back to admin review** as `changed`, with no place, so the admin picks a new one.
 - Ingest-once-into-SQLite, serve-from-DB (Overpass is not for live user queries — rate-limited, batch-oriented). See [open-questions.md](open-questions.md) for query shape / category mapping (still to define).
 
 ## Ingestion & data mechanics (locked 2026-06-28 — grilling pass)
@@ -189,7 +193,7 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Ward is asked only on routes that need a user** ([brief 30](../briefs/done/30-resolve-ward-only-where-needed.md), built 2026-10-07). Revises the root `preHandler` in [decisions-identity.md](decisions-identity.md).
 - **First sources: Filarmonica Banatul and Teatrul Național Timișoara, with descriptions.** Terms read 2026-10-06: both are public institutions with no terms-of-use page and nothing like iaBilet's art. 28.3; robots.txt allows the feeds; TNTM's footer says "Toate drepturile rezervate". The owner accepted republishing descriptions with the source link shown. Added by the owner after [brief 31](../briefs/done/31-ical-wordpress-shortcodes.md).
 - **No "tickets now available" trigger.** Two triggers are enough.
-- **The audit's watch list is promoted** ([33](../briefs/done/33-watch-list-hardening.md), [34](../briefs/todo/34-osm-retires-deleted-places.md)).
+- **The audit's watch list is promoted** ([33](../briefs/done/33-watch-list-hardening.md), [34](../briefs/done/34-osm-retires-deleted-places.md)).
 
 ## Owner decisions, 2026-10-07
 

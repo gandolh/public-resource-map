@@ -1,5 +1,16 @@
 # Log
 
+## [2026-10-07] done | Brief 34 — an OSM re-sync retires places OSM no longer has
+
+A place gets `retired_at` (migration 0004). A sync retires the city's listed OSM places its
+answer lacks, never event venues or manual pins, and lists one again when OSM has it again. If an
+answer would retire more than 10% of the city, the owner's safety valve holds: nothing retires
+and the result says how many would have. Real closures come a few at a time; a truncated
+Overpass answer drops many. Public reads skip retired places and their events. A follower sees
+the place in the bell and "my past events" as "no longer listed", without a link. Upcoming
+events at a retired place go back to review with no place. Decisions recorded; `drizzle-kit
+generate` on a scratch copy finds no changes. Tests 240, e2e 27/27 serially.
+
 ## [2026-10-07] done | Brief 30 — Ward is asked only where a user is needed
 
 The root `preHandler` resolved the Ward session whenever a `ward_session` cookie came in, and

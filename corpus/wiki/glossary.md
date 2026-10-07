@@ -1,6 +1,6 @@
 ---
 summary: Project vocabulary, one definition per term — place, OSM, Overpass, staged event, reconcile and the rest; read it before using a domain word.
-updated: 2026-06-28
+updated: 2026-10-07
 ---
 
 # Glossary
@@ -13,6 +13,7 @@ Project-specific terms and jargon. New to the corpus? Read this alongside [overv
 |---|---|
 | **Place** | The map's core unit. A point that is a public resource and/or an event host. Two sources: `osm` and `event-venue`. Pins on the map are places. |
 | **OSM place** | A place sourced from OpenStreetMap (`source: osm`) — park, library, clinic, museum, town hall. Carries real coordinates. The clean, licensed anchor layer. |
+| **Retired place** | An OSM place a re-sync no longer found (`retired_at` set, brief 34). Hidden from every public read; kept with its favourites and past events, and listed again if OSM has it again. |
 | **Event-venue place** | A place created on demand (`source: event-venue`) when an event's venue can't be matched to an existing OSM place. Its coordinates come from geocoding (or a manual pin). |
 | **Event** | Something happening at a place (exhibition, concert, public meeting). Attaches to a place via FK. Text-only (no image); shows a buy-link only if the source provides one. |
 | **Manual pin** | An admin-placed coordinate for a venue that couldn't be geocoded. Never overwritten by an OSM re-sync. |

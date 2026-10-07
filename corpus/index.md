@@ -91,7 +91,7 @@ Briefs 02–06 were split from the original oversized "admin source-ingestion" b
 | 31 | [briefs/done/31-ical-wordpress-shortcodes.md](briefs/done/31-ical-wordpress-shortcodes.md) | done | Strip WordPress shortcodes from iCal descriptions; keep their ticket link |
 | 32 | [briefs/todo/32-notification-email-through-ward.md](briefs/todo/32-notification-email-through-ward.md) | todo | Send notification email through Ward (waits on wzd_auth brief 17) |
 | 33 | [briefs/done/33-watch-list-hardening.md](briefs/done/33-watch-list-hardening.md) | done | Four fixes from the audit's watch list: links, "tomorrow", Overpass, the Ward cache |
-| 34 | [briefs/todo/34-osm-retires-deleted-places.md](briefs/todo/34-osm-retires-deleted-places.md) | todo | An OSM re-sync retires places OSM no longer has |
+| 34 | [briefs/done/34-osm-retires-deleted-places.md](briefs/done/34-osm-retires-deleted-places.md) | done | An OSM re-sync retires places OSM no longer has |
 
 **Recommended build order:** 07 (schema) → **11 (Vitest harness)** → 02 (auth) → 03 (places/OSM) → 08 (seed) → 04 (ingestion) → **16 (admin review UI)** → 05 (favorites/notifications) → 06 (place-centric UI) → **13 (public interactions)** → **15 (draw-filter)** → **14 (archive)** → **17 (e2e harness)** → 09 (attribution) → 10 (test plans) → deployment (decision locked; brief TBD).
 _Notes: 15 (draw) builds on 13's shared filter state. 16 (admin UI) follows 04 (its API) and can be built independently of the public-UI track. 17 (e2e) lands after the UI surfaces exist + the seed (08); 11's Vitest comes early for test-first backend work. 12 is cross-cutting (DB PRAGMAs with 07; rest opportunistic)._

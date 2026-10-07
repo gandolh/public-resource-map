@@ -38,7 +38,7 @@ starred ones were reproduced by running something.
 
 ## Watch (named, not spec'd)
 
-> **Promoted 2026-10-06 by the owner.** Ward on the public path is [brief 30](../briefs/done/30-resolve-ward-only-where-needed.md) (done 2026-10-07); the cache, URL schemes, Overpass and DST items are [brief 33](../briefs/done/33-watch-list-hardening.md) (done 2026-10-07); OSM retirement is [brief 34](../briefs/todo/34-osm-retires-deleted-places.md). Seed events' null end dates were covered by brief 19.
+> **Promoted 2026-10-06 by the owner.** Ward on the public path is [brief 30](../briefs/done/30-resolve-ward-only-where-needed.md) (done 2026-10-07); the cache, URL schemes, Overpass and DST items are [brief 33](../briefs/done/33-watch-list-hardening.md) (done 2026-10-07); OSM retirement is [brief 34](../briefs/done/34-osm-retires-deleted-places.md) (done 2026-10-07). Seed events' null end dates were covered by brief 19.
 
 - **The public map asks Ward on every request from a signed-in visitor.** The
   root preHandler resolves the session whenever a `ward_session` cookie is
@@ -59,8 +59,9 @@ starred ones were reproduced by running something.
   there is no live XSS; tighten to http(s) when brief 04's adapters start writing
   scraped URLs (its sanity validation reuses these schemas).~~ Fixed by
   [brief 33](../briefs/done/33-watch-list-hardening.md), part 1.
-- **OSM re-sync never retires places deleted from OSM.** A closed library stays
-  on the map forever. Events have reconcile; OSM has none.
+- ~~**OSM re-sync never retires places deleted from OSM.** A closed library stays
+  on the map forever. Events have reconcile; OSM has none.~~ Fixed by
+  [brief 34](../briefs/done/34-osm-retires-deleted-places.md).
 - ~~**`fetchOverpass` has no client-side timeout** and two concurrent syncs of one
   city can collide on the partial unique index (500 mid-sync). Admin-only,
   rare.~~ Fixed by [brief 33](../briefs/done/33-watch-list-hardening.md), part 3.
