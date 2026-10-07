@@ -274,6 +274,72 @@ describe("Ward client: introspection cache", () => {
   });
 });
 
+// Brief 33: the cache only ignored expired entries, so it grew until restart.
+describe("Ward client: introspection cache eviction", () => {
+  function clocked() {
+    let clock = 1_000_000;
+    let down = false;
+    const ward = createWardClient({
+      publicOrigin: ORIGIN,
+      apiBasePath: BASE,
+      appKey: "k",
+      now: () => clock,
+      fetch: wardFetch({
+        jwks: () => json({ keys: [] }),
+        introspect: () => {
+          if (down) throw new TypeError("fetch failed");
+          return json(ACTIVE);
+        },
+      }),
+    });
+    return {
+      ward,
+      advance: (ms: number) => (clock += ms),
+      goDown: () => (down = true),
+    };
+  }
+
+  it("a sweep once the TTL has passed leaves only the token just asked about", async () => {
+    const c = clocked();
+    await Promise.all(["a", "b", "c"].map((t) => c.ward.introspect(t)));
+    expect(c.ward.cachedSessions()).toBe(3);
+    c.advance(30_001);
+    await c.ward.introspect("d");
+    expect(c.ward.cachedSessions()).toBe(1);
+  });
+
+  it("after the TTL, a sweep with nothing new to cache empties the map", async () => {
+    const c = clocked();
+    await Promise.all(["a", "b", "c"].map((t) => c.ward.introspect(t)));
+    c.advance(30_001);
+    c.goDown();
+    await expect(c.ward.introspect("a")).rejects.toBeInstanceOf(WardUnavailableError);
+    expect(c.ward.cachedSessions()).toBe(0);
+  });
+
+  it("deletes an entry read after it expired, between sweeps", async () => {
+    const c = clocked();
+    c.advance(20_000);
+    await c.ward.introspect("a"); // expires at +50 s
+    c.advance(10_000);
+    await c.ward.introspect("b"); // the sweep at +30 s keeps a; b expires at +60 s
+    c.advance(25_000); // +55 s: a has expired, the next sweep is not due until +60 s
+    c.goDown();
+    await expect(c.ward.introspect("a")).rejects.toBeInstanceOf(WardUnavailableError);
+    expect(c.ward.cachedSessions()).toBe(1); // b, still live
+  });
+
+  it("does not sweep a live entry", async () => {
+    const c = clocked();
+    await c.ward.introspect("a");
+    c.advance(29_000);
+    await c.ward.introspect("b");
+    c.advance(1_500); // a is 30.5 s old and swept; b is 1.5 s old and kept
+    await c.ward.introspect("b");
+    expect(c.ward.cachedSessions()).toBe(1);
+  });
+});
+
 describe("Ward client: cookie", () => {
   const ward = client(wardFetch({ jwks: () => json({ keys: [] }) }));
 

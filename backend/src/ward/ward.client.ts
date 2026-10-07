@@ -107,7 +107,13 @@ interface CacheEntry {
   expiresAt: number;
 }
 
-export function createWardClient(options: WardClientOptions): WardClient {
+/** The real client, plus one diagnostic the interface does not need. */
+export interface CachingWardClient extends WardClient {
+  /** How many introspection answers are cached right now. */
+  cachedSessions(): number;
+}
+
+export function createWardClient(options: WardClientOptions): CachingWardClient {
   const fetchImpl = options.fetch ?? fetch;
   const now = options.now ?? Date.now;
   const cacheTtlMs = options.introspectionCacheTtlMs ?? INTROSPECTION_CACHE_TTL_MS;
@@ -163,6 +169,30 @@ export function createWardClient(options: WardClientOptions): WardClient {
   /** Keyed per **token**, never per subject — see the header. */
   const cache = new Map<string, CacheEntry>();
   const inflight = new Map<string, Promise<SessionResolution>>();
+  let lastSweep = now();
+
+  /**
+   * Eviction (brief 33). Every token a visitor presents leaves an entry, and
+   * with 15-minute tokens an active session adds about four an hour. Entries
+   * used to be ignored once expired but kept until restart. Now an entry read
+   * after it expired is deleted, and once per TTL the next lookup sweeps out
+   * every expired entry.
+   *
+   * A sweep on a schedule rather than a size cap: a cap needs a number picked
+   * in advance and, under load, evicts live answers and sends their tokens
+   * back to Ward. The sweep removes only dead entries. It is paced by lookups,
+   * not a timer, so there is no interval to unref or stop and nothing runs
+   * while prm is idle. While requests come in, the map holds only tokens seen
+   * in the last two TTLs.
+   */
+  function sweepIfDue(): void {
+    const t = now();
+    if (t - lastSweep < cacheTtlMs) return;
+    lastSweep = t;
+    for (const [token, entry] of cache) {
+      if (entry.expiresAt <= t) cache.delete(token);
+    }
+  }
 
   async function verify(token: string): Promise<AccessTokenClaims> {
     try {
@@ -259,8 +289,12 @@ export function createWardClient(options: WardClientOptions): WardClient {
   }
 
   function introspect(token: string): Promise<SessionResolution> {
+    sweepIfDue();
     const cached = cache.get(token);
-    if (cached && cached.expiresAt > now()) return Promise.resolve(cached.result);
+    if (cached) {
+      if (cached.expiresAt > now()) return Promise.resolve(cached.result);
+      cache.delete(token);
+    }
 
     // Collapse concurrent callers onto one request: a map page fires several
     // calls at once, and a cold token must not become a burst against Ward.
@@ -309,5 +343,6 @@ export function createWardClient(options: WardClientOptions): WardClient {
     introspect,
     readAccessCookie: (header) => readCookie(header, ACCESS_COOKIE_NAME),
     authenticate,
+    cachedSessions: () => cache.size,
   };
 }
