@@ -65,14 +65,13 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   });
 
   /*
-   * Ward wiring on the root instance: `request.ward`, the session-resolving
-   * preHandler, and the `requireAuth`/`requireAdmin` guards — inherited by all
-   * route plugins registered below.
+   * Ward wiring on the root instance: `request.ward`, `resolveWard`, and the
+   * `requireAuth`/`requireAdmin` guards — inherited by all route plugins
+   * registered below.
    *
-   * Nothing is gated by this call. prm is a **public** resource map and stays
-   * one: the hook resolves a session when a cookie is present and leaves the
-   * request anonymous otherwise, and the guards are opt-in per route. See
-   * `ward/ward.plugin.ts`.
+   * Nothing is gated by this call, and nothing asks Ward by default. prm is a
+   * **public** resource map and stays one: only the guards (opt-in per route)
+   * and `/api/me` resolve a session. See `ward/ward.plugin.ts`.
    */
   await registerWard(
     app,

@@ -26,9 +26,16 @@ import {
  * put a gate in front of everything and then discover which parts were supposed
  * to be public.
  *
- * So the root hook only *resolves* a session when a cookie is present and
- * leaves `request.ward` null otherwise. `requireAuth` and `requireAdmin` are
- * opt-in, exactly as before.
+ * So there is **no root hook**. A session is resolved only by the routes that
+ * want one: the two guards, and `/api/me`, which answers anonymous visitors
+ * too. Everywhere else `request.ward` stays null and Ward is never asked.
+ *
+ * This was a root `preHandler` until brief 30 (2026-10-07). It resolved the
+ * session whenever a `ward_session` cookie came in, and that cookie is
+ * estate-wide (`Path=/` on the shared origin), so anyone signed in to any app
+ * in the estate made every public-map request wait on Ward. A slow Ward added
+ * up to its 5 s timeout to the map. Now the public map never asks Ward
+ * anything, signed in or not.
  *
  * ## The two guards, and what each one now means
  *
@@ -67,7 +74,7 @@ declare module "fastify" {
     /** The Ward session, or null for an anonymous request. */
     ward: WardCaller | null;
     /**
-     * True when the root hook could not reach Ward for **this** request.
+     * True when `resolveWard` could not reach Ward for **this** request.
      *
      * Distinct from `ward === null`, and the distinction is what stops a guard
      * from telling somebody they are signed out when the truth is that the
@@ -81,6 +88,12 @@ declare module "fastify" {
     requireAuth: Guard;
     /** preHandler: 401 anonymous, 403 without `prm:admin`. */
     requireAdmin: Guard;
+    /**
+     * Resolve this request's Ward session into `ward`/`wardUnavailable`, at
+     * most once per request. The guards call it; so does a route that serves
+     * anonymous visitors too (`/api/me`). Public routes never do.
+     */
+    resolveWard: (req: FastifyRequest) => Promise<void>;
   }
 }
 
@@ -106,34 +119,31 @@ export async function registerWard(
 
   app.decorateRequest("ward", null);
 
+  /** One resolution per request, however many guards and handlers ask. */
+  const resolutions = new WeakMap<FastifyRequest, Promise<void>>();
+
   /**
    * Resolve the session when there is a cookie to resolve, and only then.
    *
-   * The cheap presence check is what keeps the public map free of Ward traffic:
-   * without it, every anonymous request to every public route would call
-   * `authenticate`, which would throw immediately — correct, but a wasted
-   * allocation on the app's hottest path.
+   * The cheap presence check keeps an anonymous request from calling
+   * `authenticate` at all, which would throw at once: correct, but wasted.
    *
-   * **A failure here is swallowed and the request continues as anonymous.**
-   * That is safe because this hook grants nothing: the guards below are what
-   * refuse, and they re-derive their answer from `request.ward` being null. A
-   * throwing root hook, by contrast, would turn Ward being down into a 500 on
-   * the *public* map, which is the one part of prm that has no business
-   * depending on the identity service at all.
+   * **An authentication failure means anonymous.** That grants nothing: the
+   * guards refuse because `request.ward` is null. Ward being unreachable is
+   * different, and is recorded as `wardUnavailable` so a guard answers 503
+   * rather than telling a signed-in person they are signed out. Anything else
+   * is a bug and throws.
    */
-  app.addHook("preHandler", async (req) => {
-    if (!req.headers.cookie?.includes(`${WARD_COOKIE}=`)) {
-      req.ward = null;
-      return;
-    }
+  async function resolveOnce(req: FastifyRequest): Promise<void> {
+    req.ward = null;
+    if (!req.headers.cookie?.includes(`${WARD_COOKIE}=`)) return;
 
     try {
       req.ward = await ward.authenticate(req.headers.cookie);
     } catch (error) {
-      req.ward = null;
       // Logged at two levels on purpose: a dead or absent session is ordinary
       // and must not fill the log, but Ward being unreachable is an operator's
-      // problem and the guards below will be answering 503 because of it.
+      // problem and the guards will be answering 503 because of it.
       if (error instanceof WardUnavailableError) {
         req.log.error({ err: error }, "ward is not answering");
         req.wardUnavailable = true;
@@ -141,9 +151,21 @@ export async function registerWard(
         throw error;
       }
     }
-  });
+  }
+
+  function resolveWard(req: FastifyRequest): Promise<void> {
+    let pending = resolutions.get(req);
+    if (!pending) {
+      pending = resolveOnce(req);
+      resolutions.set(req, pending);
+    }
+    return pending;
+  }
+
+  app.decorate("resolveWard", resolveWard);
 
   app.decorate("requireAuth", async (req: FastifyRequest, reply: FastifyReply) => {
+    await resolveWard(req);
     if (req.wardUnavailable === true) {
       return reply
         .status(503)
@@ -165,6 +187,7 @@ export async function registerWard(
   });
 
   app.decorate("requireAdmin", async (req: FastifyRequest, reply: FastifyReply) => {
+    await resolveWard(req);
     if (req.wardUnavailable === true) {
       return reply
         .status(503)

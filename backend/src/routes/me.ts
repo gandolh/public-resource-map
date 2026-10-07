@@ -27,13 +27,17 @@ import { PRM_ADMIN_ROLE, PRM_APP_SLUG, PRM_USER_ROLE } from "../ward/ward.types.
  * which on this app it emphatically is not.
  *
  * It is deliberately **not** behind `requireAuth`. That guard exists for routes
- * that need a session; this one exists to find out whether there is one.
+ * that need a session; this one exists to find out whether there is one, so it
+ * resolves the session itself (`app.resolveWard`). Nothing resolves it for a
+ * route that does not ask (brief 30).
  */
 export async function meRoutes(app: FastifyInstance): Promise<void> {
   app.get("/me", async (req, reply) => {
     // Per-person and must not be cached anywhere in the chain — one person's
     // answer served to the next caller is the failure mode.
     reply.header("cache-control", "no-store");
+
+    await app.resolveWard(req);
 
     if (req.wardUnavailable === true) {
       // Distinct from anonymous: telling somebody they are signed out when the
