@@ -68,6 +68,15 @@ export function resolveCity(input: string): CityConfig | null {
 // Overpass derives an area from a relation as its id plus this offset.
 const OVERPASS_RELATION_AREA = 3_600_000_000;
 
+/** How long Overpass may run the query (`[timeout:…]`), in seconds. */
+const OVERPASS_QUERY_TIMEOUT_S = 90;
+/**
+ * How long the HTTP call may take before we give up: a little above the
+ * query's own limit, so a slow answer still arrives but a hung socket does not
+ * hold an admin request open forever (brief 33).
+ */
+export const OVERPASS_HTTP_TIMEOUT_MS = 100_000;
+
 /**
  * Every place the category map knows, inside the city's administrative
  * boundary. Decided 2026-10-04 (decisions.md → OSM resource ingestion): the
@@ -81,7 +90,7 @@ export function buildOverpassQuery(city: Pick<CityConfig, "osmRelation">): strin
     `  way${filter}(area.city);`,
     `  relation${filter}(area.city);`,
   ]).join("\n");
-  return `[out:json][timeout:90];\n${area}\n(\n${clauses}\n);\nout center tags;`;
+  return `[out:json][timeout:${OVERPASS_QUERY_TIMEOUT_S}];\n${area}\n(\n${clauses}\n);\nout center tags;`;
 }
 
 // ---------------------------------------------------------------------------
@@ -103,12 +112,19 @@ export interface OverpassResponse {
   elements: OverpassElement[];
 }
 
-export type OverpassFetcher = (query: string) => Promise<OverpassResponse>;
+/** `signal` aborts the request; a fetcher must honour it. */
+export type OverpassFetcher = (
+  query: string,
+  signal?: AbortSignal,
+) => Promise<OverpassResponse>;
 
 const OVERPASS_URL =
   process.env.OVERPASS_URL ?? "https://overpass-api.de/api/interpreter";
 
-export const fetchOverpass: OverpassFetcher = async (query) => {
+export const fetchOverpass: OverpassFetcher = async (
+  query,
+  signal = AbortSignal.timeout(OVERPASS_HTTP_TIMEOUT_MS),
+) => {
   const res = await fetch(OVERPASS_URL, {
     method: "POST",
     headers: {
@@ -116,6 +132,7 @@ export const fetchOverpass: OverpassFetcher = async (query) => {
       "User-Agent": "public-resource-map/0.1 (POC; OSM ODbL ingestion)",
     },
     body: `data=${encodeURIComponent(query)}`,
+    signal,
   });
   if (!res.ok) {
     throw new Error(`Overpass request failed (${res.status})`);
@@ -326,16 +343,67 @@ export async function upsertOsmPlaces(
 // ---------------------------------------------------------------------------
 export interface SyncDeps {
   fetchOverpass?: OverpassFetcher;
+  /** Overrides `OVERPASS_HTTP_TIMEOUT_MS`; tests use a few milliseconds. */
+  timeoutMs?: number;
 }
+
+/** Overpass did not answer in time. Nothing was written. */
+export class OverpassTimeoutError extends Error {
+  constructor(city: string, timeoutMs: number) {
+    super(
+      `Overpass did not answer within ${Math.round(timeoutMs / 1000)} s, so ${city} was not synced. ` +
+        "Nothing changed; try again later.",
+    );
+    this.name = "OverpassTimeoutError";
+  }
+}
+
+/** A second sync of a city while the first is still running. */
+export class SyncInProgressError extends Error {
+  constructor(city: string) {
+    super(`An OSM sync of ${city} is already running. Wait for it to finish.`);
+    this.name = "SyncInProgressError";
+  }
+}
+
+/**
+ * Cities with a sync running in this process. Two syncs of one city at once
+ * would race on the place table's unique OSM key and fail halfway (brief 33);
+ * the second is refused instead. One process serves prm, so in-process is
+ * enough. The check and the add happen in one tick, so nothing slips between.
+ */
+const syncing = new Set<string>();
 
 export async function syncOsmForCity(
   db: DB,
   city: CityConfig,
   deps: SyncDeps = {},
 ): Promise<OsmSyncResult> {
+  if (syncing.has(city.key)) throw new SyncInProgressError(city.name);
+  syncing.add(city.key);
+  try {
+    return await runSync(db, city, deps);
+  } finally {
+    syncing.delete(city.key);
+  }
+}
+
+async function runSync(
+  db: DB,
+  city: CityConfig,
+  deps: SyncDeps,
+): Promise<OsmSyncResult> {
   const fetcher = deps.fetchOverpass ?? fetchOverpass;
+  const timeoutMs = deps.timeoutMs ?? OVERPASS_HTTP_TIMEOUT_MS;
+  const signal = AbortSignal.timeout(timeoutMs);
   const query = buildOverpassQuery(city);
-  const response = await fetcher(query);
+  let response: OverpassResponse;
+  try {
+    response = await fetcher(query, signal);
+  } catch (err) {
+    if (signal.aborted) throw new OverpassTimeoutError(city.name, timeoutMs);
+    throw err;
+  }
   const elements = response.elements ?? [];
 
   const { places, skippedUnnamed, skippedNoGeometry } = elementsToPlaces(

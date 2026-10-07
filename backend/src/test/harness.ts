@@ -35,12 +35,14 @@ export interface TestApp {
  *   ...
  *   await close();
  */
-export async function buildTestApp(opts: Pick<BuildAppOptions, "ingest"> = {}): Promise<TestApp> {
+export async function buildTestApp(
+  opts: Pick<BuildAppOptions, "ingest" | "osm"> = {},
+): Promise<TestApp> {
   const { db, sqlite } = createDb(":memory:");
   migrate(db, { migrationsFolder });
 
   const ward = createFakeWard();
-  const app = await buildApp({ db, logger: false, ward, ingest: opts.ingest });
+  const app = await buildApp({ db, logger: false, ward, ingest: opts.ingest, osm: opts.osm });
   await app.ready();
 
   return {

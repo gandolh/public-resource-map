@@ -5,6 +5,8 @@ import { buildTestApp, type TestApp } from "../test/harness.js";
 import { place } from "../db/schema.js";
 import {
   CITIES,
+  OverpassTimeoutError,
+  SyncInProgressError,
   buildOverpassQuery,
   centroid,
   elementsToPlaces,
@@ -12,6 +14,7 @@ import {
   syncOsmForCity,
   upsertOsmPlaces,
   type OverpassElement,
+  type OverpassFetcher,
   type OverpassResponse,
 } from "./osm-sync.js";
 
@@ -331,5 +334,92 @@ describe("upsertOsmPlaces + syncOsmForCity (no clobber)", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].name).toBe("Biblioteca");
     expect(rows[0].source).toBe("osm");
+  });
+});
+
+describe("syncOsmForCity: timeout and one sync per city (brief 33)", () => {
+  let t: TestApp;
+  beforeEach(async () => {
+    t = await buildTestApp();
+  });
+  afterEach(async () => {
+    await t.close();
+  });
+
+  const library: OverpassResponse = {
+    elements: [
+      { type: "node", id: 10, lat: 45.75, lon: 21.22, tags: { name: "Biblioteca", amenity: "library" } },
+    ],
+  };
+
+  /** An Overpass that answers only when told to. */
+  function heldOverpass() {
+    let answer!: (r: OverpassResponse) => void;
+    let calls = 0;
+    const fetcher: OverpassFetcher = () => {
+      calls++;
+      return new Promise((resolve) => {
+        answer = resolve;
+      });
+    };
+    return { fetcher, answer: (r: OverpassResponse) => answer(r), calls: () => calls };
+  }
+
+  /** An Overpass that never answers; it gives up only when the signal fires, as fetch does. */
+  const hungOverpass: OverpassFetcher = (_query, signal) =>
+    new Promise((_resolve, reject) => {
+      signal?.addEventListener("abort", () => reject(signal.reason));
+    });
+
+  it("gives up on an Overpass that does not answer, writes nothing, and frees the city", async () => {
+    await expect(
+      syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: hungOverpass, timeoutMs: 20 }),
+    ).rejects.toBeInstanceOf(OverpassTimeoutError);
+    expect(await t.db.select().from(place)).toHaveLength(0);
+
+    const again = await syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => library });
+    expect(again.inserted).toBe(1);
+  });
+
+  it("passes the real fetcher an abort signal", async () => {
+    let received: AbortSignal | undefined;
+    await syncOsmForCity(t.db, CITIES.timisoara, {
+      fetchOverpass: async (_q, signal) => {
+        received = signal;
+        return library;
+      },
+    });
+    expect(received).toBeInstanceOf(AbortSignal);
+    expect(received?.aborted).toBe(false);
+  });
+
+  it("refuses a second sync of a city that is still syncing, but not another city", async () => {
+    const held = heldOverpass();
+    const first = syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: held.fetcher });
+
+    await expect(
+      syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => library }),
+    ).rejects.toBeInstanceOf(SyncInProgressError);
+    const other = await syncOsmForCity(t.db, CITIES.bucuresti, { fetchOverpass: async () => ({ elements: [] }) });
+    expect(other.city).toBe("București");
+
+    held.answer(library);
+    expect((await first).inserted).toBe(1);
+    expect(held.calls()).toBe(1);
+
+    const after = await syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => library });
+    expect(after.updated).toBe(1);
+  });
+
+  it("frees the city after a failed sync", async () => {
+    await expect(
+      syncOsmForCity(t.db, CITIES.timisoara, {
+        fetchOverpass: async () => {
+          throw new Error("Overpass request failed (429)");
+        },
+      }),
+    ).rejects.toThrow("429");
+    const again = await syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => library });
+    expect(again.inserted).toBe(1);
   });
 });

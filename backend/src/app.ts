@@ -13,6 +13,7 @@ import { archiveRoutes } from "./routes/archive.js";
 import { registerWard } from "./ward/ward.plugin.js";
 import { wardConfig } from "./ward/config.js";
 import type { WardClient } from "./ward/ward.client.js";
+import type { SyncDeps } from "./lib/osm-sync.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -40,6 +41,8 @@ export interface BuildAppOptions {
    * Nominatim.
    */
   ingest?: Partial<IngestDeps>;
+  /** Replace the OSM sync's Overpass call (and its timeout) in tests. */
+  osm?: SyncDeps;
 }
 
 /**
@@ -81,7 +84,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   );
 
   await app.register(placeRoutes, { prefix: "/api" });
-  await app.register(adminOsmRoutes, { prefix: "/api" });
+  await app.register(adminOsmRoutes(opts.osm), { prefix: "/api" });
   await app.register(adminIngestRoutes({ ...defaultIngestDeps(), ...opts.ingest }), { prefix: "/api" });
   await app.register(eventRoutes, { prefix: "/api" });
   await app.register(whatsOnRoutes, { prefix: "/api" });
