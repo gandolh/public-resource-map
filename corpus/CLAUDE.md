@@ -68,3 +68,8 @@ backticked path whose root exists nowhere in the repo.
 - **`TodoWrite`** is for in-session task lists; `corpus/` is durable project knowledge.
 - Always read `index.md` first before answering a question against the corpus.
 - Verify any path/function named in the wiki before acting on it — pages drift.
+
+## brief-board
+
+Brief progress goes on brief-board. Run `brief-board guide` before you
+start or resume a brief, and follow it.
