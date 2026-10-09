@@ -1,17 +1,19 @@
 ---
 summary: The current-state dashboard: what is built and verified, the gap between code and decisions, a per-area snapshot, and the dev commands.
-updated: 2026-10-07
+updated: 2026-10-09
 ---
 
 # Status
 
-_Last updated: 2026-10-07_
+_Last updated: 2026-10-09_
 
 ## 🟢 The UI is now the new model
 
 The public surface has been rebuilt place-centric on a replacement design system (2026-09-04). **Done + verified: 07 (schema) · 11 (Vitest harness) · 02 (auth & admin gate) · 03 (places & OSM sync) · most of 06 + 13 (place-centric UI & public interactions) · 08 (RO seed) · 10 (test plans).** The map is home, the pin is a place, events live inside a place, and a citywide what's-on index shares one filter model with the map.
 
 **Deployed 2026-10-07**, Ward first. The first deploy missed migration 0004 (vps-deploy ran migrations from a stale `prm-migrate` image), so `/api/places` answered 500 until a `server` redeploy with vps-deploy's fix. Adding the two Timișoara feeds is dropped from the open steps (owner, 2026-10-07): they stay approved and can be added from the admin at any time. No brief is open.
+
+**The live site has no places yet.** On 2026-10-09 https://gandolh.ro/prm/ answers, but its API returns 0 places for both cities. Loading them, e.g. the per-city OSM sync in `/prm/admin`, is the owner's call.
 
 ## Where things stand
 
@@ -29,11 +31,11 @@ Mostly closed on the public surface. Already migrated:
 - ~~UI: `/map`, `/events`, `/resources/:id`~~ → **`/` (map is home), `/places/:id` nested under it, `/whats-on`; old URLs redirect.**
 - ~~NYC seed~~ → **Timișoara + București seed: a frozen OSM sync clipped to the city limits (2,449 places) + one event venue, 15 synthetic events, stable ids (brief 08).**
 - ~~No place-events or citywide endpoint~~ → **`upcomingEventCount` on `/api/places`, `/api/places/:id/events`, `/api/whats-on`.**
+- ~~No favorites, no notification bell~~ → **favourites, the bell and notification email (briefs 05, 32).**
+- ~~No `/verify` or `/reset` UI routes~~ → **not prm's: verification and reset are Ward's (2026-09-06).**
 
 Still open:
 - **No real event source yet** — brief 04's pipeline exists; the sources are an owner decision.
-- **No favorites, no notification bell (brief 05)** — deliberately left out of the rebuild rather than shipped as dead controls.
-- No `/verify` or `/reset` UI routes yet (the backend flows exist).
 - **CARTO now requires an API key** — the app falls back to filtered OSM tiles until `VITE_CARTO_API_KEY` is set (see [decisions.md → Basemap constraint](decisions.md)).
 
 ## Per-area snapshot
@@ -42,11 +44,11 @@ Still open:
 |---|---|
 | npm workspaces | done — shared/backend/ui wired |
 | shared types | **done (new shape) — `Place`/`Event`, two category enums (brief 07)** |
-| backend API | done — event-centric route *paths* still `/api/resources`+`/api/events` but now on the `place`/`event` tables (rename → brief 03) |
-| UI routes | **done (new model) — `/` map home, `/places/:id` panel-over-map, `/whats-on`, `/login`, `/register`; legacy URLs redirect** |
+| backend API | done — `/api/places`, `/api/events`, `/api/whats-on`, `/api/archive`, favourites + inbox, and the admin routes ([architecture.md → API routes](architecture.md)) |
+| UI routes | **done (new model) — `/` map home, `/places/:id` panel-over-map, `/whats-on`, `/archive`, `/about-data`, `/admin`; legacy URLs redirect; sign-in is Ward's** |
 | Component library | **rebuilt — new token layer (`ui/app/app.css`), Button/Chip/Segmented/SearchInput/Skeleton/StateBlock/CategoryBadge, map pins + clusters, place panel/sheet, filter bar** |
 | Dark mode | **done — both themes designed, not inverted; light/dark/system** |
-| Schema consolidation (07) | **done — consolidated 13-table place-centric Drizzle schema + fresh migration** |
+| Schema consolidation (07) | **done — consolidated place-centric Drizzle schema; 9 tables since the Ward cutover dropped the four user tables (migrations 0000–0004)** |
 | Vitest harness (11) | **done — Vitest 4 (unit + Fastify `.inject()` integration), `test`/`test:watch`/`test:cov`, `it.todo` seams** |
 | Auth (02) | **superseded by Ward (2026-09-06)** — identity, sign-in and grants are Ward's; prm keeps `requireAuth`/`requireAdmin` over Ward grants. Brief 02's argon2/cookie/AuthCard leftovers were removed by brief 27 |
 | Audit sweep (18–29) | **18–28 done (2026-09-27 → 2026-10-03)** — admin-only writes, running events stay visible, the map pages through every place, JWKS failure = 503, 0001 snapshot, cross-city deep links, public-healthcare-only OSM sync, real Ward client tests, cutover leftovers gone, template leftovers gone and every manifest exact-pinned. **29 done 2026-10-03** (notification_event keyed on its pair; a drift check now compares migrated vs `schema.ts`) |
@@ -65,7 +67,7 @@ Still open:
 | Admin shell & review UI (16) | **done 2026-10-03** — /admin (own shell, code-split, gated): confidence-ordered review queue with bulk accept/reject and a drawer (map, candidates, manual pin); sources with health, refresh, add-source, OSM sync. Browser-walked against local Ward |
 | Playwright e2e harness (17) | **done 2026-10-03** — `npm run test:e2e`: own ports, fresh seeded DB per run, 9 public-surface specs (found a draw-mode pin bug); signed-in specs run against a fake Ward since 2026-10-04 (26 specs) |
 | i18n | **done — RO default + EN switch, `Intl.PluralRules`/`DateTimeFormat`, no framework** |
-| Deployment | decision locked; no brief yet; backend has no deploy setup |
+| Deployment | **deployed 2026-10-07** by vps-deploy, Ward first; the live database has no places (2026-10-09) |
 
 ## Dev commands
 

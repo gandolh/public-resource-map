@@ -1,5 +1,19 @@
 # Log
 
+## [2026-10-09] maintenance | architecture.md caught up with the code; the live site has no places
+
+`wiki/architecture.md` still described the event-centric UI (`/map`, `/events`,
+`/resources/:id` as pages) and 13 tables, four of them user and token tables
+that the Ward cutover dropped. Rewritten from the code: the route table and file
+map from `ui/app/routes.ts` and the tree, a backend module map, every route in
+`backend/src/routes/`, the 9 tables in `schema.ts` with per-person rows keyed on
+Ward's `subject`, the five migrations, and shared's seven modules.
+`wiki/status.md` lost the same stale claims (`/login`/`/register`, `/api/resources`,
+13 tables, "no deploy setup", favourites and `/verify`/`/reset` as open) and
+records that the deploy at https://gandolh.ro/prm/ returns 0 places for both
+cities on 2026-10-09; loading them is the owner's call. The docs site's copy of
+these pages is generated and gitignored, so nothing else changed.
+
 ## [2026-10-07] maintenance | Deployed; the Timișoara sources step is dropped
 
 The owner deployed Ward, then prm. The owner dropped the open step of adding the
