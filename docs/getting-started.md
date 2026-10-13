@@ -6,7 +6,7 @@ The full local setup. The [main README](../README.md) has the short version.
 
 - Node 24 and npm. Tested with Node 24.14.1.
 - The public map needs nothing else. SQLite runs inside the API process, and the seed works offline.
-- Signing in, favourites, notifications and the admin need the local Ward container from the sibling `wzd_auth` repo, in `wzd_auth/infrastructure/local/`. Its README covers starting it.
+- Signing in, favourites, notifications and the admin work on prm's own local accounts, so they need nothing else. "Sign in with Ward" is optional and needs the local Ward container from the sibling `wzd_auth` repo, in `wzd_auth/infrastructure/local/`. Its README covers starting it.
 
 ## 1. Install and configure
 
@@ -21,16 +21,19 @@ cp .env.example .env
 
 | Variable | Default in `.env.example` | Purpose |
 |---|---|---|
-| `WARD_PUBLIC_ORIGIN` | `http://localhost:8792` | The Ward the API trusts. The UI dev server also proxies `/ward` and `/ward-api` there. |
-| `WARD_API_BASE_PATH` | `/ward-api` | Where Ward's API lives on that origin. |
-| `WARD_APP_KEY` | `wak_replace_me` | prm's key at Ward. Ward's `seed.mjs` writes a working one. With the placeholder the public map works and sign-in does not. |
+| `PUBLIC_ORIGIN` | `http://localhost:5173` | The origin the browser loads prm from, no path. The session cookie's `Secure` flag and the same-origin check on sign-in posts depend on it. |
+| `WARD_OIDC_ISSUER` | unset (commented out) | Optional. Ward's issuer, `http://localhost:8792/ward-api/oidc` locally. Unset, prm runs on local accounts only. |
+| `WARD_OIDC_CLIENT_ID`, `WARD_OIDC_CLIENT_KEY` | unset | prm's client id (`prm`) and its private key at Ward. The key is a secret. Ward's `seed.mjs` writes both. |
+| `WARD_OIDC_REDIRECT_URI` | unset | The callback as the browser reaches it, `http://localhost:5173/prm-api/auth/ward/callback`. |
+| `WARD_OIDC_POST_LOGOUT_REDIRECT_URI` | unset | Optional. Where Ward returns after "Sign out of Ward too", `http://localhost:5173/prm/`. |
+| `AUTH_TRUSTED_PROXIES` | unset | Optional. Proxies whose `X-Forwarded-For` the sign-in lockout believes. Set it in a container, not locally. |
 | `PRM_BASE` | `/prm/` | The path the app is served under, as in the deploy. |
 | `VITE_API_URL` | `/prm-api` | Where the app calls the API. The dev server proxies it to the backend. |
 | `VITE_CARTO_API_KEY` | unset | CARTO basemap tiles. Without a key the map uses OpenStreetMap tiles, toned down toward the same look; see `ui/app/lib/map.ts`. |
 | `VITE_DATA_CONTACT` | placeholder address | The takedown contact shown on `/about-data`. |
 | `NOMINATIM_USER_AGENT` | placeholder contact | Nominatim's policy wants an identifying User-Agent. Without it the pipeline geocodes nothing and unmatched venues wait for a manual pin. |
 
-The API refuses to start unless all three `WARD_*` values are set; `backend/src/ward/config.ts` explains why. The bottom of `.env.example` lists the optional backend settings with their defaults: `PORT`, `HOST`, `DATABASE_PATH`, `CORS_ORIGIN`, `OVERPASS_URL`, `APP_URL` and `INGEST_USER_AGENT`.
+With `WARD_OIDC_ISSUER` set, the client id, key and redirect URI are required too and the API refuses to start without them; leave the issuer unset to run on local accounts only. The bottom of `.env.example` lists the optional backend settings with their defaults: `PORT`, `HOST`, `DATABASE_PATH`, `CORS_ORIGIN`, `OVERPASS_URL`, `APP_URL` and `INGEST_USER_AGENT`.
 
 ## 2. Build `shared` and create the database
 
@@ -44,7 +47,7 @@ The seed resets places, events, favourites and notifications. It loads a frozen 
 
 Two optional extras:
 
-- `SEED_DEMO_SUBJECT=<a Ward subject> npm run db:seed -w backend` gives that account two followed places, a saved event and one notification.
+- `SEED_DEMO_USERNAME=<a username> SEED_DEMO_PASSWORD=<a password> npm run db:seed -w backend` gives that local user two followed places, a saved event and one notification. The password is needed only the first time.
 - `npm run db:capture-osm -w backend` refreshes the frozen capture from the public Overpass API. Overpass is rate-limited, so run it rarely.
 
 ## 3. Run
@@ -53,17 +56,20 @@ Two optional extras:
 npm run dev
 ```
 
-This starts the API on port 3001 under `tsx watch` and the UI on port 5173 under Vite. Open <http://localhost:5173/prm/>. Local dev is laid out like the deploy: the app under `/prm/`, the API under `/prm-api` and Ward under `/ward`, all on the UI dev server's origin.
+This starts the API on port 3001 under `tsx watch` and the UI on port 5173 under Vite. Open <http://localhost:5173/prm/>. Local dev is laid out like the deploy: the app under `/prm/`, and the API under `/prm-api`, both on the UI dev server's origin. There is no `/ward` proxy: "Sign in with Ward" sends the browser to Ward's own origin and back to the callback under `/prm-api`.
 
 If another app already holds port 3001, the API exits with `EADDRINUSE`. Pick another port for both processes, for example `PORT=3011 npm run dev`; the UI's proxy follows `PORT`.
 
 ## 4. Sign in and use the admin
 
-1. Start the local Ward and run its `seed.mjs`, as its README in `wzd_auth/infrastructure/local/` describes. The seed writes a working `WARD_APP_KEY` into this repo's `.env` and creates an owner account with `admin` on prm.
-2. Restart `npm run dev` so the API picks up the new key.
-3. Use **Log in** in the account menu. Ward signs you in and sends you back to `/prm/`.
+Sign in with a local account:
 
-The admin is at <http://localhost:5173/prm/admin> and needs the `prm:admin` grant. It has the review queue for staged events and a sources page with feed health, refresh, add-source and the per-city OSM sync. The OSM sync calls the public Overpass API and a source refresh fetches the source's feed, so neither is something to click casually.
+1. Create one with `npm run db:seed-users -w backend`. It reads `SEED_USERNAME`, `SEED_PASSWORD` and `SEED_ROLE` (`user` or `admin`) from the environment, or asks on the terminal. `npm run db:set-role -w backend -- <username> admin` promotes an existing user.
+2. Use **Log in** in the account menu and sign in with that username and password. It sends you back to `/prm/`.
+
+To use "Sign in with Ward" instead, start the local Ward and run its `seed.mjs`, as its README in `wzd_auth/infrastructure/local/` describes. The seed writes the `WARD_OIDC_*` values into this repo's `.env`; restart `npm run dev` so the API picks them up, then use the Ward button on the login page.
+
+The admin is at <http://localhost:5173/prm/admin> and needs the `admin` role. It has the review queue for staged events and a sources page with feed health, refresh, add-source and the per-city OSM sync. The OSM sync calls the public Overpass API and a source refresh fetches the source's feed, so neither is something to click casually.
 
 ## 5. Test
 
