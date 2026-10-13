@@ -82,7 +82,7 @@ npm run test:e2e     # Playwright, see below
 npm run docs -w docs
 ```
 
-This copies `corpus/wiki/` into the site, compiles the diagrams, runs TypeDoc over `shared/`, and builds the Starlight site into `docs/dist/`. The diagrams are regenerated when the archify skill is installed; otherwise the build checks the committed copies. The deployed copy is at <https://gandolh.ro/prm/docs/>. See [docs/README.md](README.md) for how the site's files are laid out.
+This copies `corpus/wiki/` into the site, compiles the diagrams, runs TypeDoc over `shared/`, and builds the Starlight site into `docs/dist/`. The diagrams are regenerated when the archify skill is installed; otherwise the build checks the committed copies. The deployed copy is at `/prm/docs/`. See [docs/README.md](README.md) for how the site's files are laid out.
 
 ## Deploying
 

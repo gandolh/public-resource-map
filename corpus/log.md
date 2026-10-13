@@ -10,7 +10,7 @@ map from `ui/app/routes.ts` and the tree, a backend module map, every route in
 Ward's `subject`, the five migrations, and shared's seven modules.
 `wiki/status.md` lost the same stale claims (`/login`/`/register`, `/api/resources`,
 13 tables, "no deploy setup", favourites and `/verify`/`/reset` as open) and
-records that the deploy at https://gandolh.ro/prm/ returns 0 places for both
+records that the deploy at `/prm/` returns 0 places for both
 cities on 2026-10-09; loading them is the owner's call. The docs site's copy of
 these pages is generated and gitignored, so nothing else changed.
 

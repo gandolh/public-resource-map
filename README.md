@@ -6,7 +6,7 @@ A map of the parks, libraries, clinics, museums, town halls and other public pla
   <img src="docs/images/hero.webp" width="100%" alt="CivicMap on a laptop: a street map of central Timișoara covered in coloured category pins, with the panel for Muzeul de Artă open on the right showing its hours, phone, website and upcoming events grouped under Today, This weekend and Later">
 </p>
 
-**Status:** Proof of concept, deployed at <https://gandolh.ro/prm/> since 2026-10-07. On 2026-10-09 the live database had no places loaded yet, so the pictures here come from a local copy running the seed data. The places are real OpenStreetMap data; every event is synthetic until the first real event feeds are added.
+**Status:** Proof of concept, deployed at `/prm/` since 2026-10-07. On 2026-10-09 the live database had no places loaded yet, so the pictures here come from a local copy running the seed data. The places are real OpenStreetMap data; every event is synthetic until the first real event feeds are added.
 
 ## What it does
 
@@ -47,7 +47,7 @@ Places and events reach the map by different routes:
 
 An admin runs an OSM sync per city, and it writes places directly. Events come from public calendar feeds; iCal is the one adapter built so far. Each event's venue name is matched to a place, geocoded with Nominatim only when no place matches, and staged. A person accepts or rejects every staged event before it shows on the map.
 
-More on the docs site: [architecture](https://gandolh.ro/prm/docs/wiki/architecture/), [ingestion](https://gandolh.ro/prm/docs/ingestion/), [HTTP API](https://gandolh.ro/prm/docs/api/) and [data model](https://gandolh.ro/prm/docs/data/).
+More on the docs site: [architecture](corpus/wiki/architecture.md), [ingestion](docs/src/content/docs/ingestion.mdx), [HTTP API](docs/src/content/docs/api.mdx) and [data model](docs/src/content/docs/data.mdx).
 
 ## Run it locally
 
@@ -78,7 +78,7 @@ Then open <http://localhost:5173/prm/>. Env vars, sign-in, the admin, tests and 
 ## Docs
 
 - [docs/](docs/README.md): local setup, the docs-site sources, and the images used here
-- Docs site: <https://gandolh.ro/prm/docs/>, built from `docs/`
+- Docs site: `/prm/docs/`, built from `docs/`
 - Project wiki: [corpus/](corpus/index.md), with the decisions, the current status and the briefs
 
 ## License

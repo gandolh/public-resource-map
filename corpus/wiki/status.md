@@ -13,7 +13,7 @@ The public surface has been rebuilt place-centric on a replacement design system
 
 **Deployed 2026-10-07**, Ward first. The first deploy missed migration 0004 (vps-deploy ran migrations from a stale `prm-migrate` image), so `/api/places` answered 500 until a `server` redeploy with vps-deploy's fix. Adding the two Timișoara feeds is dropped from the open steps (owner, 2026-10-07): they stay approved and can be added from the admin at any time. No brief is open.
 
-**The live site has no places yet.** On 2026-10-09 https://gandolh.ro/prm/ answers, but its API returns 0 places for both cities. Loading them, e.g. the per-city OSM sync in `/prm/admin`, is the owner's call.
+**The live site has no places yet.** On 2026-10-09 the production site answers at `/prm/`, but its API returns 0 places for both cities. Loading them, e.g. the per-city OSM sync in `/prm/admin`, is the owner's call.
 
 ## Where things stand
 
