@@ -72,10 +72,11 @@ export async function archiveRoutes(app: FastifyInstance) {
     return page(sql.join(conditions, sql` AND `), q);
   });
 
-  app.get("/archive/mine", { preHandler: app.requireAuth }, async (req, reply) => {
+  // Signed-in only: not on the public allowlist (`ward/auth.ts`).
+  app.get("/archive/mine", async (req, reply) => {
     const q = parse(req.query, reply);
     if (!q) return reply;
-    const subject = req.ward!.subject;
+    const subject = req.auth!.user.id;
     // What you saved, and what happened at places you follow.
     const saved = db.select({ id: favoriteEvent.eventId }).from(favoriteEvent).where(eq(favoriteEvent.subject, subject));
     const followed = db.select({ id: favoritePlace.placeId }).from(favoritePlace).where(eq(favoritePlace.subject, subject));

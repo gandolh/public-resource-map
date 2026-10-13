@@ -529,9 +529,8 @@ describe("syncOsmForCity: retiring places OSM no longer has (brief 34)", () => {
     expect(past?.status).toBe("accepted");
 
     // In the review queue, with its reason.
-    const token = randomUUID();
-    t.ward.signIn(token, "admin-1", { prm: ["admin"] });
-    const queue = await t.app.inject({ method: "GET", url: "/api/admin/staged-events", headers: { cookie: `ward_session=${token}` } });
+    const { cookie } = await t.signIn("admin");
+    const queue = await t.app.inject({ method: "GET", url: "/api/admin/staged-events", headers: { cookie } });
     const row = (queue.json() as { data: { id: string; issues: string | null }[] }).data.find((r) => r.id === "staged-soon");
     expect(row?.issues).toMatch(/retired/);
   });

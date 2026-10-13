@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import { NavLink, Outlet, type MetaFunction } from "react-router";
+import { Link, NavLink, Outlet, type MetaFunction } from "react-router";
 import { ArrowLeft, Inbox, Loader2, Radio, ShieldAlert } from "lucide-react";
 import { AppProviders } from "~/components/Layout";
 import { BrandMark } from "~/components/shell/BrandMark";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { useAuthStore } from "~/stores/authStore";
 import { useI18n } from "~/lib/i18n";
-import { wardLoginUrl } from "~/lib/authApi";
+import { browserPath, loginPath } from "~/lib/authApi";
 import { cn } from "~/lib/utils";
 
 export const meta: MetaFunction = () => [{ title: "Admin — CivicMap" }];
@@ -16,7 +16,7 @@ export const meta: MetaFunction = () => [{ title: "Admin — CivicMap" }];
  * Navbar, because it is a different audience doing a different job. Its route
  * modules are split from the public bundle by React Router, so a visitor never
  * downloads them. The server is the real gate (every admin route is 401/403
- * without `prm:admin`); this one only decides what to show.
+ * for anyone whose prm role is not `admin`); this one only decides what to show.
  */
 export default function AdminLayout() {
   return (
@@ -54,22 +54,16 @@ function AdminShell() {
             tone="danger"
             icon={<ShieldAlert size={18} strokeWidth={2} />}
             title={signedOut ? t("admin.signInTitle") : t("admin.forbiddenTitle")}
-            body={
-              status === "unavailable"
-                ? t("auth.unavailable")
-                : signedOut
-                  ? t("admin.signInBody")
-                  : t("admin.forbiddenBody")
-            }
+            body={signedOut ? t("admin.signInBody") : t("admin.forbiddenBody")}
             action={
               <div className="flex flex-wrap justify-center gap-2">
                 {signedOut && (
-                  <a
-                    href={wardLoginUrl(`${import.meta.env.BASE_URL}admin`)}
+                  <Link
+                    to={loginPath(browserPath("/admin"))}
                     className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-[13.5px] font-medium text-fg-on-accent"
                   >
                     {t("nav.login")}
-                  </a>
+                  </Link>
                 )}
                 <a
                   href={import.meta.env.BASE_URL}

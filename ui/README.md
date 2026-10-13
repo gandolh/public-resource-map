@@ -9,6 +9,6 @@ npm start          # preview that build on :4173, same base and same /prm-api pr
 npm run typecheck
 ```
 
-Both `dev` and `start` read the repo-root `.env`. The `/prm-api` proxy (and `/ward`, `/ward-api` when `WARD_PUBLIC_ORIGIN` is set) needs the backend running on `PORT` (3001).
+Both `dev` and `start` read the repo-root `.env`. The `/prm-api` proxy needs the backend running on `PORT` (3001). There is no Ward proxy: "Sign in with Ward" goes to Ward's own origin.
 
 **How it ships:** there is no UI server and no UI container. The deploy builds `build/client` with `PRM_BASE` and `VITE_API_URL` set and Caddy serves it as static files ([corpus → Deployment](../corpus/wiki/decisions.md)). The template's `react-router-serve`, its Dockerfile and the shadcn `components.json` were removed in brief 28.

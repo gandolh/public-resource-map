@@ -1,92 +1,91 @@
+import { configureAuth, type AuthError } from "../../vendor/ward/ward-auth-react.js";
+
 /**
- * Who the browser is, and where to send somebody who needs to sign in.
+ * prm's accounts, as the browser reaches them (brief 24 of Ward's corpus).
  *
- * ## prm has no login form any more
+ * prm has its own users now: a login page, a register page and a settings
+ * page, all prm's, built on the unstyled hooks of Ward's shared library
+ * (`ui/vendor/ward`). "Sign in with Ward" is a button on the login page, shown
+ * when the server has Ward configured.
  *
- * There is no `loginRequest`, no `registerRequest`, no `logoutRequest`, no
- * password reset and no email verification here. All of it is Ward's, at one
- * login page for the whole estate — and prm is the app that made public
- * registration part of Ward's design, so signing up is `/ward/register?app=prm`
- * rather than a form this app renders.
- *
- * What is left is one read and three URLs.
+ * The hooks talk to the plugin's routes under the API prefix, on this origin
+ * (`/prm-api/auth/...`; the dev server proxies it as Caddy does). The session
+ * cookie is scoped to that prefix, so every API call must stay same-origin.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_URL ?? "/prm-api";
 
-/** prm's slug, in the Ward URLs below. */
-const APP = "prm";
+/** Point the library's hooks at prm's auth routes. Runs once, on first import. */
+export const authClient = configureAuth({ basePath: `${API_BASE}/auth` });
 
-/** Where Ward sends people back to. A path — Ward refuses an absolute URL. */
-const PRM_ROOT = "/prm/";
+/** The app's base path, `/prm/` in the deploy, without its trailing slash. */
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-/** prm's view of the signed-in person. Deliberately narrow — see `routes/me.ts`. */
+/** prm's view of the signed-in person. */
 export interface PrmUser {
-  /** Ward's opaque subject. The key every per-person row in prm is stored under. */
-  subject: string;
+  /** The local user id: the key favourites and notifications are stored under. */
+  id: string;
   username: string;
-  /** Whether this account holds `prm:admin`. prm's interpretation, not Ward's. */
+  /** `role === "admin"`: prm's own role, not a Ward grant. */
   isAdmin: boolean;
 }
 
-/** Ward could not be reached. Distinct from "not signed in" — see `bootstrap`. */
-export class IdentityUnavailableError extends Error {
-  constructor() {
-    super("Sign-in is temporarily unavailable");
-    this.name = "IdentityUnavailableError";
-  }
+/** This page as a full browser path, for `?next=`: Ward's `returnTo` needs one. */
+export function browserPath(pathname: string, search = ""): string {
+  return `${BASE}${pathname}${search}`;
 }
 
 /**
- * The current person, or `null` when nobody is signed in.
- *
- * `null` is an ordinary answer on a public map, not a failure: most visitors
- * are anonymous and the whole app works for them.
+ * Where to go after signing in: `next` when it is a path inside prm, else
+ * prm's home. Returns a **browser** path (with the base) for Ward's
+ * `returnTo`, and a **router** path for a local navigation.
  */
-export async function fetchMe(): Promise<PrmUser | null> {
-  const res = await fetch(`${API_BASE}/api/me`, {
-    // Required: Ward's cookie must reach the API, which is a different origin
-    // in development even though it is the same one in the deployed estate.
-    credentials: "include",
-  });
+export function safeNext(next: string | null): { browser: string; router: string } {
+  const home = { browser: `${BASE}/`, router: "/" };
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) return home;
+  if (BASE && next !== BASE && !next.startsWith(`${BASE}/`) && !next.startsWith(`${BASE}?`)) return home;
+  const router = next.slice(BASE.length) || "/";
+  // Never back into the auth pages themselves.
+  if (/^\/(login|register)(\/|\?|$)/.test(router)) return home;
+  return { browser: next, router };
+}
 
-  if (res.status === 503) throw new IdentityUnavailableError();
-  if (!res.ok) throw new Error(`Request failed (${res.status})`);
+/** The login page, coming back to `next` (a browser path) afterwards. */
+export function loginPath(next?: string): string {
+  return next ? `/login?next=${encodeURIComponent(next)}` : "/login";
+}
 
-  const data = (await res.json()) as { user: PrmUser | null };
-  return data.user;
+/** The register page, coming back to `next` (a browser path) afterwards. */
+export function registerPath(next?: string): string {
+  return next ? `/register?next=${encodeURIComponent(next)}` : "/register";
 }
 
 /**
- * Ward's login page, returning here afterwards.
- *
- * `next` is a **path**, never an absolute URL: Ward validates it against the
- * estate's own path roots and refuses anything absolute, including the estate's
- * own origin spelled out in full.
+ * The i18n key for an error code from the library. Unknown codes read as a
+ * generic failure; Ward may send OAuth codes this list does not name.
  */
-export function wardLoginUrl(next: string = PRM_ROOT): string {
-  return `/ward/login?next=${encodeURIComponent(next)}`;
-}
-
-/**
- * Ward's registration page, for prm.
- *
- * `?app=prm` is load-bearing rather than cosmetic: Ward only offers
- * registration for an app whose `public_registration` flag is on, and prm is
- * the only one in the estate that has it. Registering there confers exactly
- * `prm:user` and nothing anywhere else.
- */
-export function wardRegisterUrl(next: string = PRM_ROOT): string {
-  return `/ward/register?app=${APP}&next=${encodeURIComponent(next)}`;
-}
-
-/**
- * Ward's account page, where signing out lives.
- *
- * prm has no logout of its own and must not fake one: a session is the
- * estate's, so ending it in one app while the others still honour it would be a
- * lie the cookie immediately contradicts.
- */
-export function wardAccountUrl(): string {
-  return "/ward/account";
+export function authErrorKey(error: AuthError | null | undefined): string | null {
+  if (!error) return null;
+  const known = new Set([
+    "invalid_credentials",
+    "too_many_attempts",
+    "invalid_username",
+    "password_too_short",
+    "password_too_long",
+    "username_taken",
+    "network",
+    "access_denied",
+    "ward_unavailable",
+    "ward_misconfigured",
+    "ward_session_ended",
+    "invalid_callback",
+    "already_linked",
+    "ward_account_in_use",
+    "ward_account_mismatch",
+    "not_linked",
+    "no_local_password",
+    "reauthentication_required",
+    "unauthorized",
+  ]);
+  return `authError.${known.has(error.code) ? error.code : "unknown"}`;
 }

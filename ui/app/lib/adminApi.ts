@@ -11,11 +11,11 @@ import { ApiRequestError } from "~/lib/api";
 
 /**
  * The admin side of the API (briefs 04, 03, 16). Same origin as the public
- * calls, so Ward's cookie rides along; every route answers 401/403 to anyone
- * without `prm:admin`.
+ * calls, so prm's session cookie rides along; every route answers 401/403 to
+ * anyone whose prm role is not `admin`.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_URL ?? "/prm-api";
 
 async function send<T>(method: "GET" | "POST" | "PATCH", path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

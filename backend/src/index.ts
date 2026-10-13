@@ -2,13 +2,11 @@ import { buildApp } from "./app.js";
 import { startReminderSweep } from "./jobs/reminder-sweep.js";
 
 /*
- * There is no admin to seed any more.
- *
- * `ensureAdmin` promoted an account named by `ADMIN_EMAIL`/`ADMIN_PASSWORD` on
- * every boot. prm holds no accounts and no roles: authority is a Ward grant,
- * and `prm:admin` is issued by hand from Ward's console — which is the point,
- * because an admin that a redeploy can recreate is an admin an environment
- * variable can silently grant.
+ * Users are prm's own (brief 24 of Ward's corpus). Nothing is seeded on boot:
+ * `npm run db:seed-users -w backend` creates users from the environment and
+ * never resets a password or a role, so it is safe on every deploy, and
+ * `db:set-role` promotes an existing user. Boot does move rows keyed by a Ward
+ * subject onto linked local users (`ward/subjects.ts`), once.
  */
 const app = await buildApp({ logger: true });
 

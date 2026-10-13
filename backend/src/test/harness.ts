@@ -2,22 +2,34 @@ import type { FastifyInstance } from "fastify";
 import type BetterSqlite3 from "better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
 import { createDb, type DB } from "../db/index.js";
 import { buildApp, type BuildAppOptions } from "../app.js";
-import { createFakeWard, type FakeWard } from "./fake-ward.js";
 
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
+
+/** The origin tests' apps believe they are served on. */
+export const TEST_ORIGIN = "http://localhost:5173";
+
+export interface SignedIn {
+  /** The `cookie` header value: `prm_session=<token>`. */
+  cookie: string;
+  /** The local user id: what favourites and notifications are keyed by. */
+  id: string;
+}
 
 export interface TestApp {
   app: FastifyInstance;
   db: DB;
   sqlite: BetterSqlite3.Database;
   /**
-   * The injected Ward client. Call `ward.signIn(token, subject, grants)` and
-   * then send `cookie: ward_session=<token>` to make a request authenticated.
-   * The real guards still decide what that session may do.
+   * A local user with `role`, signed in, as a cookie header. A real session
+   * from the shared library, so the real guard and `requireRole` decide what
+   * it may do. Pass `id` to own rows a test already wrote under that key. No
+   * password: a session is minted directly, which keeps scrypt out of tests
+   * that are not about passwords.
    */
-  ward: FakeWard;
+  signIn: (role?: "user" | "admin", id?: string) => Promise<SignedIn>;
   /** Close the Fastify app + the SQLite connection. Call in `afterAll`/`afterEach`. */
   close: () => Promise<void>;
 }
@@ -34,22 +46,40 @@ export interface TestApp {
  *   const res = await app.inject({ method: "GET", url: "/api/resources?..." });
  *   ...
  *   await close();
+ *
+ * Ward is off unless a test passes a client (`ward`), and `before` runs on the
+ * migrated database before the app boots, for tests of what boot does to
+ * existing rows.
  */
 export async function buildTestApp(
-  opts: Pick<BuildAppOptions, "ingest" | "osm"> = {},
+  opts: Pick<BuildAppOptions, "ingest" | "osm" | "ward"> & { before?: (db: DB) => void } = {},
 ): Promise<TestApp> {
   const { db, sqlite } = createDb(":memory:");
   migrate(db, { migrationsFolder });
+  opts.before?.(db);
 
-  const ward = createFakeWard();
-  const app = await buildApp({ db, logger: false, ward, ingest: opts.ingest, osm: opts.osm });
+  const app = await buildApp({
+    db: { db, sqlite },
+    logger: false,
+    ward: opts.ward ?? null,
+    publicOrigin: TEST_ORIGIN,
+    ingest: opts.ingest,
+    osm: opts.osm,
+  });
   await app.ready();
 
   return {
     app,
     db,
     sqlite,
-    ward,
+    async signIn(role = "user", id = randomUUID()) {
+      const { accounts } = app.auth;
+      const user =
+        (await accounts.findUserById(id)) ??
+        (await accounts.createUser({ id, username: `${role}-${id}`, role }));
+      const { token } = await accounts.startSession(user.id);
+      return { cookie: `prm_session=${token}`, id: user.id };
+    },
     close: async () => {
       await app.close();
       sqlite.close();

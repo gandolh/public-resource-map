@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Bell } from "./shell/Bell";
 import { usePendingFavorite } from "~/hooks/useFavorites";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { CalendarDays, Map as MapIcon, User } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { BrandMark } from "./shell/BrandMark";
@@ -15,7 +15,8 @@ import {
   DropdownMenuSeparator,
 } from "./ui/DropdownMenu";
 import { useAuthStore } from "~/stores/authStore";
-import { wardAccountUrl, wardLoginUrl, wardRegisterUrl } from "~/lib/authApi";
+import { browserPath, loginPath, registerPath } from "~/lib/authApi";
+import { useLogout } from "../../vendor/ward/ward-auth-react.js";
 import { useAppStore } from "~/stores/appStore";
 import { useI18n } from "~/lib/i18n";
 import { cn } from "~/lib/utils";
@@ -38,30 +39,31 @@ function TopLink({ to, children }: { to: string; children: React.ReactNode }) {
 }
 
 /**
- * The account menu.
- *
- * Every item here is an `<a href>` to Ward, not a `<Link>` to a prm route.
- * That is the visible shape of the cutover: prm has no login page, no
- * registration page and no logout of its own, so these are **navigations off
- * this app** and must be full page loads. A client-side `<Link>` would try to
- * resolve `/ward/login` inside prm's router and 404.
+ * This page, as the login page's `next`: signing in or registering from the
+ * navbar comes back where it started, not to the map (brief 10's TP-05 walk).
+ * A browser path, because a "Sign in with Ward" round trip returns to it too.
+ * The auth pages themselves are not a place to come back to.
  */
-/**
- * This page, as Ward's `next`: signing in or registering from the navbar comes
- * back where it started, not to the map (brief 10's TP-05 walk).
- */
-function useReturnHere(): string {
+function useReturnHere(): string | undefined {
   const { pathname, search } = useLocation();
-  return `${import.meta.env.BASE_URL.replace(/\/$/, "")}${pathname}${search}`;
+  if (/^\/(login|register)\/?$/.test(pathname)) return undefined;
+  return browserPath(pathname, search);
 }
 
+/**
+ * The account menu: prm's own login, register and settings pages, and a
+ * sign-out that ends prm's session (settings also offers ending the Ward
+ * session a Ward sign-in began).
+ */
 function ProfileMenu() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const status = useAuthStore((s) => s.status);
   const authed = status === "authenticated" && user;
   const fallback = (user?.username ?? "?").charAt(0).toUpperCase();
   const here = useReturnHere();
+  const { logout } = useLogout();
 
   return (
     <DropdownMenu
@@ -80,27 +82,20 @@ function ProfileMenu() {
           <DropdownMenuLabel>{t("nav.account")}</DropdownMenuLabel>
           <div className="truncate px-2.5 pb-2 text-[13px] text-fg">{user.username}</div>
           <DropdownMenuSeparator />
-          {/* Signing out is Ward's. prm must not fake one: the session belongs
-              to the estate, so ending it here while the other apps still
-              honoured it would be a lie the cookie contradicts immediately. */}
-          <DropdownMenuItem render={<a href={wardAccountUrl()} />}>
-            {t("nav.logout")}
+          <DropdownMenuItem render={<Link to="/settings" />}>{t("nav.settings")}</DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={async () => {
+              if (await logout()) navigate("/");
+            }}
+          >
+            {t("nav.signOut")}
           </DropdownMenuItem>
-        </>
-      ) : status === "unavailable" ? (
-        <>
-          <DropdownMenuLabel>{t("nav.account")}</DropdownMenuLabel>
-          {/* Not "sign in": the way in is the service that is not answering,
-              so offering the button would send them into a dead end. */}
-          <div className="px-2.5 pb-2 text-[13px] text-fg-muted">{t("auth.unavailable")}</div>
         </>
       ) : (
         <>
           <DropdownMenuLabel>{t("nav.account")}</DropdownMenuLabel>
-          <DropdownMenuItem render={<a href={wardLoginUrl(here)} />}>{t("nav.login")}</DropdownMenuItem>
-          <DropdownMenuItem render={<a href={wardRegisterUrl(here)} />}>
-            {t("nav.register")}
-          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link to={loginPath(here)} />}>{t("nav.login")}</DropdownMenuItem>
+          <DropdownMenuItem render={<Link to={registerPath(here)} />}>{t("nav.register")}</DropdownMenuItem>
         </>
       )}
     </DropdownMenu>
@@ -108,27 +103,24 @@ function ProfileMenu() {
 }
 
 /**
- * The phone tab bar's account entry.
- *
- * A plain `<a>` rather than a `BottomTab`, because its destination is Ward and
- * leaves this app — a router `<Link>` would 404 inside prm. It points at the
- * account page when signed in and at login otherwise, so the tab always does
- * the thing the person expects from it.
+ * The phone tab bar's account entry. It points at settings when signed in and
+ * at login otherwise, so the tab always does the thing the person expects
+ * from it.
  */
 function AccountTab() {
   const { t } = useI18n();
   const status = useAuthStore((s) => s.status);
   const here = useReturnHere();
-  const href = status === "authenticated" ? wardAccountUrl() : wardLoginUrl(here);
+  const to = status === "authenticated" ? "/settings" : loginPath(here);
 
   return (
-    <a
-      href={href}
+    <Link
+      to={to}
       className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] text-fg-muted"
     >
       <User className="h-5 w-5" aria-hidden />
       {t("nav.account")}
-    </a>
+    </Link>
   );
 }
 

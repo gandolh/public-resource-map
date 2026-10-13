@@ -5,9 +5,7 @@
  * a 500.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { randomUUID } from "node:crypto";
 import { buildTestApp, type TestApp } from "../test/harness.js";
-import { WardUnavailableError } from "../ward/ward.types.js";
 
 let t: TestApp;
 beforeEach(async () => {
@@ -17,10 +15,8 @@ afterEach(async () => {
   await t.close();
 });
 
-function loginAs(role: "user" | "admin"): string {
-  const token = randomUUID();
-  t.ward.signIn(token, `subject_${token}`, { prm: [role] });
-  return `ward_session=${token}`;
+async function loginAs(role: "user" | "admin"): Promise<string> {
+  return (await t.signIn(role)).cookie;
 }
 
 const placeBody = {
@@ -99,7 +95,7 @@ async function routes(admin: string) {
 
 describe("the place and event write routes are admin-only", () => {
   it("anonymous → 401 on every route", async () => {
-    for (const r of await routes(loginAs("admin"))) {
+    for (const r of await routes(await loginAs("admin"))) {
       const res = await t.app.inject({
         method: r.method,
         url: r.url,
@@ -109,9 +105,9 @@ describe("the place and event write routes are admin-only", () => {
     }
   });
 
-  it("prm:user → 403 on every route", async () => {
-    const user = loginAs("user");
-    for (const r of await routes(loginAs("admin"))) {
+  it("a user → 403 on every route", async () => {
+    const user = await loginAs("user");
+    for (const r of await routes(await loginAs("admin"))) {
       const res = await t.app.inject({
         method: r.method,
         url: r.url,
@@ -122,23 +118,8 @@ describe("the place and event write routes are admin-only", () => {
     }
   });
 
-  it("Ward unavailable → 503 on every route", async () => {
-    const list = await routes(loginAs("admin"));
-    const cookie = loginAs("admin");
-    t.ward.breakWith(new WardUnavailableError("down"));
-    for (const r of list) {
-      const res = await t.app.inject({
-        method: r.method,
-        url: r.url,
-        headers: { cookie },
-        payload: r.payload,
-      });
-      expect(res.statusCode, r.name).toBe(503);
-    }
-  });
-
-  it("prm:admin → 201 / 204", async () => {
-    const admin = loginAs("admin");
+  it("an admin → 201 / 204", async () => {
+    const admin = await loginAs("admin");
     for (const r of await routes(admin)) {
       const res = await t.app.inject({
         method: r.method,
@@ -153,7 +134,7 @@ describe("the place and event write routes are admin-only", () => {
 
 describe("deleting a row that is still referenced", () => {
   it("a place with an event → 409 PLACE_IN_USE, and the place is still there", async () => {
-    const admin = loginAs("admin");
+    const admin = await loginAs("admin");
     const placeId = await createPlace(admin);
     await createEvent(admin, placeId);
     const res = await t.app.inject({

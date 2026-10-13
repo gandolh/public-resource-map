@@ -20,11 +20,8 @@ afterEach(async () => {
   await t.close();
 });
 
-function signIn(role: "user" | "admin" = "user", subject = `subject_${randomUUID()}`) {
-  const token = randomUUID();
-  t.ward.signIn(token, subject, { prm: [role] });
-  return { cookie: `ward_session=${token}`, subject };
-}
+/** A signed-in local user: `cookie`, and `id`, the key their rows carry. */
+const signIn = (role: "user" | "admin" = "user") => t.signIn(role);
 
 async function call(cookie: string | null, method: "GET" | "POST" | "DELETE", url: string, payload?: unknown) {
   const res = await t.app.inject({ method, url, payload: payload as object, headers: cookie ? { cookie } : {} });
@@ -46,7 +43,7 @@ async function publish(placeId: string, titles: string[]) {
         .returning({ id: stagedEvent.id })
         .get().id,
   );
-  const admin = signIn("admin");
+  const admin = await signIn("admin");
   return (await call(admin.cookie, "POST", "/api/admin/staged-events/accept", { ids })).body;
 }
 
@@ -58,8 +55,8 @@ describe("favourites", () => {
   });
 
   it("are added and removed idempotently, per person", async () => {
-    const a = signIn();
-    const b = signIn();
+    const a = await signIn();
+    const b = await signIn();
     expect((await call(a.cookie, "POST", `/api/favorites/places/${museum}`)).status).toBe(204);
     expect((await call(a.cookie, "POST", `/api/favorites/places/${museum}`)).status).toBe(204);
     expect((await call(a.cookie, "GET", "/api/favorites")).body).toEqual({ places: [museum], events: [] });
@@ -70,7 +67,7 @@ describe("favourites", () => {
   });
 
   it("404 on a place or event that does not exist", async () => {
-    const a = signIn();
+    const a = await signIn();
     expect((await call(a.cookie, "POST", "/api/favorites/places/nope")).status).toBe(404);
     expect((await call(a.cookie, "POST", "/api/favorites/events/nope")).status).toBe(404);
   });
@@ -78,8 +75,8 @@ describe("favourites", () => {
 
 describe("the new-events trigger at accept", () => {
   it("gives each follower of the place one item per batch, listing its events", async () => {
-    const fan = signIn();
-    const other = signIn();
+    const fan = await signIn();
+    const other = await signIn();
     await call(fan.cookie, "POST", `/api/favorites/places/${museum}`);
     await call(other.cookie, "POST", `/api/favorites/places/${park}`);
 
@@ -98,7 +95,7 @@ describe("the new-events trigger at accept", () => {
   });
 
   it("a second accept is a second item; marking read works by id or all at once", async () => {
-    const fan = signIn();
+    const fan = await signIn();
     await call(fan.cookie, "POST", `/api/favorites/places/${museum}`);
     await publish(museum, ["Unu"]);
     await publish(museum, ["Doi"]);
@@ -113,8 +110,8 @@ describe("the new-events trigger at accept", () => {
   });
 
   it("nobody can read or mark someone else's items", async () => {
-    const fan = signIn();
-    const stranger = signIn();
+    const fan = await signIn();
+    const stranger = await signIn();
     await call(fan.cookie, "POST", `/api/favorites/places/${museum}`);
     await publish(museum, ["Unu"]);
     const [item] = (await call(fan.cookie, "GET", "/api/notifications")).body.data;

@@ -1,9 +1,12 @@
 import type { FavoritesDto, InboxDto, MarkReadInput, PaginatedResponse, WhatsOnItem } from "@public-resource-map/shared";
 import { ApiRequestError } from "~/lib/api";
 
-/** The signed-in person's favourites and inbox (brief 05). Same origin, so Ward's cookie rides along. */
+/**
+ * The signed-in person's favourites and inbox (brief 05). Same origin, under
+ * the API prefix, so prm's session cookie (`Path=/prm-api`) rides along.
+ */
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_URL ?? "/prm-api";
 
 export type FavoriteKind = "place" | "event";
 

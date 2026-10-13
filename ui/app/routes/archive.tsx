@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import type { MetaFunction } from "react-router";
+import { Link, type MetaFunction } from "react-router";
 import { AlertTriangle, Archive, Loader2 } from "lucide-react";
 import { eventCategories, type WhatsOnItem } from "@public-resource-map/shared";
 import { APP_TZ, useI18n } from "~/lib/i18n";
 import { eventCategoryColor, eventCategoryKey } from "~/lib/categories";
-import { wardLoginUrl } from "~/lib/authApi";
+import { browserPath, loginPath } from "~/lib/authApi";
 import { useAppStore } from "~/stores/appStore";
 import { useAuthStore } from "~/stores/authStore";
 import { useCityArchive, useMyArchive } from "~/hooks/useArchive";
@@ -116,12 +116,12 @@ export default function ArchiveRoute() {
               title={t("archive.mineSignIn")}
               body={t("archive.mineSignInBody")}
               action={
-                <a
-                  href={wardLoginUrl(`${import.meta.env.BASE_URL}archive`)}
+                <Link
+                  to={loginPath(browserPath("/archive"))}
                   className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-[13.5px] font-medium text-fg-on-accent"
                 >
                   {t("nav.login")}
-                </a>
+                </Link>
               }
             />
           )}

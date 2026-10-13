@@ -16,6 +16,8 @@ import { lensWindow } from "../lib/time.js";
 import { rowToEvent } from "./event-mapper.js";
 import { isForeignKeyViolation } from "../lib/fk.js";
 import { liveInWindow } from "./event-window.js";
+import { requireRole } from "../../vendor/ward/ward-auth.js";
+import { ROLES } from "../ward/auth.js";
 
 function rowToPlace(
   row: typeof place.$inferSelect & { upcomingEventCount?: number },
@@ -180,7 +182,7 @@ export async function placeRoutes(app: FastifyInstance) {
   // removed, as an escape hatch for manual fixes until the admin UI exists.
   app.post<{ Body: CreatePlaceInput }>(
     "/places",
-    { preHandler: app.requireAdmin },
+    { preHandler: requireRole(ROLES.admin) },
     async (req, reply) => {
       const parsed = createPlaceSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -199,7 +201,7 @@ export async function placeRoutes(app: FastifyInstance) {
 
   app.delete<{ Params: { id: string } }>(
     "/places/:id",
-    { preHandler: app.requireAdmin },
+    { preHandler: requireRole(ROLES.admin) },
     async (req, reply) => {
       let result;
       try {

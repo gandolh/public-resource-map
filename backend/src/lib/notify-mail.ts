@@ -1,27 +1,43 @@
 import { and, asc, eq, gte, isNull, sql } from "drizzle-orm";
 import type { DB } from "../db/index.js";
 import { event, notification, notificationEvent, place } from "../db/schema.js";
-import type { NotificationInput, NotificationResult } from "../ward/ward.client.js";
-import { WardUnavailableError } from "../ward/ward.types.js";
+import { WardUnavailableError } from "../../vendor/ward/ward-auth.js";
 import { APP_TZ, zonedParts } from "./time.js";
 
 /**
  * Notification email (brief 32; decisions.md → Favorites & notifications).
  *
  * prm holds no addresses, so Ward sends each mail on prm's behalf (`POST
- * /notify`). This sweep takes the inbox rows not yet mailed (`emailed_at IS
- * NULL`) and sends one mail per row. Rows are already coalesced where they are
+ * /notify`), through the shared library's `notifyUser`. Only a user with a
+ * Ward account linked has an address Ward knows; a local-only user's rows are
+ * marked without a mail (the inbox still has them, and settings says so).
+ * This sweep takes the inbox rows not yet mailed (`emailed_at IS NULL`) and
+ * sends one mail per row. Rows are already coalesced where they are
  * written: an accept batch makes one new-events row per follower per place
  * (`notifyNewEvents`), so one mail per row is one mail per batch, as the inbox
  * shows one item.
  *
  * `emailed_at` is set when Ward answers, sent or refused: a refusal is final,
- * and the inbox still has the item. When Ward cannot be asked (down, or prm's
- * key refused) the row stays null and the sweep stops; the next sweep retries.
+ * and the inbox still has the item. When Ward cannot be asked (down, prm's
+ * client key refused, or Ward not configured) the row stays null and the sweep stops; the next sweep retries.
  * A row whose news is already past is marked without a mail.
  */
 
-export type SendNotification = (input: NotificationInput) => Promise<NotificationResult>;
+/** One mail: a single-line subject (Ward prefixes "[prm]") and plain text. */
+export interface MailMessage {
+  mailSubject: string;
+  text: string;
+}
+
+/**
+ * Mail one user, by local id. `reason: "not_linked"` is a user with no Ward
+ * account, for whom no call was made. Throws `WardUnavailableError` when Ward
+ * cannot be asked.
+ */
+export type SendNotification = (
+  userId: string,
+  message: MailMessage,
+) => Promise<{ sent: boolean; reason?: "not_linked" }>;
 /** The two calls the sweep makes on Fastify's logger. */
 export interface MailLog {
   info(msg: string): void;
@@ -34,13 +50,13 @@ export const MAIL_BATCH = 500;
 const MAX_LISTED = 20;
 
 /**
- * Where links in a mail point: `APP_URL`, or else prm under Ward's origin,
- * since the estate serves both from one origin (`/prm/` by default).
+ * Where links in a mail point: `APP_URL`, or else prm under its own public
+ * origin (`PUBLIC_ORIGIN`, `/prm/` by default).
  */
 export function appUrl(env: NodeJS.ProcessEnv = process.env): string {
   const explicit = env.APP_URL?.trim();
   if (explicit) return explicit.replace(/\/+$/, "");
-  const origin = (env.WARD_PUBLIC_ORIGIN ?? "http://localhost:5173").trim().replace(/\/+$/, "");
+  const origin = (env.PUBLIC_ORIGIN ?? "http://localhost:5173").trim().replace(/\/+$/, "");
   const base = (env.PRM_BASE ?? "/prm/").trim().replace(/\/+$/, "");
   return `${origin}${base}`;
 }
@@ -120,7 +136,7 @@ type Row = {
 };
 
 /** The mail for one row, or null when its news is past (or its place is gone). */
-function compose(db: DB, row: Row, now: Date, base: string): Omit<NotificationInput, "subject"> | null {
+function compose(db: DB, row: Row, now: Date, base: string): MailMessage | null {
   if (!row.placeId || !row.placeName || row.placeRetiredAt) return null;
   const link = `${base}/places/${row.placeId}`;
   const nowIso = now.toISOString();
@@ -157,6 +173,8 @@ export interface MailSweepResult {
   sent: number;
   /** Ward answered `{ sent: false }`; final. */
   refused: number;
+  /** The user has no Ward account linked, so no address: final, no call made. */
+  unlinked: number;
   /** Already past, or the place is gone: marked, not mailed. */
   skipped: number;
   /** Ward could not be asked; the rest wait for the next sweep. */
@@ -170,7 +188,7 @@ export async function runMailSweep(
   log: MailLog,
   base: string = appUrl(),
 ): Promise<MailSweepResult> {
-  const result: MailSweepResult = { sent: 0, refused: 0, skipped: 0, deferred: false };
+  const result: MailSweepResult = { sent: 0, refused: 0, unlinked: 0, skipped: 0, deferred: false };
   const rows: Row[] = db
     .select({
       id: notification.id,
@@ -200,13 +218,14 @@ export async function runMailSweep(
       result.skipped++;
       continue;
     }
-    let answer: NotificationResult;
+    let answer: Awaited<ReturnType<SendNotification>>;
     try {
-      answer = await send({ subject: row.subject, ...mail });
+      // `subject` is the row's owner: a local user id since brief 24.
+      answer = await send(row.subject, mail);
     } catch (err) {
-      // `WardConfigurationError` (prm's key refused) is a `WardUnavailableError`
-      // too, and is treated the same: nothing is marked, so fixing the key or
-      // Ward coming back resumes sending on the next sweep.
+      // `WardConfigurationError` (prm's client key refused) is a
+      // `WardUnavailableError` too, and is treated the same: nothing is marked,
+      // so fixing the key or Ward coming back resumes sending on the next sweep.
       if (err instanceof WardUnavailableError) {
         log.error({ err }, "notification mail: Ward cannot be asked; unsent rows wait for the next sweep");
         result.deferred = true;
@@ -216,6 +235,7 @@ export async function runMailSweep(
     }
     mark(row.id);
     if (answer.sent) result.sent++;
+    else if (answer.reason === "not_linked") result.unlinked++;
     else result.refused++;
   }
   return result;
@@ -247,8 +267,10 @@ export function createMailSweeper(
       again = false;
       try {
         const r = await runMailSweep(db, send, clock(), log);
-        if (r.sent || r.refused || r.skipped) {
-          log.info(`notification mail: ${r.sent} sent, ${r.refused} refused by Ward, ${r.skipped} out of date`);
+        if (r.sent || r.refused || r.unlinked || r.skipped) {
+          log.info(
+            `notification mail: ${r.sent} sent, ${r.refused} refused by Ward, ${r.unlinked} to users without Ward, ${r.skipped} out of date`,
+          );
         }
       } catch (err) {
         log.error({ err }, "notification mail sweep failed");

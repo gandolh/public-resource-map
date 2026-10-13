@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { randomUUID } from "node:crypto";
 import { buildTestApp, type TestApp } from "../test/harness.js";
 import { event, favoriteEvent, favoritePlace, place } from "../db/schema.js";
 
@@ -58,18 +57,17 @@ describe("GET /api/archive/mine", () => {
   });
 
   it("is what you saved plus what happened at places you follow, across cities", async () => {
-    const token = randomUUID();
-    t.ward.signIn(token, "me", { prm: ["user"] });
+    const { cookie } = await t.signIn("user", "me");
     t.db.insert(favoriteEvent).values({ subject: "me", eventId: ids["in bucharest"] }).run();
     t.db.insert(favoritePlace).values({ subject: "me", placeId: tm }).run();
     // Someone else's favourites are not mine.
     t.db.insert(favoriteEvent).values({ subject: "other", eventId: ids["last week"] }).run();
 
-    const res = await t.app.inject({ method: "GET", url: "/api/archive/mine", headers: { cookie: `ward_session=${token}` } });
+    const res = await t.app.inject({ method: "GET", url: "/api/archive/mine", headers: { cookie } });
     expect(titles(res.json())).toEqual(["in bucharest", "yesterday", "last week"]);
 
     t.db.delete(favoritePlace).run();
-    const only = await t.app.inject({ method: "GET", url: "/api/archive/mine", headers: { cookie: `ward_session=${token}` } });
+    const only = await t.app.inject({ method: "GET", url: "/api/archive/mine", headers: { cookie } });
     expect(titles(only.json())).toEqual(["in bucharest"]);
   });
 });

@@ -5,8 +5,8 @@ import { event, eventSource, favoriteEvent, favoritePlace, notification, place, 
 import { notifyNewEvents } from "./notify.js";
 import { runReminderSweep } from "../jobs/reminder-sweep.js";
 import { appUrl, newEventsMail, oneLine, runMailSweep, type SendNotification } from "./notify-mail.js";
-import type { NotificationInput } from "../ward/ward.client.js";
-import { WardConfigurationError, WardUnavailableError } from "../ward/ward.types.js";
+import { WardConfigurationError, WardUnavailableError } from "../../vendor/ward/ward-auth.js";
+import { createFakeWard } from "../test/fake-ward.js";
 
 /** Brief 32: notification email through Ward, once per inbox row. */
 
@@ -34,11 +34,13 @@ function eventAt(startDate: string, title = `e@${startDate}`) {
   return t.db.insert(event).values({ placeId, title, category: "concert", startDate }).returning({ id: event.id }).get().id;
 }
 
-/** A Ward stub that records what it was asked, answering `answer` (or throwing it). */
-function ward(answer: () => Promise<{ sent: boolean }> = async () => ({ sent: true })) {
-  const asked: NotificationInput[] = [];
-  const send: SendNotification = (input) => {
-    asked.push(input);
+/** A send stub that records what it was asked (by user id), answering `answer` (or throwing it). */
+function ward(
+  answer: () => Promise<{ sent: boolean; reason?: "not_linked" }> = async () => ({ sent: true }),
+) {
+  const asked: { subject: string; mailSubject: string; text: string }[] = [];
+  const send: SendNotification = (userId, message) => {
+    asked.push({ subject: userId, ...message });
     return answer();
   };
   return { send, asked };
@@ -120,7 +122,14 @@ describe("runMailSweep", () => {
     expect(unsent()).toHaveLength(0);
   });
 
-  it("a refused app key is treated as an outage, so fixing the key resumes sending", async () => {
+  it("a user without Ward linked gets no mail; the row is marked, final", async () => {
+    inbox();
+    const w = ward(async () => ({ sent: false, reason: "not_linked" }));
+    expect(await sweep(w.send)).toMatchObject({ sent: 0, refused: 0, unlinked: 3 });
+    expect(unsent()).toHaveLength(0);
+  });
+
+  it("a refused client key is treated as an outage, so fixing the key resumes sending", async () => {
     inbox();
     const errors: string[] = [];
     const badKey: SendNotification = () => Promise.reject(new WardConfigurationError("401"));
@@ -165,32 +174,44 @@ describe("the mail's text", () => {
     expect(oneLine("x".repeat(300))).toHaveLength(200);
   });
 
-  it("links into prm under Ward's origin unless APP_URL says otherwise", () => {
-    expect(appUrl({ WARD_PUBLIC_ORIGIN: "https://gandolh.ro/" })).toBe("https://gandolh.ro/prm");
+  it("links into prm under its public origin unless APP_URL says otherwise", () => {
+    expect(appUrl({ PUBLIC_ORIGIN: "https://example.com/" })).toBe("https://example.com/prm");
     expect(appUrl({ APP_URL: "http://localhost:5173/prm/" })).toBe("http://localhost:5173/prm");
   });
 });
 
 describe("the trigger", () => {
-  it("an accept that notifies followers mails them after the response, through Ward", async () => {
-    t.db.insert(favoritePlace).values({ subject: "ana", placeId }).run();
+  it("an accept that notifies followers mails the Ward-linked ones after the response, through Ward", async () => {
+    // This test's app has Ward on; `ana` is linked, `dan` is local only.
+    await t.close();
+    const fake = await createFakeWard();
+    t = await buildTestApp({ ward: fake.client });
+    placeId = t.db
+      .insert(place)
+      .values({ name: "Muzeul de Artă", category: "museum", city: "Timișoara", lat: 45.75, lng: 21.22 })
+      .returning({ id: place.id })
+      .get().id;
+    await t.app.auth.identities.createLinkedUser({ subject: "ward-ana", id: "ana", username: "ana", role: "user" });
+    await t.signIn("user", "dan");
+    for (const subject of ["ana", "dan"]) t.db.insert(favoritePlace).values({ subject, placeId }).run();
     t.db.insert(eventSource).values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" }).run();
     t.db
       .insert(stagedEvent)
       .values({ id: "s1", sourceId: "src", placeId, matchStatus: "auto-matched", status: "new", title: "Concert", startDate: new Date(Date.now() + 86_400_000).toISOString() })
       .run();
-    t.ward.signIn("admin-token", "admin", { prm: ["admin"] });
+    const { cookie } = await t.signIn("admin");
 
     const res = await t.app.inject({
       method: "POST",
       url: "/api/admin/staged-events/accept",
-      headers: { cookie: "ward_session=admin-token" },
+      headers: { cookie },
       payload: { ids: ["s1"] },
     });
-    expect(res.json().notified).toBe(1);
+    expect(res.json().notified).toBe(2);
     await t.app.notifyMail.idle();
-    expect(t.ward.mails).toHaveLength(1);
-    expect(t.ward.mails[0]).toMatchObject({ subject: "ana", mailSubject: "1 eveniment nou la Muzeul de Artă" });
+    // Ward is asked by subject, never by prm's id; dan has no address at Ward.
+    expect(fake.mails).toHaveLength(1);
+    expect(fake.mails[0]).toMatchObject({ subject: "ward-ana", mailSubject: "1 eveniment nou la Muzeul de Artă" });
     expect(unsent()).toHaveLength(0);
   });
 });

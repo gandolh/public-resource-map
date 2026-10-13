@@ -11,6 +11,8 @@ import {
 import { boundingBox } from "../lib/geo.js";
 import { rowToEvent } from "./event-mapper.js";
 import { isForeignKeyViolation } from "../lib/fk.js";
+import { requireRole } from "../../vendor/ward/ward-auth.js";
+import { ROLES } from "../ward/auth.js";
 
 const eventsQuerySchema = nearbyQuerySchema.extend({
   from: z.string().optional(),
@@ -84,7 +86,7 @@ export async function eventRoutes(app: FastifyInstance) {
   // publish straight to `live`, skipping the review gate.
   app.post<{ Body: CreateEventInput }>(
     "/events",
-    { preHandler: app.requireAdmin },
+    { preHandler: requireRole(ROLES.admin) },
     async (req, reply) => {
       const parsed = createEventSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -102,7 +104,7 @@ export async function eventRoutes(app: FastifyInstance) {
 
   app.delete<{ Params: { id: string } }>(
     "/events/:id",
-    { preHandler: app.requireAdmin },
+    { preHandler: requireRole(ROLES.admin) },
     async (req, reply) => {
       let result;
       try {

@@ -21,10 +21,12 @@ import {
   resolveStagedPlace,
   type IngestDeps,
 } from "../ingest/pipeline.js";
+import { requireRole } from "../../vendor/ward/ward-auth.js";
+import { ROLES } from "../ward/auth.js";
 
 /**
  * The admin side of event ingestion (brief 04). Every route is behind
- * `requireAdmin` (401 anonymous, 403 without the prm admin grant). A refresh
+ * `requireRole("admin")` (401 anonymous, 403 for a `user`). A refresh
  * stages a diff; only `accept` puts anything in front of the public.
  *
  * A refresh answers when it is done: geocoding at Nominatim's one request a
@@ -34,7 +36,7 @@ import {
 export function adminIngestRoutes(deps: IngestDeps) {
   return async function routes(app: FastifyInstance) {
     const db = app.db;
-    const guard = { preHandler: app.requireAdmin };
+    const guard = { preHandler: requireRole(ROLES.admin) };
 
     const fail = (reply: FastifyReply, err: unknown) => {
       if (err instanceof IngestError) {

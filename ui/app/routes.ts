@@ -12,11 +12,13 @@ export default [
     route("archive", "routes/archive.tsx"),
     route("about-data", "routes/about-data.tsx"),
     /*
-     * `login` and `register` are gone. They are Ward's now — `/ward/login` and
-     * `/ward/register?app=prm`, reached by a full navigation rather than a
-     * route in this app. prm is the estate's only app with public registration
-     * open, and that registration happens at Ward.
+     * prm's own accounts (brief 24 of Ward's corpus): its login page, with
+     * "Sign in with Ward" beside the form, its register page (prm is the
+     * estate's one app with public registration), and account settings.
      */
+    route("login", "routes/login.tsx"),
+    route("register", "routes/register.tsx"),
+    route("settings", "routes/settings.tsx"),
 
     // Old event-centric URLs, kept alive.
     route("map", "routes/legacy.map.tsx"),

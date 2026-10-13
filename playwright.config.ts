@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import path from "node:path";
+import { randomBytes } from "node:crypto";
 
 /**
  * The automated e2e suite (brief 17). `npm run test:e2e` boots its own backend
@@ -10,10 +11,15 @@ import path from "node:path";
 
 const API_PORT = 3101;
 const UI_PORT = 5174;
-const WARD_PORT = 3102;
-const WARD_APP_KEY = "e2e-app-key";
 const BASE = "/prm/";
 const db = path.resolve(__dirname, "e2e/.data/app.e2e.db");
+
+/**
+ * The seeded users' password, made up per run: no credential is written in the
+ * repo. Set here, in the runner, before the workers start, so they inherit it
+ * (e2e/fixtures.ts reads it to sign in).
+ */
+process.env.PRM_E2E_PASSWORD ??= randomBytes(18).toString("base64url");
 
 export default defineConfig({
   testDir: "e2e",
@@ -38,7 +44,8 @@ export default defineConfig({
       // dated from today), then serve.
       command:
         `rm -f "${db}" "${db}-wal" "${db}-shm" && mkdir -p "$(dirname "${db}")"` +
-        " && npx tsx src/db/migrate.ts && npx tsx src/db/seed.ts && npx tsx src/index.ts",
+        " && npx tsx src/db/migrate.ts && npx tsx src/db/seed.ts && npx tsx src/db/seed-users.ts" +
+        " && npx tsx src/index.ts",
       cwd: "backend",
       url: `http://127.0.0.1:${API_PORT}/api/places?pageSize=1`,
       reuseExistingServer: false,
@@ -46,25 +53,20 @@ export default defineConfig({
       env: {
         PORT: String(API_PORT),
         DATABASE_PATH: db,
-        // The fake Ward below. Signed-in specs get a token from it
-        // (e2e/fixtures.ts → signIn) and the backend verifies and introspects
-        // that token for real.
-        WARD_PUBLIC_ORIGIN: `http://127.0.0.1:${WARD_PORT}`,
-        WARD_API_BASE_PATH: "/ward-api",
-        WARD_APP_KEY,
+        // prm's own accounts (brief 24 of Ward's corpus), with no Ward: the
+        // browser posts from the UI's origin, and the cookie is scoped to the
+        // API prefix there.
+        PUBLIC_ORIGIN: `http://localhost:${UI_PORT}`,
+        PRM_BASE: BASE,
         // A demo user for the bell (brief 08): two followed places, one saved
         // event, one unread new-events item.
-        SEED_DEMO_SUBJECT: "e2e-demo",
+        SEED_DEMO_USERNAME: "e2e-demo",
+        SEED_DEMO_PASSWORD: process.env.PRM_E2E_PASSWORD,
+        // And an admin, through the same script a deploy runs.
+        SEED_USERNAME: "e2e-admin",
+        SEED_PASSWORD: process.env.PRM_E2E_PASSWORD,
+        SEED_ROLE: "admin",
       },
-    },
-    {
-      // A stand-in Ward (decided 2026-10-04): JWKS, introspection, and a
-      // test-only sign-in. See e2e/fake-ward/server.ts.
-      command: "npx tsx e2e/fake-ward/server.ts",
-      url: `http://127.0.0.1:${WARD_PORT}/ward-api/health`,
-      reuseExistingServer: false,
-      timeout: 60_000,
-      env: { FAKE_WARD_PORT: String(WARD_PORT), FAKE_WARD_APP_KEY: WARD_APP_KEY },
     },
     {
       command: `npm run dev -w ui -- --port ${UI_PORT} --strictPort`,

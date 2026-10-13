@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { buildTestApp, type TestApp } from "../test/harness.js";
 import { event, place, stagedEvent } from "../db/schema.js";
@@ -72,14 +71,12 @@ async function build(production = false) {
   }
 }
 
-function as(role: "user" | "admin"): string {
-  const token = randomUUID();
-  t.ward.signIn(token, `subject_${token}`, { prm: [role] });
-  return `ward_session=${token}`;
+async function as(role: "user" | "admin"): Promise<string> {
+  return (await t.signIn(role)).cookie;
 }
 
 async function call(method: "GET" | "POST" | "PATCH", url: string, payload?: unknown) {
-  const res = await t.app.inject({ method, url, payload: payload as object, headers: { cookie: as("admin") } });
+  const res = await t.app.inject({ method, url, payload: payload as object, headers: { cookie: await as("admin") } });
   return { status: res.statusCode, body: res.json() as any };
 }
 
@@ -125,7 +122,7 @@ describe("the admin gate", () => {
   it.each(routes)("%s %s is 401 anonymous and 403 without the admin grant", async (method, url) => {
     const anon = await t.app.inject({ method: method as "GET", url });
     expect(anon.statusCode).toBe(401);
-    const user = await t.app.inject({ method: method as "GET", url, headers: { cookie: as("user") } });
+    const user = await t.app.inject({ method: method as "GET", url, headers: { cookie: await as("user") } });
     expect(user.statusCode).toBe(403);
   });
 });
@@ -147,7 +144,8 @@ describe("a refresh stages a diff and publishes nothing", () => {
     feed = [
       listing(),
       listing(), // the same UID twice in one feed
-      listing({ externalId: "uid-muzeu", title: "Tur ghidat", venue: "Muzeul Timișoara" }),
+      // Dated from today: the last check reads the public, upcoming-only list.
+      listing({ externalId: "uid-muzeu", title: "Tur ghidat", venue: "Muzeul Timișoara", startDate: new Date(Date.now() + 30 * 86_400_000).toISOString() }),
       listing({ externalId: "uid-daos", title: "Seară rock", venue: "Club Daos", address: "Str. Daos 1" }),
       { raw: { externalId: "uid-bad", venue: "x" } }, // no title, no date
       { raw: { externalId: "uid-rrule", title: "Weekly" }, problem: "a recurring event (RRULE)" },
@@ -187,7 +185,8 @@ describe("accept, reject, resolve", () => {
     const id = await addSource();
     feed = [
       listing(),
-      listing({ externalId: "uid-muzeu", title: "Tur ghidat", venue: "Muzeul Timișoara" }),
+      // Dated from today: the last check reads the public, upcoming-only list.
+      listing({ externalId: "uid-muzeu", title: "Tur ghidat", venue: "Muzeul Timișoara", startDate: new Date(Date.now() + 30 * 86_400_000).toISOString() }),
       listing({ externalId: "uid-daos", title: "Seară rock", venue: "Club Daos", address: "Str. Daos 1" }),
       listing({ externalId: "uid-daos-2", title: "Seară jazz", venue: "Club Daos", address: "Str. Daos 1" }),
     ];

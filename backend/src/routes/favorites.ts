@@ -5,24 +5,26 @@ import { event, favoriteEvent, favoritePlace, notification, notificationEvent, p
 
 /**
  * Favourites and the inbox (brief 05). Everything here is per person, keyed on
- * Ward's subject, and behind `requireAuth`. Adding and removing are idempotent,
- * so a double tap or a retried request leaves one row or none.
+ * the local user id (the `subject` column; a migrated user's id is their Ward
+ * subject), and signed-in only: none of it is on the public allowlist in
+ * `ward/auth.ts`. Adding and removing are idempotent, so a double tap or a
+ * retried request leaves one row or none.
  */
 export async function favoriteRoutes(app: FastifyInstance) {
   const db = app.db;
-  const guard = { preHandler: app.requireAuth };
-  const subjectOf = (req: FastifyRequest) => req.ward!.subject;
+  // The library's guard has run: every request here has `auth`.
+  const subjectOf = (req: FastifyRequest) => req.auth!.user.id;
   const notFound = (reply: FastifyReply, what: string) =>
     reply.status(404).send({ code: "NOT_FOUND", message: `No such ${what}` });
 
-  app.get("/favorites", guard, async (req): Promise<FavoritesDto> => {
+  app.get("/favorites", async (req): Promise<FavoritesDto> => {
     const subject = subjectOf(req);
     const places = await db.select({ id: favoritePlace.placeId }).from(favoritePlace).where(eq(favoritePlace.subject, subject)).all();
     const events = await db.select({ id: favoriteEvent.eventId }).from(favoriteEvent).where(eq(favoriteEvent.subject, subject)).all();
     return { places: places.map((p) => p.id), events: events.map((e) => e.id) };
   });
 
-  app.post<{ Params: { placeId: string } }>("/favorites/places/:placeId", guard, async (req, reply) => {
+  app.post<{ Params: { placeId: string } }>("/favorites/places/:placeId", async (req, reply) => {
     const target = await db
       .select({ id: place.id })
       .from(place)
@@ -33,7 +35,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
     return reply.status(204).send();
   });
 
-  app.delete<{ Params: { placeId: string } }>("/favorites/places/:placeId", guard, async (req, reply) => {
+  app.delete<{ Params: { placeId: string } }>("/favorites/places/:placeId", async (req, reply) => {
     await db
       .delete(favoritePlace)
       .where(and(eq(favoritePlace.subject, subjectOf(req)), eq(favoritePlace.placeId, req.params.placeId)))
@@ -41,14 +43,14 @@ export async function favoriteRoutes(app: FastifyInstance) {
     return reply.status(204).send();
   });
 
-  app.post<{ Params: { eventId: string } }>("/favorites/events/:eventId", guard, async (req, reply) => {
+  app.post<{ Params: { eventId: string } }>("/favorites/events/:eventId", async (req, reply) => {
     const target = await db.select({ id: event.id }).from(event).where(eq(event.id, req.params.eventId)).get();
     if (!target) return notFound(reply, "event");
     await db.insert(favoriteEvent).values({ subject: subjectOf(req), eventId: target.id }).onConflictDoNothing().run();
     return reply.status(204).send();
   });
 
-  app.delete<{ Params: { eventId: string } }>("/favorites/events/:eventId", guard, async (req, reply) => {
+  app.delete<{ Params: { eventId: string } }>("/favorites/events/:eventId", async (req, reply) => {
     await db
       .delete(favoriteEvent)
       .where(and(eq(favoriteEvent.subject, subjectOf(req)), eq(favoriteEvent.eventId, req.params.eventId)))
@@ -56,7 +58,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
     return reply.status(204).send();
   });
 
-  app.get("/notifications", guard, async (req, reply): Promise<InboxDto> => {
+  app.get("/notifications", async (req, reply): Promise<InboxDto> => {
     reply.header("cache-control", "no-store");
     const subject = subjectOf(req);
     const rows = await db
@@ -114,7 +116,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
     return { unread: unread?.n ?? 0, data };
   });
 
-  app.post("/notifications/read", guard, async (req, reply) => {
+  app.post("/notifications/read", async (req, reply) => {
     const parsed = markReadSchema.safeParse(req.body);
     if (!parsed.success) return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
     const subject = subjectOf(req);

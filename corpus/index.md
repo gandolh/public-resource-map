@@ -33,7 +33,7 @@ between the markers. Read the summary first and open at most two or three pages 
 
 - [wiki/architecture.md](wiki/architecture.md) — How the code is put together: the ui → shared ← backend workspaces, the UI file map, backend routes and services, and what lives in shared.
 - [wiki/decisions-engineering.md](wiki/decisions-engineering.md) — Locked stack (npm workspaces, React Router 8, pinned versions…) and code conventions — check before changing tooling or style.
-- [wiki/decisions-identity.md](wiki/decisions-identity.md) — Identity decisions: the superseded original auth design, and why sign-in, accounts and public registration are Ward's since 2026-09-06.
+- [wiki/decisions-identity.md](wiki/decisions-identity.md) — Identity decisions: prm's own accounts with "Sign in with Ward" as a linked second way in (2026-10-13), and the superseded designs before it (prm-only auth, then Ward-only identity).
 - [wiki/decisions-ui.md](wiki/decisions-ui.md) — Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, and the basemap constraint.
 - [wiki/decisions.md](wiki/decisions.md) — Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's dated answers since 2026-10-04 — check before relitigating anything; identity, UI and stack live in split-out pages.
 - [wiki/design.md](wiki/design.md) — A pointer to the built design system (ui/DESIGN.md) and product truth (ui/PRODUCT.md), with the record of the four directions considered and why the standard one won.

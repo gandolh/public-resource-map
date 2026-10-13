@@ -47,7 +47,9 @@ export const SWEEP_HOUR = 9;
  * every day at 09:00 Bucharest. In-process inside the API, as decisions.md
  * locks it: no separate worker, no OS cron. `afterRun` follows every run, even
  * one that wrote nothing: it is how mail Ward could not take yesterday is
- * retried (brief 32). Returns a stop function.
+ * retried (brief 32). The mail goes through the shared library's
+ * `notifyUser`, so only users with Ward linked get one; the inbox row is
+ * everyone's. Returns a stop function.
  */
 export function startReminderSweep(
   db: DB,

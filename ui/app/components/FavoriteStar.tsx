@@ -1,17 +1,17 @@
 import { Popover } from "@base-ui/react/popover";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import { Bell, BellRing, Star } from "lucide-react";
 import { useFavorites, useToggleFavorite, PENDING_FAVORITE } from "~/hooks/useFavorites";
 import { useAuthStore } from "~/stores/authStore";
 import { useI18n } from "~/lib/i18n";
-import { wardLoginUrl, wardRegisterUrl } from "~/lib/authApi";
+import { browserPath, loginPath, registerPath } from "~/lib/authApi";
 import type { FavoriteKind } from "~/lib/meApi";
 import { cn } from "~/lib/utils";
 
 /**
  * Follow a place, or ask to be reminded of an event (brief 05). Signed out,
- * the star explains itself and offers Ward's sign-in, carrying the favourite
- * along so it is completed on the way back.
+ * the star explains itself and offers prm's login and register pages,
+ * carrying the favourite along so it is completed on the way back.
  */
 export function FavoriteStar({
   kind,
@@ -63,7 +63,7 @@ export function FavoriteStar({
   // Back to this very page, with the favourite to finish.
   const params = new URLSearchParams(location.search);
   params.set(PENDING_FAVORITE, `${kind}:${id}`);
-  const next = `${import.meta.env.BASE_URL.replace(/\/$/, "")}${location.pathname}?${params}`;
+  const next = browserPath(location.pathname, `?${params}`);
 
   return (
     <Popover.Root>
@@ -76,18 +76,18 @@ export function FavoriteStar({
             <Popover.Title className="font-semibold text-fg">{t(`fav.${kind}.why`)}</Popover.Title>
             <Popover.Description className="mt-1 text-fg-muted">{t("fav.signInBody")}</Popover.Description>
             <div className="mt-3 flex gap-2">
-              <a
-                href={wardLoginUrl(next)}
+              <Link
+                to={loginPath(next)}
                 className="inline-flex h-8 items-center rounded-md bg-accent px-3 font-medium text-fg-on-accent"
               >
                 {t("nav.login")}
-              </a>
-              <a
-                href={wardRegisterUrl(next)}
+              </Link>
+              <Link
+                to={registerPath(next)}
                 className="inline-flex h-8 items-center rounded-md border border-line px-3 font-medium text-fg"
               >
                 {t("nav.register")}
-              </a>
+              </Link>
             </div>
           </Popover.Popup>
         </Popover.Positioner>

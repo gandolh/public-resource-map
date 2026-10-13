@@ -33,10 +33,8 @@ describe("a retired place", () => {
     await t.db.insert(stagedEvent).values({
       id: "pending", sourceId: "src", matchStatus: "unmatched", status: "new", title: "Concert", startDate: at(DAY),
     });
-    t.ward.signIn("ana-token", "ana", { prm: ["user"] });
-    t.ward.signIn("admin-token", "admin", { prm: ["admin"] });
-    cookie = "ward_session=ana-token";
-    admin = "ward_session=admin-token";
+    cookie = (await t.signIn("user", "ana")).cookie;
+    admin = (await t.signIn("admin")).cookie;
   });
 
   afterAll(async () => {

@@ -51,14 +51,15 @@ export function useMarkAllRead() {
   });
 }
 
-/** The query parameter a signed-out star click carries through Ward's sign-in. */
+/** The query parameter a signed-out star click carries through sign-in. */
 export const PENDING_FAVORITE = "favorite";
 
 /**
  * Finish the favourite somebody asked for before signing in (decisions.md:
  * favourite-while-logged-out = contextual sign-in, then complete the
- * favourite). The star sends them to Ward with `?favorite=place:<id>`; when they
- * come back signed in, this adds it and takes the parameter off the URL.
+ * favourite). The star sends them to the login page with
+ * `?favorite=place:<id>` in its `next`; when they come back signed in, this
+ * adds it and takes the parameter off the URL.
  */
 export function usePendingFavorite() {
   const signedIn = useSignedIn();

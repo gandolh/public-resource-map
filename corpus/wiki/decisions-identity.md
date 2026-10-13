@@ -1,6 +1,6 @@
 ---
-summary: Identity decisions: the superseded original auth design, and why sign-in, accounts and public registration are Ward's since 2026-09-06.
-updated: 2026-10-07
+summary: Identity decisions: prm's own accounts with "Sign in with Ward" as a linked second way in (2026-10-13), and the superseded designs before it (prm-only auth, then Ward-only identity).
+updated: 2026-10-13
 ---
 
 # Decisions — identity
@@ -20,7 +20,7 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
 - **Verify + reset flows are built now**, but email delivery is **console-logged links in dev**; swap in a transactional email provider (Resend/Postmark/SES) before launch.
 - The Navbar profile dropdown is currently **decorative**; it becomes real when auth lands.
 
-## Identity is Ward's (locked 2026-09-06 — supersedes "Auth" above)
+## Identity is Ward's (locked 2026-09-06 — supersedes "Auth" above; **SUPERSEDED 2026-10-13, see "prm owns its accounts" below**)
 
 - **prm authenticates nobody.** The `user`, `session`, `verification_token` and
   `reset_token` tables are dropped; `plugins/auth.ts`, `routes/auth.ts`,
@@ -81,3 +81,47 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
   at cutover time; the estate chose a full prune. Places, events, sources and
   the geocode cache are untouched. **Take a database copy first** — `0001_ward_cutover.sql`
   has no down.
+
+## prm owns its accounts; Ward is a linked second way in (locked 2026-10-13 — supersedes "Identity is Ward's")
+
+The estate's redesign ([Ward's decisions-oidc.md](../../../wzd_auth/corpus/wiki/decisions-oidc.md)),
+built here by Ward's brief 24. Each app keeps its own accounts and login page;
+"Sign in with Ward" is an OpenID Connect button beside the form.
+
+- **Accounts are prm's again**, from Ward's shared library, vendored as a
+  built copy in `backend/vendor/ward` and `ui/vendor/ward` (never edited;
+  upgraded by vendoring a newer build). Its tables (`auth_users`,
+  `auth_sessions`, `auth_ward_links`) live in prm's SQLite beside prm's own.
+  Scrypt passwords, opaque server-side sessions in the `prm_session` cookie
+  (`HttpOnly`, `SameSite=Lax`, `Path=/prm-api`). Local sign-in never calls
+  Ward, so **prm works while Ward is down**.
+- **prm is the one app with a register page, and it is prm's own** (owner,
+  2026-10-13): username and password, **no email**, role `user`. Ward holds the
+  addresses, so mail reaches only Ward-linked users; settings says so.
+- **Roles are prm's.** `user` and `admin` live in `auth_users.role`. A Ward
+  grant decides only whether a Ward account may use the button, and gives a
+  user created by a first Ward sign-in their first role (`admin` stays
+  `admin`, anything else becomes `user`). `db:seed-users` creates users from
+  the environment or a prompt; `db:set-role` changes a role.
+- **Public by allowlist.** The library guards every route that
+  `backend/src/ward/auth.ts` does not list: the map's reads, `/health` and the
+  plugin's own sign-in routes are public, and everything per-person or admin is
+  signed-in by default. A public route never resolves a session, so `/api/me`
+  is gone; the UI asks `GET /prm-api/auth/session`.
+- **Rows keep their keys.** `favorite_place`, `favorite_event` and
+  `notification` keep their `subject` column, which now holds a local user id.
+  On boot, every key no local user has (the Ward subjects from before) becomes
+  a user **whose id is that subject**, linked to it, so the person's next Ward
+  sign-in finds their rows. prm never stored usernames or roles, so a migrated
+  user is `user-<first 8 characters>` with the role `user`; a former admin is
+  promoted with `db:set-role`. No Drizzle migration: the library migrates its
+  own tables, and this step is code (`backend/src/ward/subjects.ts`).
+- **Revoke-everywhere holds for Ward sessions only**: a session that began
+  with Ward is checked against Ward at most every 30 seconds and refused
+  (`ward_unavailable`) when Ward cannot answer; a local session is never
+  checked.
+- **Rejected: keeping Ward as the only identity** (the 2026-09-06 shape). It
+  made prm's sign-in die with Ward and gave prm a login page that was not its
+  own. **Also rejected: matching a Ward account to a local one by username**:
+  linking happens only from settings, signed in.
+

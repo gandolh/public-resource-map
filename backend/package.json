@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
+    "db:seed-users": "tsx src/db/seed-users.ts",
+    "db:set-role": "tsx src/db/set-role.ts",
     "db:capture-osm": "tsx src/db/capture-osm.ts",
     "test": "vitest run --root .. --project backend"
   },
@@ -20,7 +22,6 @@
     "better-sqlite3": "12.11.1",
     "drizzle-orm": "0.45.2",
     "fastify": "5.8.5",
-    "jose": "6.2.10",
     "zod": "3.25.76"
   },
   "devDependencies": {

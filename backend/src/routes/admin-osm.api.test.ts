@@ -1,23 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { randomUUID } from "node:crypto";
 import { buildTestApp, type TestApp } from "../test/harness.js";
 import type { OverpassFetcher, OverpassResponse } from "../lib/osm-sync.js";
 
 let t: TestApp;
 
 /**
- * A signed-in caller holding exactly `prm:<role>`, as a cookie header.
- *
- * The grant is the whole point: prm no longer has a `user.role` column, so
- * "is this person an admin" is a question about Ward's `(subject, "prm", role)`
- * triple and nothing else. `signIn` writes only the grant asked for, so the
- * `prm:user` case below is a genuine non-admin rather than an admin with a
- * flag turned off.
+ * A signed-in local user with exactly `role`, as a cookie header. The role is
+ * prm's own (`auth_users.role`), so the `user` case below is a genuine
+ * non-admin rather than an admin with a flag turned off.
  */
-function loginAs(role: "user" | "admin"): string {
-  const token = randomUUID();
-  t.ward.signIn(token, `subject_${token}`, { prm: [role] });
-  return `ward_session=${token}`;
+async function loginAs(role: "user" | "admin"): Promise<string> {
+  return (await t.signIn(role)).cookie;
 }
 
 describe("POST /api/admin/osm/sync — admin gate", () => {
@@ -38,7 +31,7 @@ describe("POST /api/admin/osm/sync — admin gate", () => {
   });
 
   it("403s a non-admin user", async () => {
-    const cookie = loginAs("user");
+    const cookie = await loginAs("user");
     const res = await t.app.inject({
       method: "POST",
       url: "/api/admin/osm/sync",
@@ -49,7 +42,7 @@ describe("POST /api/admin/osm/sync — admin gate", () => {
   });
 
   it("400s an admin on an unknown city (gate passed, validation reached)", async () => {
-    const cookie = loginAs("admin");
+    const cookie = await loginAs("admin");
     const res = await t.app.inject({
       method: "POST",
       url: "/api/admin/osm/sync",
@@ -78,7 +71,7 @@ describe("POST /api/admin/osm/sync — Overpass trouble (brief 33)", () => {
       return new Promise((resolve) => (answer = resolve));
     };
     t = await buildTestApp({ osm: { fetchOverpass: held } });
-    const cookie = loginAs("admin");
+    const cookie = await loginAs("admin");
 
     const first = sync(cookie);
     await reachedOverpass;
@@ -96,7 +89,7 @@ describe("POST /api/admin/osm/sync — Overpass trouble (brief 33)", () => {
       new Promise((_resolve, reject) => signal?.addEventListener("abort", () => reject(signal.reason)));
     t = await buildTestApp({ osm: { fetchOverpass: hung, timeoutMs: 20 } });
 
-    const res = await sync(loginAs("admin"));
+    const res = await sync(await loginAs("admin"));
     expect(res.statusCode).toBe(504);
     expect(res.json()).toMatchObject({ code: "OVERPASS_TIMEOUT" });
     expect(res.json().message).toMatch(/did not answer/);

@@ -1,5 +1,26 @@
 # Log
 
+## [2026-10-13] done | Local accounts, a local register page and "Sign in with Ward" (Ward's brief 24)
+
+prm owns its users again, through Ward's shared library 0.2.0, vendored into
+`backend/vendor/ward` and `ui/vendor/ward`. `backend/src/ward/` is replaced:
+`auth.ts` registers the library's plugin before every route (cookie
+`prm_session`, `Path=/prm-api`, registration on with role `user`, the public
+reads allowlisted) and turns on "Sign in with Ward" when `WARD_OIDC_ISSUER` is
+set; `subjects.ts` makes every Ward subject the old rows hold a linked local
+user whose id is that subject, on each boot, skipping what exists. `/api/me`,
+the hand-written Ward client, `jose` and the e2e fake Ward are gone. Admin
+routes use `requireRole("admin")`. Mail goes through the library's
+`notifyUser`: Ward-linked users only, and a local-only user's row is marked
+without a mail. New scripts `db:seed-users` and `db:set-role`; `db:seed` takes
+`SEED_DEMO_USERNAME`. The UI has its own login (with the Ward button), register
+and settings pages in CivicMap's design and both languages; the navbar, the
+favourite star, the archive and the admin gate link to them; the dev server's
+Ward proxy is gone. `.env.example` names `PUBLIC_ORIGIN` and the `WARD_OIDC_*`
+variables. The Docker image ships `backend/vendor`. Decision in
+[decisions-identity.md](wiki/decisions-identity.md). Vitest 234 pass, e2e 30
+pass; one ingestion test's fixture was dated 2026-10-10 and now dates itself.
+
 ## [2026-10-09] maintenance | architecture.md caught up with the code; the live site has no places
 
 `wiki/architecture.md` still described the event-centric UI (`/map`, `/events`,

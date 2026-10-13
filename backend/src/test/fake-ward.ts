@@ -1,98 +1,88 @@
-import type { NotificationInput, WardClient } from "../ward/ward.client.js";
-import {
-  WardAuthenticationError,
-  type SessionResolution,
-  type WardCaller,
-} from "../ward/ward.types.js";
+import { generateKeyPairSync } from "node:crypto";
+import { createWardClient, type WardClient } from "../../vendor/ward/ward-auth.js";
+import { TEST_ORIGIN } from "./harness.js";
 
 /**
- * A Ward client a test drives directly.
- *
- * Tests need to say "this request is an admin" without a signing key, a JWKS
- * endpoint, or a network. This maps a **cookie value** to a session, which is
- * the same shape a real request has: the test sets `cookie: ward_session=<key>`
- * and the guards do the rest.
- *
- * The seam is the client rather than the guards, deliberately. Stubbing
- * `requireAuth` would make the guard tests tautological — the thing actually
- * worth asserting is that `requireAdmin` refuses a session holding `prm:user`,
- * and that only holds if the real guard reads the real grant map.
+ * A stand-in Ward behind an injected `fetch`, for tests that need "Sign in
+ * with Ward" turned on. The client is the library's **real** one, with a
+ * real Ed25519 client key; only the network is fake. It serves discovery,
+ * `/session-status` and `/notify`, which is what prm's own code reaches: the
+ * code exchange is the library's to test, against a real Ward.
  */
-export interface FakeWard extends WardClient {
-  /** Make `token` resolve to a live session holding `grants`. */
-  signIn(token: string, subject: string, grants: Record<string, string[]>): void;
-  /** Make every call throw `WardUnavailableError`, for the fail-closed tests. */
-  breakWith(error: Error): void;
-  /** Every mail Ward accepted (brief 32), in order. */
-  readonly mails: NotificationInput[];
-  /** Answer `{ sent: false }` for this subject, as Ward does for, say, an unverified address. */
-  refuseMailTo(subject: string): void;
+
+export const WARD_ISSUER = "https://ward.test/ward-api/oidc";
+export const REDIRECT_URI = `${TEST_ORIGIN}/prm-api/auth/ward/callback`;
+
+export interface FakeWard {
+  client: WardClient;
+  /** Every `/notify` body Ward accepted, in order (`client_assertion` left out). */
+  mails: { subject: string; mailSubject: string; text: string }[];
+  /** `/session-status` answers active for these Ward session ids only. */
+  liveSessions: Set<string>;
+  /** Make every request fail the way a stopped Ward does. */
+  stop(): void;
 }
 
-const COOKIE = "ward_session";
-
-function tokenFrom(header: string | string[] | undefined): string | undefined {
-  if (header === undefined) return undefined;
-  const flat = Array.isArray(header) ? header.join("; ") : header;
-  for (const pair of flat.split(";")) {
-    const eq = pair.indexOf("=");
-    if (eq === -1) continue;
-    if (pair.slice(0, eq).trim() !== COOKIE) continue;
-    const value = pair.slice(eq + 1).trim();
-    return value.length > 0 ? value : undefined;
-  }
-  return undefined;
+function clientKey(): string {
+  const { privateKey } = generateKeyPairSync("ed25519");
+  const jwk = { ...privateKey.export({ format: "jwk" }), kid: "prm-test" };
+  return Buffer.from(JSON.stringify(jwk), "utf8").toString("base64url");
 }
 
-export function createFakeWard(): FakeWard {
-  const sessions = new Map<string, WardCaller>();
-  let broken: Error | undefined;
-  const mails: NotificationInput[] = [];
-  const refused = new Set<string>();
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
-  function resolve(token: string | undefined): WardCaller {
-    if (broken) throw broken;
-    const session = token === undefined ? undefined : sessions.get(token);
-    if (!session) throw new WardAuthenticationError("session is not active");
-    return session;
-  }
+export async function createFakeWard(): Promise<FakeWard> {
+  const mails: FakeWard["mails"] = [];
+  const liveSessions = new Set<string>();
+  let stopped = false;
 
+  const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
+    if (stopped) throw new TypeError("fetch failed");
+    const url = new URL(typeof input === "string" || input instanceof URL ? input : input.url);
+    const body = typeof init?.body === "string" ? (JSON.parse(init.body) as Record<string, unknown>) : {};
+    switch (url.pathname) {
+      case "/ward-api/oidc/.well-known/openid-configuration":
+        return json({
+          issuer: WARD_ISSUER,
+          authorization_endpoint: `${WARD_ISSUER}/auth`,
+          token_endpoint: `${WARD_ISSUER}/token`,
+          jwks_uri: `${WARD_ISSUER}/jwks`,
+          end_session_endpoint: `${WARD_ISSUER}/session/end`,
+          response_types_supported: ["code"],
+          code_challenge_methods_supported: ["S256"],
+          id_token_signing_alg_values_supported: ["EdDSA"],
+          token_endpoint_auth_methods_supported: ["private_key_jwt"],
+        });
+      case "/ward-api/session-status":
+        return json(
+          liveSessions.has(String(body.wardSid)) ? { active: true, role: "user" } : { active: false },
+        );
+      case "/ward-api/notify":
+        mails.push({
+          subject: String(body.subject),
+          mailSubject: String(body.mailSubject),
+          text: String(body.text),
+        });
+        return json({ sent: true });
+      default:
+        return new Response("not found", { status: 404 });
+    }
+  }) as typeof fetch;
+
+  const client = await createWardClient({
+    issuer: WARD_ISSUER,
+    clientId: "prm",
+    clientKey: clientKey(),
+    redirectUri: REDIRECT_URI,
+    fetch: fetchImpl,
+  });
   return {
-    signIn(token, subject, grants) {
-      sessions.set(token, {
-        active: true,
-        subject,
-        username: subject,
-        grants,
-        sid: `sid_${token}`,
-      });
-    },
-    breakWith(error) {
-      broken = error;
-    },
+    client,
     mails,
-    refuseMailTo(subject) {
-      refused.add(subject);
-    },
-    async sendNotification(input) {
-      if (broken) throw broken;
-      if (refused.has(input.subject)) return { sent: false };
-      mails.push(input);
-      return { sent: true };
-    },
-    async verify() {
-      throw new WardAuthenticationError("the fake client does not verify signatures");
-    },
-    async introspect(token): Promise<SessionResolution> {
-      try {
-        return resolve(token);
-      } catch {
-        return { active: false };
-      }
-    },
-    readAccessCookie: tokenFrom,
-    async authenticate(cookieHeader) {
-      return resolve(tokenFrom(cookieHeader));
+    liveSessions,
+    stop() {
+      stopped = true;
     },
   };
 }

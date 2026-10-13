@@ -256,7 +256,7 @@ const CHUNK = 500;
 export interface SeedOptions {
   /** Events are dated from this instant. */
   now?: Date;
-  /** A Ward subject to seed as the demo user (see below). */
+  /** The local user id to seed as the demo user (see below). */
   demoSubject?: string;
 }
 
@@ -296,10 +296,8 @@ export function seedDatabase(db: DB, { now = new Date(), demoSubject }: SeedOpti
   });
 
   /*
-   * A demo account, when asked for. prm keeps no accounts — a person is a Ward
-   * subject — so the demo user is whichever subject you name: sign in through
-   * Ward once, read your subject from `GET /api/me`, and seed with
-   * SEED_DEMO_SUBJECT=<it> (`demoSubject`). They follow two places and save one event, and
+   * A demo account, when asked for: the local user `seed.ts` creates from
+   * SEED_DEMO_USERNAME, by id (`demoSubject`). They follow two places and save one event, and
    * the bell holds one new-events item, so the retention loop shows from a
    * fresh seed.
    */

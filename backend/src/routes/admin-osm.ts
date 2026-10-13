@@ -10,9 +10,11 @@ import {
   syncOsmForCity,
   type SyncDeps,
 } from "../lib/osm-sync.js";
+import { requireRole } from "../../vendor/ward/ward-auth.js";
+import { ROLES } from "../ward/auth.js";
 
 /**
- * Admin-gated OSM sync (brief 03). Behind `requireAdmin` (401 anon, 403
+ * Admin-gated OSM sync (brief 03). Behind `requireRole("admin")` (401 anon, 403
  * non-admin). Runs an Overpass query for the requested city and upserts
  * `source:osm` places — never touches event-venue places or manual pins, and
  * never called on user traffic (ingest-once-into-SQLite, serve-from-DB).
@@ -26,7 +28,7 @@ export function adminOsmRoutes(deps: SyncDeps = {}) {
 
     app.post<{ Body: OsmSyncRequest }>(
       "/admin/osm/sync",
-      { preHandler: app.requireAdmin },
+      { preHandler: requireRole(ROLES.admin) },
       async (req, reply) => {
         const parsed = osmSyncRequestSchema.safeParse(req.body);
         if (!parsed.success) {

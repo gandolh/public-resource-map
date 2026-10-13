@@ -57,6 +57,9 @@ WORKDIR /app
 COPY --from=proddeps /app/node_modules ./node_modules
 COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/backend/dist ./backend/dist
+# Ward's shared library (accounts, sessions, "Sign in with Ward"): a vendored
+# build that dist/ imports by relative path, so it ships beside it.
+COPY --from=builder /app/backend/vendor ./backend/vendor
 COPY package.json ./
 COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
