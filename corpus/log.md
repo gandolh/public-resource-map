@@ -745,3 +745,7 @@ The owner went through every open question and research todo:
 - **No "tickets now available" trigger.**
 - **The audit's watch list is promoted** whole: briefs 33 and 34.
 - The three June research notes moved to `wiki/history/`; every idea in them is decided, and the pin/basemap note was already superseded by the 2026-09-04 visual direction. The vetting todo is closed.
+
+## [2026-10-18] todo | Brief 35 filed: the docs site moves from Starlight to Docusaurus
+
+The owner's call (2026-10-18), one brief in every repo with a docs site. [35](briefs/todo/35-docs-site-on-docusaurus.md) keeps the URLs and both themes. Building the corpus found three links into `wzd_auth` from `decisions-identity.md` that Starlight turned into 404s; the new sync maps them to Ward's GitHub repo. The deploy waits on vps-deploy brief 11.
