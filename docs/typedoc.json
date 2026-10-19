@@ -2,7 +2,7 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["../shared/src/index.ts"],
   "tsconfig": "../shared/tsconfig.json",
-  "out": "public/reference",
+  "out": "static/reference",
   "name": "@prm/shared — Zod schemas and derived types",
   "hideGenerator": true,
   "excludePrivate": true,

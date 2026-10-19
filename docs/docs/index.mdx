@@ -1,17 +1,18 @@
 ---
 title: Public Resource Map
 description: A place-centric map of public resources and what is on at them, for Romanian cities — and honest about being a proof of concept.
-tableOfContents: false
+slug: /
+hide_table_of_contents: true
 ---
 
-import Diagram from '../../components/Diagram.astro'
+import Diagram from '@site/src/components/Diagram'
 
 **Public Resource Map** is a place-centric web app for Romanian cities. The
 map's unit is a **place** — a park, library, clinic, museum or town hall — and
 events attach to places. You pick a city, see what is near you, select a place,
 and see what is on there.
 
-<dl class="doc-facts">
+<dl className="doc-facts">
   <dt>Runs at</dt>
   <dd><code>/prm</code> (SPA) and <code>/prm-api</code> (API) on the estate's single origin</dd>
   <dt>Scope</dt>
