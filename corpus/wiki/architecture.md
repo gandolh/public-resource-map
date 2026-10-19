@@ -1,13 +1,13 @@
 ---
 summary: How the code is put together: the ui → shared ← backend workspaces, the UI file map, backend routes and services, and what lives in shared.
-updated: 2026-10-09
+updated: 2026-10-19
 ---
 
 # Architecture
 
 ## Workspace layout
 
-npm workspaces with three code packages, plus `docs/` (the Starlight site); dependency direction is strictly:
+npm workspaces with three code packages, plus `docs/` (the Docusaurus site); dependency direction is strictly:
 
 ```
 ui  ──►  shared  ◄──  backend

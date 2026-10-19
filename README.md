@@ -47,7 +47,7 @@ Places and events reach the map by different routes:
 
 An admin runs an OSM sync per city, and it writes places directly. Events come from public calendar feeds; iCal is the one adapter built so far. Each event's venue name is matched to a place, geocoded with Nominatim only when no place matches, and staged. A person accepts or rejects every staged event before it shows on the map.
 
-More on the docs site: [architecture](corpus/wiki/architecture.md), [ingestion](docs/src/content/docs/ingestion.mdx), [HTTP API](docs/src/content/docs/api.mdx) and [data model](docs/src/content/docs/data.mdx).
+More on the docs site: [architecture](corpus/wiki/architecture.md), [ingestion](docs/docs/ingestion.mdx), [HTTP API](docs/docs/api.mdx) and [data model](docs/docs/data.mdx).
 
 ## Run it locally
 
@@ -71,7 +71,7 @@ Then open <http://localhost:5173/prm/>. Env vars, sign-in, the admin, tests and 
 | `backend/` | Fastify API, database schema and migrations, OSM sync, event pipeline, seed |
 | `ui/` | The React app, plus [PRODUCT.md](ui/PRODUCT.md) on who it is for and [DESIGN.md](ui/DESIGN.md) with the design system |
 | `e2e/` | Playwright tests, with a stand-in Ward |
-| `docs/` | The Starlight docs site, and the images in this README |
+| `docs/` | The Docusaurus docs site, and the images in this README |
 | `corpus/` | The project wiki: decisions, status and the briefs that built it |
 | `infrastructure/` | Dockerfile and Compose file the deploy builds the API from |
 

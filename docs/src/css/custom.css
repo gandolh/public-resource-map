@@ -177,8 +177,13 @@
 
 .navbar__title {
   color: var(--accent);
+  font-size: 1.375rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.theme-doc-sidebar-menu {
+  font-size: 0.9375rem;
 }
 
 /* Category labels read as headings, the links under them as a quieter list. */

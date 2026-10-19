@@ -9,7 +9,7 @@ How each image was made, so the next refresh is a re-run. Re-take an image when 
 | place-phone.webp | Teatrul Național Timișoara's bottom sheet, in Romanian | `/prm/places/7af95f1d-1c7e-58d5-9fc9-125c2bd8c219`, RO | iPhone 14 emulation | seed | 2026-10-09 |
 | map-phone-dark.webp | The city map on a phone, dark theme | `/prm/`, RO, theme menu → Întunecat | iPhone 14 emulation | seed | 2026-10-09 |
 | map-flow.gif | City view → Museums chip → zoom in twice → drag → click the Muzeul de Artă pin | `/prm/`, EN, then those steps | 1280×800, GIF 800 px wide | seed | 2026-10-09 |
-| ingestion.svg | The ingestion diagram from the docs site | open `docs/public/diagrams/ingestion.html`, light theme, Export → SVG | vector | `docs/diagrams/ingestion.json` | 2026-10-09 |
+| ingestion.svg | The ingestion diagram from the docs site | open `docs/static/diagrams/ingestion.html`, light theme, Export → SVG | vector | `docs/diagrams/ingestion.json` | 2026-10-09 |
 
 ## Data
 
