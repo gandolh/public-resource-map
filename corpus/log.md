@@ -760,3 +760,9 @@ The owner's call (2026-10-18), one brief in every repo with a docs site. [35](br
 - Astro, Starlight and `sharp` are gone from the docs package. The `cookie@2` workaround noted on 2026-09-06 no longer applies. Dependencies stay exact-pinned.
 
 Not deployed. vps-deploy brief 11 points the `prm` docs stack's asset check at Docusaurus's `assets/` folder; the owner deploys after that.
+
+## [2026-10-28] decision | The notification mail keeps Ward's English footer
+
+The owner answered the secondary question from brief 32: prm's Romanian mail
+keeps Ward's English footer. A per-app footer language in Ward was offered and
+declined, so the item is deleted from open-questions.md.
