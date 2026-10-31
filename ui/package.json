@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "node --env-file-if-exists=../.env ../node_modules/@react-router/dev/bin.cjs dev",
+    "dev": "node --env-file-if-exists=../.env node_modules/@react-router/dev/bin.cjs dev",
     "start": "node --env-file-if-exists=../.env ../node_modules/vite/bin/vite.js preview --outDir build/client",
     "typecheck": "react-router typegen && tsc"
   },

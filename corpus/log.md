@@ -766,3 +766,9 @@ Not deployed. vps-deploy brief 11 points the `prm` docs stack's asset check at D
 The owner answered the secondary question from brief 32: prm's Romanian mail
 keeps Ward's English footer. A per-app footer language in Ward was offered and
 declined, so the item is deleted from open-questions.md.
+
+## [2026-10-31] maintenance | README: sign-in needs no Ward; `npm run dev` starts again on a fresh install
+
+A README refresh pass with the readme-docs standard. The README still said signing in needs a local Ward; since 2026-10-13 prm has its own local accounts and "Sign in with Ward" is optional, as `docs/getting-started.md` already said. It says so now. The images were kept: the changes since 2026-10-09 are accounts and the docs site, and no image shows either.
+
+Found while running it: on a fresh `npm install`, `npm run dev` failed in `ui/` with `Cannot find module …/node_modules/@react-router/dev/bin.cjs`. Since the React Router 8.5.0 update of 2026-10-23 the lockfile puts `@react-router/dev` under `ui/node_modules`, and the dev script pointed at the root's. The script now reads `node_modules/@react-router/dev/bin.cjs` from `ui/`. Checked: `npm install`, `npm run build -w shared`, `db:migrate` and `db:seed` (15 synthetic events), and `npm run dev` answering on `/prm/`.

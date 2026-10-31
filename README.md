@@ -51,7 +51,7 @@ More on the docs site: [architecture](corpus/wiki/architecture.md), [ingestion](
 
 ## Run it locally
 
-Requires Node 24; tested with 24.14. The public map needs nothing else. Signing in needs a local Ward, which [docs/getting-started.md](docs/getting-started.md) covers.
+Requires Node 24; tested with 24.14. The public map needs nothing else, and signing in, favourites and notifications run on prm's own local accounts. "Sign in with Ward" is optional and needs a local Ward, which [docs/getting-started.md](docs/getting-started.md) covers.
 
 ```bash
 npm install
