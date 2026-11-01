@@ -5,7 +5,7 @@
 **Review skill:** a general-purpose agent over the diff (no repo review cmd yet; Vitest harness lands in brief 11, Playwright in brief 17)
 **PR skill:** propose git commands (never commit/push without the user's say-so)
 **Issue tracker:** none — briefs in `corpus/briefs/` are the work items
-**Code host:** GitHub (`gh`) — origin: gandolh/public-resource-map
+**Code host:** GitHub (`gh`) — origin: `<owner>/public-resource-map`
 
 ## Stack (for context routing)
 - npm workspaces: `shared` (Zod types — build first), `backend` (Fastify 5 + Drizzle ORM + better-sqlite3), `ui` (React + Vite, Base UI, CivicMap tokens)

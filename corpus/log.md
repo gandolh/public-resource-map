@@ -755,7 +755,7 @@ The owner's call (2026-10-18), one brief in every repo with a docs site. [35](br
 [35](briefs/done/35-docs-site-on-docusaurus.md) is built. `docs/` is a Docusaurus 3.10 site at the same base, `/prm/docs/`, with the same 17 routes plus `/search/` (local search replaces Pagefind). Both themes stay, now as `colorMode` with the toggle; `src/css/custom.css` keeps the design tokens from `ui/DESIGN.md` and maps them onto Infima once per theme. The four authored pages live in `docs/docs/`, the committed diagrams in `static/diagrams/`, TypeDoc's output in `static/reference/`.
 
 - **The sync discovers pages** instead of keeping a list, so a new wiki page is published by default. `wiki/history/` is not discovered; `stitch-screens` is kept by name so `/wiki/stitch-screens/` stays.
-- **Links into Ward's checkout** (`../../../wzd_auth/…`, two in `decisions-identity.md`, one in `decisions.md`) now go to `github.com/gandolh/ward-auth`. Docusaurus fails the build on any `.md` link it cannot resolve.
+- **Links into Ward's checkout** (`wzd_auth/…`, two in `decisions-identity.md`, one in `decisions.md`) now go to `github.com/<owner>/ward-auth`. Docusaurus fails the build on any `.md` link it cannot resolve.
 - **The old light theme had a bug.** Starlight's `--sl-color-white` is the heading colour in light mode, and the theme set it to `#ffffff`, so headings, sidebar group labels and aside text were white on white. The port does not carry it over.
 - Astro, Starlight and `sharp` are gone from the docs package. The `cookie@2` workaround noted on 2026-09-06 no longer applies. Dependencies stay exact-pinned.
 

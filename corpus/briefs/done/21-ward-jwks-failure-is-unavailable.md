@@ -26,7 +26,7 @@ Ward's reference client (`wzd_auth/client/src/verify.ts`) has the same catch-all
 ## Files you must NOT touch
 - `backend/src/ward/ward.plugin.ts` — its classification logic is right once the client throws the right error.
 - `backend/src/ward/ward.types.ts` — the error classes already fit.
-- Anything under `../wzd_auth`.
+- Anything under `wzd_auth`.
 
 ## What to do
 1. Pass the injected fetch to the key set: `createRemoteJWKSet(url, { …, [customFetch]: fetchImpl })` (`import { customFetch } from "jose"`). One seam then covers both calls.

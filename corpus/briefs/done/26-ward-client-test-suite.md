@@ -20,7 +20,7 @@
 
 ## Files you must NOT touch
 - `backend/src/ward/ward.client.ts`. This brief only adds tests. If a test exposes a real bug, stop, record it in the log, and raise it rather than fixing it here.
-- Anything in `../wzd_auth`. Read its tests as a reference; do not import from it (the no-shared-package decision in `ward.types.ts`).
+- Anything in `wzd_auth`. Read its tests as a reference; do not import from it (the no-shared-package decision in `ward.types.ts`).
 
 ## What to do
 Port the relevant cases from the reference suites, adapted to prm's single `createWardClient` shape. Use a real EdDSA key pair (`generateKeyPair("EdDSA")`), tokens from `SignJWT`, and the injected `fetch` serving both the JWKS and `/introspect`. Use the `now` option for cache timing (no sleeps). At minimum:

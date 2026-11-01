@@ -27,7 +27,7 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
   `lib/auth-internals.ts`, `lib/ensure-admin.ts` and the login/register screens
   are deleted. prm holds **no credential of any kind** — no password hash, no
   session id, no reset token. Sign-in, registration, email verification and
-  password reset are [Ward's](../../../wzd_auth/corpus/wiki/overview.md), at one
+  password reset are Ward's (`wzd_auth/corpus/wiki/overview.md`), at one
   login page for the estate.
 - **prm is the reason Ward has public registration at all.** The estate's first
   design had no self-signup; prm ships it, and that collision is what moved the
@@ -84,7 +84,7 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
 
 ## prm owns its accounts; Ward is a linked second way in (locked 2026-10-13 — supersedes "Identity is Ward's")
 
-The estate's redesign ([Ward's decisions-oidc.md](../../../wzd_auth/corpus/wiki/decisions-oidc.md)),
+The estate's redesign (Ward's decisions-oidc.md (`wzd_auth/corpus/wiki/decisions-oidc.md`)),
 built here by Ward's brief 24. Each app keeps its own accounts and login page;
 "Sign in with Ward" is an OpenID Connect button beside the form.
 
