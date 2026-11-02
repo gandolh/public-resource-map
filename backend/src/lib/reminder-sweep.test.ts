@@ -3,7 +3,7 @@ import { buildTestApp, type TestApp } from "../test/harness.js";
 import { event, favoriteEvent, notification, place } from "../db/schema.js";
 import { runReminderSweep } from "../jobs/reminder-sweep.js";
 
-/** Brief 05: the day-before reminder, in Bucharest time, exactly once. */
+/** The day-before reminder, in Bucharest time, exactly once. */
 
 let t: TestApp;
 let placeId: string;

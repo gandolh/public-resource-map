@@ -10,7 +10,7 @@ import type {
 import { ApiRequestError } from "~/lib/api";
 
 /**
- * The admin side of the API (briefs 04, 03, 16). Same origin as the public
+ * The admin side of the API. Same origin as the public
  * calls, so prm's session cookie rides along; every route answers 401/403 to
  * anyone whose prm role is not `admin`.
  */

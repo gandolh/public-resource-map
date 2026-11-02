@@ -2,7 +2,7 @@ import type { EventCategory } from "@public-resource-map/shared";
 import { zonedTimeToInstant } from "../lib/time.js";
 
 /**
- * A small iCalendar (RFC 5545) reader for event feeds (brief 04). Municipal
+ * A small iCalendar (RFC 5545) reader for event feeds. Municipal
  * and cultural calendars often publish an unadvertised `.ics` feed, the second
  * rung of decisions.md's API-first order, and reading one is a contract, not
  * a scrape.
@@ -85,7 +85,7 @@ export function guessCategory(text: string): EventCategory | undefined {
 }
 
 /**
- * WordPress shortcodes (brief 31). The Events Calendar's export can carry a
+ * WordPress shortcodes. The Events Calendar's export can carry a
  * page's raw shortcodes in DESCRIPTION. Teatrul Național's ticket button is
  * `[DKB url="https://www.eventim.ro/…" text="Cumpără bilet" …]`, and without
  * this every one of its events would show that as text.
@@ -132,7 +132,7 @@ function tidy(text: string): string | undefined {
   return out || undefined;
 }
 
-/** Only an https link may become a ticket link (brief 31; brief 33 part 1). */
+/** Only an https link may become a ticket link (the watch-list hardening part 1). */
 function isHttps(value: string): boolean {
   try {
     return new URL(value).protocol === "https:";

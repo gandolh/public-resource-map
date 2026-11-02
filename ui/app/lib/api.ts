@@ -79,7 +79,7 @@ export function fetchPlaces(
  * Page 1 says how many there are; the rest are fetched in parallel. One page
  * used to be taken as the whole city, so a real București sync (3,171 named
  * places) lost two thirds of its pins silently, to the map and to search
- * (brief 20).
+ * (whole-city loading).
  */
 export async function fetchAllPlaces(
   input: PlacesQueryInput,
@@ -153,7 +153,7 @@ const WHATS_ON_PAGE_SIZE = 100;
 const MAX_WHATS_ON_PAGES = 10;
 
 /**
- * Every page of what's-on, for a drawn area (brief 15): the area filters on
+ * Every page of what's-on, for a drawn area: the area filters on
  * the client, so filtering only the first page would undercount and miss
  * later events inside the shape.
  */
@@ -191,7 +191,7 @@ export interface ArchiveQueryInput {
   page?: number;
 }
 
-/** Past events, newest first (brief 14). Public. */
+/** Past events, newest first. Public. */
 export function fetchArchive(
   input: ArchiveQueryInput,
   signal?: AbortSignal,

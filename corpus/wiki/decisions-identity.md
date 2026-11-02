@@ -1,6 +1,6 @@
 ---
 summary: Identity decisions: prm's own accounts with "Sign in with Ward" as a linked second way in (2026-10-13), and the superseded designs before it (prm-only auth, then Ward-only identity).
-updated: 2026-10-13
+updated: 2026-11-02
 ---
 
 # Decisions — identity
@@ -56,14 +56,14 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
   the opposite. The root hook resolves a session only when a cookie is present
   and leaves the request anonymous otherwise; `requireAuth`/`requireAdmin` stay
   opt-in per route. **Revised 2026-10-06 (owner), built 2026-10-07
-  ([brief 30](../briefs/done/30-resolve-ward-only-where-needed.md)):** there is no
+  (Ward-only-where-needed):** there is no
   root hook. `resolveWard` resolves a request's session at most once, and only the
   guards and `/api/me` call it. Why: the `ward_session` cookie is estate-wide, so
   anyone signed in to any estate app made every public-map request wait on Ward,
   up to its 5 s timeout when Ward was slow. A consequence worth keeping: **when Ward is down, the public
   map still works**, because it never asks Ward anything. Guarded routes answer
   503 and fail closed. "Ward is down" includes **Ward's key set being
-  unreachable** (brief 21, 2026-10-03): a failure to fetch or read the JWKS is
+  unreachable** (2026-10-03): a failure to fetch or read the JWKS is
   `WardUnavailableError`, not an invalid token; only "no key matches this
   token's `kid`" stays a 401. The client's injected `fetch` reaches the key set
   too (`jose`'s `customFetch`), so tests cover that path.
@@ -85,7 +85,7 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
 ## prm owns its accounts; Ward is a linked second way in (locked 2026-10-13 — supersedes "Identity is Ward's")
 
 The estate's redesign (Ward's decisions-oidc.md (`wzd_auth/corpus/wiki/decisions-oidc.md`)),
-built here by Ward's brief 24. Each app keeps its own accounts and login page;
+built here on 2026-10-13. Each app keeps its own accounts and login page;
 "Sign in with Ward" is an OpenID Connect button beside the form.
 
 - **Accounts are prm's again**, from Ward's shared library, vendored as a

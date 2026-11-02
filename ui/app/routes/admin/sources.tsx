@@ -17,7 +17,7 @@ import { StateBlock } from "~/components/ui/StateBlock";
 import { cn } from "~/lib/utils";
 
 /**
- * Sources (brief 16): what each reads with, how its last run went, and the
+ * Sources: what each reads with, how its last run went, and the
  * buttons that run it. A `suspect` run (nothing, or under half the last one)
  * is shown loudly, because that is how a publisher's redesign announces
  * itself: quietly, as fewer events.
@@ -187,7 +187,7 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
   );
 }
 
-/** Add a vetted feed: a row, not code (brief 04). */
+/** Add a vetted feed: a row, not code. */
 function AddSource() {
   const { t } = useI18n();
   const create = useCreateSource();
@@ -258,7 +258,7 @@ function AddSource() {
   );
 }
 
-/** Brief 03's OSM sync, per city: places, not events, and no review step. */
+/** The OSM sync, per city: places, not events, and no review step. */
 function OsmSync() {
   const { t } = useI18n();
   const sync = useOsmSync();

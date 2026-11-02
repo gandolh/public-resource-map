@@ -12,7 +12,7 @@ export const meta: MetaFunction = () => [{ title: "Cont nou — CivicMap" }];
 const MIN_PASSWORD = 8;
 
 /**
- * prm's own register page (brief 24 of Ward's corpus; the owner chose a
+ * prm's own register page (since 2026-10-13; the owner chose a
  * local page on 2026-10-13). prm is the one app in the estate with one. A
  * username and a password, and no email: Ward holds addresses, so a person
  * who wants mail links a Ward account from settings.

@@ -4,7 +4,7 @@ import { markReadSchema, type FavoritesDto, type InboxDto, type NotificationDto 
 import { event, favoriteEvent, favoritePlace, notification, notificationEvent, place } from "../db/schema.js";
 
 /**
- * Favourites and the inbox (brief 05). Everything here is per person, keyed on
+ * Favourites and the inbox. Everything here is per person, keyed on
  * the local user id (the `subject` column; a migrated user's id is their Ward
  * subject), and signed-in only: none of it is on the public allowlist in
  * `ward/auth.ts`. Adding and removing are idempotent, so a double tap or a
@@ -102,7 +102,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
       kind: r.kind as NotificationDto["kind"],
       createdAt: r.createdAt,
       readAt: r.readAt,
-      // A followed place OSM dropped (brief 34) is named, not linked.
+      // A followed place OSM dropped is named, not linked.
       place: r.placeId ? { id: r.placeId, name: r.placeName!, listed: r.placeRetiredAt === null } : null,
       events: (r.eventId ? [r.eventId] : links.filter((l) => l.notificationId === r.id).map((l) => l.eventId))
         .flatMap((id) => (byId.has(id) ? [byId.get(id)!] : []))

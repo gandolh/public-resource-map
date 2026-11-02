@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { authErrorKey, loginPath, safeNext } from "./authApi";
 
-// Brief 24 (Ward's corpus): `?next=` comes from the address bar, so it must
+// Since 2026-10-13, `?next=` comes from the address bar, so it must
 // never send a person off prm or back into the login page. Vitest serves the
 // app at "/", so these run with an empty base.
 describe("safeNext", () => {

@@ -18,7 +18,7 @@ import { geocodeAddress, nominatimProvider, type GeocodeProvider } from "./geoco
 import { matchVenue, normalizeText, normalizeVenue } from "./match.js";
 
 /**
- * The event ingestion pipeline (brief 04): fetch → validate → dedup → match
+ * The event ingestion pipeline: fetch → validate → dedup → match
  * venue to place → geocode the rest → reconcile with what is already live →
  * a staged diff. Nothing reaches the public `event` table until an admin
  * accepts it.
@@ -148,7 +148,7 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
     return { ...summary, status: "error", error: message };
   }
 
-  // A retired place (brief 34) is no venue for a new listing.
+  // A retired place is no venue for a new listing.
   const cityPlaces = await db
     .select({ id: place.id, name: place.name })
     .from(place)
@@ -416,7 +416,7 @@ export interface AcceptResult {
  * Accept staged rows: each becomes (or updates) a live event, in its own
  * transaction. A row with no place yet is skipped with a reason: an event
  * always has a place (resolve it first, or drop a manual pin). Newly published
- * events then notify the people who favourited their place (brief 05).
+ * events then notify the people who favourited their place.
  */
 export function acceptStaged(db: DB, ids: string[], now: Date): AcceptResult {
   const result: AcceptResult = { accepted: [], skipped: [], notified: 0 };

@@ -15,7 +15,7 @@ const place = { name: "Venue", category: "theater", city: "Timișoara", lat: 45.
 const raw = { title: "Show", startDate: "2026-08-01T21:00:00+03:00", venue: "Sala Mare" };
 const source = { name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" };
 
-/** Every stored link field (brief 33): the schema, a valid row without it, the field. */
+/** Every stored link field: the schema, a valid row without it, the field. */
 const fields: [string, ZodTypeAny, Record<string, unknown>, string][] = [
   ["createEvent.buyUrl", createEventSchema, event, "buyUrl"],
   ["createEvent.sourceUrl", createEventSchema, event, "sourceUrl"],

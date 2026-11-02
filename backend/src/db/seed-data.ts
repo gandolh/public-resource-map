@@ -30,7 +30,7 @@ const BU = "București";
  * EVENTS ARE SYNTHETIC. They are invented to exercise the UI, dated from
  * today, and attached to real places. Nothing here came from a publisher, and
  * none of it should ever be shown to a real user as fact. Real events come
- * through ingestion (brief 04) from sources the owner has vetted.
+ * through ingestion from sources the owner has vetted.
  */
 export const fixture = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "fixtures/osm-places.json"), "utf8"),
@@ -229,7 +229,7 @@ function seedEvents(now: Date) {
     },
     // A run, not a moment: opened two weeks ago, closes in about forty days.
     // Every other seed event is a point event (null end), which is how the
-    // "vanishes the minute it starts" bug hid until brief 19.
+    // "vanishes the minute it starts" bug hid until the in-progress events fix.
     {
       placeId: PLACE.buArtMuseum,
       title: "Brâncuși și contemporanii săi — expoziție temporară",

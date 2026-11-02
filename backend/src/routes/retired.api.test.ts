@@ -5,7 +5,7 @@ import { event, eventSource, favoritePlace, notification, place, stagedEvent } f
 const DAY = 86_400_000;
 const at = (ms: number) => new Date(Date.now() + ms).toISOString();
 
-// Brief 34: a place OSM no longer has keeps its row, but no public read returns
+// A place OSM no longer has keeps its row, but no public read returns
 // it or its events; the people who followed it see it named, not linked.
 describe("a retired place", () => {
   let t: TestApp;

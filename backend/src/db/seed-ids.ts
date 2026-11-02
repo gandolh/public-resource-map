@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 /**
- * Stable seed IDs (brief 08). Each seeded row's id is a name-based UUID
+ * Stable seed IDs. Each seeded row's id is a name-based UUID
  * (RFC 9562 version 5) of a key that says what the row is: an OSM element for
  * a place (`osm:node/2634652196`), a slug for a hand-written venue or event.
  * The same key always gives the same id, so every `db:seed` lands the same

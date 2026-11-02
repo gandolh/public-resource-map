@@ -12,7 +12,7 @@ interface SeededPlace {
   upcomingEventCount?: number;
 }
 
-/** Seed ids are stable (brief 08), so specs name the rows they mean. */
+/** Seed ids are stable, so specs name the rows they mean. */
 export { SEED } from "../backend/src/db/seed-ids";
 
 /** A seeded place, read back through the API the UI uses. */
@@ -28,8 +28,8 @@ const AUTH = "/prm-api/auth";
 export type Who = "fresh" | "demo" | "admin";
 
 /**
- * Sign the page's browser in through prm's own accounts (brief 24 of Ward's
- * corpus): `page.request` shares the browser's cookies, so the session cookie
+ * Sign the page's browser in through prm's own accounts:
+ * `page.request` shares the browser's cookies, so the session cookie
  * lands on the UI's origin under `/prm-api`, as a real sign-in leaves it.
  *
  * - `fresh`: a new account, registered for this spec alone, since specs run

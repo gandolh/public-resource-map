@@ -6,7 +6,7 @@ const feed = (...events: string[]) =>
 
 const vevent = (...lines: string[]) => ["BEGIN:VEVENT", ...lines, "END:VEVENT"].join("\r\n");
 
-describe("parseIcal (brief 04)", () => {
+describe("parseIcal", () => {
   it("reads a Bucharest-zoned event, unfolding and unescaping its text", () => {
     const [row] = parseIcal(
       feed(
@@ -83,7 +83,7 @@ describe("parseIcal (brief 04)", () => {
   });
 });
 
-// Brief 31: Teatrul Național Timișoara's export carries a WordPress button
+// Teatrul Național Timișoara's export carries a WordPress button
 // plugin's shortcodes in DESCRIPTION. Lines below are as its feed sends them
 // (2026-10-07), with iCal's own escaping.
 const TICKET = "https://www.eventim.ro/event/o-scrisoare-pierduta-teatrul-national-mihai-eminescu-22097293/";
@@ -99,7 +99,7 @@ const describedAs = (description: string) =>
     feed(vevent("UID:tntm-1", "SUMMARY:O SCRISOARE PIERDUTĂ", "DTSTART:20261007T160000Z", "LOCATION:Sala Mare", `DESCRIPTION:${description}`)),
   )[0].raw;
 
-describe("parseIcal: WordPress shortcodes (brief 31)", () => {
+describe("parseIcal: WordPress shortcodes", () => {
   it("strips the shortcodes and lifts the first ticket link as buyUrl", () => {
     const raw = describedAs(`O SCRISOARE PIERDUTĂ\\n\\n${DKB_TICKET}\\n\\n${DKB_SURVEY}`);
     expect(raw.description).toBe("O SCRISOARE PIERDUTĂ");
@@ -144,7 +144,7 @@ describe("parseIcal: WordPress shortcodes (brief 31)", () => {
   });
 });
 
-// Found walking TP-07 (brief 10): "Walk: matched at the art museum" came out
+// Found walking TP-07: "Walk: matched at the art museum" came out
 // Sport, because `match` matched inside "matched". Words match from their start.
 describe("guessCategory", () => {
   it("reads a source's own words, in Romanian or English, with or without diacritics", () => {

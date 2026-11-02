@@ -6,7 +6,7 @@ import { rowToEvent } from "./event-mapper.js";
 import { pastAt } from "./event-window.js";
 
 /**
- * The archive (brief 14): events that happened, newest first. Past events are
+ * The archive: events that happened, newest first. Past events are
  * kept rather than deleted (decisions.md → event horizon), and each row still
  * links to its place. The citywide list is public; "mine" (events you saved,
  * and events at places you follow) is yours alone.
@@ -66,7 +66,7 @@ export async function archiveRoutes(app: FastifyInstance) {
   app.get("/archive", async (req, reply) => {
     const q = parse(req.query, reply);
     if (!q) return reply;
-    // Public: a retired place's past events go with it (brief 34).
+    // Public: a retired place's past events go with it.
     const conditions = [pastAt(new Date().toISOString()), isNull(place.retiredAt), ...categoryFilter(q)];
     if (q.city) conditions.push(eq(place.city, q.city));
     return page(sql.join(conditions, sql` AND `), q);

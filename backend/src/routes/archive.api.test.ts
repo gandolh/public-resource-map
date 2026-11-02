@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildTestApp, type TestApp } from "../test/harness.js";
 import { event, favoriteEvent, favoritePlace, place } from "../db/schema.js";
 
-/** Brief 14: what happened, newest first; yours and the city's. */
+/** What happened, newest first; yours and the city's. */
 
 let t: TestApp;
 const hour = 60 * 60 * 1000;

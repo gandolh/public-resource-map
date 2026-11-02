@@ -14,7 +14,7 @@ function pinIcon(place: Place, selected: boolean): L.DivIcon {
   const count = place.upcomingEventCount ?? 0;
   const html =
     // The marker element is the button; its name is the Marker's title, so
-    // the drawing inside is hidden from assistive tech (brief 10's audit found
+    // the drawing inside is hidden from assistive tech (the audit found
     // pins named nothing and clusters named by a bare digit).
     `<div class="cmp${selected ? " is-selected" : ""}" aria-hidden="true" ` +
     `style="width:${size}px;height:${size}px;--c:${categoryColor(place.category)}">` +
@@ -58,7 +58,7 @@ function clusterIcon(cluster: PlaceCluster): L.DivIcon {
 /**
  * Enter and Space on a focused marker do what a click does. Leaflet makes a
  * keyboard marker a `role="button"` but only answers Enter when a popup is
- * bound, and ours have none (found by brief 10's keyboard pass).
+ * bound, and ours have none (found by the keyboard pass).
  */
 function onActivateKey(activate: () => void) {
   return (e: L.LeafletEvent) => {

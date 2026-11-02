@@ -42,7 +42,7 @@ describe("mapTagsToCategory (OSM tag → PlaceCategory)", () => {
   });
 
   it("imports public healthcare only, not pharmacies or private practices", () => {
-    // The bare key fetched every `healthcare=*` element (brief 25).
+    // The bare key fetched every `healthcare=*` element.
     expect(OVERPASS_TAG_FILTERS).not.toContain('["healthcare"]');
     expect(mapTagsToCategory({ healthcare: "hospital" })).toBe("clinic");
     expect(mapTagsToCategory({ healthcare: "clinic" })).toBe("clinic");

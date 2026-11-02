@@ -6,7 +6,7 @@ import { openAccounts } from "./accounts-cli.js";
  * user's role. The role is prm's (a Ward grant only seeds a new user's), and
  * this is how it changes, the first admin included: a person whose rows were
  * keyed by their Ward subject became a `user` named `user-<8 characters>` in
- * brief 24's migration, whatever grant they held.
+ * the migration, whatever grant they held.
  */
 
 const [username, role] = process.argv.slice(2);

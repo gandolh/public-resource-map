@@ -4,7 +4,7 @@ import { event, favoriteEvent, notification } from "../db/schema.js";
 import { zonedParts, zonedTimeToInstant } from "../lib/time.js";
 
 /**
- * The day-before reminder (brief 05; decisions.md → Favorites & notifications).
+ * The day-before reminder (decisions.md → Favorites & notifications).
  *
  * Takes `now` so it is testable with no test-only route. It reminds about
  * every favourited live event starting on the **next calendar day in
@@ -47,7 +47,7 @@ export const SWEEP_HOUR = 9;
  * every day at 09:00 Bucharest. In-process inside the API, as decisions.md
  * locks it: no separate worker, no OS cron. `afterRun` follows every run, even
  * one that wrote nothing: it is how mail Ward could not take yesterday is
- * retried (brief 32). The mail goes through the shared library's
+ * retried. The mail goes through the shared library's
  * `notifyUser`, so only users with Ward linked get one; the inbox row is
  * everyone's. Returns a stop function.
  */

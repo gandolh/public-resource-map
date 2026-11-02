@@ -16,7 +16,7 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
   const { event, place } = item;
   const running = when === "time" && isRunning(event.startDate, event.endDate);
   const source = sourceName(event);
-  // A place OSM no longer has (brief 34) appears only in "my past events":
+  // A place OSM no longer has appears only in "my past events":
   // the row names it and says so, and links nowhere.
   const unlisted = place.listed === false;
   const rowClass = "flex gap-3.5 py-3.5 md:gap-4 md:px-2 md:-mx-2 md:rounded-lg";
@@ -38,7 +38,7 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
         </span>
 
         {/* One line: wrapped, the "·" was left dangling at the end of the
-            first. A long place name truncates instead (TP-04, brief 10). */}
+            first. A long place name truncates instead (TP-04). */}
         <span className="mt-1 flex items-center gap-x-2 text-[12.5px] text-fg-muted">
           <span className="inline-flex shrink-0 items-center gap-1.5">
             <span

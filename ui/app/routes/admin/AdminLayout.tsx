@@ -12,7 +12,7 @@ import { cn } from "~/lib/utils";
 export const meta: MetaFunction = () => [{ title: "Admin — CivicMap" }];
 
 /**
- * The admin shell (brief 16): its own layout and sidebar, not the public
+ * The admin shell: its own layout and sidebar, not the public
  * Navbar, because it is a different audience doing a different job. Its route
  * modules are split from the public bundle by React Router, so a visitor never
  * downloads them. The server is the real gate (every admin route is 401/403

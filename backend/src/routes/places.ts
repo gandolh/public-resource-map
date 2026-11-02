@@ -65,7 +65,7 @@ function upcomingCountExpr(db: FastifyInstance["db"], from: string, to: string) 
 }
 
 /**
- * Public places API (brief 03). Serves the map + place panel FAST from SQLite —
+ * Public places API. Serves the map + place panel FAST from SQLite —
  * OSM data is ingested once (see `POST /api/admin/osm/sync`) and never fetched
  * from Overpass on user traffic. Renames the transitional `/api/resources`.
  */
@@ -85,7 +85,7 @@ export async function placeRoutes(app: FastifyInstance) {
     const { from, to } = lensWindow(lens);
     const eventCount = upcomingCountExpr(db, from, to);
 
-    // A retired place (brief 34: OSM no longer has it) is on no public surface.
+    // A retired place (OSM no longer has it) is on no public surface.
     const conditions = [isNull(place.retiredAt)];
     if (city) conditions.push(eq(place.city, city));
     if (lat !== undefined && lng !== undefined) {
@@ -111,7 +111,7 @@ export async function placeRoutes(app: FastifyInstance) {
         .from(place)
         .where(where)
         // A total order, so pages are disjoint and repeatable: without it SQLite
-        // returns scan order and offset paging can overlap or skip (brief 20).
+        // returns scan order and offset paging can overlap or skip.
         .orderBy(asc(place.id))
         .limit(pageSize)
         .offset(offset),
@@ -177,7 +177,7 @@ export async function placeRoutes(app: FastifyInstance) {
     return rowToPlace(row);
   });
 
-  // The write routes are admin-only (brief 18): they were open to anyone, so
+  // The write routes are admin-only: they were open to anyone, so
   // a curl could delete every place or publish an unreviewed event. Kept, not
   // removed, as an escape hatch for manual fixes until the admin UI exists.
   app.post<{ Body: CreatePlaceInput }>(

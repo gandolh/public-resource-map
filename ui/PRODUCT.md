@@ -68,7 +68,7 @@ The second differentiator is **legal honesty as a product property**: sourced fr
 - A working but old-model UI (`/map`, `/events`, `/resources/:id`) built for the discarded event-centric model, on seeded **NYC placeholder data**. It is the anti-reference.
 - A real backend: place-centric 13-table schema, working OSM/Overpass sync, auth with argon2id + opaque sessions, Vitest harness.
 - A deep decision record at `corpus/wiki/decisions.md` and a 17-brief backlog — product truth is unusually well established for this stage.
-- **No real Romanian data in the app yet** (brief 08). **No event ingestion running yet** (brief 04). Mockups and demos must not imply either exists; illustrative Romanian content must be labeled synthetic and listed for replacement.
+- **No real Romanian events in the app yet** (the places are real OSM data; the seeded events are synthetic). **No event ingestion running yet** (the pipeline exists, with no source configured). Mockups and demos must not imply either exists; illustrative Romanian content must be labeled synthetic and listed for replacement.
 - No photography, no logo asset, no testimonials, no usage numbers. None may be invented.
 
 ## Product Principles

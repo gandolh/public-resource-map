@@ -1,5 +1,5 @@
 /**
- * Venue ↔ place matching (brief 04; decisions.md → Ingestion & data mechanics).
+ * Venue ↔ place matching (decisions.md → Ingestion & data mechanics).
  *
  * A source names a venue the way its poster does ("Sala Mare, Casa de Cultură");
  * OSM names the place the way a map does ("Casa de Cultură a Municipiului

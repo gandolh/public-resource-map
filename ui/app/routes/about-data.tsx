@@ -42,7 +42,7 @@ function Out({ href, children }: { href: string; children: ReactNode }) {
 }
 
 /**
- * "About the data" (brief 09): the licences the map runs under and the
+ * "About the data": the licences the map runs under and the
  * posture the app takes towards its sources, stated where a resident, a
  * publisher or the OSM Foundation can find it.
  */

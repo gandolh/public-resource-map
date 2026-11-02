@@ -5,7 +5,7 @@
  * walked.
  *
  * Routes map this to a 409 instead of letting it escape as a 500: deleting a
- * place that still has events is a refusal, not a server fault (brief 18).
+ * place that still has events is a refusal, not a server fault.
  */
 export function isForeignKeyViolation(error: unknown): boolean {
   for (

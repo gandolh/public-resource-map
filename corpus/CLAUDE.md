@@ -55,7 +55,13 @@ backticked path whose root exists nowhere in the repo.
 
 ## Conventions
 
-- **Numbers are stable.** Never renumber a brief when it moves.
+- **Numbers are stable.** Never renumber a brief when it moves. Briefs run in number order;
+  `wiki/status.md` gives a dated snapshot per area, not a brief list.
+- **Numbering restarted at 01 on 2026-11-02.** The thirty-five briefs before that were folded
+  into the wiki and deleted; the last commit holding them is `9e52810` ([log.md](log.md),
+  "Briefs reset").
+- **Code comments don't cite brief numbers** ("brief 20", "(brief 34)"), prm's or Ward's. Say
+  what the code does and why; the history belongs in `log.md`.
 - **Standard markdown links**, relative to the file's location. No Obsidian `[[wikilinks]]`.
 - **Absolute dates** (`2026-06-26`), never "yesterday" or "last week".
 - **One concept per file.** Split pages past 200 body lines (`lint.sh` enforces it). A page that is

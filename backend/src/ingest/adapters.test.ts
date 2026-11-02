@@ -35,7 +35,7 @@ beforeAll(async () => {
 });
 afterAll(() => new Promise<void>((r) => server.close(() => r())));
 
-describe("the iCal adapter over HTTP (brief 04)", () => {
+describe("the iCal adapter over HTTP", () => {
   const source = (url: string | null) => ({ id: "s", name: "Muzeu", url, city: "Timișoara" });
 
   it("reads a feed and identifies itself", async () => {

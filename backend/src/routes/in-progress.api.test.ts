@@ -12,7 +12,7 @@ const DAY = 86_400_000;
 const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
 const ahead = (ms: number) => new Date(Date.now() + ms).toISOString();
 
-// Brief 19: every surface asked "does it start inside the window?", so an event
+// Every surface asked "does it start inside the window?", so an event
 // vanished the minute it began. Now they ask "does its span overlap the window?".
 describe("in-progress events", () => {
   let t: TestApp;

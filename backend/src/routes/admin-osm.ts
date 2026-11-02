@@ -14,13 +14,13 @@ import { requireRole } from "../../vendor/ward/ward-auth.js";
 import { ROLES } from "../ward/auth.js";
 
 /**
- * Admin-gated OSM sync (brief 03). Behind `requireRole("admin")` (401 anon, 403
+ * Admin-gated OSM sync. Behind `requireRole("admin")` (401 anon, 403
  * non-admin). Runs an Overpass query for the requested city and upserts
  * `source:osm` places — never touches event-venue places or manual pins, and
  * never called on user traffic (ingest-once-into-SQLite, serve-from-DB).
  *
  * `deps` lets a test stub Overpass. A second sync of a city already syncing is
- * a 409, and an Overpass that does not answer in time a 504 (brief 33).
+ * a 409, and an Overpass that does not answer in time a 504.
  */
 export function adminOsmRoutes(deps: SyncDeps = {}) {
   return async function (app: FastifyInstance) {

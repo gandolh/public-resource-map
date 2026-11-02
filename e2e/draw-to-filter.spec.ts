@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures";
 import type { Page } from "@playwright/test";
 
 /**
- * Draw-to-filter (brief 15), with real mouse input: Playwright's mouse sends
+ * Draw-to-filter, with real mouse input: Playwright's mouse sends
  * genuine pointer events, so this drives the same path a hand does.
  */
 

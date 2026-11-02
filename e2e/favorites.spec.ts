@@ -1,7 +1,7 @@
 import { test, expect, seededPlace, SEED } from "./fixtures";
 
 /**
- * Brief 05, signed out: the star explains itself and its sign-in link carries
+ * Signed out: the star explains itself and its sign-in link carries
  * the favourite through prm's login page, back to this page.
  */
 test("a signed-out star offers sign-in that returns here with the favourite", async ({ page, request }) => {

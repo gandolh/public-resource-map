@@ -337,7 +337,7 @@ describe("upsertOsmPlaces + syncOsmForCity (no clobber)", () => {
   });
 });
 
-describe("syncOsmForCity: timeout and one sync per city (brief 33)", () => {
+describe("syncOsmForCity: timeout and one sync per city", () => {
   let t: TestApp;
   beforeEach(async () => {
     t = await buildTestApp();
@@ -424,7 +424,7 @@ describe("syncOsmForCity: timeout and one sync per city (brief 33)", () => {
   });
 });
 
-describe("syncOsmForCity: retiring places OSM no longer has (brief 34)", () => {
+describe("syncOsmForCity: retiring places OSM no longer has", () => {
   let t: TestApp;
   beforeEach(async () => {
     t = await buildTestApp();

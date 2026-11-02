@@ -9,7 +9,7 @@ import type { FavoriteKind } from "~/lib/meApi";
 import { cn } from "~/lib/utils";
 
 /**
- * Follow a place, or ask to be reminded of an event (brief 05). Signed out,
+ * Follow a place, or ask to be reminded of an event. Signed out,
  * the star explains itself and offers prm's login and register pages,
  * carrying the favourite along so it is completed on the way back.
  */

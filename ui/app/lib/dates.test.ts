@@ -8,7 +8,7 @@ const noon = (day: string) => {
 };
 
 /**
- * Brief 33: "tomorrow" is the next Bucharest calendar day, not now + 24 h. In
+ * The watch-list hardening: "tomorrow" is the next Bucharest calendar day, not now + 24 h. In
  * 2026 the clocks go forward on 03-29 (a 23-hour day) and back on 10-25 (a
  * 25-hour day); adding 24 h near either switch lands on the wrong date.
  */
@@ -24,7 +24,7 @@ const cases: [string, string, string][] = [
   ["2026-10-26T00:30:00+02:00", "2026-10-26", "2026-10-27"],
 ];
 
-describe("groupFor across the DST switches (brief 33)", () => {
+describe("groupFor across the DST switches", () => {
   it.each(cases)("at %s, tomorrow is %s's next day", (nowIso, today, tomorrow) => {
     const now = new Date(nowIso);
     expect(groupFor(noon(today), null, now)).toBe("today");

@@ -1,6 +1,6 @@
 ---
 summary: Project vocabulary, one definition per term — place, OSM, Overpass, staged event, reconcile and the rest; read it before using a domain word.
-updated: 2026-10-07
+updated: 2026-11-02
 ---
 
 # Glossary
@@ -13,7 +13,7 @@ Project-specific terms and jargon. New to the corpus? Read this alongside [overv
 |---|---|
 | **Place** | The map's core unit. A point that is a public resource and/or an event host. Two sources: `osm` and `event-venue`. Pins on the map are places. |
 | **OSM place** | A place sourced from OpenStreetMap (`source: osm`) — park, library, clinic, museum, town hall. Carries real coordinates. The clean, licensed anchor layer. |
-| **Retired place** | An OSM place a re-sync no longer found (`retired_at` set, brief 34). Hidden from every public read; kept with its favourites and past events, and listed again if OSM has it again. |
+| **Retired place** | An OSM place a re-sync no longer found (`retired_at` set). Hidden from every public read; kept with its favourites and past events, and listed again if OSM has it again. |
 | **Event-venue place** | A place created on demand (`source: event-venue`) when an event's venue can't be matched to an existing OSM place. Its coordinates come from geocoding (or a manual pin). |
 | **Event** | Something happening at a place (exhibition, concert, public meeting). Attaches to a place via FK. Text-only (no image); shows a buy-link only if the source provides one. |
 | **Manual pin** | An admin-placed coordinate for a venue that couldn't be geocoded. Never overwritten by an OSM re-sync. |
@@ -23,7 +23,7 @@ Project-specific terms and jargon. New to the corpus? Read this alongside [overv
 | Term | Meaning |
 |---|---|
 | **OSM** | [OpenStreetMap](https://www.openstreetmap.org) — the free, crowd-sourced world map. Our resource data source. |
-| **ODbL** | Open Database License — OSM's licence. Permits reuse *with attribution* (hence brief 09). The reason OSM is legally clean for us. |
+| **ODbL** | Open Database License — OSM's licence. Permits reuse *with attribution* (hence the attribution work). The reason OSM is legally clean for us. |
 | **Overpass** | The [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API) — queries OSM for features in an area. Rate-limited/batch-oriented → we **ingest once into SQLite**, never query it on user traffic. |
 | **Nominatim** | OSM's geocoder (address → coordinates). Used as a **fallback only** (after OSM-place matching), 1 req/s, cached. |
 | **Geocoding** | Turning a venue address string into lat/lng. Needed only for event-venue places that don't match an OSM place. |
@@ -57,6 +57,6 @@ Project-specific terms and jargon. New to the corpus? Read this alongside [overv
 | Term | Meaning |
 |---|---|
 | **Corpus** | This `corpus/` directory — the LLM-maintained project knowledge base + work lifecycle. |
-| **Brief** | A numbered work spec (`briefs/todo/NN-slug.md`). Numbers are **stable** and ≠ build order. |
+| **Brief** | A numbered work spec (`briefs/todo/NN-slug.md`). Numbers are **stable**; briefs run in number order. |
 | **Wiki** | The synthesis layer (`wiki/`) — LLM-curated pages answering "what is X". |
 | **Decision (locked)** | A choice in [decisions.md](decisions.md) not to be relitigated without an explicit revisit + log entry. |

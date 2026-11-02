@@ -16,7 +16,7 @@ import { StateBlock } from "~/components/ui/StateBlock";
 import { cn } from "~/lib/utils";
 
 /**
- * The review queue (brief 16). Confidence decides the order: whatever needs a
+ * The review queue. Confidence decides the order: whatever needs a
  * judgement comes first, and what is plainly fine (a new listing already tied
  * to a place) is pre-selected for one bulk accept. The reviewer's attention
  * goes where it is needed, without rubber-stamping the rest.

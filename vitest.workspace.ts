@@ -7,7 +7,7 @@
  * `vitest.config.ts` imports it into `test.projects`. Add a new package here
  * (point at its own `vitest.config.ts`) to fold it into `npm test`.
  *
- * `ui/` runs its pure `app/lib` tests (brief 15). SEAM: component tests
+ * `ui/` runs its pure `app/lib` tests. SEAM: component tests
  * (`@testing-library/react`) are still deferred; they would widen that
  * project's include and environment.
  */

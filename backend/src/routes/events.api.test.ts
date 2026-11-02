@@ -4,7 +4,7 @@ import { buildTestApp, type TestApp } from "../test/harness.js";
 import { event, place } from "../db/schema.js";
 
 // Demonstrates the event↔place join path against the temp-DB harness — the
-// pattern brief 04 (ingestion) builds its API integration tests on.
+// pattern the event ingestion pipeline (ingestion) builds its API integration tests on.
 describe("events API (Fastify .inject() + temp SQLite)", () => {
   let t: TestApp;
   const placeId = randomUUID();

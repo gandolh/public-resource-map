@@ -12,7 +12,7 @@ export default [
     route("archive", "routes/archive.tsx"),
     route("about-data", "routes/about-data.tsx"),
     /*
-     * prm's own accounts (brief 24 of Ward's corpus): its login page, with
+     * prm's own accounts (since 2026-10-13): its login page, with
      * "Sign in with Ward" beside the form, its register page (prm is the
      * estate's one app with public registration), and account settings.
      */
@@ -25,7 +25,7 @@ export default [
     route("events", "routes/legacy.events.tsx"),
     route("resources/:id", "routes/legacy.resource.tsx"),
   ]),
-  // The admin shell (brief 16): its own layout, and its own chunks, which the
+  // The admin shell: its own layout, and its own chunks, which the
   // public pages never load.
   layout("./routes/admin/AdminLayout.tsx", [
     route("admin", "routes/admin/review.tsx"),

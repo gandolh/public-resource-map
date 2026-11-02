@@ -6,7 +6,7 @@ import type { AdapterRow, SourceAdapter } from "../ingest/adapters.js";
 import type { GeocodeProvider } from "../ingest/geocode.js";
 
 /**
- * Brief 04 — the ingestion pipeline end to end through its admin API, with an
+ * The event ingestion pipeline — the ingestion pipeline end to end through its admin API, with an
  * injected adapter, geocoder and clock: nothing here reaches a real source or
  * Nominatim.
  */

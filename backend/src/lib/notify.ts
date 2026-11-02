@@ -4,7 +4,7 @@ import type { DB } from "../db/index.js";
 import { favoritePlace, notification, notificationEvent } from "../db/schema.js";
 
 /**
- * The new-events trigger (brief 05; decisions.md → Favorites & notifications).
+ * The new-events trigger (decisions.md → Favorites & notifications).
  * Fired at the admin-accept step, never at scrape time: only accepted events
  * notify. One accept is one batch, and a batch makes **one** inbox item per
  * (person, place) however many events it published there ("8 new events at

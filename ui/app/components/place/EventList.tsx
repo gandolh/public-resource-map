@@ -24,7 +24,7 @@ export function sourceName(event: Pick<Event, "sourcePlatform" | "sourceUrl">): 
 
 /**
  * Who published this event, linked to their original listing when there is
- * one (brief 09): courtesy to the source, and the link-out posture made
+ * one: courtesy to the source, and the link-out posture made
  * visible.
  */
 function SourceCredit({ event }: { event: Event }) {

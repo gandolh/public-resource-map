@@ -9,7 +9,7 @@ import { createDb } from "./index.js";
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
 /**
- * Brief 12: what the connection promises. A file, not ":memory:", because an
+ * What the connection promises. A file, not ":memory:", because an
  * in-memory database cannot be in WAL mode.
  */
 describe("the database connection", () => {

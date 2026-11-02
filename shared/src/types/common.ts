@@ -10,7 +10,7 @@ export type Coordinates = z.infer<typeof coordinatesSchema>;
 /**
  * A link we store and later render as an `href`: http or https only.
  * `z.string().url()` alone accepts any scheme, `javascript:` and `data:`
- * included, and feeds write these fields (brief 33).
+ * included, and feeds write these fields.
  */
 export const httpUrlSchema = z
   .string()

@@ -1,6 +1,6 @@
 import { test, expect, seededPlace, SEED } from "./fixtures";
 
-/** Brief 13's public interactions: recovery, the lens banner, selection, the phone's attribution. */
+/** The public interactions: recovery, the lens banner, selection, the phone's attribution. */
 
 test("zero results offers each filter back as its own chip", async ({ page }) => {
   await page.goto("");

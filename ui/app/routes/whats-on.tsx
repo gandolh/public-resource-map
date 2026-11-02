@@ -44,7 +44,7 @@ export default function WhatsOnRoute() {
     lens,
     everything: area !== null,
   });
-  // The map's drawn area applies here too (brief 15): the same filters, always.
+  // The map's drawn area applies here too: the same filters, always.
   const items = (data?.data ?? []).filter((i) => inArea(i.place.coordinates, area));
   const total = area ? items.length : (data?.total ?? 0);
   const groups = groupByDay(items, (i) => ({ start: i.event.startDate, end: i.event.endDate }));

@@ -45,7 +45,7 @@ function filterBySearch(places: Place[], search: string): Place[] {
 }
 
 /**
- * Every active filter as a chip that removes just that filter (brief 13): the
+ * Every active filter as a chip that removes just that filter: the
  * zero-results overlay's way back that does not throw everything away.
  */
 function ActiveFilterChips() {
@@ -90,7 +90,7 @@ export interface MapOutletContext {
 }
 
 /**
- * "About the data" rides in the attribution control (brief 09), the one corner
+ * "About the data" rides in the attribution control, the one corner
  * that is always on screen beside the licence it explains. Leaflet takes the
  * prefix as HTML, so the click is routed through the SPA by hand: a full page
  * load would throw away the drawn area and the selection.
@@ -116,7 +116,7 @@ function AboutDataLink({ control }: { control: Control.Attribution | null }) {
 }
 
 /**
- * On a phone the attribution folds behind a tappable "i" (brief 13), so the
+ * On a phone the attribution folds behind a tappable "i", so the
  * map stays the hero; on a desktop it is always open. A real Leaflet control
  * in the same corner, so it inherits the corner's offsets above the tab bar
  * and the sheet.
@@ -308,7 +308,7 @@ export default function MapRoute() {
       className={cn(
         "absolute inset-0",
         // Others fade while one place is open, so the selection reads at a
-        // glance (brief 13). The timing lens removes places; this only dims.
+        // glance. The timing lens removes places; this only dims.
         selectedId && "has-selection",
         sheetSnap === "peek" && "sheet-peek",
         sheetSnap === "full" && "sheet-full",

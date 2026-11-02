@@ -748,11 +748,11 @@ The owner went through every open question and research todo:
 
 ## [2026-10-18] todo | Brief 35 filed: the docs site moves from Starlight to Docusaurus
 
-The owner's call (2026-10-18), one brief in every repo with a docs site. [35](briefs/done/35-docs-site-on-docusaurus.md) keeps the URLs and both themes. Building the corpus found three links into `wzd_auth` from `decisions-identity.md` that Starlight turned into 404s; the new sync maps them to Ward's GitHub repo. The deploy waits on vps-deploy brief 11.
+The owner's call (2026-10-18), one brief in every repo with a docs site. 35 keeps the URLs and both themes. Building the corpus found three links into `wzd_auth` from `decisions-identity.md` that Starlight turned into 404s; the new sync maps them to Ward's GitHub repo. The deploy waits on vps-deploy brief 11.
 
 ## [2026-10-19] done | Brief 35: the docs site runs on Docusaurus
 
-[35](briefs/done/35-docs-site-on-docusaurus.md) is built. `docs/` is a Docusaurus 3.10 site at the same base, `/prm/docs/`, with the same 17 routes plus `/search/` (local search replaces Pagefind). Both themes stay, now as `colorMode` with the toggle; `src/css/custom.css` keeps the design tokens from `ui/DESIGN.md` and maps them onto Infima once per theme. The four authored pages live in `docs/docs/`, the committed diagrams in `static/diagrams/`, TypeDoc's output in `static/reference/`.
+35 is built. `docs/` is a Docusaurus 3.10 site at the same base, `/prm/docs/`, with the same 17 routes plus `/search/` (local search replaces Pagefind). Both themes stay, now as `colorMode` with the toggle; `src/css/custom.css` keeps the design tokens from `ui/DESIGN.md` and maps them onto Infima once per theme. The four authored pages live in `docs/docs/`, the committed diagrams in `static/diagrams/`, TypeDoc's output in `static/reference/`.
 
 - **The sync discovers pages** instead of keeping a list, so a new wiki page is published by default. `wiki/history/` is not discovered; `stitch-screens` is kept by name so `/wiki/stitch-screens/` stays.
 - **Links into Ward's checkout** (`wzd_auth/…`, two in `decisions-identity.md`, one in `decisions.md`) now go to `github.com/<owner>/ward-auth`. Docusaurus fails the build on any `.md` link it cannot resolve.
@@ -772,3 +772,18 @@ declined, so the item is deleted from open-questions.md.
 A README refresh pass with the readme-docs standard. The README still said signing in needs a local Ward; since 2026-10-13 prm has its own local accounts and "Sign in with Ward" is optional, as `docs/getting-started.md` already said. It says so now. The images were kept: the changes since 2026-10-09 are accounts and the docs site, and no image shows either.
 
 Found while running it: on a fresh `npm install`, `npm run dev` failed in `ui/` with `Cannot find module …/node_modules/@react-router/dev/bin.cjs`. Since the React Router 8.5.0 update of 2026-10-23 the lockfile puts `@react-router/dev` under `ui/node_modules`, and the dev script pointed at the root's. The script now reads `node_modules/@react-router/dev/bin.cjs` from `ui/`. Checked: `npm install`, `npm run build -w shared`, `db:migrate` and `db:seed` (15 synthetic events), and `npm run dev` answering on `/prm/`.
+
+## [2026-11-02] maintenance | Briefs reset
+
+Part of an estate-wide reset. The thirty-five briefs in `briefs/done/` are folded into the wiki
+and deleted; brief numbering restarts at 01. The old briefs read like the grilling that fed the
+first corpus. The last commit that held them is `9e52810`: read one with
+`git show 9e52810:corpus/briefs/done/04-event-ingestion-pipeline.md`. Brief numbers in the
+entries above refer to that set.
+
+The status page's per-area snapshot already carried each brief's outcome; its rows lost their
+numbers and the brief links went. The other pages name the work (the schema consolidation, the
+watch-list hardening) or its date instead of a number, and a dead link to
+`briefs/todo/04-event-ingestion-pipeline.md` in decisions.md is gone. Code comments no longer
+cite brief numbers.
+

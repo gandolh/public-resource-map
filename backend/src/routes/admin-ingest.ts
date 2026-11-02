@@ -25,7 +25,7 @@ import { requireRole } from "../../vendor/ward/ward-auth.js";
 import { ROLES } from "../ward/auth.js";
 
 /**
- * The admin side of event ingestion (brief 04). Every route is behind
+ * The admin side of event ingestion. Every route is behind
  * `requireRole("admin")` (401 anonymous, 403 for a `user`). A refresh
  * stages a diff; only `accept` puts anything in front of the public.
  *
@@ -134,7 +134,7 @@ export function adminIngestRoutes(deps: IngestDeps) {
       const parsed = stagedIdsSchema.safeParse(req.body);
       if (!parsed.success) return invalid(reply, parsed.error.message);
       const result = acceptStaged(db, parsed.data.ids, deps.now());
-      // New inbox rows also go out as mail, after this response (brief 32).
+      // New inbox rows also go out as mail, after this response.
       if (result.notified > 0) app.notifyMail.kick();
       return result;
     });

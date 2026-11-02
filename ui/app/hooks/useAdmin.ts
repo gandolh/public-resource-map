@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CreateSourceInput, ResolvePlaceInput } from "@public-resource-map/shared";
 import { adminApi } from "~/lib/adminApi";
 
-/** Admin data (brief 16). Every write refreshes what it could have changed. */
+/** Admin data. Every write refreshes what it could have changed. */
 
 export function useSources() {
   return useQuery({ queryKey: ["admin", "sources"], queryFn: adminApi.sources });

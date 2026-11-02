@@ -1,6 +1,6 @@
 ---
 summary: How the code is put together: the ui → shared ← backend workspaces, the UI file map, backend routes and services, and what lives in shared.
-updated: 2026-10-19
+updated: 2026-11-02
 ---
 
 # Architecture
@@ -20,7 +20,7 @@ ui  ──►  shared  ◄──  backend
 - **Framework**: React Router 8 (SPA mode — `ssr: false`), `basename` from `PRM_BASE` (`/prm/` in the deploy, `/` in dev)
 - **Build**: Vite 7 + `@react-router/dev`
 - **Styling**: Tailwind CSS 4 (Vite plugin) over hex tokens in `app.css`, mapped to `--color-*`; Archivo from Google Fonts
-- **Components**: `@base-ui/react` primitives + lucide-react icons (the original Stitch brief specified shadcn/ui; replaced during brief 01 — see [decisions-engineering.md → Code conventions](decisions-engineering.md))
+- **Components**: `@base-ui/react` primitives + lucide-react icons (the original Stitch brief specified shadcn/ui; replaced when it was built — see [decisions-engineering.md → Code conventions](decisions-engineering.md))
 - **Map**: Leaflet 1.9 + react-leaflet 5; the whole city is loaded once and clustered client-side
 - **Data**: TanStack Query for server state, Zustand for city/filter/auth state
 - **Language**: Romanian by default, English switch, in `lib/i18n.tsx` (no framework)
@@ -54,7 +54,7 @@ app/
     ThemeProvider.tsx    context + localStorage persistence
     ThemeToggle.tsx      light / dark / system
     map/                 PlaceMarkers (pins + clusters), FilterBar (chips, lens, draw entry),
-                         AreaDraw (freehand + polygon, brief 15), UserLocationMarker
+                         AreaDraw (freehand + polygon), UserLocationMarker
     place/               PlaceDetail (the one place view), PlacePanel (desktop), PlaceSheet (phone),
                          EventList, EventPlaceRow (what's-on and archive rows)
     shell/               Bell (inbox), BrandMark, CityPicker, LangToggle, NoticeToast
@@ -96,7 +96,7 @@ app/
 - **Validation**: Zod (request bodies and query strings)
 - **Identity**: Ward; `jose` verifies its tokens locally (`ward/`)
 - **DB file**: `backend/data/app.db` (gitignored), or `DATABASE_PATH`, which the deploy points outside the rsynced tree
-- **Migrations**: Drizzle Kit → `backend/drizzle/`, applied with `npm run db:migrate` (`drizzle-orm`'s migrator via tsx). Five: `0000` the consolidated place-centric schema (brief 07), `0001` the Ward cutover (hand-written: drops the user tables, rebuilds the per-person ones empty and keyed on `subject`), `0002` ingestion keys on `staged_event` (brief 04), `0003` reconciles 0001 with `schema.ts` (brief 29), `0004` `place.retired_at` (brief 34). `migrations.test.ts` fails when the migrated database drifts from `schema.ts`.
+- **Migrations**: Drizzle Kit → `backend/drizzle/`, applied with `npm run db:migrate` (`drizzle-orm`'s migrator via tsx). Five: `0000` the consolidated place-centric schema (the schema consolidation), `0001` the Ward cutover (hand-written: drops the user tables, rebuilds the per-person ones empty and keyed on `subject`), `0002` ingestion keys on `staged_event` (the event ingestion pipeline), `0003` reconciles 0001 with `schema.ts` (the 0001 reconciliation), `0004` `place.retired_at` (OSM retirement). `migrations.test.ts` fails when the migrated database drifts from `schema.ts`.
 
 ### Backend modules (`src/`)
 
@@ -124,7 +124,7 @@ test/          harness (in-memory DB + injected Ward), fake-ward, real-ward
 | GET | `/api/places` | a city's places (or a bbox), category chips + timing lens, each with `upcomingEventCount` (public) |
 | GET | `/api/places/:id` | single place (public) |
 | GET | `/api/places/:id/events` | what is on at a place in the lens window (public) |
-| POST · DELETE | `/api/places`, `/api/places/:id` | create / delete a place — **admin only** (`requireAdmin`, brief 18); 409 `PLACE_IN_USE` while anything references it |
+| POST · DELETE | `/api/places`, `/api/places/:id` | create / delete a place — **admin only** (`requireAdmin`); 409 `PLACE_IN_USE` while anything references it |
 | GET | `/api/events` | events near a point (+ from/to date filters) (public) |
 | GET | `/api/events/:id` | single event (public) |
 | POST · DELETE | `/api/events`, `/api/events/:id` | create (publishes straight to `live`) / delete an event — **admin only**; 409 `EVENT_IN_USE` while referenced |
@@ -135,7 +135,7 @@ test/          harness (in-memory DB + injected Ward), fake-ward, real-ward
 | GET | `/api/favorites` | your followed places and saved events — **signed in** |
 | POST · DELETE | `/api/favorites/places/:placeId`, `/api/favorites/events/:eventId` | follow / unfollow, idempotent — **signed in** |
 | GET · POST | `/api/notifications`, `/api/notifications/read` | the inbox; mark items (or all) read — **signed in** |
-| POST | `/api/admin/osm/sync` | OSM import for a city — **admin only**; 409 while that city is syncing, 504 when Overpass does not answer in 100 s (brief 33) |
+| POST | `/api/admin/osm/sync` | OSM import for a city — **admin only**; 409 while that city is syncing, 504 when Overpass does not answer in 100 s (the watch-list hardening) |
 | GET · POST · PATCH | `/api/admin/sources`, `/api/admin/sources/:id` | list / add / enable-disable event sources — **admin only** |
 | POST | `/api/admin/sources/:id/refresh`, `/api/admin/sources/refresh-all` | run one source, or every enabled one in turn, into a staged diff — **admin only** |
 | GET | `/api/admin/staged-events` | the review queue — **admin only** |
@@ -143,19 +143,19 @@ test/          harness (in-memory DB + injected Ward), fake-ward, real-ward
 
 "Signed in" is `requireAuth`; "admin only" is `requireAdmin` (401 anonymous, 403 without `prm:admin`).
 Ward is asked only by those two guards and `/api/me`, through `resolveWard`, at most once per
-request. A public route never asks, even when a `ward_session` cookie comes in (brief 30).
+request. A public route never asks, even when a `ward_session` cookie comes in (Ward-only-where-needed).
 
 Public place reads skip retired places. Proximity filtering uses a bounding-box approximation (not Haversine). Good enough for city-scale use.
 
-### Data layer — place-centric schema (brief 07, then Ward)
+### Data layer — place-centric schema (the schema consolidation, then Ward)
 
-One Drizzle schema (`backend/src/db/schema.ts`). Brief 07 consolidated it; the Ward cutover (2026-09-06) then dropped `user`, `session`, `verification_token` and `reset_token`. prm holds no credential, and the per-person rows are keyed on Ward's opaque **`subject`** with no foreign key. The table it would point at does not exist here. Conventions: **`text` PK defaulting to `randomUUID()`** (except `notification_event`, keyed on its pair); **UTC ISO 8601 string** dates (created/updated default to `datetime('now')`); **no universal soft-delete** — lifecycle via status enums and `place.retiredAt`; **two category taxonomies** (`PlaceCategory`, `EventCategory`); an **index on every FK** plus the spatial/natural-key indexes below.
+One Drizzle schema (`backend/src/db/schema.ts`). It was consolidated on 2026-07-02; the Ward cutover (2026-09-06) then dropped `user`, `session`, `verification_token` and `reset_token`. prm holds no credential, and the per-person rows are keyed on Ward's opaque **`subject`** with no foreign key. The table it would point at does not exist here. Conventions: **`text` PK defaulting to `randomUUID()`** (except `notification_event`, keyed on its pair); **UTC ISO 8601 string** dates (created/updated default to `datetime('now')`); **no universal soft-delete** — lifecycle via status enums and `place.retiredAt`; **two category taxonomies** (`PlaceCategory`, `EventCategory`); an **index on every FK** plus the spatial/natural-key indexes below.
 
 **9 tables:**
 
 | Table | Owner brief | Key columns | Natural-key uniques / notable indexes | FKs |
 |---|---|---|---|---|
-| `place` | 03 | `source` (`osm`\|`event-venue`), `osmType`/`osmId`, `isManualPin`, `category` (PlaceCategory), `city`, `lat`/`lng`, address/website/phone/openingHours, `retiredAt` (brief 34) | **unique `(osmType,osmId)` where `source='osm'`** (partial); index `(lat,lng)`; index `city` | — |
+| `place` | 03 | `source` (`osm`\|`event-venue`), `osmType`/`osmId`, `isManualPin`, `category` (PlaceCategory), `city`, `lat`/`lng`, address/website/phone/openingHours, `retiredAt` (OSM retirement) | **unique `(osmType,osmId)` where `source='osm'`** (partial); index `(lat,lng)`; index `city` | — |
 | `event` | 04 | `placeId`, `title`, `normalizedTitle`, `category` (EventCategory), `status` (`live`\|`stale`\|`ended`\|`past`), `startDate`/`endDate`, `buyUrl`, source/price fields | index `placeId`; index `status`; dedup index `(normalizedTitle,startDate,placeId)` | `place` |
 | `event_source` | 04 | `adapterKey`, `mechanism`, `url`, `city`, `enabled`, health fields (`lastStatus`/`lastEventCount`/`lastSuccessfulAt`/`lastRunAt`) | unique `adapterKey` | — |
 | `staged_event` | 04 | `sourceId`, nullable `placeId`, nullable `eventId`, `matchStatus` (auto-matched\|ambiguous\|unmatched\|manual), `status` (new\|changed\|accepted\|rejected\|needs-attention), `venueName`, `rawAddress`, `candidates` (JSON), `payload` (JSON), `externalKey`, geocoded `lat`/`lng`, `lastSeenAt` | index sourceId, `(sourceId,externalKey)`, placeId, eventId, status | `event_source`, `place`, `event` |
@@ -165,13 +165,13 @@ One Drizzle schema (`backend/src/db/schema.ts`). Brief 07 consolidated it; the W
 | `notification` | 05 | `subject`, `kind` (`new-event`\|`reminder`), nullable `placeId`/`eventId`, `batchId` (coalesces a new-event batch), `readAt`, `emailedAt` | **unique `(subject,eventId,kind)`** (reminder idempotency; new-event rows have null `eventId`) | `place`, `event` |
 | `notification_event` | 05, 29 | join: `notificationId`, `eventId` | **PK `(notificationId,eventId)`**; index `eventId`; deleted with its notification | `notification`, `event` |
 
-**Lifecycle:** an `event` is never hard-deleted when it ends — it flips `status` to `past` (powers brief 14 archive); OSM re-sync upserts only `source='osm'` places (never clobbers `event-venue` or manual pins) and sets `retiredAt` on the ones OSM no longer has (brief 34); new-event notifications are coalesced per `(place, batch)` and fan out via `notification_event`, reminders are per-event. Each row is mailed once through Ward's `POST /notify` by `lib/notify-mail.ts`, kicked after an accept and after the daily reminder run; `emailedAt` marks it (brief 32).
+**Lifecycle:** an `event` is never hard-deleted when it ends — it flips `status` to `past` (powers the archive page); OSM re-sync upserts only `source='osm'` places (never clobbers `event-venue` or manual pins) and sets `retiredAt` on the ones OSM no longer has (OSM retirement); new-event notifications are coalesced per `(place, batch)` and fan out via `notification_event`, reminders are per-event. Each row is mailed once through Ward's `POST /notify` by `lib/notify-mail.ts`, kicked after an accept and after the daily reminder run; `emailedAt` marks it (notification email).
 
 ## Shared (`shared/`)
 
 **Zod schemas + types derived via `z.infer`** (not pure types — it has runtime code: the Zod schemas; backend imports them so shape + validation share one source of truth). Seven modules, re-exported from `src/index.ts`:
 
-- `types/common.ts` — `coordinatesSchema`/`Coordinates`, `httpUrlSchema` (http(s) only, brief 33), `PaginatedResponse<T>`, `ApiError`, `nearbyQuerySchema`/`NearbyQuery`, the timing lens (`eventLenses`: today/weekend/all), `parseCsv`, and the query schemas for `/api/places`, `/api/places/:id/events` and `/api/whats-on`
+- `types/common.ts` — `coordinatesSchema`/`Coordinates`, `httpUrlSchema` (http(s) only), `PaginatedResponse<T>`, `ApiError`, `nearbyQuerySchema`/`NearbyQuery`, the timing lens (`eventLenses`: today/weekend/all), `parseCsv`, and the query schemas for `/api/places`, `/api/places/:id/events` and `/api/whats-on`
 - `types/place.ts` — `placeSchema`/`Place`, `placeCategorySchema`/`PlaceCategory` (park/library/clinic/museum/townhall/community_center/education/theater/sports/cultural_center/other), `placeSourceSchema`/`PlaceSource` (`osm`\|`event-venue`), `createPlaceSchema`/`CreatePlaceInput`. `Place` carries `source`, `osmType`/`osmId`, `isManualPin`, nullable `address`, `city`, `coordinates`.
 - `types/event.ts` — `eventSchema`/`Event`, `eventCategorySchema`/`EventCategory` (concert/theater/sport/community/festival/exhibition/workshop/other), `eventStatusSchema`/`EventStatus` (live/stale/ended/past), `createEventSchema`/`CreateEventInput`. `Event` has `placeId`, `status`, nullable `buyUrl`; **no standalone address/coordinates** (they live on the `Place`).
 - `types/whats-on.ts` — `WhatsOnItem` (an event with its place), `archiveQuerySchema`

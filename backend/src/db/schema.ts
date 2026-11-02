@@ -50,7 +50,7 @@ export const place = sqliteTable(
     openingHours: text("opening_hours"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
-    // Added by 0004 (brief 34), so it sits after the timestamps, as ALTER TABLE
+    // Added by 0004, so it sits after the timestamps, as ALTER TABLE
     // put it. Set when an OSM re-sync no longer finds this place: the row, its
     // favourites and its past events stay, but no public read returns it. A
     // later sync that finds it again clears this.
@@ -125,7 +125,7 @@ export const event = sqliteTable(
 // answer to "who exists".
 
 // ---------------------------------------------------------------------------
-// Ingestion (brief 04) — sources, staged (diff/accept) events, geocode cache.
+// Ingestion — sources, staged (diff/accept) events, geocode cache.
 // ---------------------------------------------------------------------------
 export const eventSource = sqliteTable(
   "event_source",
@@ -176,7 +176,7 @@ export const stagedEvent = sqliteTable(
     payload: text("payload"), // JSON: raw parsed row (audit / re-parse)
     createdAt: createdAt(),
     updatedAt: updatedAt(),
-    // Added by 0002 (brief 04), so they sit after the timestamps, as ALTER
+    // Added by 0002, so they sit after the timestamps, as ALTER
     // TABLE put them; the brief-29 drift check holds schema.ts to that order.
     // The source's own stable identity for this listing (its UID, or its URL
     // plus start): within-source dedup and the reconcile key across refreshes.
@@ -217,7 +217,7 @@ export const geocodeCache = sqliteTable(
 );
 
 // ---------------------------------------------------------------------------
-// Favorites & notifications (brief 05).
+// Favorites & notifications.
 // ---------------------------------------------------------------------------
 export const favoritePlace = sqliteTable(
   "favorite_place",
@@ -287,7 +287,7 @@ export const notification = sqliteTable(
 /**
  * The events a coalesced new-event notification covers. A join row with no
  * identity of its own: the pair is the key, and it goes with its notification
- * (brief 29, decisions.md → Data model). The pair key also serves lookups by
+ * (decisions.md → Data model). The pair key also serves lookups by
  * notification; `event_id` gets its own index.
  */
 export const notificationEvent = sqliteTable(

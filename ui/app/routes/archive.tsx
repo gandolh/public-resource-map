@@ -37,7 +37,7 @@ function byMonth(items: WhatsOnItem[], lang: string) {
 }
 
 /**
- * The archive (brief 14): what happened, and where. Past events are kept, not
+ * The archive: what happened, and where. Past events are kept, not
  * deleted, so each row still opens its place. "My past events" is the events
  * you saved and those at places you follow; the citywide tab follows the city
  * picker. Signed out, only the citywide tab has content.

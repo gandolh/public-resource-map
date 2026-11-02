@@ -33,7 +33,7 @@ function weekday(date: Date): number {
 /**
  * True while `now` is inside `[start, end]`: an exhibition that opened three
  * weeks ago and closes next month. A null end is a point event and is never
- * "running" (the API drops it once it starts; brief 19).
+ * "running" (the API drops it once it starts).
  */
 export function isRunning(
   startIso: string,

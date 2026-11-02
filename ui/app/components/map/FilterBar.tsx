@@ -74,7 +74,7 @@ function CategoryChips({ compact }: { compact?: boolean }) {
 }
 
 /**
- * Draw-to-filter's entry point (brief 15): "Draw an area" until there is one,
+ * Draw-to-filter's entry point: "Draw an area" until there is one,
  * then the area as a removable filter chip, plus a redraw.
  */
 function AreaControls({ onStart }: { onStart?: () => void }) {
@@ -109,7 +109,7 @@ function AreaControls({ onStart }: { onStart?: () => void }) {
 }
 
 /**
- * While a timing lens is on, say so (brief 13): it removes places rather than
+ * While a timing lens is on, say so: it removes places rather than
  * dimming them, so the map must state what it is hiding and offer the way back.
  */
 function LensBanner({ placeCount, className }: { placeCount: number | null; className?: string }) {

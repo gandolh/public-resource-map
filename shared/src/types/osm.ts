@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Admin OSM-sync contract (brief 03). A caller POSTs `{ city }` (either a city
+ * Admin OSM-sync contract. A caller POSTs `{ city }` (either a city
  * key like `"timisoara"` or its display name `"Timișoara"`); the backend runs
  * an Overpass query for that city and upserts `source:osm` places, then returns
  * a summary of what changed. See `backend/src/lib/osm-sync.ts` for the cities +
@@ -22,7 +22,7 @@ export const osmSyncResultSchema = z.object({
   skippedUnnamed: z.number(), // features with no `name` tag (dropped as noise)
   skippedNoGeometry: z.number(), // features Overpass returned without a point/center
   skippedProtected: z.number(), // matching osm rows left untouched (manual pin)
-  // Brief 34: places OSM no longer has leave the map softly (`retired_at`).
+  // Places OSM no longer has leave the map softly (`retired_at`).
   retired: z.number(), // listed osm places missing from this answer, now hidden
   unretired: z.number(), // retired places this answer contained again, listed again
   retirementHeld: z.number(), // > 0: the answer would have retired more than 10%, so nothing was

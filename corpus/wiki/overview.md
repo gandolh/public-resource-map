@@ -1,6 +1,6 @@
 ---
 summary: What prm is (a place-centric map of public resources and their events in Timișoara and București, a proof of concept), its major components, external dependencies and repo layout.
-updated: 2026-10-07
+updated: 2026-11-02
 ---
 
 # Overview
@@ -30,7 +30,7 @@ The code has caught up with the 2026-06-28 reframe (legal pivot → POC, place-c
 - **Mapping**: Leaflet + react-leaflet, CARTO basemaps (light/dark)
 - **Resource data**: OpenStreetMap via the **Overpass API** (ODbL), ingested per-city into SQLite (admin-triggered sync)
 - **Geocoding**: **Nominatim** (public server, POC) — fallback only, for event-venues not matched to an OSM place; cached per address
-- **Event data**: public **primary-publisher** sources per city (API/feed preferred, scrape last). The pipeline exists (brief 04); no source is configured yet, so the seeded events are synthetic.
+- **Event data**: public **primary-publisher** sources per city (API/feed preferred, scrape last). The pipeline exists (the event ingestion pipeline); no source is configured yet, so the seeded events are synthetic.
 
 ## Repo layout
 

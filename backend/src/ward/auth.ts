@@ -14,7 +14,7 @@ import {
 } from "../../vendor/ward/ward-auth.js";
 
 /**
- * prm's accounts (brief 24 of Ward's corpus; decisions.md → Accounts).
+ * prm's accounts (since 2026-10-13; decisions.md → Accounts).
  *
  * prm owns its users now: `auth_users`, scrypt passwords, opaque sessions in
  * the `prm_session` cookie, all from Ward's shared library, vendored in

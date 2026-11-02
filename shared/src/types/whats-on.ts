@@ -15,7 +15,7 @@ export const whatsOnPlaceSchema = z.object({
   address: z.string().nullable(),
   city: z.string(),
   coordinates: coordinatesSchema,
-  /** `false` only in "my past events", for a place OSM dropped (brief 34): no link. */
+  /** `false` only in "my past events", for a place OSM dropped: no link. */
   listed: z.literal(false).optional(),
 });
 
@@ -33,7 +33,7 @@ export const whatsOnItemSchema = z.object({
 
 export type WhatsOnItem = z.infer<typeof whatsOnItemSchema>;
 
-/** `/api/archive` (brief 14): past events, newest first, by city and event category. */
+/** `/api/archive`: past events, newest first, by city and event category. */
 export const archiveQuerySchema = z.object({
   city: z.string().optional(),
   /** Comma-separated `EventCategory` list. */

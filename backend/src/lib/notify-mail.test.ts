@@ -8,7 +8,7 @@ import { appUrl, newEventsMail, oneLine, runMailSweep, type SendNotification } f
 import { WardConfigurationError, WardUnavailableError } from "../../vendor/ward/ward-auth.js";
 import { createFakeWard } from "../test/fake-ward.js";
 
-/** Brief 32: notification email through Ward, once per inbox row. */
+/** Notification email through Ward, once per inbox row. */
 
 const BASE = "https://example.ro/prm";
 // 1 August 2026, 09:00 in Bucharest (EEST, UTC+3).

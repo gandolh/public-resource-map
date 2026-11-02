@@ -11,7 +11,7 @@ build/
 # Vitest coverage output (reported locally, not committed)
 coverage/
 
-# Playwright artifacts (e2e: brief 17)
+# Playwright artifacts (e2e: the Playwright harness)
 e2e/.data/
 playwright-report/
 test-results/

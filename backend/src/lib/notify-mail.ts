@@ -5,7 +5,7 @@ import { WardUnavailableError } from "../../vendor/ward/ward-auth.js";
 import { APP_TZ, zonedParts } from "./time.js";
 
 /**
- * Notification email (brief 32; decisions.md → Favorites & notifications).
+ * Notification email (decisions.md → Favorites & notifications).
  *
  * prm holds no addresses, so Ward sends each mail on prm's behalf (`POST
  * /notify`), through the shared library's `notifyUser`. Only a user with a
@@ -220,7 +220,7 @@ export async function runMailSweep(
     }
     let answer: Awaited<ReturnType<SendNotification>>;
     try {
-      // `subject` is the row's owner: a local user id since brief 24.
+      // `subject` is the row's owner: a local user id since 2026-10-13.
       answer = await send(row.subject, mail);
     } catch (err) {
       // `WardConfigurationError` (prm's client key refused) is a

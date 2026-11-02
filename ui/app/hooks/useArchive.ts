@@ -3,7 +3,7 @@ import type { PaginatedResponse, WhatsOnItem } from "@public-resource-map/shared
 import { fetchArchive } from "~/lib/api";
 import { meApi } from "~/lib/meApi";
 
-/** Archives grow: loaded a page at a time, newest first (brief 14). */
+/** Archives grow: loaded a page at a time, newest first. */
 const nextPage = (last: PaginatedResponse<WhatsOnItem>) =>
   last.page * last.pageSize < last.total ? last.page + 1 : undefined;
 

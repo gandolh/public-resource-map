@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { test, expect } from "./fixtures";
 
 /**
- * TP-05, prm's own way in (brief 24 of Ward's corpus): the navbar leads to
+ * TP-05, prm's own way in (since 2026-10-13): the navbar leads to
  * prm's login and register pages and comes back to the page it left from.
  * "Sign in with Ward" is off in this stack (no Ward), so the button is not
  * shown; its round trip is walked by hand against the local Ward.

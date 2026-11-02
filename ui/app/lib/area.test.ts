@@ -9,7 +9,7 @@ const box: AreaRing = [
   [45.74, 21.25],
 ];
 
-describe("pointInRing (brief 15)", () => {
+describe("pointInRing", () => {
   it("finds a point inside and one outside a box", () => {
     expect(pointInRing({ lat: 45.755, lng: 21.225 }, box)).toBe(true);
     expect(pointInRing({ lat: 45.8, lng: 21.225 }, box)).toBe(false);

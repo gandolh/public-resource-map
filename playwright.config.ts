@@ -3,7 +3,7 @@ import path from "node:path";
 import { randomBytes } from "node:crypto";
 
 /**
- * The automated e2e suite (brief 17). `npm run test:e2e` boots its own backend
+ * The automated e2e suite. `npm run test:e2e` boots its own backend
  * and UI on ports of their own, against a throwaway database that is migrated
  * and seeded on every run, so it never touches dev data or a running dev
  * server. The manual visual-audit hub stays in `playwright/` (gitignored).
@@ -53,12 +53,12 @@ export default defineConfig({
       env: {
         PORT: String(API_PORT),
         DATABASE_PATH: db,
-        // prm's own accounts (brief 24 of Ward's corpus), with no Ward: the
+        // prm's own accounts (since 2026-10-13), with no Ward: the
         // browser posts from the UI's origin, and the cookie is scoped to the
         // API prefix there.
         PUBLIC_ORIGIN: `http://localhost:${UI_PORT}`,
         PRM_BASE: BASE,
-        // A demo user for the bell (brief 08): two followed places, one saved
+        // A demo user for the bell: two followed places, one saved
         // event, one unread new-events item.
         SEED_DEMO_USERNAME: "e2e-demo",
         SEED_DEMO_PASSWORD: process.env.PRM_E2E_PASSWORD,

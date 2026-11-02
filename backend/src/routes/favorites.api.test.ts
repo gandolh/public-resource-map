@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { buildTestApp, type TestApp } from "../test/harness.js";
 import { eventSource, place, stagedEvent } from "../db/schema.js";
 
-/** Brief 05: favourites, the new-events trigger at accept, and the inbox. */
+/** Favourites, the new-events trigger at accept, and the inbox. */
 
 let t: TestApp;
 let museum: string;

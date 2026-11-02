@@ -40,7 +40,7 @@ function TopLink({ to, children }: { to: string; children: React.ReactNode }) {
 
 /**
  * This page, as the login page's `next`: signing in or registering from the
- * navbar comes back where it started, not to the map (brief 10's TP-05 walk).
+ * navbar comes back where it started, not to the map (the TP-05 walk).
  * A browser path, because a "Sign in with Ward" round trip returns to it too.
  * The auth pages themselves are not a place to come back to.
  */

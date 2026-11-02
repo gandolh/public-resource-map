@@ -4,7 +4,7 @@ import { favoriteEvent, favoritePlace, notification, place, event } from "../db/
 import { adoptWardSubjects } from "./subjects.js";
 
 /**
- * Brief 24 (Ward's corpus): rows keyed by a Ward subject from before prm had
+ * Since Ward's local accounts (2026-10-13), rows keyed by a Ward subject from before prm had
  * users keep their keys. Each subject becomes a local user whose id is that
  * subject, linked to it.
  */
@@ -19,7 +19,7 @@ afterEach(async () => {
   await t.close();
 });
 
-/** What prm's database held before brief 24: rows keyed by Ward subjects. */
+/** What prm's database held before 2026-10-13: rows keyed by Ward subjects. */
 function legacyRows(db: TestApp["db"]) {
   db.insert(place).values({ id: "museum", name: "Muzeul", category: "museum", city: "Timișoara", lat: 45.75, lng: 21.22 }).run();
   db.insert(event).values({ id: "show", placeId: "museum", title: "Show", category: "concert", startDate: "2030-01-01T18:00:00.000Z" }).run();

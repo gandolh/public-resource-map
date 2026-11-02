@@ -1,7 +1,7 @@
 import type { Coordinates } from "@public-resource-map/shared";
 
 /**
- * A drawn area (brief 15): one closed ring of `[lat, lng]` vertices, the shape
+ * A drawn area: one closed ring of `[lat, lng]` vertices, the shape
  * Leaflet's `Polygon` takes. The closing edge is implied; the first vertex is
  * not repeated.
  */

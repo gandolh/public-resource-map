@@ -6,7 +6,7 @@ const VISIBLE_MS = 5000;
 
 /**
  * The shell's one-off messages, such as a drawn area cleared by a city change
- * (brief 15): a filter must never vanish without a word. Shown for a few
+ * (draw-to-filter): a filter must never vanish without a word. Shown for a few
  * seconds, announced politely, and tappable away.
  */
 export function NoticeToast() {

@@ -4,7 +4,7 @@ import { event } from "../db/schema.js";
 /**
  * The one predicate every user surface uses to decide whether an event is "on"
  * in a lens window: the pin badge and lens hard-filter, the place panel's
- * programme, and the citywide what's-on (brief 19). One builder, three callers,
+ * programme, and the citywide what's-on. One builder, three callers,
  * so the map, the panel and the list cannot disagree.
  *
  * It asks whether the event's span **overlaps** the window, not whether it
@@ -29,7 +29,7 @@ export function liveInWindow(from: string, to: string): SQL {
 }
 
 /**
- * The archive's predicate (brief 14): the complement of `liveInWindow`'s end
+ * The archive's predicate: the complement of `liveInWindow`'s end
  * test, from the same columns, so an event leaves what's-on exactly when it
  * enters the archive. Still `live` (a cancelled `ended` or a source-dropped
  * `stale` event did not happen as listed), and its end, or its start when it

@@ -10,7 +10,7 @@ const places = [
   { id: "parc", name: "Parcul Rozelor" },
 ];
 
-describe("normalizeVenue (brief 04)", () => {
+describe("normalizeVenue", () => {
   it("drops the room and keeps the venue", () => {
     expect(normalizeVenue("Sala Mare, Casa de Cultură")).toBe("casa de cultura");
     expect(normalizeVenue("Casa de Cultură – Foaier")).toBe("casa de cultura");

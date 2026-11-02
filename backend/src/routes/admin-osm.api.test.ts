@@ -54,7 +54,7 @@ describe("POST /api/admin/osm/sync — admin gate", () => {
   });
 });
 
-describe("POST /api/admin/osm/sync — Overpass trouble (brief 33)", () => {
+describe("POST /api/admin/osm/sync — Overpass trouble", () => {
   afterEach(async () => {
     await t.close();
   });

@@ -23,7 +23,7 @@ export const CATEGORY_RULES: CategoryRule[] = [
   { key: "amenity", values: ["clinic", "hospital", "doctors"], category: "clinic" },
   // Not the bare key: `healthcare=*` also covers pharmacies, dentists, labs
   // and opticians, mostly private businesses, and a third of a real București
-  // sync would have been those, labelled "clinic" (brief 25).
+  // sync would have been those, labelled "clinic".
   { key: "healthcare", values: ["hospital", "clinic", "centre"], category: "clinic" },
   { key: "amenity", values: ["townhall"], category: "townhall" },
   { key: "tourism", values: ["museum"], category: "museum" },

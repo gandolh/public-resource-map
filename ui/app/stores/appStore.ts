@@ -6,7 +6,7 @@ import type { AreaRing } from "~/lib/area";
 
 const CITY_KEY = "civicmap-city";
 
-/** The two ways to draw an area (brief 15). */
+/** The two ways to draw an area. */
 export type DrawMode = "freehand" | "polygon";
 
 /** One-off messages the shell shows once and lets go of. */
@@ -31,7 +31,7 @@ interface AppState {
    */
   sheetSnap: "peek" | "full" | null;
   /**
-   * The drawn area (brief 15), ANDed with every other filter on the map and on
+   * The drawn area, ANDed with every other filter on the map and on
    * what's-on. Ephemeral on purpose: not persisted, and cleared when the city
    * changes, since a Timișoara shape means nothing in București.
    */

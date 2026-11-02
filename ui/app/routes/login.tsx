@@ -9,7 +9,7 @@ import { useI18n } from "~/lib/i18n";
 export const meta: MetaFunction = () => [{ title: "Autentificare — CivicMap" }];
 
 /**
- * prm's own login page (brief 24 of Ward's corpus): a username and password
+ * prm's own login page (since 2026-10-13): a username and password
  * checked by prm's server, which works while Ward is down, and "Sign in with
  * Ward" beside it when the server has Ward configured. `?next=` is a browser
  * path inside prm; a favourite asked for while signed out rides along in it.

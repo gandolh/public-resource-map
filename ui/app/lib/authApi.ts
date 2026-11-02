@@ -1,7 +1,7 @@
 import { configureAuth, type AuthError } from "../../vendor/ward/ward-auth-react.js";
 
 /**
- * prm's accounts, as the browser reaches them (brief 24 of Ward's corpus).
+ * prm's accounts, as the browser reaches them (since 2026-10-13).
  *
  * prm has its own users now: a login page, a register page and a settings
  * page, all prm's, built on the unstyled hooks of Ward's shared library

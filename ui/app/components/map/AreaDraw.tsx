@@ -25,7 +25,7 @@ function onMapSurface(target: EventTarget | null, container: HTMLElement): boole
 
 const toRing = (latlngs: L.LatLng[]): AreaRing => latlngs.map((ll) => [ll.lat, ll.lng]);
 
-/** While drawing, the map holds still: a drag draws, it does not pan (brief 15). */
+/** While drawing, the map holds still: a drag draws, it does not pan. */
 function useLockedMap(map: L.Map, locked: boolean) {
   useEffect(() => {
     if (!locked) return;
@@ -291,7 +291,7 @@ function DrawBar({
 }
 
 /**
- * Draw-to-filter (brief 15), mounted inside the map: the drawn area's outline,
+ * Draw-to-filter, mounted inside the map: the drawn area's outline,
  * and while a draw mode is on, the locked map, the tool and its bar. The
  * filtering itself is `inArea` over places the page already has.
  */

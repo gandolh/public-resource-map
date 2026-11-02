@@ -1,5 +1,5 @@
 /**
- * Brief 18. The four write routes on places and events were registered with no
+ * The anonymous-write guard. The four write routes on places and events were registered with no
  * guard, so anyone could delete places or publish unreviewed events. They are
  * admin-only now, and deleting a row something still references is a 409, not
  * a 500.

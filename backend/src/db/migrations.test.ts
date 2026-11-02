@@ -14,7 +14,7 @@ interface Snapshot {
 
 const pad = (idx: number) => String(idx).padStart(4, "0");
 
-// Brief 23: 0001_ward_cutover was hand-written without a snapshot, so
+// 0001_ward_cutover was hand-written without a snapshot, so
 // drizzle-kit diffed schema.ts against the pre-cutover 0000 snapshot and offered
 // to re-drop tables that no longer exist. A hand-written migration must ship
 // its snapshot too, chained to the one before it.
@@ -38,7 +38,7 @@ describe("drizzle migration metadata", () => {
   });
 });
 
-// Brief 29: the migrated database must be the one `schema.ts` describes. The
+// The migrated database must be the one `schema.ts` describes. The
 // hand-written 0001 rebuilt tables that did not match it, and nothing noticed:
 // drizzle-kit diffs snapshots, not databases. This compares the real thing,
 // a database migrated from empty against one built from `schema.ts` alone.
@@ -89,7 +89,7 @@ function shape(db: Database.Database) {
   );
 }
 
-describe("the migrated schema is schema.ts (brief 29)", () => {
+describe("the migrated schema is schema.ts", () => {
   it("matches table for table: columns, indexes and foreign keys", async () => {
     const migrated = new Database(":memory:");
     migrate(drizzle(migrated), { migrationsFolder });

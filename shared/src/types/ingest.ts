@@ -3,7 +3,7 @@ import { httpUrlSchema } from "./common.js";
 import { eventCategorySchema } from "./event.js";
 
 /**
- * Event ingestion (brief 04). An adapter turns one source into `RawEvent`s;
+ * Event ingestion. An adapter turns one source into `RawEvent`s;
  * everything after that (validation, venue matching, geocoding, dedup,
  * reconcile, the diff) is the shared pipeline's.
  */

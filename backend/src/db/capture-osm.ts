@@ -10,7 +10,7 @@ import {
 } from "../lib/osm-sync.js";
 
 /**
- * Refresh the frozen OSM fixture that `db:seed` loads (brief 08). This is the
+ * Refresh the frozen OSM fixture that `db:seed` loads. This is the
  * only part of seeding that touches the network: it runs the same Overpass
  * query and normalisation as the admin "Sync from OSM" button, once per city,
  * and writes the result to `fixtures/osm-places.json`, sorted so a refresh

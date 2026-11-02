@@ -5,7 +5,7 @@ import { place } from "../db/schema.js";
 
 const COUNT = 1050;
 
-// Brief 20: the map took one 1000-row page as the whole city, and the list
+// The map took one 1000-row page as the whole city, and the list
 // query had no ORDER BY, so which rows came back (and whether two pages
 // overlapped) was up to SQLite's scan order.
 describe("places paging", () => {

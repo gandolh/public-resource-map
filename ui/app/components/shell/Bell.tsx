@@ -8,7 +8,7 @@ import { useI18n } from "~/lib/i18n";
 import { cn } from "~/lib/utils";
 
 /**
- * The inbox (brief 05): new events at places you follow, one item per place
+ * The inbox: new events at places you follow, one item per place
  * and batch, and day-before reminders. Opening it marks everything read.
  */
 export function Bell() {
@@ -87,7 +87,7 @@ function Item({ item }: { item: NotificationDto }) {
           {content}
         </Link>
       ) : (
-        // No place, or one OSM no longer has (brief 34): named, not a broken link.
+        // No place, or one OSM no longer has: named, not a broken link.
         <div className="px-3.5 py-2.5">
           {content}
           {item.place && (

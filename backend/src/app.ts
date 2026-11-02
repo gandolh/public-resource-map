@@ -19,9 +19,9 @@ import { createMailSweeper, type MailSweeper } from "./lib/notify-mail.js";
 declare module "fastify" {
   interface FastifyInstance {
     db: DB;
-    /** prm's accounts and their Ward links (brief 24 of Ward's corpus). */
+    /** prm's accounts and their Ward links (since 2026-10-13). */
     auth: Auth;
-    /** Notification email through Ward (brief 32): kicked after an accept and the daily sweep. */
+    /** Notification email through Ward: kicked after an accept and the daily sweep. */
     notifyMail: MailSweeper;
   }
 }
@@ -43,7 +43,7 @@ export interface BuildAppOptions {
   /** `PUBLIC_ORIGIN`, for tests. */
   publicOrigin?: string;
   /**
-   * Replace parts of event ingestion (brief 04): a test injects adapters, a
+   * Replace parts of event ingestion: a test injects adapters, a
    * fake geocoder and a fixed clock, so nothing reaches a real source or
    * Nominatim.
    */

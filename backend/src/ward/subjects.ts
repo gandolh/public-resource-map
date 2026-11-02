@@ -3,8 +3,8 @@ import { UsernameTakenError, type WardIdentities } from "../../vendor/ward/ward-
 import { ROLES } from "./auth.js";
 
 /**
- * The one-time move from Ward subjects to prm's own users (brief 24 of Ward's
- * corpus; the adoption guide's section 7).
+ * The one-time move from Ward subjects to prm's own users (2026-10-13;
+ * the adoption guide's section 7).
  *
  * Until 2026-10-13 prm had no users: favourites and notifications were keyed
  * by the Ward **subject** of whoever made them. Now they are keyed by a local

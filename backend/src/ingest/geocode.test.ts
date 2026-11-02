@@ -13,7 +13,7 @@ const hit = (over: Partial<GeocodeHit> = {}): GeocodeHit => ({
   ...over,
 });
 
-describe("rejectReason (brief 04: a geocode must earn its pin)", () => {
+describe("rejectReason (a geocode must earn its pin)", () => {
   it("accepts a building inside the city", () => {
     expect(rejectReason(hit(), TM)).toBeNull();
   });

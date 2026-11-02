@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures";
 
 /**
- * The admin shell (brief 16), signed out: the gate, and its way to prm's own
+ * The admin shell, signed out: the gate, and its way to prm's own
  * login page. The signed-in admin is in signed-in.spec.ts.
  */
 test("a signed-out visitor at /admin is asked to sign in, not shown the queue", async ({ page }) => {

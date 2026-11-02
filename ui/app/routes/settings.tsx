@@ -31,7 +31,7 @@ function Section({ title, lead, children }: { title: string; lead?: string; chil
 }
 
 /**
- * Account settings (brief 24 of Ward's corpus): the password, the Ward link,
+ * Account settings (since 2026-10-13): the password, the Ward link,
  * what mail this account can get, and signing out. A user created by a Ward
  * sign-in sets a first local password here, so they can still get in while
  * Ward is down; linking and unlinking Ward happen here and only here, never by

@@ -15,7 +15,7 @@ test("opens on Timișoara with its places on the map", async ({ page }) => {
   await expect(page.locator(".cm-pin, .cm-cluster").first()).toBeVisible();
 });
 
-// Brief 10's audit: pins were buttons named nothing, clusters a bare digit.
+// The audit: pins were buttons named nothing, clusters a bare digit.
 test("pins and clusters are named for screen readers and keyboards", async ({ page }) => {
   await page.goto("");
   await expect(page.getByRole("button", { name: /^\d+ places — zoom in to separate them$/ }).first()).toBeVisible();

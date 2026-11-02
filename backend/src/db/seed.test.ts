@@ -21,7 +21,7 @@ const ids = (db: ReturnType<typeof freshDb>) => ({
   events: db.select({ id: event.id }).from(event).orderBy(asc(event.id)).all(),
 });
 
-// Brief 08: the seed is the state dev, e2e and demos start from.
+// The seed is the state dev, e2e and demos start from.
 describe("db:seed", () => {
   it("names a row by what it is, the same way every time", () => {
     expect(seedId("osm:node/1")).toBe(seedId("osm:node/1"));

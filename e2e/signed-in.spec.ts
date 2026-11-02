@@ -2,7 +2,7 @@ import { test, expect, signIn, seededPlace, SEED } from "./fixtures";
 import { osmKey, seedId } from "../backend/src/db/seed-ids";
 
 /**
- * Signed in, through prm's own accounts (brief 24 of Ward's corpus; a fake
+ * Signed in, through prm's own accounts (since 2026-10-13; a fake
  * Ward until then). These were TP-05 to TP-07's manual cases once. Each spec
  * registers its own user, except the bell and the followed place, which read
  * the seeded demo user, and the admin, which is seeded.

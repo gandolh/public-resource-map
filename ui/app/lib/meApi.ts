@@ -2,7 +2,7 @@ import type { FavoritesDto, InboxDto, MarkReadInput, PaginatedResponse, WhatsOnI
 import { ApiRequestError } from "~/lib/api";
 
 /**
- * The signed-in person's favourites and inbox (brief 05). Same origin, under
+ * The signed-in person's favourites and inbox. Same origin, under
  * the API prefix, so prm's session cookie (`Path=/prm-api`) rides along.
  */
 
@@ -30,7 +30,7 @@ export const meApi = {
   removeFavorite: (kind: FavoriteKind, id: string) => send<void>("DELETE", path(kind, id)),
   inbox: () => send<InboxDto>("GET", "/api/notifications"),
   markRead: (input: MarkReadInput) => send<{ read: number }>("POST", "/api/notifications/read", input),
-  /** Your past events: saved ones, and those at places you follow (brief 14). */
+  /** Your past events: saved ones, and those at places you follow. */
   myArchive: (categories: string[], page: number) =>
     send<PaginatedResponse<WhatsOnItem>>(
       "GET",

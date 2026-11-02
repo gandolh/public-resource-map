@@ -73,7 +73,7 @@ const OVERPASS_QUERY_TIMEOUT_S = 90;
 /**
  * How long the HTTP call may take before we give up: a little above the
  * query's own limit, so a slow answer still arrives but a hung socket does not
- * hold an admin request open forever (brief 33).
+ * hold an admin request open forever.
  */
 export const OVERPASS_HTTP_TIMEOUT_MS = 100_000;
 
@@ -344,7 +344,7 @@ export async function upsertOsmPlaces(
 }
 
 // ---------------------------------------------------------------------------
-// Retirement (brief 34) — a place OSM no longer has leaves the map, softly.
+// Retirement — a place OSM no longer has leaves the map, softly.
 // ---------------------------------------------------------------------------
 
 /**
@@ -471,7 +471,7 @@ export class SyncInProgressError extends Error {
 
 /**
  * Cities with a sync running in this process. Two syncs of one city at once
- * would race on the place table's unique OSM key and fail halfway (brief 33);
+ * would race on the place table's unique OSM key and fail halfway;
  * the second is refused instead. One process serves prm, so in-process is
  * enough. The check and the add happen in one tick, so nothing slips between.
  */

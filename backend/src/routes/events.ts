@@ -70,7 +70,7 @@ export async function eventRoutes(app: FastifyInstance) {
   });
 
   app.get<{ Params: { id: string } }>("/events/:id", async (req, reply) => {
-    // An event at a retired place (brief 34) is hidden with it.
+    // An event at a retired place is hidden with it.
     const row = await db
       .select({ event })
       .from(event)
@@ -82,7 +82,7 @@ export async function eventRoutes(app: FastifyInstance) {
     return rowToEvent(row.event);
   });
 
-  // Admin-only, like the place writes (brief 18). Anonymous POSTs used to
+  // Admin-only, like the place writes. Anonymous POSTs used to
   // publish straight to `live`, skipping the review gate.
   app.post<{ Body: CreateEventInput }>(
     "/events",

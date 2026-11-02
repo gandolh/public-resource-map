@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** What the signed-in person has starred (brief 05). */
+/** What the signed-in person has starred. */
 export interface FavoritesDto {
   places: string[];
   events: string[];
@@ -14,7 +14,7 @@ export interface NotificationDto {
   kind: NotificationKind;
   createdAt: string;
   readAt: string | null;
-  /** `listed: false` when OSM dropped the place (brief 34): name it, do not link it. */
+  /** `listed: false` when OSM dropped the place: name it, do not link it. */
   place: { id: string; name: string; listed: boolean } | null;
   /** The events it is about: several for a coalesced new-event item, one for a reminder. */
   events: { id: string; title: string; startDate: string }[];

@@ -1,6 +1,6 @@
 ---
 summary: Only the genuinely unresolved: per-source terms as sources are added, threshold tuning that needs real data, and secondary items.
-updated: 2026-10-28
+updated: 2026-11-02
 ---
 
 # Open Questions
@@ -11,7 +11,7 @@ Only genuinely unresolved questions. Delete an entry the moment it's answered �
 
 ## Event sources — per-publisher landscape (Timișoara + București)
 
-The *approach* is locked (place-centric, public primary publishers, **API-first/scrape-last**, a **few clean defensible adapters**, OSM carries the map — see [decisions.md](decisions.md)). Timișoara's first two sources are decided (Filarmonica Banatul and Teatrul Național, 2026-10-06; added after [brief 31](../briefs/done/31-ical-wordpress-shortcodes.md)). București stays places-only for now (2026-10-07). Still open:
+The *approach* is locked (place-centric, public primary publishers, **API-first/scrape-last**, a **few clean defensible adapters**, OSM carries the map — see [decisions.md](decisions.md)). Timișoara's first two sources are decided (Filarmonica Banatul and Teatrul Național, 2026-10-06; added after the iCal shortcode fix). București stays places-only for now (2026-10-07). Still open:
 
 - **Per-source terms** — vet reuse by hand as each further source is added.
 - **iaBilet (blocked)** — POC-only adapter; permission/official feed is a hard launch blocker; do not enable in production.
@@ -25,4 +25,4 @@ The *mechanisms* are decided; the exact numbers must be tuned once real RO data 
 
 ## Secondary (revisit if it bites)
 
-- **R-tree / spatialite spatial index** — NOT needed for the POC (city-scoped bbox + `(lat,lng)`+city index is sufficient — see [decisions.md](decisions.md) / brief 12). Documented future option only; revisit if query latency shows up at real volume.
+- **R-tree / spatialite spatial index** — NOT needed for the POC (city-scoped bbox + `(lat,lng)`+city index is sufficient — see [decisions.md](decisions.md) / the platform optimization). Documented future option only; revisit if query latency shows up at real volume.

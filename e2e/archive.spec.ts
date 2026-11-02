@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures";
 
-/** Brief 14, signed out: the city's archive is public; "mine" asks for sign-in. */
+/** Signed out: the city's archive is public; "mine" asks for sign-in. */
 
 test("signed out, the archive opens on the city tab, and My past events asks to sign in", async ({ page }) => {
   await page.goto("archive");

@@ -3,7 +3,7 @@ import { buildTestApp, TEST_ORIGIN, type TestApp } from "../test/harness.js";
 import { createFakeWard, WARD_ISSUER, type FakeWard } from "../test/fake-ward.js";
 
 /**
- * Brief 24 (Ward's corpus): prm's own accounts through the shared library.
+ * Since 2026-10-13, prm's own accounts through the shared library.
  * Local sign-in and registration, the guard over a mostly public app, and
  * "Sign in with Ward" wired to a Ward client.
  */
