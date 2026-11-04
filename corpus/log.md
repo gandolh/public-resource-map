@@ -787,3 +787,10 @@ watch-list hardening) or its date instead of a number, and a dead link to
 `briefs/todo/04-event-ingestion-pipeline.md` in decisions.md is gone. Code comments no longer
 cite brief numbers.
 
+
+## [2026-11-04] decision | The parked questions are dropped
+
+In an estate-wide grill the owner dropped what open-questions.md still held: vetting each further
+source's terms, tuning the match and geocode thresholds on real data, the iaBilet launch blocker and
+an R-tree index. The page is empty. The iaBilet rule itself stands: decisions.md keeps it, and the
+ingest pipeline still refuses that adapter in production.
