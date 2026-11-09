@@ -794,3 +794,17 @@ In an estate-wide grill the owner dropped what open-questions.md still held: vet
 source's terms, tuning the match and geocode thresholds on real data, the iaBilet launch blocker and
 an R-tree index. The page is empty. The iaBilet rule itself stands: decisions.md keeps it, and the
 ingest pipeline still refuses that adapter in production.
+
+## [2026-11-09] todo | Brief 01: a source registry, and map links that can be shared
+
+From the owner's review of popular repos: bilawalsidhu/gods-eye-view keeps
+a per-source `DATA_SOURCES.md` with licence carve-outs, shows attribution
+in the app, and puts its view state in shareable URLs. The brief proposes:
+
+- one typed source registry that drives the About page, the map credit and
+  a publish gate for sources that aren't cleared (a revisit of "Legal
+  posture");
+- the map's state in the URL.
+
+It waits on the owner's grilling on 2026-11-10. See the
+[brief](briefs/todo/01-a-source-registry-and-shareable-map-links.md).

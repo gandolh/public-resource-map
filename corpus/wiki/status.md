@@ -1,11 +1,13 @@
 ---
 summary: The current-state dashboard as of 2026-11-02, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
-updated: 2026-11-02
+updated: 2026-11-09
 ---
 
 # Status
 
 _Last updated: 2026-11-02_
+
+**2026-11-09:** brief 01, [a source registry and map links that can be shared](../briefs/todo/01-a-source-registry-and-shareable-map-links.md), was filed and waits on the owner's grilling of 2026-11-10.
 
 ## 🟢 The UI is now the new model
 
