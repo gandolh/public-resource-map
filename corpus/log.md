@@ -823,7 +823,7 @@ Five briefs written from measurements on a scratch copy, none built. They follow
   switch with light first.
 - 05, [the server in the code structure](briefs/todo/05-the-server-in-the-code-structure.md): zod 4, one
   `config.ts`, feature folders, route schemas, an error plugin.
-- 06, [a redesign with taste-skill, on the estate board](briefs/todo/06-a-redesign-with-taste-skill-on-the-estate-board.md).
+- 06, [a redesign with taste-skill, on the estate board](briefs/todo/06-a-redesign-with-hallmark-on-the-estate-board.md).
 
 Owner answer of 2026-11-10 for brief 01: the source registry does not gate publishing. A source whose
 permission is pending is shown and credited, and taken off if the site objects; only a `forbidden` source

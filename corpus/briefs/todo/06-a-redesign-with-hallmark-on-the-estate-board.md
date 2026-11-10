@@ -1,12 +1,12 @@
-# Task 06: A redesign with taste-skill, on the estate board
+# Task 06: A redesign with Hallmark, on the estate board
 
 **Depends on:**
 
 - In public-resource-map: [brief 04](04-base-ui-by-the-conventions.md), which puts the one stylesheet in layers, adds the Base UI wrappers and the Light / Dark / System switch. A redesign is then mostly a new token set and layout.
 - In the owner's skills library:
-  - brief 24, *Re-pin the taste suite* (taste-skill 2.5);
+  - brief 24, which vendors Hallmark as the design skill and adopts taste-skill 2.5's ideas (palettes and type dealt by trade, its copy layer);
   - the estate redesign board: one artifact with a page per app, owned by the skills library.
-- The owner's answer of 2026-11-10 (Q39): no bake-off; taste-skill 2.5 redesigns every web UI, and the owner approves each app on the board before any code changes.
+- The owner's answer of 2026-11-10 (Q39): no bake-off; Hallmark redesigns every web UI, keeping what is useful from taste-skill 2.5, and the owner approves each app on the board before any code changes.
 
 **Runs before:** nothing. **Runs after:** 01 to 05, the redesign last. Brief 05 is server-only and does not block it.
 
@@ -40,7 +40,7 @@ The redesign stays inside these decisions unless the owner reopens one on the bo
 
 ## Owner decisions
 
-Answered 2026-11-10: Q39 (taste-skill 2.5, approval on the board first). Default: the proposal keeps the map as home, the category convention and the two languages. Anything that moves one of those is flagged on the board as a reopened decision.
+Answered 2026-11-10: Q39 (Hallmark, with taste-skill 2.5's useful parts; approval on the board first). Default: the proposal keeps the map as home, the category convention and the two languages. Anything that moves one of those is flagged on the board as a reopened decision.
 
 ## Files you OWN
 
@@ -57,7 +57,7 @@ Answered 2026-11-10: Q39 (taste-skill 2.5, approval on the board first). Default
 ## What to do
 
 1. **Today.** Take Playwright screenshots of every screen above at 1280 and 390 px, in light and dark, kept out of git. Include the place sheet at peek and full, the open menus, and the admin panel.
-2. **Propose.** With taste-skill 2.5, make a proposal per screen, inside the recorded decisions. Check each against the Floor: contrast, a visible focus ring, a reduced-motion path, no invented facts, no broken phone layout.
+2. **Propose.** With Hallmark (and taste-skill 2.5's trade palettes and copy layer where they help), make a proposal per screen, inside the recorded decisions. Check each against the Floor: contrast, a visible focus ring, a reduced-motion path, no invented facts, no broken phone layout.
 3. **Board.** Put the proposals on this app's page of the estate board, beside today's screenshots at both widths.
 4. **Approval.** The owner approves on the board. Nothing below starts before that, and the approval is recorded in `log.md` with its date.
 5. **Build.** First as a token change in `ui/app/app.css` (colours, radii, shadows, type, spacing, both themes), then one screen per commit. Keep Base UI's wrappers and the theme switch working.
