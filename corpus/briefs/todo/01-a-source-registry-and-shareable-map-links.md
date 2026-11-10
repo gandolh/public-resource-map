@@ -63,12 +63,15 @@ from feeding the public map.
 
    `DATA_SOURCES.md` at the repo root is generated from it. Alternative: a
    hand-written `DATA_SOURCES.md` only.
-2. **The registry gates publishing.** Default: an adapter must name its
-   source id. Ingested rows from a source whose `reuse` isn't `permitted`
-   are kept in the review queue, as today's gate does, and are **never
-   shown on the public map** until an admin flips the source after
-   permission arrives. This makes the "Legal posture" decision mechanical.
-   Record the change as a revisit with a `log.md` entry.
+2. **The registry credits, and only `forbidden` is kept off** (owner,
+   2026-11-10, the skills library's open questions, Q38). An adapter must
+   name its source id. Rows from a `permitted` or `permission-pending`
+   source are published as today, each **credited to its source** on the
+   place and in the map credit. A row from a `forbidden` source never
+   reaches the public map. When a site objects, an admin sets its source to
+   `forbidden`, and its rows leave the public places and events at the next
+   publish. Record this as a revisit of the "Legal posture" decision, with a
+   `log.md` entry.
 3. **The map state goes in the URL.** Default:
    `/map?city=timisoara&q=…&f=library,park&place=123`. These are the same
    fields the store holds, with zoom and centre only when the user moved the
@@ -85,7 +88,7 @@ from feeding the public map.
 - `scripts/generate-data-sources.ts` (new) and `DATA_SOURCES.md` (new,
   generated).
 - `backend/src/ingest/adapters.ts` and `pipeline.ts`: each adapter names
-  its source, and the publish gate reads `reuse`.
+  its source, and the publish step reads `reuse` (only `forbidden` is held back).
 - `ui/app/routes/about-data.tsx`, rendered from the registry, keeping its
   wording.
 - `ui/app/lib/map.ts`: the attribution string built from the registry's
@@ -96,8 +99,8 @@ from feeding the public map.
 
 ## Files you must NOT touch
 
-- The review queue's UI and the accept/diff rules. The gate adds a
-  condition; it doesn't change the flow.
+- The review queue's UI and the accept/diff rules. The `forbidden` check
+  adds a condition; it doesn't change the flow.
 - The geocoder's call budget.
 
 ## What to do
@@ -111,9 +114,10 @@ from feeding the public map.
    `forbidden` or `permission-pending` source, saying what a fork must do.
    Add an `npm run sources` script, and a test that fails when the file is
    stale.
-3. Make adapters declare their source, and add the publish gate. Test that
-   a row from a `permission-pending` source never reaches the public places
-   or events API.
+3. Make adapters declare their source, and hold back `forbidden` sources.
+   Test that a row from a `permission-pending` source reaches the public
+   API with its source credit, and that a row from a `forbidden` source
+   (including one flipped after it was published) does not.
 4. Render the About page and the map credit from the registry. Check the RO
    and EN copy against today's, unchanged unless the registry corrects a
    fact.
@@ -125,7 +129,7 @@ from feeding the public map.
 
 - `DATA_SOURCES.md` exists, is generated, and the staleness test passes.
 - No adapter can be registered without a source id (a type error), and the
-  gate's test passes.
+  credit and `forbidden` tests pass.
 - The About page and the map credit come from the registry, in both
   languages.
 - A map URL with `city`, `q`, `f` and `place` opens that view on a fresh
