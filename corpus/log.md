@@ -808,3 +808,23 @@ in the app, and puts its view state in shareable URLs. The brief proposes:
 
 It waits on the owner's grilling on 2026-11-10. See the
 [brief](briefs/todo/01-a-source-registry-and-shareable-map-links.md).
+
+## [2026-11-10] todo | Briefs 02-06: the estate's house style, Base UI 1.9.0 and the redesign
+
+Five briefs written from measurements on a scratch copy, none built. They follow the owner's calls of
+2026-11-09 and the grilling of 2026-11-10, and sit after brief 01 in the numbering:
+
+- 02, [Base UI 1.9.0](briefs/todo/02-base-ui-1-9-0.md): the 1.6.0 to 1.9.0 bump, eight lockfile entries.
+- 03, [the house style and the quality harness](briefs/todo/03-the-house-style-harness.md): Prettier at
+  width 120, a shared tsconfig base, ESLint with the typed rules, `check` and `check:fast`, a root
+  `CLAUDE.md`.
+- 04, [Base UI by the conventions](briefs/todo/04-base-ui-by-the-conventions.md): the audit, nine
+  hand-built widgets, the stylesheet's layers (Leaflet's CSS included) and the Light / Dark / System
+  switch with light first.
+- 05, [the server in the code structure](briefs/todo/05-the-server-in-the-code-structure.md): zod 4, one
+  `config.ts`, feature folders, route schemas, an error plugin.
+- 06, [a redesign with taste-skill, on the estate board](briefs/todo/06-a-redesign-with-taste-skill-on-the-estate-board.md).
+
+Owner answer of 2026-11-10 for brief 01: the source registry does not gate publishing. A source whose
+permission is pending is shown and credited, and taken off if the site objects; only a `forbidden` source
+stays off the map. Map state goes in the URL.
