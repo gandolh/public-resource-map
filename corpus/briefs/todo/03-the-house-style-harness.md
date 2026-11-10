@@ -2,7 +2,7 @@
 
 **Depends on:**
 
-- In public-resource-map: [brief 02](02-base-ui-1-9-0.md), for ordering only. Both rewrite `package.json` and `package-lock.json`.
+- In public-resource-map: [brief 02](../done/02-base-ui-1-9-0.md), for ordering only. Both rewrite `package.json` and `package-lock.json`.
 - In the owner's skills library:
   - brief 27, *A house style, and a quality harness that enforces it*: the `house-style` source (vendored into each repo, Q6), the `house-style` skill, and the plugin's `Stop` and `PostToolUse` hooks;
   - brief 15, *Enforce the base-ui and code-structure skills in every repo*: how the convention checkers are wired and when they run `--warn-only`.

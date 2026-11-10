@@ -129,3 +129,9 @@ One commit for the bump, `chore(deps): @base-ui/react 1.9.0`. The suite is green
 - Brief 03 (the house-style harness) runs next. It rewrites `package.json` and `package-lock.json` too, so the two never run at the same time.
 - Brief 04 starts from a tree already on 1.9.0, so the `Drawer`, `Toast`, `Tabs`, `Checkbox`, `Select`, `RadioGroup` and `Toggle` APIs it uses are the 1.9.0 ones.
 - [Brief 01](01-a-source-registry-and-shareable-map-links.md) touches `ui/app/routes/map.tsx` and `ui/app/lib/map.ts`, which this brief does not. It does not depend on this one. Both rewrite `package-lock.json` only if 01 adds a dependency, so run them one at a time.
+
+## Outcome (2026-11-10)
+
+Built: `ui/package.json` reads `1.9.0`; the lockfile resolves one hoisted copy at 1.9.0; the diff is those two files only (39 lines each way). The renamed-API grep printed nothing. Typecheck, 234 unit tests in 32 files and the build pass before and after; no source fix was needed.
+
+Not done: the per-group changelog lines (no GitHub access), `npx playwright test` (needs a dev stack and browser), `docker build`, and the browser behaviour table. The owner should walk Menu, Popover and Dialog after deploy.

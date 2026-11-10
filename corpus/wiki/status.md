@@ -7,6 +7,8 @@ updated: 2026-11-09
 
 _Last updated: 2026-11-02_
 
+**2026-11-10:** brief 02 (Base UI 1.9.0) was built and awaits a deploy; see [log.md](../log.md).
+
 **2026-11-09:** brief 01, [a source registry and map links that can be shared](../briefs/todo/01-a-source-registry-and-shareable-map-links.md), was filed and waits on the owner's grilling of 2026-11-10.
 
 ## 🟢 The UI is now the new model

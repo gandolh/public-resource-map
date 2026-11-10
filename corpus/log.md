@@ -814,7 +814,7 @@ It waits on the owner's grilling on 2026-11-10. See the
 Five briefs written from measurements on a scratch copy, none built. They follow the owner's calls of
 2026-11-09 and the grilling of 2026-11-10, and sit after brief 01 in the numbering:
 
-- 02, [Base UI 1.9.0](briefs/todo/02-base-ui-1-9-0.md): the 1.6.0 to 1.9.0 bump, eight lockfile entries.
+- 02, [Base UI 1.9.0](briefs/done/02-base-ui-1-9-0.md): the 1.6.0 to 1.9.0 bump, eight lockfile entries.
 - 03, [the house style and the quality harness](briefs/todo/03-the-house-style-harness.md): Prettier at
   width 120, a shared tsconfig base, ESLint with the typed rules, `check` and `check:fast`, a root
   `CLAUDE.md`.
@@ -843,3 +843,7 @@ The two grilling pages (the owner's answers and the technical calls) are applied
 - 05: the error plugin passes Fastify's 4xx through and never echoes a thrown message (Q43); streams and binary
   routes are exempt from response schemas (Q53, none found); `NODE_ENV` read in `config.ts` is an allowed,
   recorded exception; the technical calls on Q23-Q27, Q52, Q54-Q56 are recorded as decided.
+
+## [2026-11-10] done | Brief 02: `@base-ui/react` 1.6.0 to 1.9.0, pinned exactly in `ui`
+
+One commit (`chore(deps): @base-ui/react 1.9.0`): `ui/package.json` and `package-lock.json` only. One hoisted copy at `node_modules/@base-ui/react` 1.9.0, eight lockfile entries changed, no package added (`npm ls` shows no date-fns or @date-fns/tz). `npm run typecheck`, `npm run test` (234 tests in 32 files, as before) and `npm run build` pass.

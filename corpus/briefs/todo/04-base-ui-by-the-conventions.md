@@ -3,7 +3,7 @@
 **Depends on:**
 
 - In public-resource-map:
-  - [brief 02](02-base-ui-1-9-0.md), for the 1.9.0 pin;
+  - [brief 02](../done/02-base-ui-1-9-0.md), for the 1.9.0 pin;
   - [brief 03](03-the-house-style-harness.md), for the gate, the formatter, ESLint and `.claude/rules/ui.md`.
 - In the owner's skills library:
   - brief 02, *A base-ui skill, styled with Tailwind*: rules 1-13, the references and `check-base-ui.mjs`;
