@@ -8,7 +8,7 @@
 - In the owner's skills library:
   - brief 02, *A base-ui skill, styled with Tailwind*: rules 1-13, the references and `check-base-ui.mjs`;
   - brief 15, *Enforce the base-ui and code-structure skills in every repo*: the checker runs `--warn-only` until this brief is done.
-- The owner's grilling of 2026-11-10 (see the decisions below). Still open and used here: Q15, Q16, Q57, Q60-Q62 of the skills library's open questions.
+- The owner's grilling of 2026-11-10 (see the decisions below). The owner's answers and the technical calls settle every question used here (Q15-Q17, Q40-Q44, Q57-Q62); each decision below says which.
 
 **Runs before:** nothing in this repo needs it first. [Brief 05](05-the-server-in-the-code-structure.md) touches `backend/` only, so the two can run in either order but never at the same time (both change `package-lock.json` and the corpus status page).
 
@@ -133,38 +133,21 @@ The correctness rules are the ones brief 27 turns on as errors, and the class-or
 
 ## Owner decisions
 
-**Answered by the owner, 2026-11-10** (see Context): Q18, Q19, Q58 (form dialogs and confirms), Q40.
+**Decided 2026-11-10 (owner)** (see Context): Q18, Q19, Q58 (form dialogs and confirms), Q40.
 
-**Defaults this brief builds:**
+**Decided 2026-11-10 (technical call), unless a line says otherwise:**
 
-1. **Base UI only under `ui/`** (Q15). Default: yes. The three files outside move behind wrappers in `ui/app/components/ui/`.
-2. **Where native controls stay** (Q16). Default: text, search and URL inputs, which the admin forms and auth pages use. The `<select>` in the add-a-source form does not stay native: this repo's decisions don't keep it native on phones, and the admin is a desktop tool.
-3. **The place sheet** (Q40 covers phone navigation panels; this is a content sheet). Default: it becomes the new `Drawer` wrapper on `@base-ui/react/drawer`: `swipeDirection="down"`, `snapPoints` for peek and full, `modal={false}`, so the map behind a peeking sheet still takes pans and pin taps. 1.9.0's `DrawerRoot` types have all three props (`modal?: boolean | 'trap-focus'`, `snapPoints`, `defaultSnapPoint`, checked 2026-11-10 in the published `.d.ts`). A spike in step 6 proves the map stays usable at the peek snap. If it can't, the sheet stays hand-built, recorded in `scripts/conventions.json` with that reason, and only its Escape guard changes. *New question for the grilling:* does Q40's Drawer rule extend to a content sheet like this one?
-4. **The always-one-chosen control** (Q57). Default: `RadioGroup` for `Segmented` and the language switch. The lens and draw-mode choices apply at once, so a radio group that chooses on the arrow keys matches what a click does. If Q57 lands on a guarded `ToggleGroup`, only `Segmented` and `LangToggle` change.
-5. **A DOM test environment** (Q60). Default: none. The UI's vitest project runs in node (`ui/vitest.config.ts`). Base UI behaviour is checked in Playwright, as the specs here already do.
-6. **Tooltips and Base UI `Button`.** Default: neither in this brief.
-7. **Motion.** Default: the global `prefers-reduced-motion` rule stays (it covers Leaflet's animations too), recorded as an exception to rule 7's `motion-safe:` in `scripts/conventions.json`. The 13 arbitrary durations and easings become the tokens.
-8. **The type scale** (Q62). Default: not now. The 17 distinct `text-[Npx]` sizes stay, and the count goes in the outcome note. The app's phone breakpoint (`max-width: 767px`, `useIsMobile`, `app.css:277`) is exactly Tailwind's `max-md:`, so no `phone` custom variant is needed.
-9. **The `vite-ui-theme` storage key.** Default: keep it, so existing choices survive. It is a template leftover; renaming it is a one-line change if the owner wants it, with a migration read of the old key.
-
-## The wrapper set: `ui/app/components/ui/`
-
-| File | What it is | From |
-|---|---|---|
-| `DropdownMenu.tsx` | stays; `origin-(--transform-origin)`, the motion tokens | itself |
-| `Popover.tsx` | new: Base UI `Popover` with the house popup styling; `FavoriteStar` and `Bell` use it | `FavoriteStar.tsx:68-95`, `Bell.tsx:23-57` |
-| `Dialog.tsx` | new: Base UI `Dialog`, controlled, with the Escape guard, `initialFocus` in the house order (first `[data-autofocus]`, else the first field, else the footer's first button), `disablePointerDismissal` as a prop, a `Title`, and a `side="right"` panel variant | `review.tsx:357-513`'s shell |
-| `Drawer.tsx` | new: Base UI `Drawer` as decision 3 says; `PlaceSheet` uses it | `PlaceSheet.tsx` |
-| `Toast.tsx` | new: Base UI `Toast` with one module-level manager; `NoticeToast` stays the one subscriber that turns the store's `notice` into a toast | `NoticeToast.tsx` |
-| `Tabs.tsx` | new: Base UI `Tabs` | `archive.tsx:64-97` |
-| `Segmented.tsx` | rebuilt on `RadioGroup` and `Radio`; same props | itself |
-| `Chip.tsx` | rebuilt on `@base-ui/react/toggle`; same props, the dot colour through a CSS variable | itself |
-| `Checkbox.tsx` | new: Base UI `Checkbox` | the three native checkboxes |
-| `Select.tsx` | new: Base UI `Select` with `items`, a `name` | `sources.tsx:238` |
-
-`Button.tsx`, `Avatar.tsx`, `Skeleton.tsx`, `CategoryBadge.tsx`, `SearchInput.tsx` and `StateBlock.tsx` stay as they are. None wraps Base UI.
-
-`cn()` in `ui/app/lib/utils.ts` becomes `extendTailwindMerge`, with the theme's custom names, so `tailwind-merge` knows that `text-fg`, `text-fg-muted`, `text-accent` and the other custom colours conflict, and likewise `shadow-e1/e2/e3`, `rounded-xs…xl` and the category colours `bg-cat-*`. Without it, a caller's `className="text-accent"` after a wrapper's `text-fg-muted` keeps both. Add a unit test for it (`ui/app/lib/utils.test.ts`, which runs in node).
+1. **Base UI only under `ui/`** (Q15). Decided: yes. The three files outside move behind wrappers in `ui/app/components/ui/`.
+2. **Where native controls stay** (Q16). Decided: text, search and URL inputs, which the admin forms and auth pages use. The `<select>` in the add-a-source form does not stay native: this repo's decisions don't keep it native on phones, and the admin is a desktop tool.
+3. **The place sheet** (Q40 covers phone navigation panels; this is a content sheet). Decided as a default, since the call is the Drawer's own: it becomes the new `Drawer` wrapper on `@base-ui/react/drawer`: `swipeDirection="down"`, `snapPoints` for peek and full, `modal={false}`, so the map behind a peeking sheet still takes pans and pin taps. 1.9.0's `DrawerRoot` types have all three props (`modal?: boolean | 'trap-focus'`, `snapPoints`, `defaultSnapPoint`, checked 2026-11-10 in the published `.d.ts`). A spike in step 6 proves the map stays usable at the peek snap. If it can't, the sheet stays hand-built, recorded in `scripts/conventions.json` with that reason, and only its Escape guard changes. The owner chose the Drawer for phone navigation panels (Q40); the sheet follows the same pattern.
+4. **The always-one-chosen control** (Q41, Q57). Decided: a filter that switches what a list shows uses `RadioGroup`, so `Segmented` (the lens and draw-mode choices, which apply at once) goes on `RadioGroup`, and arrow keys may choose. A picker that **saves** on each choice uses a guarded `ToggleGroup`: the language switch stores `civicmap-lang` on each press, so `LangToggle` goes on a `ToggleGroup` whose arrow keys move focus without saving and where one item always stays pressed. Step 5 builds both.
+5. **A DOM test environment** (Q60). Decided: jsdom tests only for wrappers that hold logic; flows stay in Playwright, as the specs here already do. The one wrapper with logic is `Dialog` (the Escape guard and the initial-focus order). Add `jsdom` as a pinned devDependency, and one test for it, `ui/app/components/ui/Dialog.test.tsx`, run by a jsdom environment set for that file only (`// @vitest-environment jsdom`), so the UI project's node default and its `*.test.ts` include keep working (widen the include to `*.test.{ts,tsx}`). No other wrapper gets a jsdom test.
+6. **Tooltips and Base UI `Button`.** Default (no question covers it): neither in this brief.
+7. **Motion.** Default (no question covers it): the global `prefers-reduced-motion` rule stays (it covers Leaflet's animations too), recorded as an exception to rule 7's `motion-safe:` in `scripts/conventions.json`. The 13 arbitrary durations and easings become the tokens.
+8. **The type scale** (Q62). Decided: a named type scale in `@theme`, no `phone` variant, and tests that select by role. The 17 distinct `text-[Npx]` sizes (137 uses in `ui/app`, measured 2026-11-10: `12px` ×25, `13px` ×22, `13.5px` ×19, `12.5px` ×18, `11.5px` ×15, down to `9.5px` and `19px` once each) become same-pixel `--text-*` entries in `@theme`, named by role, and the 137 uses move to the utilities. Same pixel values, so Q19's parity holds. The app's phone breakpoint (`max-width: 767px`, `useIsMobile`, `app.css:277`) is exactly Tailwind's `max-md:`, so `max-md:` is used and the one-pixel edge is accepted. The e2e specs use no `data-testid` (0 found), so nothing changes there; a `data-testid` is added only where no role fits.
+9. **Token names** (Q17). Decided: this app keeps its names (`fg`, `surface`, `accent`, `line`) until its redesign (brief 06).
+10. **The root font size** (Q44). Decided: no change. The 14.5px size is already on `body` (`ui/app/app.css:205`), and `html` sets no size, so the reader's own font setting still scales it. The brief must not move it onto `html`.
+11. **The `vite-ui-theme` storage key.** Default (no question covers it): keep it, so existing choices survive. It is a template leftover; renaming it is a one-line change if the owner wants it, with a migration read of the old key.
 
 ## Files you OWN
 
@@ -173,7 +156,7 @@ The correctness rules are the ones brief 27 turns on as errors, and the class-or
 - `ui/app/components/ThemeProvider.tsx`, `ui/app/components/ThemeToggle.tsx`, `ui/app/lib/map.ts` (`useIsDarkMode` only), `ui/app/root.tsx` (the theme script and the `theme-color` meta).
 - `ui/app/app.css`: the layers, the `@custom-variant`, the leftovers.
 - `ui/app/components/ui/CategoryBadge.tsx`, `EventList.tsx`, `EventPlaceRow.tsx`: the inline colours.
-- `ui/app/lib/utils.ts` and its new test.
+- `ui/app/lib/utils.ts` and its new test, and `ui/app/components/ui/Dialog.test.tsx` with `ui/vitest.config.ts` (decision 5).
 - `eslint.config.js`: `better-tailwindcss` rules. `ui/package.json`: `eslint-plugin-better-tailwindcss` 4.10.0 as a pinned devDependency (in the root `package.json` if brief 03 put ESLint there).
 - `e2e/theme.spec.ts` (new) and the Escape and sheet checks in `e2e/place.spec.ts` and `e2e/map.spec.ts`.
 - `scripts/conventions.json`: the exceptions (decisions 3 and 7).
@@ -193,13 +176,13 @@ The correctness rules are the ones brief 27 turns on as errors, and the class-or
 One commit per numbered step. After each, `npm run check` passes, with `check-base-ui` `--warn-only`.
 
 1. **Before.**
-   - Run `check-base-ui` strict (against `ui/app`; see brief 03 step 5 for the source-directory gap) and record the counts by rule. Expect rule 3 at 3, rule 6 at 2, rule 8 at 20 (or however the checker counts z-indexes), rule 11 at 1.
+   - Run `check-base-ui` strict (against `ui/app`; brief 03 step 6 puts the roots in `scripts/conventions.json`) and record the counts by rule. Expect rule 3 at 3, rule 6 at 2, rule 8 at 20 (or however the checker counts z-indexes), rule 11 at 1.
    - Run `eslint-plugin-better-tailwindcss`'s correctness rules and record the 34 and 5.
    - Take Playwright screenshots, at 1280 and 390 px, **in light and in dark**, kept out of git: the map with a place open, the place sheet at peek and at full on a phone, what's on, the archive (both tabs), about the data, login, settings, the admin review panel and the add-a-source form, and each menu and popover open. `ui-test-plans` has the bring-up.
 2. **The stylesheet's layers.**
    1. Add the `@layer vendor, theme, base, components, utilities;` line and `layer(vendor)` on the Leaflet import.
    2. Move the Leaflet overrides (lines 259-340) into `@layer components`, then delete each `!important` that existed only to beat Leaflet's specificity. Keep Leaflet's own.
-   3. Move the pin rules (lines 326-424) into `@layer components`, unchanged. In a scratch branch, write one pin class as a utility inside a `PlaceMarkers.tsx` string and build, to find out whether Tailwind generates it. If it does, correct the comment and leave the rest of the pin rules for a later brief, since `color-mix` and per-category variables read better as CSS.
+   3. Move the pin rules (lines 326-424) into `@layer components`, unchanged. On a scratch copy, write one pin class as a utility inside a `PlaceMarkers.tsx` string and build, to find out whether Tailwind generates it. If it does, correct the comment and leave the rest of the pin rules for a later brief, since `color-mix` and per-category variables read better as CSS.
    4. Make `.tnum`, `.label-cap` and `.scroll-fade-x` `@utility` blocks, so they are real utilities in the utilities layer and `better-tailwindcss` knows them.
    5. Move `::selection`, the scrollbar rules and `:focus-visible` into `@layer base`, and drop `border-radius: 3px` from `:focus-visible` so the focus ring follows each element's own radius. Take the screenshots again with Tab focus on a chip.
    6. Turn the two `@keyframes` and their `.cm-panel-in` and `.cm-sheet-in` classes into `--animate-*` entries in `@theme` and `animate-*` utilities.
@@ -209,13 +192,14 @@ One commit per numbered step. After each, `npm run check` passes, with `check-ba
    - `ui/app/routes/admin/review.tsx:359`: `bg-black/30` becomes a `--scrim` token (`--map-scrim` is 6% black and too light for a modal).
    - The four inline colours become a `--cat` custom property set on the element, with `text-(--cat)`, `bg-(--cat)` and `border-[color-mix(in_srgb,var(--cat)_34%,transparent)]`. `PlaceSheet.tsx:99`'s computed geometry stays inline.
    - The 13 arbitrary durations and easings become `duration-(--dur-2)` and `ease-out-fast` (already in `@theme`). The 20 raw z-indexes become tokens in `:root` (`--z-chrome: 400`, `--z-sheet: 600`, and so on, with the same numbers, so no stacking changes), used as `z-(--z-chrome)`.
+   - The 17 `text-[Npx]` sizes become named `--text-*` entries in `@theme` at the same pixel values, and the 137 uses move to the named utilities (decision 8). `grep -rnE "text-\[[0-9.]+px\]" ui/app` then prints nothing.
    - `DropdownMenu.tsx:21`: `origin-(--transform-origin)`.
    - `cn()` gets `extendTailwindMerge`, with its test.
 4. **The wrappers that move, one commit each.** `Popover.tsx` (then `FavoriteStar` and `Bell` use it, which takes rule 3 to 1), `Dialog.tsx` (then `review.tsx` uses it, which takes rule 3 to 0 and rule 12's Dialog gaps to 0). Keep every behaviour:
    - `Bell`'s `onOpenChange` marks notifications read once, on open;
    - the signed-out star's popover keeps its title, description and the two links with the `next` parameter;
    - the review panel keeps its Leaflet map, its candidate buttons and its close button's `aria-label`.
-5. **The widgets onto Base UI, one commit each.** `Toast` (with `NoticeToast`), `Tabs` (archive: keep `archive-panel`'s `aria-labelledby` semantics, now Base UI's), `Segmented` and `LangToggle` on `RadioGroup`, `Chip` on `Toggle`, `Checkbox` (three sites; the select-all keeps its indeterminate-free behaviour), `Select` (the city field keeps its `name` and its default).
+5. **The widgets onto Base UI, one commit each.** `Toast` (with `NoticeToast`), `Tabs` (archive: keep `archive-panel`'s `aria-labelledby` semantics, now Base UI's), `Segmented` on `RadioGroup` and `LangToggle` on the guarded `ToggleGroup` (decision 4), `Chip` on `Toggle`, `Checkbox` (three sites; the select-all keeps its indeterminate-free behaviour), `Select` (the city field keeps its `name` and its default).
 6. **The place sheet.** Build `Drawer.tsx` and move `PlaceSheet` onto it, per decision 3. Keep:
    - the peek and full heights (`PEEK_SHIFT`, `FULL` in `PlaceSheet.tsx`) as `snapPoints`;
    - the attribution lift above the sheet (`.sheet-peek`, `.sheet-full` in `app.css:281-282`, driven by `setSheetSnap`);
@@ -252,6 +236,7 @@ One commit per numbered step. After each, `npm run check` passes, with `check-ba
 - [ ] `grep -rnE "window\.(confirm|alert|prompt)" ui/app` prints nothing.
 - [ ] `npx playwright test` passes with the new specs: the first visit is light under `colorScheme: "dark"`, the choice persists and the map's tiles follow it, Esc in a popover doesn't close the place, and (if decision 3's spike passed) the map is usable at the sheet's peek.
 - [ ] `ui/app/lib/utils.test.ts` shows `cn("text-fg-muted", "text-accent")` returns only `text-accent`.
+- [ ] The language switch is a guarded `ToggleGroup`: the arrow keys move focus without changing `civicmap-lang`, and one language is always pressed (a Playwright check). `Segmented` is a `RadioGroup`. The `Dialog` jsdom test passes (decision 5).
 - [ ] The built `ui/build/client/index.html` contains the theme script (`grep -c "data-theme" ui/build/client/index.html` is at least 1), so the choice is applied before first paint.
 - [ ] Before and after screenshots at 1280 and 390 px, light and dark, show no visible change to layout or colour (Q19).
 - [ ] `npm run check` passes, and `bash corpus/lint.sh` ends clean.

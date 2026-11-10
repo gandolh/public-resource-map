@@ -828,3 +828,18 @@ Five briefs written from measurements on a scratch copy, none built. They follow
 Owner answer of 2026-11-10 for brief 01: the source registry does not gate publishing. A source whose
 permission is pending is shown and credited, and taken off if the site objects; only a `forbidden` source
 stays off the map. Map state goes in the URL.
+
+## [2026-11-10] todo | Briefs 03-05 revised for the owner's grilling and the technical calls
+
+The two grilling pages (the owner's answers and the technical calls) are applied:
+
+- 03: `house-style` is vendored (copy with a version header, `house-style:sync`), not a package, so the Dockerfile
+  stays untouched; width 120 decided; `!` is an error in source and a warning in tests (28 to fix, 11 warnings);
+  `noUncheckedIndexedAccess` deferred (Q50, 94 errors counted); `check:fast` up to about 30 s accepted; checker
+  roots `backend/` and `ui/app/` go in `scripts/conventions.json`.
+- 04: the language switch becomes a guarded `ToggleGroup` and `Segmented` a `RadioGroup` (Q57); one jsdom test for
+  the `Dialog` wrapper (Q60); the 17 `text-[Npx]` sizes become a named scale in `@theme` (Q62); the root font size
+  already sits on `body` (Q44).
+- 05: the error plugin passes Fastify's 4xx through and never echoes a thrown message (Q43); streams and binary
+  routes are exempt from response schemas (Q53, none found); `NODE_ENV` read in `config.ts` is an allowed,
+  recorded exception; the technical calls on Q23-Q27, Q52, Q54-Q56 are recorded as decided.

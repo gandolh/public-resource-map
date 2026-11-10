@@ -9,7 +9,7 @@
   - brief 15, *Enforce the base-ui and code-structure skills in every repo*: `check-structure` runs `--warn-only` until this brief is done.
 - The owner's grilling of 2026-11-10:
   - Q1 is answered: every service runs in a container built from `infrastructure/Dockerfile`, which starts a file path, and the build runs `npm ci` and `tsc` only. So the entry rename changes the Dockerfile's `CMD` in the same commit, and this repo owns that file;
-  - still open: Q23 (`features/<name>/`), Q24 (plugin options, explicit registration), Q25 (response schemas everywhere), Q27 (the test runner), Q43 (error bodies), Q52-Q56.
+  - the technical calls of 2026-11-10 settle Q23 (`features/<name>/`), Q24 (plugin options, explicit registration), Q25 and Q53 (response schemas, with the stream and binary exemption), Q27 (the test runner), Q43 (error bodies), Q52 and Q54-Q56.
 
 **Order:** after 03. It touches nothing under `ui/`, so it can run before or after [brief 04](04-base-ui-by-the-conventions.md), but never at the same time (both change `package-lock.json` and the corpus status page). Run it **before** [brief 01](01-a-source-registry-and-shareable-map-links.md), so 01's adapter and registry changes land in the new folders (see Interplay).
 
@@ -94,7 +94,7 @@ The directory stays `backend/`, not `server/`. Renaming it would touch the Docke
 
 No cycle: `events` imports no other feature.
 
-**Handlers keep their queries.** The structure puts SQL in a per-feature `store.ts`. Here the handlers call Drizzle directly (2,355 lines across `routes/`, tests included). Extracting stores while changing the file layout, the schemas and the error handling would put four changes in one diff. Default: not in this brief; the open question Q54 covers the choice. The move leaves the files whole.
+**Handlers keep their queries.** The structure puts SQL in a per-feature `store.ts`. Here the handlers call Drizzle directly (2,355 lines across `routes/`, tests included). Extracting stores while changing the file layout, the schemas and the error handling would put four changes in one diff. Decided (Q54): not in this brief. The move leaves the files whole.
 
 ### Every reader of the environment (19 sites in 12 files, read 2026-11-10)
 
@@ -178,13 +178,13 @@ The vendored plugin's `/auth/*` routes are generated code and out of scope. "New
 
 ### The error plugin
 
-`plugins/errors.ts`, wrapped in `fastify-plugin` and registered first. It **keeps the repo's body, `{ code, message }`**, because the UI client reads only `message` (`ui/app/lib/api.ts:23-30`) and the handlers send `code` (Q43's default: one handler, the repo's own shape). In order:
+`plugins/errors.ts`, wrapped in `fastify-plugin` and registered first. It **keeps the repo's body, `{ code, message }`**, because the UI client reads only `message` (`ui/app/lib/api.ts:23-30`) and the handlers send `code` (Q43: one handler, the repo's own shape). In order:
 
 1. A schema validation error (`hasZodFastifySchemaValidationErrors`) becomes 400, with `INVALID_QUERY`, `INVALID_BODY` or `INVALID_PARAMS` by the error's validation context, and the first issue's path and message as `message`.
 2. An `ApiError(status, code, message)` becomes its status. `IngestError` (`pipeline.ts:53`), `SyncInProgressError` and `OverpassTimeoutError` (`osm-sync.ts:454, 465`) extend it, which replaces the hand-written `fail(reply, err)` (`admin-ingest.ts:43`) and the two `instanceof` branches in `admin-osm.ts:52-55`. The 31 `reply.status(…).send({ code, message })` sites that report an expected 404 or 409 stay as they are: a response schema declares those statuses.
 3. `isResponseSerializationError` becomes 500 `INTERNAL`, logged with the method and URL. Never shown.
-4. A 4xx Fastify raised keeps its status.
-5. Anything else becomes 500 `INTERNAL`, logged, with no detail in the reply. Today the default handler puts the thrown error's message in it.
+4. A 4xx Fastify raised itself (a malformed body, a payload too large, an unsupported media type) passes through with its own status and message, and its message is kept only because Fastify wrote it (Q43).
+5. Anything else becomes 500 `INTERNAL`, logged, with no detail in the reply. **A thrown error's message is never echoed to the client** (Q43). Today the default handler puts it in the reply, so this closes a leak. A test throws an error with a recognisable message from a route and expects the reply not to contain it.
 
 The not-found handler answers `{ code: "NOT_FOUND", message }`. It isn't rate-limited: `@fastify/rate-limit` is not a dependency, and rule 8 asks for it only where it is present.
 
@@ -221,20 +221,20 @@ No other file names it (`grep -rn "dist/index" --include=*.json --include=*.ts -
 
 ## Owner decisions (defaults this brief builds)
 
-1. **`features/<name>/`** (Q23). Default: yes, as in the move map, under `backend/src/`. The directory is not renamed to `server/` (see the move map).
-2. **Typed plugin options and explicit registration** (Q24, Q56). Default: an `AppContext` built in `app.ts` (`db`, `notifyMail`, the ingest and OSM dependencies) is passed to each feature plugin as its options, and the three decorators and the `declare module "fastify"` go. `auth` goes with them: `buildTestApp` builds its own accounts from its `sqlite` handle, as `db/accounts-cli.ts` does. If Q56 keeps decorators as a test seam, keep `db` and `notifyMail` as they are and drop only the rest.
-3. **A response schema on every route** (Q25). Default: yes. No route sends pass-through JSON.
-4. **`NODE_ENV`.** The structure says `config.ts` does not read it. Three places use it, and one of them is a legal safeguard: `ingest/pipeline.ts:43` refuses the iaBilet adapter in production ([wiki/decisions.md](../../wiki/decisions.md), "Legal posture"; the Dockerfile sets `NODE_ENV=production`). Default: `config.ts` reads it once, as `config.production`, and the exception is recorded in `scripts/conventions.json` with that reason. The alternative is a purpose-named variable the Dockerfile sets, which would leave the safeguard off in any environment that forgets it. [Brief 01](01-a-source-registry-and-shareable-map-links.md), if built, replaces this use with the registry's `forbidden` state (the only state it keeps off the map), and the exception can go. *New question for the grilling:* may `config.ts` read `NODE_ENV` when it guards something legal?
-5. **The entry file** (Q1, answered). Rename to `server.ts`, and change the Dockerfile's `CMD` and the three `package.json` lines in the same commit.
-6. **The test runner** (Q27). Default: vitest stays.
-7. **The error body.** Default: keep `{ code, message }` (Q43).
-8. **Timeouts and proxy.** Defaults:
+1. **`features/<name>/`** (Q23). Decided 2026-11-10 (technical call): yes, as in the move map, under `backend/src/`. The directory is not renamed to `server/` (see the move map).
+2. **Typed plugin options and explicit registration** (Q24, Q56). Decided 2026-11-10 (technical call): an `AppContext` built in `app.ts` (`db`, `notifyMail`, the ingest and OSM dependencies) is passed to each feature plugin as its typed options, and registration is explicit. The three decorators and the `declare module "fastify"` go: no decorators as a test seam, so tests pass their dependencies as plugin options. `auth` goes with them: `buildTestApp` builds its own accounts from its `sqlite` handle, as `db/accounts-cli.ts` does. One `ApiError` class stays (Q56), and a feature's CLI may live beside it.
+3. **A response schema on every route** (Q25, Q53). Decided 2026-11-10 (technical call): yes. No route sends pass-through JSON. Stream and binary routes are exempt, each with a `scripts/conventions.json` entry. A check of `backend/src/routes` (no `.type(`, `createReadStream`, `Buffer`, `sendFile` or `.raw` in non-test code, 2026-11-10) found none, so no entry is expected.
+4. **`NODE_ENV`.** The structure says `config.ts` does not read it. Three places use it, and one of them is a legal safeguard: `ingest/pipeline.ts:43` refuses the iaBilet adapter in production ([wiki/decisions.md](../../wiki/decisions.md), "Legal posture"; the Dockerfile sets `NODE_ENV=production`). Decided 2026-11-10 (technical call, the checkers' config-read rule): `config.ts` reads it once, as `config.production`, and this is allowed as an exception recorded in `scripts/conventions.json` with that reason. The alternative is a purpose-named variable the Dockerfile sets, which would leave the safeguard off in any environment that forgets it. [Brief 01](01-a-source-registry-and-shareable-map-links.md), if built, replaces this use with the registry's `forbidden` state (the only state it keeps off the map), and the exception can go.
+5. **The entry file** (Q1, a fact found 2026-11-10). Rename to `server.ts`, and change the Dockerfile's `CMD` and the three `package.json` lines in the same commit.
+6. **The test runner** (Q27). Decided 2026-11-10 (technical call): vitest stays (only atrium stays on `node:test`).
+7. **The error body** (Q43). Decided 2026-11-10 (technical call): one error handler, keeping `{ code, message }`. It passes Fastify's own 4xx through and never echoes a thrown message. Validation runs before authorisation (Q52, accepted).
+8. **Timeouts and proxy.** Defaults (no question covers them):
    - `requestTimeout: 180_000` and `connectionTimeout: 180_000`. Two routes run long: `POST /api/admin/osm/sync` waits up to `OVERPASS_HTTP_TIMEOUT_MS` = 100 s (`osm-sync.ts:78`), and `POST /api/admin/sources/refresh-all` runs the sources one after another, each with a 15 s fetch (`ingest/adapters.ts:58`) and a geocoder paced at one request a second (`ingest/geocode.ts:91`). A short global `connectionTimeout` would cut both (the skills library's Round 8 fact, from its other servers' long polls). Check the deploy's Caddy snippet for its own upstream timeout: if it is shorter, that is an owner step with the exact edit;
    - `keepAliveTimeout: 125_000`, above Caddy's default idle keep-alive to its upstream, so the API never closes a connection Caddy is about to reuse;
    - `trustProxy`: the address Caddy's requests come from inside the container. Compose publishes the port on loopback (`infrastructure/docker-compose.yml:10`), so the source address is probably the Docker bridge gateway, not `127.0.0.1`. Step 2 prints `request.ip` from a running container and sets the real value, with `AUTH_TRUSTED_PROXIES` as the one list. The library's own login lockout reads the socket itself, so this doesn't change it.
-9. **Logging and Fastify 5.12.8.** Default: JSON as today, no `pino-pretty`; no Fastify bump in this brief.
-10. **Stores** (Q54). Default: not now (see the move map).
-11. **Where zod schemas live** (Q55). Default: `shared/src/types/`, as today. New response schemas go in the file of their feature there.
+9. **Logging and Fastify 5.12.8.** Default (no question covers it): JSON as today, no `pino-pretty`; no Fastify bump in this brief.
+10. **Stores** (Q54). Decided 2026-11-10 (technical call): a big `store.ts` stays whole in `db/`; no stores are extracted in this brief (see the move map).
+11. **Where zod schemas live** (Q55). Decided 2026-11-10 (technical call): a schema lives in `shared/` when the client imports it, otherwise in its feature folder. The existing ones in `shared/src/types/` stay (the UI imports them); a new response schema that only the server uses goes in its feature folder.
 
 ## Files you OWN
 
@@ -292,8 +292,8 @@ Follow `migrating-a-server.md`. One commit per step; after each, `npm run check`
 - [ ] `check-structure` passes **strict**, with any exception in `scripts/conventions.json` and its reason. Its counts before and after are in the outcome note, for the skills library's brief 16 table.
 - [ ] `grep -rnE "\.(safe)?[pP]arse\(req" backend/src --include=*.ts | grep -v "\.test\.ts"` prints nothing, and every route in the table has a `schema` with a `response` where it has a body to send.
 - [ ] `grep -rn "process\.env" backend/src --include=*.ts | grep -v "\.test\.ts"` prints only `config.ts`, and `n/no-process-env` is an error.
-- [ ] `grep -rn "decorate(\|declare module \"fastify\"" backend/src --include=*.ts | grep -v "\.test\.ts"` prints nothing (or only what Q56 kept).
-- [ ] The validation-context tests, the stripped-field test, the serialization-500 test, the thrown-error test, the not-found test and the `.default()` test pass, along with every existing test unchanged.
+- [ ] `grep -rn "decorate(\|declare module \"fastify\"" backend/src --include=*.ts | grep -v "\.test\.ts"` prints nothing (Q56 keeps none).
+- [ ] The validation-context tests, the stripped-field test, the serialization-500 test, the thrown-error test (the reply never contains the thrown message, and a Fastify 4xx such as a malformed JSON body keeps its own status), the not-found test and the `.default()` test pass, along with every existing test unchanged.
 - [ ] The before and after JSON comparison is in `log.md`, with every dropped field named.
 - [ ] `npm run build` writes `backend/dist/server.js`. `docker build -f infrastructure/Dockerfile .` succeeds, and the container answers `GET /health` through its health check. A start with `PUBLIC_ORIGIN` unset exits 1 and names it.
 - [ ] dependency-cruiser fails on a deliberate cross-feature import and passes clean.

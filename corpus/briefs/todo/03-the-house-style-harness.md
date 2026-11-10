@@ -4,9 +4,9 @@
 
 - In public-resource-map: [brief 02](02-base-ui-1-9-0.md), for ordering only. Both rewrite `package.json` and `package-lock.json`.
 - In the owner's skills library:
-  - brief 27, *A house style, and a quality harness that enforces it*: the `house-style` package at `v1.0.0`, the `house-style` skill, and the plugin's `Stop` and `PostToolUse` hooks;
+  - brief 27, *A house style, and a quality harness that enforces it*: the `house-style` source (vendored into each repo, Q6), the `house-style` skill, and the plugin's `Stop` and `PostToolUse` hooks;
   - brief 15, *Enforce the base-ui and code-structure skills in every repo*: how the convention checkers are wired and when they run `--warn-only`.
-- The owner's grilling of 2026-11-10: the skills library's open questions Q5-Q14, Q45-Q51. Q1 is answered (see Context).
+- The owner's grilling of 2026-11-10: the owner's answers and the technical calls on Q1-Q62 (the decisions below say which each one settles).
 
 **Runs before:** 04 and 05. The reformat touches about 100 TypeScript files, and those two briefs rewrite or move most of them. Formatting first gives one clean reformat commit, and the formatter hook keeps every later diff formatted.
 
@@ -118,20 +118,20 @@ Dates and the other measurements came from `grep` and ESLint runs on a scratch c
 
 ## Owner decisions (defaults this brief builds)
 
-1. **Where the configs come from** (the skills library's open questions, Q5-Q6). Default: the `house-style` package, extended from this repo's configs. The Docker `deps` stage runs `npm ci` and installs only `python3 make g++` (`infrastructure/Dockerfile:21`), so there is no `git` in it. A `github:` dependency needs git there. Default within that: the tagged tarball URL, which npm fetches without git, or `git` added to that `apk add` line in the same commit. If Q6 goes the other way, the same rules land as local files with a version header. Steps 3-5 don't change.
-2. **Width** (Q8, Q51). Default: the estate's one width. This repo's least churn is 120. If the estate width isn't settled when this runs, use 120 and record it.
+1. **Where the configs come from** (Q5-Q6). Decided 2026-11-10 (technical call, Q6): `house-style` is **vendored**. This repo holds a copy of its configs with a version header, refreshed by a `house-style:sync` script that finds the `house-style` checkout by name. Not a git, `github:` or tarball dependency: npm locks a GitHub dependency as a git URL, and the Docker `deps` stage has no `git` (it installs only `python3 make g++`, `infrastructure/Dockerfile:21`). So the Dockerfile needs no change for this brief. Steps 4-6 are unchanged: the repo's configs extend the vendored copy.
+2. **Width** (Q8, Q51). Decided 2026-11-10 (technical call): the estate's one width is **120**, and 120 is also this repo's least churn (the measured table above). The reformat at 120 is the one-off cost: 95 files, 1,040 insertions and 964 deletions on the TypeScript files.
 3. **What Prettier covers.** Default: TypeScript, TSX and the config JSON. `.prettierignore` lists:
    - `*.md` (the corpus is prose that `corpus/lint.sh` governs; Q45);
    - `*.css`: `ui/app/app.css` would change 391 of 461 lines, and its aligned token tables are the repo's own style. Brief 04 moves the file into layers, and Prettier can cover CSS after that if the owner wants it;
    - `backend/drizzle/`, `backend/src/db/fixtures/` (generated or frozen);
    - `backend/vendor/` and `ui/vendor/` (Ward's library, generated);
    - `package-lock.json`, `**/build/`, `**/dist/`, `**/.react-router/`, `docs/`, `e2e/.data/`, `playwright-report/`.
-4. **tsconfig** (Q11). Default: a root `tsconfig.base.json` with the house flags (`strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `isolatedModules`, `noUnusedLocals`, `noFallthroughCasesInSwitch`, `verbatimModuleSyntax`, `erasableSyntaxOnly`, `NodeNext`), extended by `shared`, `backend` and `ui` (the UI overrides `module` and `moduleResolution` back to `ES2022` and `bundler`). Add `e2e/tsconfig.json` so `typecheck` covers the e2e files and typed lint can find them. Not `exactOptionalPropertyTypes` (30 and 8 errors).
-5. **Typed lint** (Q12). Default: the six rules through `projectService`, unless `project` measures faster. It didn't (19.5 s against 29.5 s). `vitest/valid-expect` gets `maxArgs: 2`, because `expect(value, "message")` is valid vitest and all 12 findings are that form. Per brief 27's rule, a rule that is mostly false is brought to the owner, not loosened silently: this one is reported, and the option is the fix.
-6. **The house shapes as errors** (Q13, Q47). Default: all of them are errors. The 39 `!` are fixed, not excepted, in source and in tests (Q47's default makes them a warning in tests; follow its answer if it has come). `no-console` allows the five CLI files in `backend/src/db/` and the migration and seed scripts. `no-default-export` allows `ui/app/root.tsx`, `ui/app/routes.ts`, `ui/app/components/Layout.tsx`, `ui/app/routes/**` and `*.config.*` (Q49 is about React components in general; these are framework entry points). `n/no-process-env` starts as a **warning**, because its 19 findings are brief 05's work, and brief 05 turns it into an error.
-7. **`check:fast`** (Q10). Default: `tsc -b` with incremental builds, then ESLint on the files changed against `HEAD` plus untracked ones. It misses the 15 s target on a cold run and should fit warm; record both times. If it stays over, the owner decides whether a longer `Stop` gate is acceptable. `npm run check` does not run the 30 Playwright tests, which need a browser and a dev stack; `test:e2e` stays its own script.
-8. **The Claude Code layer** (Q7). Default: the plugin's hooks. If the owner chooses committed hooks, add them to `.claude/settings.json` here.
-9. **A root `CLAUDE.md`** (Q46). Default: create one, and move the repo-wide rules out of [corpus/CLAUDE.md](../../CLAUDE.md) into it only where they apply outside the corpus (the brief-board lines stay readable from both).
+4. **tsconfig** (Q11, Q50). Decided 2026-11-10 (technical call): a root `tsconfig.base.json` with the house flags (`strict`, `noImplicitOverride`, `isolatedModules`, `noUnusedLocals`, `noFallthroughCasesInSwitch`, `verbatimModuleSyntax`, `erasableSyntaxOnly` (parameter properties become fields), `NodeNext`), extended by `shared`, `backend` and `ui` (the UI overrides `module` and `moduleResolution` back to `ES2022` and `bundler`). Add `e2e/tsconfig.json` so `typecheck` covers the e2e files and typed lint can find them. Not `exactOptionalPropertyTypes` yet (30 and 8 errors; Q11 adds it after a count). **Not `noUncheckedIndexedAccess`** (Q50: deferred, a later brief per repo where it is off, with its count): its 94 errors (84 in `backend`, 52 of them in tests, and 10 in `ui`) are recorded in the outcome note for that brief. TypeScript is 5.9.3, past the 5.8 that `erasableSyntaxOnly` needs.
+5. **Typed lint** (Q12). Decided 2026-11-10 (technical call): the six rules through `projectService`, unless `project` measures faster. It didn't (19.5 s against 29.5 s). `no-floating-promises` would name `node:test`'s `describe`/`it`/`test` in `allowForKnownSafeCalls`; this repo tests with vitest, so it needs none. `vitest/valid-expect` gets `maxArgs: 2`, because `expect(value, "message")` is valid vitest and all 12 findings are that form. Per brief 27's rule, a rule that is mostly false is brought to the owner, not loosened silently: this one is reported, and the option is the fix.
+6. **The house shapes as errors** (Q13, Q47, Q49). Decided 2026-11-10 (technical call): all of them are errors. `!` is an **error in source and a warning in tests** (Q47): the 28 in source (17 in `backend/src`, 11 in `ui/app`) are fixed, and the 11 in tests (10 in backend tests, 1 in `e2e`) stay as warnings, listed in the outcome note. `no-console` is allowed in scripts and CLIs: the five CLI files in `backend/src/db/` and the migration and seed scripts. `no-default-export` is allowed where a framework needs one (Q13, Q49): `ui/app/root.tsx`, `ui/app/routes.ts`, `ui/app/components/Layout.tsx`, `ui/app/routes/**` and `*.config.*`; components elsewhere use named exports. `n/no-process-env` starts as a **warning**, because its 19 findings are brief 05's work, and brief 05 turns it into an error. Comments are prose, checked by the review gate (Q14).
+7. **`check:fast`** (Q10). Decided 2026-11-10 (technical call): `tsc -b` with incremental builds, then ESLint on the files changed against `HEAD` plus untracked ones. Target 15 s; up to about 30 s is accepted where `tsc` alone is slower, and it is here (25-35 s measured). Record the cold and the warm time. `npm run check` does not run the 30 Playwright tests, which need a browser and a dev stack; `test:e2e` stays its own script.
+8. **The Claude Code layer** (Q7). Decided 2026-11-10 (technical call): it lives in the plugin: `Stop` runs `check:fast`, `PostToolUse` formats the saved file. No committed hooks here.
+9. **A root `CLAUDE.md`** (Q46). Decided 2026-11-10 (technical call): a short root `CLAUDE.md` with the commands, in every repo. Create one, and move the repo-wide rules out of [corpus/CLAUDE.md](../../CLAUDE.md) into it only where they apply outside the corpus (the brief-board lines stay readable from both).
 10. **`save-exact`.** Default: add `.npmrc` with `save-exact=true`, as 10 of 19 repos have. Every spec is exact today; this keeps the next `npm install` honest.
 
 ## Files you OWN
@@ -142,15 +142,13 @@ Dates and the other measurements came from `grep` and ESLint runs on a scratch c
 - The reformat itself: whitespace-only changes to every file Prettier covers.
 - The fixes the new rules ask for, in `backend/src`, `shared/src`, `ui/app` and `e2e`:
   - the 58 redundant `await`s in `backend/src`;
-  - the 39 `!`;
+  - the 28 `!` in source (the 11 in tests stay as warnings, decision 6);
   - the 22 `console` calls outside the allowed CLIs (2 in `ui/app/lib/api.ts`);
   - the 17 unnecessary assertions, 8 misused and 5 floating promises, 4 `any`, 3 unused variables, 3 parameter properties;
-  - the 94 `noUncheckedIndexedAccess` errors;
-  - the 5 `react-hooks` findings, each fixed or listed in the outcome note with its reason (`PlaceSheet.tsx` is rebuilt in brief 04, so list its two).
+    - the 5 `react-hooks` findings, each fixed or listed in the outcome note with its reason (`PlaceSheet.tsx` is rebuilt in brief 04, so list its two).
 - New: `.claude/rules/ui.md`, `.claude/rules/backend.md`, `CLAUDE.md`.
 - [corpus/CLAUDE.md](../../CLAUDE.md), only to point at the root `CLAUDE.md`.
-- `scripts/conventions.json` (new, brief 15's exceptions file), if an exception is needed.
-- `infrastructure/Dockerfile`: only the `apk add` line, and only under decision 1's `git` branch.
+- `scripts/conventions.json` (new, brief 15's exceptions file): the checker roots `backend/` and `ui/app/`, and any recorded exception.
 - Corpus: [wiki/decisions-engineering.md](../../wiki/decisions-engineering.md) (a new entry), [wiki/status.md](../../wiki/status.md), [log.md](../../log.md).
 
 ## Files you must NOT touch
@@ -165,20 +163,21 @@ Dates and the other measurements came from `grep` and ESLint runs on a scratch c
 
 One commit per step, each with `npm run typecheck`, `npm test` and `npm run build` green.
 
-1. **Re-measure.** On the day, repeat the Prettier, `tsc` and ESLint measurements above, and record them in the `log.md` entry. Any rule that finds more than about 20 real problems, or mostly false ones, goes back to the owner before it is turned on.
-2. **Prettier and the reformat.**
+1. **Vendor `house-style`.** Copy its configs in with a version header, and add the `house-style:sync` script that finds the checkout by name (Q6). The repo's configs below extend the copy.
+2. **Re-measure.** On the day, repeat the Prettier, `tsc` and ESLint measurements above, and record them in the `log.md` entry. Any rule that finds more than about 20 real problems, or mostly false ones, goes back to the owner before it is turned on.
+3. **Prettier and the reformat.**
    1. Add `prettier` (pinned) and the config: `printWidth` per decision 2, `trailingComma: "all"`, the rest default.
    2. Add `.prettierignore` (decision 3), `"format": "prettier --write ."` and `"format:check": "prettier --check ."`, and commit this alone.
    3. Run `npm run format` and commit only that, as `style: format with Prettier`. Run it when no other brief has uncommitted work.
    4. Add that commit's full hash to `.git-blame-ignore-revs`, in its own commit, and hand the owner the one-time `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
-3. **tsconfig.** Add `tsconfig.base.json` and `e2e/tsconfig.json`, and make the three workspaces extend the base. Then fix what each flag reports: parameter properties become declared fields assigned in the constructor (`ui/app/lib/api.ts:14`, `backend/src/ingest/pipeline.ts:55, 57`), the 2 unused locals are deleted, and the 94 index accesses get a guard or a default, in `backend/src` and `ui/app`. `npm run typecheck` now also runs the e2e project. The Dockerfile's `npm run build -w @public-resource-map/shared` and `-w @public-resource-map/backend` must still build.
-4. **ESLint.** Add the config and its dependencies (pinned). Roots: `backend/src`, `shared/src`, `ui/app`, `e2e`. The CLI files are `backend/src/db/{capture-osm,migrate,seed,seed-users,set-role}.ts` and `backend/src/index.ts` (later `server.ts`). Typed linting finds files through `projectService`, which now sees every workspace and `e2e`; `playwright.config.ts` and the vitest configs take `allowDefaultProject`. The diff in effect, against no config:
+4. **tsconfig.** Add `tsconfig.base.json` and `e2e/tsconfig.json`, and make the three workspaces extend the base. Then fix what each flag reports: parameter properties become declared fields assigned in the constructor (`ui/app/lib/api.ts:14`, `backend/src/ingest/pipeline.ts:55, 57`), the 2 unused locals are deleted, (`noUncheckedIndexedAccess` is not turned on: decision 4). `npm run typecheck` now also runs the e2e project. The Dockerfile's `npm run build -w @public-resource-map/shared` and `-w @public-resource-map/backend` must still build.
+5. **ESLint.** Add the config and its dependencies (pinned). Roots: `backend/src`, `shared/src`, `ui/app`, `e2e`. The CLI files are `backend/src/db/{capture-osm,migrate,seed,seed-users,set-role}.ts` and `backend/src/index.ts` (later `server.ts`). Typed linting finds files through `projectService`, which now sees every workspace and `e2e`; `playwright.config.ts` and the vitest configs take `allowDefaultProject`. The diff in effect, against no config:
 
    | Rule | After | Findings today |
    |---|---|---|
    | `@eslint/js` and typescript-eslint recommended | error | 4 (3 unused variables, 1 useless assignment) |
    | the six typed rules above | error | 102 |
-   | `no-non-null-assertion` | error | 39 (fix them) |
+   | `no-non-null-assertion` | **error in source, warn in tests** (Q47) | 28 in source (fix them), 11 in tests (warnings) |
    | `no-restricted-syntax` on `TSEnumDeclaration` | error | 0 |
    | `no-warning-comments` (`todo`, `fixme`), pointing at `corpus/todos/` | error | 0 |
    | `no-console` outside the CLIs | error | 2 |
@@ -190,14 +189,14 @@ One commit per step, each with `npm run typecheck`, `npm test` and `npm run buil
    | `better-tailwindcss` | absent; brief 04 adds it | |
 
    Fix what the typed rules find. A finding left stays listed in the outcome note with its reason.
-5. **The gate.** In the root `package.json`:
+6. **The gate.** In the root `package.json`:
    - `lint` is `eslint .`;
    - `check` runs `typecheck`, `lint`, `format:check`, `check:conventions` and `test`;
-   - `check:conventions` runs knip and the two convention checkers. `check-base-ui` walks `src/`, and this repo's UI source is `ui/app/`, so it cannot find the files until the skills library's brief 02 takes a source directory or the checker reads `conventions.json`. Until then it runs `--warn-only`, with its gap recorded, and brief 04 makes it strict. `check-structure` runs `--warn-only` until brief 05. The skills library's brief 15 says a repo already on Tailwind runs `check-base-ui` strict from the start; this repo has the rule 3 findings listed in brief 04, so it cannot;
+   - `check:conventions` runs knip and the two convention checkers. The checkers read their roots from `scripts/conventions.json` (decided 2026-11-10, technical call): this repo's roots are `backend/` and `ui/app/`, not `server/` and `web/src`, and config read at import time is allowed. Write them there. `check-base-ui` still runs `--warn-only` until brief 04 clears its findings, and brief 04 makes it strict. `check-structure` runs `--warn-only` until brief 05. The skills library's brief 15 says a repo already on Tailwind runs `check-base-ui` strict from the start; this repo has the rule 3 findings listed in brief 04, so it cannot;
    - `check:fast` per decision 7.
 
    knip needs to know about React Router's file routes (`ui/app/routes.ts`) and the `docs` workspace. Time `check:fast` warm with one changed file, and `check` in full, and record both.
-6. **`.claude/rules/`.** Each file stays under about 40 lines, carries the rules an agent must hold while editing there, and points at the skill for the rest.
+7. **`.claude/rules/`.** Each file stays under about 40 lines, carries the rules an agent must hold while editing there, and points at the skill for the rest.
    - **`ui.md`** (`paths: ["ui/app/**"]`):
      - read the `base-ui` skill, and [wiki/decisions-ui.md](../../wiki/decisions-ui.md) for the design;
      - Base UI only through the wrappers in `ui/app/components/ui/`, from subpaths (brief 04 makes this true);
@@ -214,20 +213,21 @@ One commit per step, each with `npm run typecheck`, `npm test` and `npm run buil
      - times use `backend/src/lib/time.ts`, which owns the Europe/Bucharest windows.
 
      Brief 05 adds the structure lines.
-7. **`CLAUDE.md`** at the root, under about 60 lines:
+8. **`CLAUDE.md`** at the root, under about 60 lines:
    - one line on what the app is;
    - "read [corpus/index.md](../../index.md) first";
    - the commands: `npm run dev`, `npm run check` before every hand-back, `npm run check:fast`, one test with `npx vitest run <file>`, `npm run test:e2e`, and the db scripts (`db:migrate`, `db:seed`, `db:seed-users`, `db:set-role` with `-w backend`);
    - the places that mislead: `shared` builds first (`npm run build`), the typecheck is four processes, `.env` sits at the repo root and both dev servers read it with `--env-file-if-exists`, the API is on 3001 and Vite on 5173 in development, the app lives under `/prm/` in production (`PRM_BASE`), and the UI source is `ui/app/`, not `ui/src/`;
    - the hard rules from [corpus/CLAUDE.md](../../CLAUDE.md) that apply outside the corpus.
-8. **Corpus.** Add a [wiki/decisions-engineering.md](../../wiki/decisions-engineering.md) entry "The house style, formatted and checked", with the width, the config source, the `.prettierignore` reasons and what was rejected. Update [wiki/status.md](../../wiki/status.md) and [log.md](../../log.md), and run `bash corpus/lint.sh` until it is clean.
+9. **Corpus.** Add a [wiki/decisions-engineering.md](../../wiki/decisions-engineering.md) entry "The house style, formatted and checked", with the width, the config source, the `.prettierignore` reasons and what was rejected. Update [wiki/status.md](../../wiki/status.md) and [log.md](../../log.md), and run `bash corpus/lint.sh` until it is clean.
 
 ## Acceptance
 
-- [ ] `npm run check` passes. Its run time and `check:fast`'s, warm with one changed file, are in the outcome note, and `check:fast` is under about 15 s or the owner has accepted the time.
-- [ ] `npx prettier --check .` passes. The reformat is one commit that changes whitespace only (`git diff -w <hash>^ <hash>` shows nothing outside the reformat), and its hash is in `.git-blame-ignore-revs`.
-- [ ] `tsconfig.base.json` has the house flags, and `npm run typecheck` covers `e2e/`. `docker build -f infrastructure/Dockerfile .` passes.
-- [ ] `npx eslint .` reports zero errors with every rule in step 4's table. The counts before and after are in the outcome note, and so is every finding left with its reason.
+- [ ] `npm run check` passes. Its run time and `check:fast`'s, warm with one changed file, are in the outcome note, and `check:fast` is within the accepted 30 s (target 15 s, Q10).
+- [ ] The vendored `house-style` copy carries a version header, and `npm run house-style:sync` finds the checkout by name and refreshes it. No `house-style` entry is in `package.json` or the lockfile.
+- [ ] `npx prettier --check .` passes, at width 120. The reformat is one commit that changes whitespace only (`git diff -w <hash>^ <hash>` shows nothing outside the reformat), and its hash is in `.git-blame-ignore-revs`.
+- [ ] `tsconfig.base.json` has the house flags (without `noUncheckedIndexedAccess`, Q50), and `npm run typecheck` covers `e2e/`. `docker build -f infrastructure/Dockerfile .` passes.
+- [ ] `npx eslint .` reports zero errors with every rule in step 5's table. The counts before and after are in the outcome note, and so is every finding left with its reason.
 - [ ] `grep -rn "await " backend/src --include=*.ts` no longer shows an `await` on a Drizzle `.all()`, `.get()` or `.run()` call: the `await-thenable` rule reports 0.
 - [ ] A deliberate `enum`, `!`, `console.log` in `backend/src/app.ts`, `// TODO` and an `export default` in a non-route file each fail `npm run lint`. Revert them after.
 - [ ] `npm test` still passes at 234 tests or more, and `npx playwright test` at 30 or more.
