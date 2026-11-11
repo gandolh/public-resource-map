@@ -12,6 +12,8 @@ import {
 import { useI18n } from "~/lib/i18n";
 import { CITIES } from "~/lib/cities";
 import { Button } from "~/components/ui/Button";
+import { Checkbox } from "~/components/ui/Checkbox";
+import { Select } from "~/components/ui/Select";
 import { Skeleton } from "~/components/ui/Skeleton";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { cn } from "~/lib/utils";
@@ -181,15 +183,13 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
         )}
       </td>
       <td className="border-b border-line py-2.5 text-right whitespace-nowrap">
-        <label className="mr-3 inline-flex items-center gap-1.5 text-detail text-fg-muted">
-          <input
-            type="checkbox"
-            checked={source.enabled}
-            disabled={setEnabled.isPending}
-            onChange={(e) => setEnabled.mutate({ id: source.id, enabled: e.target.checked })}
-          />
-          {t("admin.enabled")}
-        </label>
+        <Checkbox
+          label={t("admin.enabled")}
+          className="mr-3 text-detail text-fg-muted"
+          checked={source.enabled}
+          disabled={setEnabled.isPending}
+          onCheckedChange={(checked) => setEnabled.mutate({ id: source.id, enabled: checked })}
+        />
         <Button
           variant="secondary"
           size="sm"
@@ -258,16 +258,12 @@ function AddSource() {
             {t("admin.field.url")}
             <input name="url" type="url" required className={cn(input, "mt-1")} />
           </label>
-          <label className="block text-detail font-medium">
-            {t("admin.field.city")}
-            <select name="city" className={cn(input, "mt-1")}>
-              {CITIES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select
+            name="city"
+            label={t("admin.field.city")}
+            items={CITIES.map((c) => ({ value: c.id, label: c.name }))}
+            defaultValue={CITIES[0].id}
+          />
           {create.isError && (
             <p role="alert" className="text-detail text-danger">
               {create.error.message}
