@@ -106,6 +106,8 @@ What sits unlayered:
 
 **Where Leaflet's CSS should sit.** In a low layer, before Tailwind's:
 
+*(Changed 2026-11-11, from the base-ui skill's measurement: declare `vendor` **after** `base`, as `@layer theme, base, vendor, components, utilities;`. With `vendor` first, Tailwind's reset beat Leaflet-style rules' borders, padding and margins and made their `img` block; after `base`, the vendor rules held. The skill's `references/tailwind.md` has the stylesheet. Step 3's line below follows this order, not the one shown here.)*
+
 ```
 @layer vendor, theme, base, components, utilities;
 @import "tailwindcss";
