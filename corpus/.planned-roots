@@ -1,10 +1,3 @@
 # Roots the briefs name that the work will create.
-scripts
-CLAUDE.md
-eslint.config.js
-tsconfig.base.json
-.dependency-cruiser.cjs
-.prettierignore
-.npmrc
 plugins
 features

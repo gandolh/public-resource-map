@@ -14,6 +14,8 @@
 
 **Before you start:** run `brief-board guide` ([corpus/CLAUDE.md](../../CLAUDE.md)).
 
+**Update 2026-11-11:** brief 03 named the ESLint config `eslint.config.mjs` (not `.js`), left `no-unnecessary-type-assertion` off until `noUncheckedIndexedAccess` is on, and runs `check-base-ui --warn-only` with these counts: rule-3 3, rule-5 1, rule-9 2 (warnings), rule-11 1. `ui/app/app.css` stays out of Prettier (`*.css` is in `.prettierignore`) until it is split into layers.
+
 ## Context
 
 The owner's call of 2026-11-09 is Base UI everywhere at 1.9.0, styled with Tailwind v4, with the base-ui skill's conventions enforced in each repo. This repo is ahead on both counts: it is on Tailwind 4.3.1 already (`ui/package.json`, `@tailwindcss/vite`), and it has a Base UI wrapper in `ui/app/components/ui/`. So there is **no Tailwind migration brief** here. What is left is:

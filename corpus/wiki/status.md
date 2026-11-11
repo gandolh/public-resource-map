@@ -1,11 +1,13 @@
 ---
 summary: The current-state dashboard as of 2026-11-02, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
-updated: 2026-11-09
+updated: 2026-11-11
 ---
 
 # Status
 
 _Last updated: 2026-11-02_
+
+**2026-11-11:** brief 03, [the house style and the quality harness](../briefs/done/03-the-house-style-harness.md), is built and awaits a deploy: `npm run check` passes, the code is formatted at width 120, and ESLint, knip and dependency-cruiser run. See [decisions-engineering.md](decisions-engineering.md).
 
 **2026-11-10:** brief 02 (Base UI 1.9.0) was built and awaits a deploy; see [log.md](../log.md).
 

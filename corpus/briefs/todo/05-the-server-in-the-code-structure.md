@@ -11,6 +11,8 @@
   - Q1 is answered: every service runs in a container built from `infrastructure/Dockerfile`, which starts a file path, and the build runs `npm ci` and `tsc` only. So the entry rename changes the Dockerfile's `CMD` in the same commit, and this repo owns that file;
   - the technical calls of 2026-11-10 settle Q23 (`features/<name>/`), Q24 (plugin options, explicit registration), Q25 and Q53 (response schemas, with the stream and binary exemption), Q27 (the test runner), Q43 (error bodies), Q52 and Q54-Q56.
 
+**Update 2026-11-11:** brief 03 already landed dependency-cruiser. `.dependency-cruiser.cjs` extends the house preset, it runs in `check:conventions` and finds nothing, so no rule is lowered. This brief keeps the cross-feature check (`feature-through-index`) the preset carries once `features/` exists, and drops only `check-structure`'s `--warn-only`. The ESLint config is `eslint.config.mjs` (the root is not `"type": "module"`); its `n/no-process-env` warning is the block named `prm/process-env-warns`, which goes when the rule becomes an error. A session helper, `backend/src/ward/session.ts`, replaced the two `req.auth!` reads.
+
 **Order:** after 03. It touches nothing under `ui/`, so it can run before or after [brief 04](04-base-ui-by-the-conventions.md), but never at the same time (both change `package-lock.json` and the corpus status page). Run it **before** [brief 01](01-a-source-registry-and-shareable-map-links.md), so 01's adapter and registry changes land in the new folders (see Interplay).
 
 **Before you start:** run `brief-board guide` ([corpus/CLAUDE.md](../../CLAUDE.md)).

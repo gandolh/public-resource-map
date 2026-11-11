@@ -1,5 +1,7 @@
 # Corpus — Schema & Conventions
 
+The repo's commands and hard rules are in the root [CLAUDE.md](../CLAUDE.md); this page covers the corpus only.
+
 This directory is the durable knowledge base for **public-resource-map**.
 The LLM curates `wiki/`; humans curate sources and ask questions.
 
