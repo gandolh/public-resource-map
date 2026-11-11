@@ -12,8 +12,8 @@ import { EventPlaceRow } from "~/components/place/EventPlaceRow";
 import { Button } from "~/components/ui/Button";
 import { Chip } from "~/components/ui/Chip";
 import { Skeleton } from "~/components/ui/Skeleton";
+import { Tab, TabPanel, Tabs, TabsList } from "~/components/ui/Tabs";
 import { StateBlock } from "~/components/ui/StateBlock";
-import { cn } from "~/lib/utils";
 
 export const meta: MetaFunction = () => [
   { title: "Arhivă — CivicMap" },
@@ -64,23 +64,6 @@ export default function ArchiveRoute() {
   const toggle = (c: string) =>
     setCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
 
-  const tabButton = (id: Tab, label: string) => (
-    <button
-      type="button"
-      role="tab"
-      id={`archive-tab-${id}`}
-      aria-selected={tab === id}
-      aria-controls="archive-panel"
-      onClick={() => setTab(id)}
-      className={cn(
-        "-mb-px border-b-2 px-1 pb-2 text-body font-medium transition-colors",
-        tab === id ? "border-accent text-fg" : "border-transparent text-fg-muted hover:text-fg",
-      )}
-    >
-      {label}
-    </button>
-  );
-
   const needsSignIn = tab === "mine" && !signedIn;
 
   return (
@@ -93,113 +76,116 @@ export default function ArchiveRoute() {
           <p className="mt-1.5 text-body text-fg-muted">{t("archive.subtitle")}</p>
         </header>
 
-        <div role="tablist" aria-label={t("archive.title")} className="mt-5 flex gap-5 border-b border-line">
-          {tabButton("mine", t("archive.mine"))}
-          {tabButton("city", t("archive.city", { city: city.name }))}
-        </div>
+        <Tabs value={tab} onValueChange={(next: Tab) => setTab(next)}>
+          <TabsList aria-label={t("archive.title")} className="mt-5">
+            <Tab value="mine">{t("archive.mine")}</Tab>
+            <Tab value="city">{t("archive.city", { city: city.name })}</Tab>
+          </TabsList>
 
-        <div id="archive-panel" role="tabpanel" aria-labelledby={`archive-tab-${tab}`}>
-          {!needsSignIn && (
-            <div className="scroll-fade-x -mx-4 mt-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <div className="flex gap-1.5">
-                <Chip active={categories.length === 0} onClick={() => setCategories([])}>
-                  {t("filters.all")}
-                </Chip>
-                {eventCategories.map((c) => (
-                  <Chip
-                    key={c}
-                    active={categories.includes(c)}
-                    dotColor={eventCategoryColor(c)}
-                    onClick={() => toggle(c)}
-                  >
-                    {t(eventCategoryKey(c))}
+          {/* One panel for both tabs: the list below follows the chosen one. */}
+          <TabPanel value={tab}>
+            {!needsSignIn && (
+              <div className="scroll-fade-x -mx-4 mt-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex gap-1.5">
+                  <Chip active={categories.length === 0} onClick={() => setCategories([])}>
+                    {t("filters.all")}
                   </Chip>
+                  {eventCategories.map((c) => (
+                    <Chip
+                      key={c}
+                      active={categories.includes(c)}
+                      dotColor={eventCategoryColor(c)}
+                      onClick={() => toggle(c)}
+                    >
+                      {t(eventCategoryKey(c))}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {needsSignIn && (
+              <StateBlock
+                icon={<Archive size={18} strokeWidth={2} />}
+                title={t("archive.mineSignIn")}
+                body={t("archive.mineSignInBody")}
+                action={
+                  <Link
+                    to={loginPath(browserPath("/archive"))}
+                    className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-control font-medium text-fg-on-accent"
+                  >
+                    {t("nav.login")}
+                  </Link>
+                }
+              />
+            )}
+
+            {!needsSignIn && q.isPending && (
+              <div className="space-y-4 pt-6" aria-label={t("state.loading")}>
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-4">
+                    <Skeleton className="h-4 w-10 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {needsSignIn && (
-            <StateBlock
-              icon={<Archive size={18} strokeWidth={2} />}
-              title={t("archive.mineSignIn")}
-              body={t("archive.mineSignInBody")}
-              action={
-                <Link
-                  to={loginPath(browserPath("/archive"))}
-                  className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-control font-medium text-fg-on-accent"
-                >
-                  {t("nav.login")}
-                </Link>
-              }
-            />
-          )}
-
-          {!needsSignIn && q.isPending && (
-            <div className="space-y-4 pt-6" aria-label={t("state.loading")}>
-              {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-4">
-                  <Skeleton className="h-4 w-10 shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-2/3" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!needsSignIn && q.isError && (
-            <StateBlock
-              tone="danger"
-              icon={<AlertTriangle size={18} strokeWidth={2} />}
-              title={t("state.error")}
-              body={t("state.errorBody")}
-              action={
-                <Button variant="secondary" size="sm" onClick={() => void q.refetch()}>
-                  {t("state.retry")}
-                </Button>
-              }
-            />
-          )}
-
-          {!needsSignIn && !q.isPending && !q.isError && items.length === 0 && (
-            <StateBlock
-              icon={<Archive size={18} strokeWidth={2} />}
-              title={tab === "mine" ? t("archive.mineEmpty") : t("archive.cityEmpty", { city: city.name })}
-              body={tab === "mine" ? t("archive.mineEmptyBody") : t("archive.cityEmptyBody")}
-            />
-          )}
-
-          {items.length > 0 && (
-            <>
-              <p className="tnum mt-4 text-detail text-fg-muted">{tn("count.events", total)}</p>
-              {groups.map((g) => (
-                <section key={g.key} className="mt-5 first:mt-3">
-                  <h2 className="label-cap pb-1">{g.label}</h2>
-                  <ul>
-                    {g.items.map((item) => (
-                      <EventPlaceRow key={item.event.id} item={item} when="date" />
-                    ))}
-                  </ul>
-                </section>
-              ))}
-              {q.hasNextPage && (
-                <div className="mt-6 flex justify-center">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={q.isFetchingNextPage}
-                    onClick={() => void q.fetchNextPage()}
-                  >
-                    {q.isFetchingNextPage && <Loader2 size={14} className="animate-spin" />}
-                    {t("archive.more")}
+            {!needsSignIn && q.isError && (
+              <StateBlock
+                tone="danger"
+                icon={<AlertTriangle size={18} strokeWidth={2} />}
+                title={t("state.error")}
+                body={t("state.errorBody")}
+                action={
+                  <Button variant="secondary" size="sm" onClick={() => void q.refetch()}>
+                    {t("state.retry")}
                   </Button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+                }
+              />
+            )}
+
+            {!needsSignIn && !q.isPending && !q.isError && items.length === 0 && (
+              <StateBlock
+                icon={<Archive size={18} strokeWidth={2} />}
+                title={tab === "mine" ? t("archive.mineEmpty") : t("archive.cityEmpty", { city: city.name })}
+                body={tab === "mine" ? t("archive.mineEmptyBody") : t("archive.cityEmptyBody")}
+              />
+            )}
+
+            {items.length > 0 && (
+              <>
+                <p className="tnum mt-4 text-detail text-fg-muted">{tn("count.events", total)}</p>
+                {groups.map((g) => (
+                  <section key={g.key} className="mt-5 first:mt-3">
+                    <h2 className="label-cap pb-1">{g.label}</h2>
+                    <ul>
+                      {g.items.map((item) => (
+                        <EventPlaceRow key={item.event.id} item={item} when="date" />
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+                {q.hasNextPage && (
+                  <div className="mt-6 flex justify-center">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={q.isFetchingNextPage}
+                      onClick={() => void q.fetchNextPage()}
+                    >
+                      {q.isFetchingNextPage && <Loader2 size={14} className="animate-spin" />}
+                      {t("archive.more")}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </TabPanel>
+        </Tabs>
       </div>
     </div>
   );
