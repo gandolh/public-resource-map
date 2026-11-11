@@ -30,7 +30,7 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
   - **`ui/`** is bundled by **Vite**, so imports are **extensionless** (current state). 
 - **OKLCH color tokens** in CSS custom properties — future-proof color space, already in place via `app.css`.
 - **`cn()` utility** (`clsx` + `tailwind-merge`) as the canonical class-building function.
-- **UI primitives: `@base-ui/react`** (Button, Avatar, Menu, Toggle, Slider, Input) + lucide-react icons. _(History: the original Stitch brief said shadcn/ui new-york; it was replaced by `@base-ui/react` when the design was implemented — see log 2026-06-26.)_
+- **UI primitives: `@base-ui/react`**, used only through the wrappers in `ui/app/components/ui/` (Menu, Popover, Dialog, Drawer, Toast, Tabs, RadioGroup, Toggle, Checkbox, Select) + lucide-react icons; the rules are the base-ui skill's, checked by `check-base-ui` (see [decisions-ui.md](decisions-ui.md)). _(History: the original Stitch brief said shadcn/ui new-york; it was replaced by `@base-ui/react` when the design was implemented — see log 2026-06-26.)_
 
 ## The house style, formatted and checked (2026-11-11)
 

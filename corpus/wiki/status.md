@@ -7,6 +7,8 @@ updated: 2026-11-11
 
 _Last updated: 2026-11-02_
 
+**2026-11-11 (later):** brief 04, [Base UI by the conventions](../briefs/done/04-base-ui-by-the-conventions.md), is built and awaits a deploy: the stylesheet is in layers, every Base UI part sits behind a wrapper, the place sheet is a Drawer, and the Light / Dark / System switch keys off `data-theme` and starts light. See [decisions-ui.md](decisions-ui.md).
+
 **2026-11-11:** brief 03, [the house style and the quality harness](../briefs/done/03-the-house-style-harness.md), is built and awaits a deploy: `npm run check` passes, the code is formatted at width 120, and ESLint, knip and dependency-cruiser run. See [decisions-engineering.md](decisions-engineering.md).
 
 **2026-11-10:** brief 02 (Base UI 1.9.0) was built and awaits a deploy; see [log.md](../log.md).
@@ -25,7 +27,7 @@ The public surface has been rebuilt place-centric on a replacement design system
 
 **The old design system is gone, and so is the event-centric UI.** The 2026-06-29 "Warmer Editorial-Civic" world (Fraunces + steel-blue Material tokens) was retired without ever being built; the user asked for a total UI/UX rework, chose the category convention played straight at a Citymapper/Linear craft bar, and that is now locked ([decisions-ui.md → Visual direction](decisions-ui.md)).
 
-What actually exists to look at: a full-bleed map of Timișoara or București with clustered category pins that badge their upcoming-event count, a place panel (desktop) / draggable sheet (mobile) showing what is on at that place grouped Today / Tomorrow / This weekend / Later, a citywide what's-on index, category chips + a timing lens that hard-filters, Romanian by default with an English switch, and both themes.
+What actually exists to look at: a full-bleed map of Timișoara or București with clustered category pins that badge their upcoming-event count, a place panel (desktop) / bottom sheet (mobile, a Drawer) showing what is on at that place grouped Today / Tomorrow / This weekend / Later, a citywide what's-on index, category chips + a timing lens that hard-filters, Romanian by default with an English switch, and both themes (light first, a switch in the top bar).
 
 **The honest gap: there is still no real event source.** The ingestion pipeline (04) exists, but every event in the app is seeded and synthetic (labelled as such in `backend/src/db/seed-data.ts`). The places are real: the seed loads a frozen OSM sync of both cities (2,449 places inside the two municipal boundaries, captured 2026-10-04). Vetting the first sources is what makes this a product rather than a demo.
 

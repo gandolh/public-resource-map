@@ -1,6 +1,6 @@
 ---
-summary: Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, and the basemap constraint.
-updated: 2026-10-04
+summary: Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, the basemap constraint, and (2026-11-11) the theme switch and the Base UI conventions.
+updated: 2026-11-11
 ---
 
 # Decisions — visual direction and interface
@@ -17,8 +17,29 @@ The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Frau
 - **Colour: restrained.** Cool-biased neutrals plus **one** blue accent (`#2a5bef` light / `#6d9bff` dark). Eleven `PlaceCategory` hues are *information*, and **`EventCategory` reuses the same eleven** rather than adding eight more — two taxonomies, one palette, and the two enums never appear on the same mark.
 - **Elevation by role:** a 1px border is the default separator; `--sh-1` for resting chrome, `--sh-2` for floating overlays, `--sh-3` for the panel and sheet, and a separate tight `--sh-pin`. A chip, a panel and a pin must not share a shadow.
 - **Radii cap at 12px**; pills are reserved for filter chips and badges, so the pill shape keeps meaning "this narrows what you see".
-- **Both themes ship.** The use scene forces it: bright daylight outdoors on a phone, and a laptop indoors.
+- **Both themes ship.** The use scene forces it: bright daylight outdoors on a phone, and a laptop indoors. How the choice works is under [The theme switch](#the-theme-switch-2026-11-11).
 - The authoritative token reference is **`ui/DESIGN.md`**, derived from the built system. [design.md](design.md) is now a pointer, not a spec.
+
+## The theme switch (2026-11-11)
+
+The owner's call of 2026-11-10 (Q18): Light, Dark and System everywhere, light on a first visit.
+
+- **Light is the default**, whatever the operating system says. System follows the operating system and its changes live. The choice is kept on the device under `vite-ui-theme` (the template's key, kept so existing choices survive).
+- **`data-theme="light|dark"` on `<html>`** holds the resolved theme; there is no `dark` class. `@custom-variant dark` and the dark token block (`:root[data-theme="dark"]`) read it, and `color-scheme` follows it in the same stylesheet. No component reads `prefers-color-scheme`.
+- **A boot script in the head** (`THEME_BOOT_SCRIPT` in `ui/app/lib/theme.ts`, written into the page by `root.tsx`) applies the stored choice before the first paint, so a returning dark visitor never sees a light flash. One `theme-color` meta carries the page background (`--bg`) and follows the switch; a test keeps the script's, the provider's and the stylesheet's colours equal.
+- **The control stays the menu in the top bar.** Its three items are radio items, so a screen reader hears which is chosen. The map follows the theme (CARTO tiles with a key; without one the standard tiles are inverted in CSS).
+
+## Base UI by the conventions (2026-11-11)
+
+The base-ui skill's rules, applied to this app (brief 04). `check-base-ui` is strict; the exceptions are in `scripts/conventions.json`.
+
+- **One wrapper per primitive** in `ui/app/components/ui/`: Popover, Dialog (controlled, Escape guard, initial focus), Drawer (`BottomSheet`), toast (a manager, `notify()`, a host at the root), Tabs, Segmented (a `RadioGroup`), Chip (a `Toggle`), Checkbox, Select (with `items` and a `name`), plus the existing Menu. Feature code never imports `@base-ui/react`.
+- **Device settings are radio groups** (rule 16): the timing lens, the draw mode and the language switch. Arrow keys move and choose; one option is always on. Nothing in this app saves a picker to the server, so there is no `ToggleGroup`. The brief had put the language switch on a guarded `ToggleGroup`; the skill's later table wins, because the language is stored on the device.
+- **The place sheet is a non-modal Drawer.** The spike passed: with `modal={false}`, no backdrop and `disablePointerDismissal`, the map still pans and its pins still open another place while the sheet rests at its peek, with a mouse and with touch (an e2e spec holds it). Snap points are the old 46 and 82 percent of the viewport; a swipe down drops a snap and closes from the peek, and so do Esc and the X.
+- **Error toasts stay until dismissed.** The one notice today (a drawn area cleared by a city change) is information and closes after five seconds.
+- **The stylesheet is in layers**: `theme, base, vendor, components, utilities`. Leaflet's CSS is `layer(vendor)` after `base`; the app's Leaflet and pin rules are in `components`. Only the two token blocks sit outside a layer, and `!important` is left only in the reduced-motion rule (an accepted rule-7 exception). The focus ring no longer sets a `border-radius`, so it follows each element's own radius.
+- **Named scales, same values.** The 17 text sizes are `--text-*` (`text-meta` for 12px, and so on), the z-indexes are `--z-index-*` (`z-chrome` 400 up to `z-popup` 1000), durations use `--dur-1` and the easing is `ease-out-fast`. A new token's name also goes into `cn()` in `ui/app/lib/utils.ts`.
+- **Category hues are a `--cat` custom property**, set inline from data and read by `bg-(--cat)` and the like; the pin rules stay CSS (Tailwind does find a class written whole inside a string, but the per-category variables and `color-mix` read better as CSS).
 
 ## Interface language (locked 2026-09-04)
 

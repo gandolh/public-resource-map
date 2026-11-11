@@ -251,3 +251,29 @@ One commit per numbered step. After each, `npm run check` passes, with `check-ba
 - Brief 01's source registry does not gate publishing (owner, 2026-11-10): a source whose permission is pending is shown on the map and credited, and only a `forbidden` source stays off. Map state goes in the URL. If that lands, the share popover in step 8 shows that URL.
 - [Brief 05](05-the-server-in-the-code-structure.md) touches no file here. Both add devDependencies, so run them one at a time.
 - The skills library's `check-base-ui` walks `src/`, and the skills' `paths:` globs name `web/src/**` and `ui/src/**`. This repo's source is `ui/app/`. That gap is the skills library's to close; until then the checker runs with the repo's source directory set, if it takes one, or `--warn-only`.
+
+## Outcome
+
+Built on 2026-11-11 on `main`, local commits `93ce03f` to `c2e576b` (stylesheet name, layers, tokens, Popover, Dialog, Toast, Tabs, Segmented and RadioGroup, Chip on Toggle, Checkbox, Select, Drawer, Escape guards, share popover, theme switch, strict checks), then this closeout.
+
+**Before:** `check-base-ui` strict rule-3 3, rule-5 1 (the stylesheet name), rule-9 2, rule-11 1; better-tailwindcss 34 unknown, 5 deprecated, 10 class order. **After:** 0 errors, 0 warnings; the three lint rules are errors and clean; `--warn-only` is off.
+
+**The Drawer spike passed**, so the place sheet is a non-modal Drawer and there is no exception: at the peek the map pans and a pin opens another place (Chromium at 390 px, mouse and touch; e2e `place.spec.ts`). `snapToSequentialPoints` is on, or a fast swipe from full closes outright.
+
+**Screenshots** (1280 and 390, light and dark, 33 views, pixelmatch before against after): 55 of 66 differ by under 0.1 percent of pixels. The rest: the login field's focus ring (0.15-0.5 percent; the ring now follows the element's radius, as intended) and the admin review table and panel (checkboxes are now Base UI boxes, up to 1.5 percent). No layout or colour change otherwise.
+
+**Checks run:** `npm run check` (0, 249 tests), `npx playwright test` (38 pass), `npm run build -w ui` (0; layer order theme, base, vendor, components, utilities in the built CSS; `data-theme` in `index.html`), the postcss top-level rule command (prints `:root` and `:root[data-theme="dark"]`), `grep -c '!important' app.css` is 3, `bash corpus/lint.sh` clean. The first Playwright run after adding wrappers failed 7 tests (Vite re-optimising new dependencies); the second passed.
+
+**Deviations.**
+- The language switch is a `RadioGroup`, not a guarded `ToggleGroup`: the language is kept on the device, and the skill's rule 16 table wins. No ToggleGroup exists in the app. The acceptance bullet is met by `e2e/lang.spec.ts` (arrows choose, one is always on).
+- Durations became `duration-(--dur-1)` (120ms), not `--dur-2`: the old values were 100 to 140ms.
+- The place sheet's full height is the old 82 percent; snap points are 0.46 and 0.82.
+- The danger button's text is a dark token in dark mode (contrast); the variant is unused today.
+- The notice toast gained a small Close button (`admin.close` label).
+- `rounded` became `rounded-xs` (4px) where the fixer wanted `rounded-sm`.
+- The theme menu stays a menu (per the brief) with radio items; the browser-bar colour is `--bg`, not white.
+- Four marker classes (`has-selection`, `sheet-peek`, `sheet-full`, `map-fallback`) are ignored by the unknown-class rule in `eslint.config.mjs`.
+- `jsdom` 31.0.0 is a root devDependency; the ui vitest project includes `.tsx` tests.
+- Concern outside scope: the share link is `origin/places/id` and ignores the `/prm/` base.
+
+**Owner step:** from the vps-deploy checkout, `node cli.ts public-resource-map deploy` (the UI is a static client; no backend change).

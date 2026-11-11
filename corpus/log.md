@@ -852,3 +852,18 @@ One commit (`chore(deps): @base-ui/react 1.9.0`): `ui/package.json` and `package
 
 House-style 1.1.0 is vendored under `vendor/house-style/`; Prettier at width 120 reformatted 99 files in one commit (a bundle compare found no difference); `tsconfig.base.json`, `e2e/tsconfig.json`, the house ESLint config, knip, dependency-cruiser and the two convention checkers (warn-only) are in `npm run check`. 69 redundant awaits on Drizzle calls and 28 non-null assertions in source were fixed. Counts, deviations and timings are in the brief's outcome note ([briefs/done/03-the-house-style-harness.md](briefs/done/03-the-house-style-harness.md)). Owner steps: `git config blame.ignoreRevsFile .git-blame-ignore-revs`, then the deploy.
 
+## [2026-11-11] done | Brief 04: Base UI by the conventions, and the theme switch
+
+The base-ui skill's rules applied to the UI. `ui/app/app.css` is one stylesheet in layers
+(`theme, base, vendor, components, utilities`): Leaflet's CSS is `layer(vendor)`, its overrides
+and the pin rules are in `components` with no `!important` but the reduced-motion rule,
+`tnum`, `label-cap` and `scroll-fade-x` are `@utility` blocks, and the focus ring follows each
+element's own radius. The 17 text sizes, the z-indexes, the durations and two colours are named
+tokens, and `cn()` knows them. Base UI is imported only under `components/ui/`: Popover, Dialog
+(Escape guard, initial focus, one jsdom test), a non-modal Drawer for the place sheet (the spike
+passed, so no exception), a Toast module, Tabs, Segmented and the language switch on RadioGroup,
+Chip on Toggle, Checkbox and Select. `window.prompt` is a share popover. The theme is Light,
+Dark, System with light first, `data-theme` on `<html>`, a boot script in the head and one
+`theme-color` meta that follows it. `check-base-ui` is strict and reports 0; the
+better-tailwindcss correctness rules and class order are errors. Details in
+[decisions-ui.md](wiki/decisions-ui.md) and the brief's outcome note.

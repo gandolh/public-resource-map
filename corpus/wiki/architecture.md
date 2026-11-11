@@ -20,11 +20,11 @@ ui  ──►  shared  ◄──  backend
 - **Framework**: React Router 8 (SPA mode — `ssr: false`), `basename` from `PRM_BASE` (`/prm/` in the deploy, `/` in dev)
 - **Build**: Vite 7 + `@react-router/dev`
 - **Styling**: Tailwind CSS 4 (Vite plugin) over hex tokens in `app.css`, mapped to `--color-*`; Archivo from Google Fonts
-- **Components**: `@base-ui/react` primitives + lucide-react icons (the original Stitch brief specified shadcn/ui; replaced when it was built — see [decisions-engineering.md → Code conventions](decisions-engineering.md))
+- **Components**: `@base-ui/react` primitives behind wrappers in `components/ui/`, + lucide-react icons (the original Stitch brief specified shadcn/ui; replaced when it was built — see [decisions-engineering.md → Code conventions](decisions-engineering.md))
 - **Map**: Leaflet 1.9 + react-leaflet 5; the whole city is loaded once and clustered client-side
 - **Data**: TanStack Query for server state, Zustand for city/filter/auth state
 - **Language**: Romanian by default, English switch, in `lib/i18n.tsx` (no framework)
-- **Theme**: dark/light/system — persisted to localStorage as `"vite-ui-theme"`, toggled via `ThemeProvider` context
+- **Theme**: light/dark/system, light on a first visit — persisted to localStorage as `"vite-ui-theme"`, `ThemeProvider` puts `data-theme` on `<html>`, and a boot script in the head applies it before paint (`lib/theme.ts`)
 - **Sign-in**: none in this app. Login, register and account are full navigations to Ward (`/ward/login`, `/ward/register?app=prm`, `/ward/account`), built in `lib/authApi.ts`
 - **Alias**: `~/*` and `@/*` both resolve to `./app/*`
 
@@ -46,20 +46,21 @@ ui  ──►  shared  ◄──  backend
 app/
   root.tsx               HTML shell (lang="ro"), font links, error boundary
   routes.ts              route config (table above)
-  app.css                Tailwind + design tokens, both themes
+  app.css                Tailwind + design tokens, both themes; the one stylesheet, in layers (Leaflet in `vendor`)
   components/
     Layout.tsx           AppProviders (Query, i18n, theme) + Navbar + main outlet + NoticeToast
     Navbar.tsx           top links / phone bottom tabs, city picker, bell, account menu (Ward links)
     FavoriteStar.tsx     follow a place / remind me of an event; signed out, offers Ward sign-in
-    ThemeProvider.tsx    context + localStorage persistence
-    ThemeToggle.tsx      light / dark / system
+    ThemeProvider.tsx    context + localStorage persistence, `data-theme`, System follows the OS
+    ThemeToggle.tsx      light / dark / system (a menu of radio items)
     map/                 PlaceMarkers (pins + clusters), FilterBar (chips, lens, draw entry),
                          AreaDraw (freehand + polygon), UserLocationMarker
-    place/               PlaceDetail (the one place view), PlacePanel (desktop), PlaceSheet (phone),
+    place/               PlaceDetail (the one place view), PlacePanel (desktop), PlaceSheet (phone: a non-modal Drawer),
                          EventList, EventPlaceRow (what's-on and archive rows)
     shell/               Bell (inbox), BrandMark, CityPicker, LangToggle, NoticeToast
-    ui/                  Avatar, Button, CategoryBadge, Chip, DropdownMenu, SearchInput,
-                         Segmented (timing lens), Skeleton, StateBlock (empty / zero results / error)
+    ui/                  the Base UI wrappers: Popover, Dialog, Drawer (BottomSheet), toast, Tabs, Segmented
+                         (RadioGroup), Chip (Toggle), Checkbox, Select, DropdownMenu; and Avatar, Button,
+                         CategoryBadge, SearchInput, Skeleton, StateBlock (empty / zero results / error)
   hooks/                 usePlaces (+ usePlace, usePlaceEvents), useFavorites (+ inbox),
                          useArchive, useAdmin, useIsMobile, useUserLocation
   lib/
@@ -68,6 +69,7 @@ app/
     meApi.ts             favourites + inbox
     authApi.ts           fetchMe (/api/me) and the Ward URLs
     i18n.tsx             RO/EN strings, Intl plurals and dates
+    theme.ts             the theme choice, `data-theme`, the boot script and the browser-bar colours
     cities.ts            the two cities: id, name (= place.city), centre, zoom
     categories.tsx       category icon paths + hues, shared by the panel and the Leaflet pins
     cluster.ts           screen-space grid clustering

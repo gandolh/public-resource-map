@@ -30,12 +30,20 @@ e2e suite does not stand in for.
 5. **Dark and light are both designed.** The basemap switches with the theme,
    and text, chips, pins and the panel stay legible in both. System follows
    the OS.
+   - A first visit shows light, even with the operating system in dark mode.
+   - The switch (top bar) is a menu of three radio items; the chosen one is
+     announced. The choice survives a reload with no light flash, and
+     `<html>` carries `data-theme`.
+   - The browser bar's colour follows the switch (`theme-color`).
+   - Under e2e: `e2e/theme.spec.ts`.
 
 ### Responsive (375 × 740)
 
 6. **The map**: the filter bar fits without clipping (chips scroll
-   sideways), the place opens as a sheet that drags between its snaps, and the
-   tab bar reaches map, what's on and about.
+   sideways), the place opens as a sheet that drags between its snaps (a
+   non-modal Drawer: the map behind a peeking sheet still pans and its pins
+   still open another place), and the tab bar reaches map, what's on and
+   about.
 7. **What's on, archive, about**: one column, no horizontal page scroll.
 8. **Admin** is desktop-first, but readable at 375 without a broken layout.
 
@@ -48,6 +56,7 @@ e2e suite does not stand in for.
 ### Accessibility (basic)
 
 10. **Keyboard.**
+    - Esc closes only the innermost layer: a popover first, the place after.
     - Tab reaches the search, every chip, the lens, the city picker, the pins
       and the panel's controls.
     - Enter opens a pin, and Escape closes the panel and dialogs.
@@ -57,7 +66,8 @@ e2e suite does not stand in for.
     - Pins, clusters, the star, the bell and the icon buttons have accessible
       names.
     - Repeated buttons say what they act on (the review drawer's "Use <place>").
-    - Archive tabs are a `tablist` with `aria-selected`.
+    - Archive tabs are a `tablist` with `aria-selected`; arrow keys move between and choose them.
+   - The language switch and the timing lens are radio groups: one Tab stop, arrow keys choose, one option is always on.
 12. **Contrast.** `--fg-faint` placeholders and labels clear 4.5:1 in both
     themes (DESIGN.md records 4.72 and 6.12).
 
