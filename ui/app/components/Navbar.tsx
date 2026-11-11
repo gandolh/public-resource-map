@@ -24,7 +24,7 @@ function TopLink({ to, children }: { to: string; children: React.ReactNode }) {
       to={to}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "rounded-md px-2.5 py-1.5 text-[13.5px] font-medium transition-colors duration-[120ms]",
+        "rounded-md px-2.5 py-1.5 text-control font-medium transition-colors duration-(--dur-1)",
         active ? "bg-surface-2 text-fg" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
       )}
     >
@@ -75,7 +75,7 @@ function ProfileMenu() {
       {authed ? (
         <>
           <DropdownMenuLabel>{t("nav.account")}</DropdownMenuLabel>
-          <div className="truncate px-2.5 pb-2 text-[13px] text-fg">{user.username}</div>
+          <div className="truncate px-2.5 pb-2 text-ui text-fg">{user.username}</div>
           <DropdownMenuSeparator />
           <DropdownMenuItem render={<Link to="/settings" />}>{t("nav.settings")}</DropdownMenuItem>
           <DropdownMenuItem
@@ -111,7 +111,7 @@ function AccountTab() {
   const to = status === "authenticated" ? "/settings" : loginPath(here);
 
   return (
-    <Link to={to} className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] text-fg-muted">
+    <Link to={to} className="flex flex-1 flex-col items-center gap-0.5 py-2 text-note text-fg-muted">
       <User className="h-5 w-5" aria-hidden />
       {t("nav.account")}
     </Link>
@@ -131,7 +131,7 @@ function BottomTab({ to, icon: Icon, label }: { to: string; icon: React.ElementT
       )}
     >
       <Icon size={19} strokeWidth={active ? 2.4 : 2} />
-      <span className="max-w-full truncate text-[10.5px] leading-none font-medium">{label}</span>
+      <span className="max-w-full truncate text-tag leading-none font-medium">{label}</span>
     </Link>
   );
 }
@@ -156,9 +156,9 @@ export function Navbar() {
 
   return (
     <>
-      <header className="relative z-[700] flex h-13 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-3 md:px-4">
+      <header className="relative z-nav flex h-13 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-3 md:px-4">
         <div className="flex min-w-0 items-center gap-2.5">
-          <Link to="/" className="flex items-center gap-2 rounded-md pr-1 text-[15px] font-semibold tracking-[-0.02em]">
+          <Link to="/" className="flex items-center gap-2 rounded-md pr-1 text-lead font-semibold tracking-[-0.02em]">
             <BrandMark />
             <span className="hidden sm:inline">{t("brand")}</span>
           </Link>
@@ -184,7 +184,7 @@ export function Navbar() {
           moment a place sheet is open. */}
       <nav
         className={cn(
-          "fixed inset-x-0 bottom-0 z-[500] flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden",
+          "fixed inset-x-0 bottom-0 z-panel flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden",
           selectedId && "hidden",
         )}
       >

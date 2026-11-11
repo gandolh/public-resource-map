@@ -57,7 +57,7 @@ export default function LoginRoute() {
 
       {wardEnabled && (
         <>
-          <div className="my-5 flex items-center gap-3 text-[12px] text-fg-faint" aria-hidden="true">
+          <div className="my-5 flex items-center gap-3 text-meta text-fg-faint" aria-hidden="true">
             <span className="h-px flex-1 bg-line" />
             {t("auth.or")}
             <span className="h-px flex-1 bg-line" />
@@ -77,7 +77,7 @@ export default function LoginRoute() {
         </>
       )}
 
-      <p className="mt-6 text-[13.5px] text-fg-muted">
+      <p className="mt-6 text-control text-fg-muted">
         {t("auth.noAccount")}{" "}
         <Link to={registerPath(next.browser)} className="font-medium text-accent hover:underline">
           {t("auth.registerLink")}

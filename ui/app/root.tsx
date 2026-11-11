@@ -88,10 +88,10 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
     <main className="min-h-screen bg-bg text-fg flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-faint">
+        <p className="text-note font-semibold uppercase tracking-[0.14em] text-fg-faint">
           {notFound ? "404" : "Eroare"}
         </p>
-        <h1 className="mt-2 text-[24px] leading-tight font-semibold tracking-[-0.02em]">{title}</h1>
+        <h1 className="mt-2 text-headline leading-tight font-semibold tracking-[-0.02em]">{title}</h1>
         <p className="mt-2 text-fg-muted">{detail}</p>
         <Link
           to="/"
@@ -100,7 +100,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           Înapoi la hartă
         </Link>
         {stack && (
-          <pre className="mt-6 max-h-64 overflow-auto rounded-lg border border-line bg-surface-2 p-3 font-mono text-[11px] text-fg-muted">
+          <pre className="mt-6 max-h-64 overflow-auto rounded-lg border border-line bg-surface-2 p-3 font-mono text-note text-fg-muted">
             <code>{stack}</code>
           </pre>
         )}

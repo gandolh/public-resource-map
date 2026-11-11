@@ -88,7 +88,7 @@ export default function PlaceRoute() {
 
   if (isError) {
     return (
-      <div className="pointer-events-auto absolute top-1/2 right-3 left-3 z-[600] mx-auto w-[min(92%,360px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3 md:left-auto md:translate-y-0 md:top-3 md:w-[384px]">
+      <div className="pointer-events-auto absolute top-1/2 right-3 left-3 z-sheet mx-auto w-[min(92%,360px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3 md:left-auto md:translate-y-0 md:top-3 md:w-[384px]">
         <StateBlock
           tone="danger"
           icon={<AlertTriangle size={18} strokeWidth={2} />}
@@ -112,7 +112,7 @@ export default function PlaceRoute() {
   if (isPending || !place) {
     return (
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-[600] h-[46dvh] animate-pulse rounded-t-xl border-t border-line bg-surface md:inset-x-auto md:top-3 md:right-3 md:bottom-3 md:h-auto md:w-[384px] md:rounded-xl md:border"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-sheet h-[46dvh] animate-pulse rounded-t-xl border-t border-line bg-surface md:inset-x-auto md:top-3 md:right-3 md:bottom-3 md:h-auto md:w-[384px] md:rounded-xl md:border"
         aria-label={t("state.loading")}
         role="status"
       />

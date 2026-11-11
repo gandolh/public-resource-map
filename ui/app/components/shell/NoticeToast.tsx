@@ -23,13 +23,13 @@ export function NoticeToast() {
   return (
     <div
       role="status"
-      className="pointer-events-none absolute inset-x-0 bottom-20 z-[600] flex justify-center px-4 md:bottom-16"
+      className="pointer-events-none absolute inset-x-0 bottom-20 z-sheet flex justify-center px-4 md:bottom-16"
     >
       {notice && (
         <button
           type="button"
           onClick={dismiss}
-          className="pointer-events-auto rounded-lg border border-line bg-surface px-3.5 py-2 text-[13px] text-fg shadow-e3"
+          className="pointer-events-auto rounded-lg border border-line bg-surface px-3.5 py-2 text-ui text-fg shadow-e3"
         >
           {t("area.cleared")}
         </button>

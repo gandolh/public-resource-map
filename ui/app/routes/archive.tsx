@@ -73,7 +73,7 @@ export default function ArchiveRoute() {
       aria-controls="archive-panel"
       onClick={() => setTab(id)}
       className={cn(
-        "-mb-px border-b-2 px-1 pb-2 text-[14px] font-medium transition-colors",
+        "-mb-px border-b-2 px-1 pb-2 text-body font-medium transition-colors",
         tab === id ? "border-accent text-fg" : "border-transparent text-fg-muted hover:text-fg",
       )}
     >
@@ -87,10 +87,10 @@ export default function ArchiveRoute() {
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
       <div className="mx-auto w-full max-w-[720px] px-4 py-6 md:px-6 md:py-8">
         <header>
-          <h1 className="text-[26px] leading-[1.15] font-semibold tracking-[-0.025em] md:text-[30px]">
+          <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em] md:text-hero">
             {t("archive.title")}
           </h1>
-          <p className="mt-1.5 text-[14px] text-fg-muted">{t("archive.subtitle")}</p>
+          <p className="mt-1.5 text-body text-fg-muted">{t("archive.subtitle")}</p>
         </header>
 
         <div role="tablist" aria-label={t("archive.title")} className="mt-5 flex gap-5 border-b border-line">
@@ -127,7 +127,7 @@ export default function ArchiveRoute() {
               action={
                 <Link
                   to={loginPath(browserPath("/archive"))}
-                  className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-[13.5px] font-medium text-fg-on-accent"
+                  className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-control font-medium text-fg-on-accent"
                 >
                   {t("nav.login")}
                 </Link>
@@ -173,7 +173,7 @@ export default function ArchiveRoute() {
 
           {items.length > 0 && (
             <>
-              <p className="tnum mt-4 text-[12.5px] text-fg-muted">{tn("count.events", total)}</p>
+              <p className="tnum mt-4 text-detail text-fg-muted">{tn("count.events", total)}</p>
               {groups.map((g) => (
                 <section key={g.key} className="mt-5 first:mt-3">
                   <h2 className="label-cap pb-1">{g.label}</h2>

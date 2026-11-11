@@ -23,8 +23,8 @@ const MIN_PASSWORD = 8;
 function Section({ title, lead, children }: { title: string; lead?: string; children?: ReactNode }) {
   return (
     <section className="mt-8 border-t border-line pt-6 first:mt-6 first:border-t-0 first:pt-0">
-      <h2 className="text-[17px] leading-snug font-semibold tracking-[-0.015em] text-fg">{title}</h2>
-      {lead && <p className="mt-1.5 text-[14px] leading-relaxed text-fg-muted">{lead}</p>}
+      <h2 className="text-title leading-snug font-semibold tracking-[-0.015em] text-fg">{title}</h2>
+      {lead && <p className="mt-1.5 text-body leading-relaxed text-fg-muted">{lead}</p>}
       {children && <div className="mt-4 space-y-3">{children}</div>}
     </section>
   );
@@ -59,7 +59,7 @@ export default function SettingsRoute() {
           action={
             <Link
               to={loginPath(browserPath("/settings"))}
-              className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-[13.5px] font-medium text-fg-on-accent"
+              className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-control font-medium text-fg-on-accent"
             >
               {t("nav.login")}
             </Link>
@@ -73,10 +73,10 @@ export default function SettingsRoute() {
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
       <article className="mx-auto w-full max-w-[560px] px-4 py-6 md:px-6 md:py-10">
-        <h1 className="text-[26px] leading-[1.15] font-semibold tracking-[-0.025em] md:text-[30px]">
+        <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em] md:text-hero">
           {t("settings.title")}
         </h1>
-        <p className="mt-2 text-[14.5px] text-fg-muted">{t("settings.signedInAs", { name: user.username })}</p>
+        <p className="mt-2 text-reading text-fg-muted">{t("settings.signedInAs", { name: user.username })}</p>
 
         {user.hasPassword ? <ChangePassword /> : <FirstPassword wardEnabled={ward.enabled} />}
         <WardLink enabled={ward.enabled} linked={ward.linked} hasPassword={user.hasPassword} />

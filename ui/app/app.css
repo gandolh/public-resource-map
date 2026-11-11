@@ -38,6 +38,7 @@
   --fg-muted:      #59636f;
   --fg-faint:      #697281;
   --fg-on-accent:  #ffffff;
+  --fg-on-danger:  #ffffff;
 
   /* The one accent */
   --accent:        #2a5bef;
@@ -54,6 +55,7 @@
 
   /* Map chrome */
   --map-scrim:     rgba(13, 17, 23, 0.06);
+  --scrim:         rgba(0, 0, 0, 0.30);
   --pin-stroke:    #ffffff;
   --pin-ico:       #ffffff;
 
@@ -96,6 +98,7 @@
   --fg-muted:      #99a2b0;
   --fg-faint:      #8d96a5;
   --fg-on-accent:  #0b0d11;
+  --fg-on-danger:  #0b0d11;
 
   --accent:        #6d9bff;
   --accent-hover:  #85adff;
@@ -109,6 +112,7 @@
   --danger-weak:   #2c1218;
 
   --map-scrim:     rgba(0, 0, 0, 0.32);
+  --scrim:         rgba(0, 0, 0, 0.30);
   --pin-stroke:    #14171d;
   /* Dark-mode fills are light, so the glyph flips to dark to keep contrast. */
   --pin-ico:       #0b0d11;
@@ -145,6 +149,8 @@
   --color-fg-muted:    var(--fg-muted);
   --color-fg-faint:    var(--fg-faint);
   --color-fg-on-accent:var(--fg-on-accent);
+  --color-fg-on-danger:var(--fg-on-danger);
+  --color-scrim:       var(--scrim);
 
   --color-accent:      var(--accent);
   --color-accent-hover:var(--accent-hover);
@@ -187,6 +193,37 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --ease-out-fast: var(--ease);
+
+  /* The type scale, named by role. Same pixel values the app has always used,
+     and no line height: a size here sets the size alone. */
+  --text-nano: 9.5px;
+  --text-micro: 10px;
+  --text-tag: 10.5px;
+  --text-note: 11px;
+  --text-caption: 11.5px;
+  --text-meta: 12px;
+  --text-detail: 12.5px;
+  --text-ui: 13px;
+  --text-control: 13.5px;
+  --text-body: 14px;
+  --text-reading: 14.5px;
+  --text-lead: 15px;
+  --text-title: 17px;
+  --text-heading: 19px;
+  --text-headline: 24px;
+  --text-display: 26px;
+  --text-hero: 30px;
+
+  /* The z scale. The map is one stacking context at 0 (see the Leaflet rules);
+     app chrome sits from 400 up, and a popup opens above a dialog. */
+  --z-index-chrome: 400;
+  --z-index-draw: 450;
+  --z-index-panel: 500;
+  --z-index-sheet: 600;
+  --z-index-nav: 700;
+  --z-index-overlay: 900;
+  --z-index-dialog: 901;
+  --z-index-popup: 1000;
 
   /* Opacity and a short slide: the desktop place panel arriving. */
   --animate-panel-in: panel-in var(--dur-3) var(--ease) both;

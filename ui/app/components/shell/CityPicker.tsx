@@ -20,7 +20,7 @@ export function CityPicker() {
         <button
           type="button"
           aria-label={t("city.change")}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 text-[13.5px] font-medium text-fg transition-colors hover:bg-surface-2 hover:border-line-strong"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 text-control font-medium text-fg transition-colors hover:bg-surface-2 hover:border-line-strong"
         >
           {city.name}
           <ChevronDown size={14} strokeWidth={2.2} className="text-fg-faint" />

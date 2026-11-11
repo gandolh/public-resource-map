@@ -51,8 +51,8 @@ export default function SourcesRoute() {
     <div className="mx-auto w-full max-w-[1100px] px-6 py-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-[24px] font-semibold tracking-[-0.02em]">{t("admin.sources")}</h1>
-          <p className="mt-1 text-[13.5px] text-fg-muted">{t("admin.sourcesLead")}</p>
+          <h1 className="text-headline font-semibold tracking-[-0.02em]">{t("admin.sources")}</h1>
+          <p className="mt-1 text-control text-fg-muted">{t("admin.sourcesLead")}</p>
         </div>
         <Button
           variant="primary"
@@ -66,7 +66,7 @@ export default function SourcesRoute() {
       </header>
 
       {summary && (
-        <p role="status" className="mt-4 rounded-lg border border-line bg-surface-2 px-3 py-2 text-[13px]">
+        <p role="status" className="mt-4 rounded-lg border border-line bg-surface-2 px-3 py-2 text-ui">
           {summary}
         </p>
       )}
@@ -103,9 +103,9 @@ export default function SourcesRoute() {
         </div>
       )}
       {data && data.length > 0 && (
-        <table className="mt-5 w-full border-separate border-spacing-0 text-left text-[13px]">
+        <table className="mt-5 w-full border-separate border-spacing-0 text-left text-ui">
           <thead>
-            <tr className="text-[11.5px] tracking-[0.04em] text-fg-muted uppercase">
+            <tr className="text-caption tracking-[0.04em] text-fg-muted uppercase">
               <th scope="col" className="border-b border-line py-2">
                 {t("admin.col.source")}
               </th>
@@ -140,7 +140,7 @@ function Health({ status }: { status: EventSourceDto["lastStatus"] }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11.5px] font-semibold",
+        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-caption font-semibold",
         status === "ok" ? "border-line bg-surface-2 text-fg-muted" : "border-danger/30 bg-danger-weak text-danger",
       )}
     >
@@ -158,14 +158,14 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
     <tr className={cn("align-top", !source.enabled && "opacity-60")}>
       <td className="border-b border-line py-2.5 pr-3">
         <span className="block font-semibold">{source.name}</span>
-        <span className="block text-[12px] text-fg-muted">
+        <span className="block text-meta text-fg-muted">
           {source.city} · {source.mechanism} · <code>{source.adapterKey}</code>
         </span>
       </td>
       <td className="border-b border-line py-2.5 pr-3">
         <Health status={source.lastStatus} />
         {source.lastEventCount !== null && (
-          <span className="tnum mt-1 block text-[12px] text-fg-muted">
+          <span className="tnum mt-1 block text-meta text-fg-muted">
             {t("admin.lastCount", { n: source.lastEventCount })}
           </span>
         )}
@@ -173,7 +173,7 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
       <td className="tnum border-b border-line py-2.5 pr-3 text-fg-muted">
         {source.lastRunAt ? `${dayMonth(source.lastRunAt)} · ${time(source.lastRunAt)}` : "—"}
         {source.lastSuccessfulAt && source.lastSuccessfulAt !== source.lastRunAt && (
-          <span className="block text-[12px]">
+          <span className="block text-meta">
             {t("admin.lastSuccess", {
               when: `${dayMonth(source.lastSuccessfulAt)} · ${time(source.lastSuccessfulAt)}`,
             })}
@@ -181,7 +181,7 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
         )}
       </td>
       <td className="border-b border-line py-2.5 text-right whitespace-nowrap">
-        <label className="mr-3 inline-flex items-center gap-1.5 text-[12.5px] text-fg-muted">
+        <label className="mr-3 inline-flex items-center gap-1.5 text-detail text-fg-muted">
           <input
             type="checkbox"
             checked={source.enabled}
@@ -201,7 +201,7 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
           {t("admin.refresh")}
         </Button>
         {refresh.isError && (
-          <span role="alert" className="mt-1 block text-[12px] text-danger">
+          <span role="alert" className="mt-1 block text-meta text-danger">
             {refresh.error.message}
           </span>
         )}
@@ -234,7 +234,7 @@ function AddSource() {
     );
   };
 
-  const input = "h-9 w-full rounded-lg border border-line bg-surface px-3 text-[13.5px]";
+  const input = "h-9 w-full rounded-lg border border-line bg-surface px-3 text-control";
   return (
     <section className="mt-8">
       {!open ? (
@@ -244,21 +244,21 @@ function AddSource() {
         </Button>
       ) : (
         <form onSubmit={submit} className="max-w-[560px] space-y-3 rounded-xl border border-line bg-surface p-4">
-          <h2 className="text-[15px] font-semibold">{t("admin.addSource")}</h2>
-          <p className="text-[12.5px] text-fg-muted">{t("admin.addSourceHint")}</p>
-          <label className="block text-[12.5px] font-medium">
+          <h2 className="text-lead font-semibold">{t("admin.addSource")}</h2>
+          <p className="text-detail text-fg-muted">{t("admin.addSourceHint")}</p>
+          <label className="block text-detail font-medium">
             {t("admin.field.name")}
             <input name="name" required className={cn(input, "mt-1")} />
           </label>
-          <label className="block text-[12.5px] font-medium">
+          <label className="block text-detail font-medium">
             {t("admin.field.slug")}
             <input name="slug" required pattern="[a-z0-9-]+" className={cn(input, "mt-1")} />
           </label>
-          <label className="block text-[12.5px] font-medium">
+          <label className="block text-detail font-medium">
             {t("admin.field.url")}
             <input name="url" type="url" required className={cn(input, "mt-1")} />
           </label>
-          <label className="block text-[12.5px] font-medium">
+          <label className="block text-detail font-medium">
             {t("admin.field.city")}
             <select name="city" className={cn(input, "mt-1")}>
               {CITIES.map((c) => (
@@ -269,7 +269,7 @@ function AddSource() {
             </select>
           </label>
           {create.isError && (
-            <p role="alert" className="text-[12.5px] text-danger">
+            <p role="alert" className="text-detail text-danger">
               {create.error.message}
             </p>
           )}
@@ -293,8 +293,8 @@ function OsmSync() {
   const sync = useOsmSync();
   return (
     <section className="mt-8 border-t border-line pt-6">
-      <h2 className="text-[15px] font-semibold">{t("admin.osmTitle")}</h2>
-      <p className="mt-1 text-[12.5px] text-fg-muted">{t("admin.osmLead")}</p>
+      <h2 className="text-lead font-semibold">{t("admin.osmTitle")}</h2>
+      <p className="mt-1 text-detail text-fg-muted">{t("admin.osmLead")}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {CITIES.map((c) => (
           <Button key={c.id} variant="secondary" size="sm" disabled={sync.isPending} onClick={() => sync.mutate(c.id)}>
@@ -308,7 +308,7 @@ function OsmSync() {
         ))}
       </div>
       {sync.data && (
-        <p role="status" className="mt-3 text-[13px] text-fg-muted">
+        <p role="status" className="mt-3 text-ui text-fg-muted">
           {t("admin.osmResult", { city: sync.data.city, upserted: sync.data.upserted, inserted: sync.data.inserted })}{" "}
           {t("admin.osmRetired", {
             retired: sync.data.retired,
@@ -318,12 +318,12 @@ function OsmSync() {
         </p>
       )}
       {sync.data && sync.data.retirementHeld > 0 && (
-        <p role="alert" className="mt-2 text-[12.5px] text-danger">
+        <p role="alert" className="mt-2 text-detail text-danger">
           {t("admin.osmHeld", { held: sync.data.retirementHeld })}
         </p>
       )}
       {sync.isError && (
-        <p role="alert" className="mt-3 text-[12.5px] text-danger">
+        <p role="alert" className="mt-3 text-detail text-danger">
           {sync.error.message}
         </p>
       )}

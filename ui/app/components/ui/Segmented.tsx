@@ -48,8 +48,8 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              "rounded-full font-medium transition-[background-color,color] duration-[120ms] ease-[cubic-bezier(.2,.8,.2,1)]",
-              size === "sm" ? "h-7 px-3 text-[12.5px]" : "h-8 px-3.5 text-[13px]",
+              "rounded-full font-medium transition-[background-color,color] duration-(--dur-1) ease-out-fast",
+              size === "sm" ? "h-7 px-3 text-detail" : "h-8 px-3.5 text-ui",
               // The accent, not --fg: the category chips right beside this one
               // fill with the accent when selected, and one surface may not
               // speak two selection languages.

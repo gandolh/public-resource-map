@@ -241,9 +241,9 @@ function DrawBar({
   return (
     <div
       ref={ref}
-      className="pointer-events-auto absolute inset-x-2 top-2 z-[450] mx-auto flex w-fit max-w-[calc(100%-1rem)] flex-col items-center gap-2 rounded-xl border border-line bg-surface p-2.5 shadow-e3 md:top-3"
+      className="pointer-events-auto absolute inset-x-2 top-2 z-draw mx-auto flex w-fit max-w-[calc(100%-1rem)] flex-col items-center gap-2 rounded-xl border border-line bg-surface p-2.5 shadow-e3 md:top-3"
     >
-      <p role="status" className="px-1 text-center text-[13px] text-fg">
+      <p role="status" className="px-1 text-center text-ui text-fg">
         {mode === "freehand" ? t("area.hintFreehand") : t("area.hintPolygon")}
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">

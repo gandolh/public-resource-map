@@ -23,8 +23,8 @@ export function LangToggle() {
           onClick={() => setLang(option)}
           aria-pressed={lang === option}
           className={cn(
-            "h-7 rounded-md px-2 text-[11.5px] font-semibold tracking-[0.04em] uppercase",
-            "transition-colors duration-[120ms]",
+            "h-7 rounded-md px-2 text-caption font-semibold tracking-[0.04em] uppercase",
+            "transition-colors duration-(--dur-1)",
             lang === option ? "bg-accent text-fg-on-accent" : "text-fg-faint hover:bg-surface-2 hover:text-fg",
           )}
         >

@@ -110,8 +110,8 @@ export default function ReviewRoute() {
     <div className="mx-auto w-full max-w-[1100px] px-6 py-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-[24px] font-semibold tracking-[-0.02em]">{t("admin.review")}</h1>
-          <p className="mt-1 text-[13.5px] text-fg-muted">{t("admin.reviewLead")}</p>
+          <h1 className="text-headline font-semibold tracking-[-0.02em]">{t("admin.review")}</h1>
+          <p className="mt-1 text-control text-fg-muted">{t("admin.reviewLead")}</p>
         </div>
       </header>
 
@@ -127,7 +127,7 @@ export default function ReviewRoute() {
       </div>
 
       {message && (
-        <p role="status" className="mt-4 rounded-lg border border-line bg-surface-2 px-3 py-2 text-[13px]">
+        <p role="status" className="mt-4 rounded-lg border border-line bg-surface-2 px-3 py-2 text-ui">
           {message}
         </p>
       )}
@@ -171,7 +171,7 @@ export default function ReviewRoute() {
           {/* The bulk toolbar sticks to the top of the scrolling pane, so it is
               in reach however far down the queue the reviewer is. */}
           <div className="sticky top-0 z-10 -mx-2 mt-4 flex items-center gap-2 bg-bg/95 px-2 py-2 backdrop-blur">
-            <span className="tnum text-[13px] text-fg-muted">{t("admin.selected", { n: chosen.length })}</span>
+            <span className="tnum text-ui text-fg-muted">{t("admin.selected", { n: chosen.length })}</span>
             <Button
               variant="primary"
               size="sm"
@@ -196,9 +196,9 @@ export default function ReviewRoute() {
             </Button>
           </div>
 
-          <table className="mt-1 w-full border-separate border-spacing-0 text-left text-[13px]">
+          <table className="mt-1 w-full border-separate border-spacing-0 text-left text-ui">
             <thead>
-              <tr className="text-[11.5px] tracking-[0.04em] text-fg-muted uppercase">
+              <tr className="text-caption tracking-[0.04em] text-fg-muted uppercase">
                 <th scope="col" className="w-9 border-b border-line py-2 pl-2">
                   <input
                     type="checkbox"
@@ -253,7 +253,7 @@ function BucketBadge({ row }: { row: StagedEventDto }) {
   return (
     <span
       className={cn(
-        "inline-flex rounded-md border px-1.5 py-0.5 text-[11.5px] font-medium whitespace-nowrap",
+        "inline-flex rounded-md border px-1.5 py-0.5 text-caption font-medium whitespace-nowrap",
         loud ? "border-danger/30 bg-danger-weak text-danger" : "border-line bg-surface-2 text-fg-muted",
       )}
     >
@@ -293,7 +293,7 @@ function Row({
         <button type="button" onClick={onOpen} className="text-left font-semibold text-fg hover:underline">
           {row.title}
         </button>
-        <span className="block text-[12px] text-fg-muted">{row.sourcePlatform}</span>
+        <span className="block text-meta text-fg-muted">{row.sourcePlatform}</span>
       </td>
       <td className="tnum border-b border-line py-2.5 pr-3 whitespace-nowrap text-fg-muted">
         {dayMonth(row.startDate)} · {time(row.startDate)}
@@ -384,14 +384,14 @@ function Drawer({
   return (
     <Dialog.Root open={row !== null} onOpenChange={(next) => !next && onClose()}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-[900] bg-black/30" />
-        <Dialog.Popup className="fixed top-0 right-0 z-[901] flex h-[100dvh] w-[min(100vw,480px)] flex-col border-l border-line bg-surface shadow-e3 outline-none">
+        <Dialog.Backdrop className="fixed inset-0 z-overlay bg-scrim" />
+        <Dialog.Popup className="fixed top-0 right-0 z-dialog flex h-[100dvh] w-[min(100vw,480px)] flex-col border-l border-line bg-surface shadow-e3 outline-none">
           {row && (
             <>
               <div className="flex items-start justify-between gap-3 border-b border-line p-4">
                 <div className="min-w-0">
-                  <Dialog.Title className="text-[17px] leading-snug font-semibold">{row.title}</Dialog.Title>
-                  <Dialog.Description className="mt-0.5 text-[12.5px] text-fg-muted">
+                  <Dialog.Title className="text-title leading-snug font-semibold">{row.title}</Dialog.Title>
+                  <Dialog.Description className="mt-0.5 text-detail text-fg-muted">
                     {row.sourcePlatform} · <BucketBadge row={row} />
                   </Dialog.Description>
                 </div>
@@ -403,7 +403,7 @@ function Drawer({
                 </Dialog.Close>
               </div>
 
-              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 text-[13.5px]">
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 text-control">
                 {row.issues && (
                   <p className="rounded-lg border border-danger/30 bg-danger-weak px-3 py-2 text-danger">
                     {t(quarantined ? "admin.issues" : "admin.reviewReason", { issues: row.issues })}
@@ -458,7 +458,7 @@ function Drawer({
 
                 {!quarantined && (
                   <section aria-labelledby="where" className="space-y-2">
-                    <h3 id="where" className="text-[12px] font-semibold tracking-[0.04em] text-fg-muted uppercase">
+                    <h3 id="where" className="text-meta font-semibold tracking-[0.04em] text-fg-muted uppercase">
                       {t("admin.where")}
                     </h3>
                     <div className="h-[220px] overflow-hidden rounded-lg border border-line">
@@ -502,7 +502,7 @@ function Drawer({
                         </p>
                       )}
                     </div>
-                    <p className="text-[12px] text-fg-faint">{t("admin.pinHint")}</p>
+                    <p className="text-meta text-fg-faint">{t("admin.pinHint")}</p>
 
                     {row.candidates.length > 0 && (
                       <ul className="space-y-1.5">
@@ -513,12 +513,12 @@ function Drawer({
                           >
                             <span className="min-w-0">
                               <span className="block truncate font-medium">{c.name}</span>
-                              <span className="tnum text-[12px] text-fg-muted">
+                              <span className="tnum text-meta text-fg-muted">
                                 {t("admin.score", { score: Math.round(c.score * 100) })}
                               </span>
                             </span>
                             {c.placeId === row.placeId ? (
-                              <span className="text-[12px] font-semibold text-accent">{t("admin.chosen")}</span>
+                              <span className="text-meta font-semibold text-accent">{t("admin.chosen")}</span>
                             ) : (
                               <Button
                                 variant="secondary"
@@ -541,7 +541,7 @@ function Drawer({
                       </Button>
                     )}
                     {error && (
-                      <p role="alert" className="text-[12.5px] text-danger">
+                      <p role="alert" className="text-detail text-danger">
                         {error}
                       </p>
                     )}
@@ -561,7 +561,7 @@ function Drawer({
                   {t("admin.reject")}
                 </Button>
                 {!quarantined && !acceptable(row) && (
-                  <span className="self-center text-[12px] text-fg-muted">{t("admin.needsPlace")}</span>
+                  <span className="self-center text-meta text-fg-muted">{t("admin.needsPlace")}</span>
                 )}
               </div>
             </>

@@ -21,8 +21,8 @@ const CONTACT = (import.meta.env.VITE_DATA_CONTACT as string | undefined)?.trim(
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-8 first:mt-6">
-      <h2 className="text-[17px] leading-snug font-semibold tracking-[-0.015em] text-fg">{title}</h2>
-      <div className="mt-2 space-y-2 text-[14.5px] leading-relaxed text-fg-muted">{children}</div>
+      <h2 className="text-title leading-snug font-semibold tracking-[-0.015em] text-fg">{title}</h2>
+      <div className="mt-2 space-y-2 text-reading leading-relaxed text-fg-muted">{children}</div>
     </section>
   );
 }
@@ -52,10 +52,10 @@ export default function AboutDataRoute() {
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
       <article className="mx-auto w-full max-w-[680px] px-4 py-6 md:px-6 md:py-10">
-        <h1 className="text-[26px] leading-[1.15] font-semibold tracking-[-0.025em] md:text-[30px]">
+        <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em] md:text-hero">
           {t("about.title")}
         </h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-fg-muted">{t("about.lead")}</p>
+        <p className="mt-2 text-lead leading-relaxed text-fg-muted">{t("about.lead")}</p>
 
         <Section title={t("about.placesTitle")}>
           <p>{t("about.places")}</p>
@@ -77,7 +77,7 @@ export default function AboutDataRoute() {
 
         <Section title={t("about.eventsTitle")}>
           <p>{t("about.events")}</p>
-          <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-[13.5px] text-fg">
+          <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-control text-fg">
             {t("about.eventsSample")}
           </p>
         </Section>

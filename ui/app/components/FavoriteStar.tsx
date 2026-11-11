@@ -71,8 +71,8 @@ export function FavoriteStar({
         <Icon size={iconSize} strokeWidth={2.2} />
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align="end" className="z-[1000]">
-          <Popover.Popup className="w-[260px] rounded-xl border border-line bg-surface p-3.5 text-[13px] shadow-e3 outline-none">
+        <Popover.Positioner sideOffset={6} align="end" className="z-popup">
+          <Popover.Popup className="w-[260px] rounded-xl border border-line bg-surface p-3.5 text-ui shadow-e3 outline-none">
             <Popover.Title className="font-semibold text-fg">{t(`fav.${kind}.why`)}</Popover.Title>
             <Popover.Description className="mt-1 text-fg-muted">{t("fav.signInBody")}</Popover.Description>
             <div className="mt-3 flex gap-2">

@@ -53,7 +53,7 @@ function CategoryChips({ compact }: { compact?: boolean }) {
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
-          className="inline-flex h-8 shrink-0 items-center rounded-md px-2 text-[12.5px] font-medium text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-fg"
+          className="inline-flex h-8 shrink-0 items-center rounded-md px-2 text-detail font-medium text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-fg"
         >
           {showAll ? t("filters.showLess") : t("filters.more", { n: SECONDARY.length })}
         </button>
@@ -122,7 +122,7 @@ function LensBanner({ placeCount, className }: { placeCount: number | null; clas
     <div
       role="status"
       className={cn(
-        "pointer-events-auto flex w-fit items-center gap-2 rounded-lg border border-accent-line bg-accent-weak py-1 pr-1 pl-3 text-[12.5px] text-fg shadow-e1",
+        "pointer-events-auto flex w-fit items-center gap-2 rounded-lg border border-accent-line bg-accent-weak py-1 pr-1 pl-3 text-detail text-fg shadow-e1",
         className,
       )}
     >
@@ -172,7 +172,7 @@ export function FilterBar({
   return (
     <>
       {/* Desktop */}
-      <div className="pointer-events-none absolute top-3 left-3 z-[400] hidden w-[352px] flex-col gap-2 md:flex">
+      <div className="pointer-events-none absolute top-3 left-3 z-chrome hidden w-[352px] flex-col gap-2 md:flex">
         <div className="pointer-events-auto">
           <SearchInput
             value={search}
@@ -186,11 +186,11 @@ export function FilterBar({
           <div className="mt-2">
             <AreaControls />
           </div>
-          <p className="tnum mt-2.5 border-t border-line pt-2 text-[12px] text-fg-muted">{resultLabel}</p>
+          <p className="tnum mt-2.5 border-t border-line pt-2 text-meta text-fg-muted">{resultLabel}</p>
         </div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 left-1/2 z-[400] hidden -translate-x-1/2 flex-col items-center gap-2 md:flex">
+      <div className="pointer-events-none absolute bottom-4 left-1/2 z-chrome hidden -translate-x-1/2 flex-col items-center gap-2 md:flex">
         <LensBanner placeCount={placeCount} />
         <div className="pointer-events-auto">
           <Segmented value={lens} options={lensOptions} onChange={setLens} label={t("lens.label")} />
@@ -198,7 +198,7 @@ export function FilterBar({
       </div>
 
       {/* Mobile */}
-      <div className="pointer-events-none absolute inset-x-2 top-2 z-[400] flex flex-col gap-2 md:hidden">
+      <div className="pointer-events-none absolute inset-x-2 top-2 z-chrome flex flex-col gap-2 md:hidden">
         <div className="pointer-events-auto flex gap-2">
           <SearchInput
             value={search}
@@ -220,7 +220,7 @@ export function FilterBar({
             {openOnMobile ? <X size={17} strokeWidth={2.2} /> : <SlidersHorizontal size={17} strokeWidth={2} />}
             {/* How many filters are hiding behind this button, stated on it. */}
             {!openOnMobile && hiddenFilters > 0 && (
-              <span className="tnum absolute -top-1.5 -right-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-[10px] font-bold text-fg-on-accent">
+              <span className="tnum absolute -top-1.5 -right-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-micro font-bold text-fg-on-accent">
                 {hiddenFilters}
               </span>
             )}
@@ -238,12 +238,12 @@ export function FilterBar({
           />
           {/* rounded-md, not a pill: this reports a count, it does not filter,
               and the desktop card states the same datum as plain text. */}
-          <span className="tnum truncate rounded-md border border-line bg-surface px-2 py-1 text-[11.5px] text-fg-muted shadow-e1">
+          <span className="tnum truncate rounded-md border border-line bg-surface px-2 py-1 text-caption text-fg-muted shadow-e1">
             {compactLabel}
           </span>
         </div>
 
-        <LensBanner placeCount={placeCount} className="text-[12px]" />
+        <LensBanner placeCount={placeCount} className="text-meta" />
 
         {openOnMobile && (
           <div className="pointer-events-auto rounded-xl border border-line bg-surface p-2.5 shadow-e2">
@@ -253,7 +253,7 @@ export function FilterBar({
             <div className="mt-2">
               <AreaControls onStart={() => setOpenOnMobile(false)} />
             </div>
-            <p className="tnum mt-2 border-t border-line pt-2 text-[12px] text-fg-muted">{resultLabel}</p>
+            <p className="tnum mt-2 border-t border-line pt-2 text-meta text-fg-muted">{resultLabel}</p>
           </div>
         )}
       </div>

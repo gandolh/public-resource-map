@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { catVar } from "~/lib/categories";
 import { cn } from "~/lib/utils";
 
 interface ChipProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
@@ -20,8 +21,8 @@ export function Chip({ active = false, dotColor, count, className, children, ...
       aria-pressed={active}
       className={cn(
         "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3",
-        "text-[13px] font-medium whitespace-nowrap",
-        "transition-[background-color,border-color,color] duration-[120ms] ease-[cubic-bezier(.2,.8,.2,1)]",
+        "text-ui font-medium whitespace-nowrap",
+        "transition-[background-color,border-color,color] duration-(--dur-1) ease-out-fast",
         active
           ? "border-accent bg-accent text-fg-on-accent"
           : "border-line bg-surface text-fg hover:border-line-strong hover:bg-surface-2",
@@ -32,13 +33,16 @@ export function Chip({ active = false, dotColor, count, className, children, ...
       {dotColor && (
         <span
           aria-hidden="true"
-          className={cn("h-2 w-2 shrink-0 rounded-full", active && "ring-1 ring-inset ring-white/60")}
-          style={{ background: active ? "currentColor" : dotColor }}
+          className={cn(
+            "h-2 w-2 shrink-0 rounded-full",
+            active ? "bg-current ring-1 ring-fg-on-accent/60 ring-inset" : "bg-(--cat)",
+          )}
+          style={catVar(dotColor)}
         />
       )}
       {children}
       {count !== undefined && (
-        <span className={cn("tnum ml-0.5 text-[11.5px]", active ? "text-fg-on-accent/75" : "text-fg-faint")}>
+        <span className={cn("tnum ml-0.5 text-caption", active ? "text-fg-on-accent/75" : "text-fg-faint")}>
           {count}
         </span>
       )}

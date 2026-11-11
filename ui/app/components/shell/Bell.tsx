@@ -31,19 +31,19 @@ export function Bell() {
       >
         <BellIcon size={18} strokeWidth={2} />
         {unread > 0 && (
-          <span className="tnum absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-[10px] font-bold text-fg-on-accent">
+          <span className="tnum absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-micro font-bold text-fg-on-accent">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align="end" className="z-[1000]">
+        <Popover.Positioner sideOffset={6} align="end" className="z-popup">
           <Popover.Popup className="w-[320px] overflow-hidden rounded-xl border border-line bg-surface shadow-e3 outline-none">
-            <Popover.Title className="border-b border-line px-3.5 py-2.5 text-[13px] font-semibold">
+            <Popover.Title className="border-b border-line px-3.5 py-2.5 text-ui font-semibold">
               {t("bell.label")}
             </Popover.Title>
             {!data?.data.length ? (
-              <p className="px-3.5 py-6 text-center text-[13px] text-fg-muted">{t("bell.empty")}</p>
+              <p className="px-3.5 py-6 text-center text-ui text-fg-muted">{t("bell.empty")}</p>
             ) : (
               <ul className="max-h-[360px] overflow-y-auto">
                 {data.data.map((item) => (
@@ -67,14 +67,14 @@ function Item({ item }: { item: NotificationDto }) {
       : tn("bell.newEvents", item.events.length, { place });
   const content = (
     <>
-      <span className="block text-[13px] leading-snug font-medium text-fg">{headline}</span>
+      <span className="block text-ui leading-snug font-medium text-fg">{headline}</span>
       {item.kind === "new-event" && (
-        <span className="mt-0.5 block truncate text-[12px] text-fg-muted">
+        <span className="mt-0.5 block truncate text-meta text-fg-muted">
           {item.events.map((e) => e.title).join(" · ")}
         </span>
       )}
       {item.kind === "reminder" && item.events[0] && (
-        <span className="tnum mt-0.5 block text-[12px] text-fg-muted">
+        <span className="tnum mt-0.5 block text-meta text-fg-muted">
           {dayMonth(item.events[0].startDate)} · {time(item.events[0].startDate)}
         </span>
       )}
@@ -90,7 +90,7 @@ function Item({ item }: { item: NotificationDto }) {
         // No place, or one OSM no longer has: named, not a broken link.
         <div className="px-3.5 py-2.5">
           {content}
-          {item.place && <span className="mt-0.5 block text-[12px] text-fg-faint">{t("place.unlisted")}</span>}
+          {item.place && <span className="mt-0.5 block text-meta text-fg-faint">{t("place.unlisted")}</span>}
         </div>
       )}
     </li>

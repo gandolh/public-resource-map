@@ -14,11 +14,11 @@ export function DropdownMenu({ trigger, children, align = "end", className }: Dr
     <Menu.Root>
       <Menu.Trigger render={trigger} />
       <Menu.Portal>
-        <Menu.Positioner align={align} sideOffset={6} className="z-[900]">
+        <Menu.Positioner align={align} sideOffset={6} className="z-overlay">
           <Menu.Popup
             className={cn(
               "min-w-48 rounded-lg border border-line bg-surface p-1 shadow-e3",
-              "origin-[var(--transform-origin)] transition-[opacity,transform] duration-[140ms] ease-[cubic-bezier(.2,.8,.2,1)]",
+              "origin-(--transform-origin) transition-[opacity,transform] duration-(--dur-1) ease-out-fast",
               "data-[starting-style]:scale-[0.97] data-[starting-style]:opacity-0",
               "data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0",
               className,
@@ -36,8 +36,8 @@ export function DropdownMenuItem({ className, children, ...props }: ComponentPro
   return (
     <Menu.Item
       className={cn(
-        "flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13.5px] text-fg outline-none",
-        "transition-colors duration-[100ms]",
+        "flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-control text-fg outline-none",
+        "transition-colors duration-(--dur-1)",
         "data-[highlighted]:bg-surface-2 hover:bg-surface-2",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-45",
         className,

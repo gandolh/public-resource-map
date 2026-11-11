@@ -60,14 +60,14 @@ function AdminShell() {
                 {signedOut && (
                   <Link
                     to={loginPath(browserPath("/admin"))}
-                    className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-[13.5px] font-medium text-fg-on-accent"
+                    className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-control font-medium text-fg-on-accent"
                   >
                     {t("nav.login")}
                   </Link>
                 )}
                 <a
                   href={import.meta.env.BASE_URL}
-                  className="inline-flex h-9 items-center rounded-lg border border-line bg-surface px-3.5 text-[13.5px] font-medium"
+                  className="inline-flex h-9 items-center rounded-lg border border-line bg-surface px-3.5 text-control font-medium"
                 >
                   {t("admin.exit")}
                 </a>
@@ -81,14 +81,14 @@ function AdminShell() {
 
   const link = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors",
+      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-control font-medium transition-colors",
       isActive ? "bg-surface-2 text-fg" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
     );
 
   return (
     <div className="flex h-[100dvh] bg-bg text-fg">
       <aside className="flex w-[220px] shrink-0 flex-col border-r border-line bg-surface p-3">
-        <div className="flex items-center gap-2 px-2 pt-1 pb-4 text-[15px] font-semibold tracking-[-0.02em]">
+        <div className="flex items-center gap-2 px-2 pt-1 pb-4 text-lead font-semibold tracking-[-0.02em]">
           <BrandMark />
           <span>{t("admin.title")}</span>
         </div>
@@ -103,7 +103,7 @@ function AdminShell() {
           </NavLink>
         </nav>
         <div className="mt-auto space-y-2 border-t border-line pt-3">
-          <p className="truncate px-2 text-[12px] text-fg-muted" title={user?.username}>
+          <p className="truncate px-2 text-meta text-fg-muted" title={user?.username}>
             {t("admin.signedInAs", { name: user?.username ?? "" })}
           </p>
           <a href={import.meta.env.BASE_URL} className={link({ isActive: false })}>

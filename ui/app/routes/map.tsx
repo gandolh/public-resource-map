@@ -184,8 +184,8 @@ function MapControls() {
   return (
     <div
       className={cn(
-        "pointer-events-auto absolute z-[400] flex flex-col gap-2",
-        "transition-[right,bottom] duration-200 ease-[cubic-bezier(.2,.8,.2,1)]",
+        "pointer-events-auto absolute z-chrome flex flex-col gap-2",
+        "transition-[right,bottom] duration-200 ease-out-fast",
         // Zoom and locate are familiar affordances; another surface opening
         // must move them, never delete them.
         selectedId && !isMobile ? "right-[calc(384px+1.5rem)]" : "right-3",
@@ -353,7 +353,7 @@ export default function MapRoute() {
       <FilterBar resultLabel={resultLabel} compactLabel={compactLabel} placeCount={isPending ? null : places.length} />
 
       {isError && (
-        <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-[450] mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
+        <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-draw mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
           <StateBlock
             tone="danger"
             icon={<AlertTriangle size={18} strokeWidth={2} />}
@@ -372,7 +372,7 @@ export default function MapRoute() {
           filtering things out, offers each filter back as a removable chip, and
           says what dropping the area or the search would show. */}
       {noResults && (
-        <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-[450] mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
+        <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-draw mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
           <StateBlock
             icon={<SearchX size={18} strokeWidth={2} />}
             title={
@@ -398,7 +398,7 @@ export default function MapRoute() {
       )}
 
       {locError && (
-        <p className="pointer-events-none absolute inset-x-0 bottom-20 z-[400] mx-auto w-fit rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] text-fg-muted shadow-e1 md:bottom-16">
+        <p className="pointer-events-none absolute inset-x-0 bottom-20 z-chrome mx-auto w-fit rounded-full border border-line bg-surface px-3 py-1.5 text-meta text-fg-muted shadow-e1 md:bottom-16">
           {t("map.locationDenied")}
         </p>
       )}

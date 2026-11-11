@@ -3,7 +3,7 @@ import { ArrowUpRight, CalendarOff } from "lucide-react";
 import type { Event } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
 import { groupByDay, isRunning } from "~/lib/dates";
-import { eventCategoryColor, eventCategoryKey } from "~/lib/categories";
+import { catVar, eventCategoryColor, eventCategoryKey } from "~/lib/categories";
 import { Button } from "~/components/ui/Button";
 import { FavoriteStar } from "~/components/FavoriteStar";
 import { StateBlock } from "~/components/ui/StateBlock";
@@ -32,7 +32,7 @@ function SourceCredit({ event }: { event: Event }) {
   const name = sourceName(event);
   if (!name) return null;
   return (
-    <p className="mt-1 text-[11.5px] text-fg-faint">
+    <p className="mt-1 text-caption text-fg-faint">
       {t("event.source")}{" "}
       {event.sourceUrl ? (
         <a
@@ -58,18 +58,18 @@ function EventRow({ event }: { event: Event }) {
   return (
     <li className="flex gap-3 border-t border-line py-3 first:border-t-0">
       <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-surface-2">
-        <span className="tnum text-[15px] leading-none font-semibold tracking-[-0.02em]">{day}</span>
-        <span className="mt-0.5 text-[9.5px] leading-none font-medium tracking-[0.06em] text-fg-faint uppercase">
+        <span className="tnum text-lead leading-none font-semibold tracking-[-0.02em]">{day}</span>
+        <span className="mt-0.5 text-nano leading-none font-medium tracking-[0.06em] text-fg-faint uppercase">
           {month}
         </span>
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-[13.5px] leading-snug font-semibold tracking-[-0.005em] text-fg">{event.title}</p>
+          <p className="text-control leading-snug font-semibold tracking-[-0.005em] text-fg">{event.title}</p>
           <FavoriteStar kind="event" id={event.id} name={event.title} size="sm" />
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-fg-muted">
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-meta text-fg-muted">
           <span className="tnum">
             {isRunning(event.startDate, event.endDate) && event.endDate
               ? t("event.until", { date: dayMonth(event.endDate) })
@@ -79,7 +79,7 @@ function EventRow({ event }: { event: Event }) {
             ·
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-(--cat)" style={catVar(color)} />
             {t(eventCategoryKey(event.category))}
           </span>
         </div>
@@ -93,13 +93,13 @@ function EventRow({ event }: { event: Event }) {
             href={event.buyUrl}
             target="_blank"
             rel="noreferrer noopener"
-            className="mt-1.5 inline-flex items-center gap-1 rounded text-[12px] font-semibold text-accent hover:underline"
+            className="mt-1.5 inline-flex items-center gap-1 rounded text-meta font-semibold text-accent hover:underline"
           >
             {t("event.tickets")}
             <ArrowUpRight size={13} strokeWidth={2.5} />
           </a>
         ) : (
-          <p className="mt-1.5 text-[11.5px] text-fg-faint">{t("event.noTicketLink")}</p>
+          <p className="mt-1.5 text-caption text-fg-faint">{t("event.noTicketLink")}</p>
         )}
       </div>
     </li>

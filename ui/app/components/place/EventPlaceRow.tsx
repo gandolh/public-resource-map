@@ -3,7 +3,7 @@ import { ArrowUpRight, MapPin } from "lucide-react";
 import type { WhatsOnItem } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
 import { isRunning } from "~/lib/dates";
-import { eventCategoryColor, eventCategoryKey, CategoryIcon } from "~/lib/categories";
+import { catVar, eventCategoryColor, eventCategoryKey, CategoryIcon } from "~/lib/categories";
 import { sourceName } from "~/components/place/EventList";
 
 /**
@@ -23,26 +23,26 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
   const body = (
     <>
       {running && event.endDate ? (
-        <span className="tnum w-12 shrink-0 pt-0.5 text-[11.5px] leading-tight font-semibold text-fg">
+        <span className="tnum w-12 shrink-0 pt-0.5 text-caption leading-tight font-semibold text-fg">
           {t("event.until", { date: dayMonth(event.endDate) })}
         </span>
       ) : (
-        <span className="tnum w-12 shrink-0 pt-0.5 text-[13.5px] font-semibold tracking-[-0.01em] text-fg">
+        <span className="tnum w-12 shrink-0 pt-0.5 text-control font-semibold tracking-[-0.01em] text-fg">
           {when === "date" ? dayMonth(event.startDate) : time(event.startDate)}
         </span>
       )}
 
       <span className="min-w-0 flex-1">
-        <span className="block text-[14.5px] leading-snug font-semibold tracking-[-0.01em] text-fg">{event.title}</span>
+        <span className="block text-reading leading-snug font-semibold tracking-[-0.01em] text-fg">{event.title}</span>
 
         {/* One line: wrapped, the "·" was left dangling at the end of the
             first. A long place name truncates instead (TP-04). */}
-        <span className="mt-1 flex items-center gap-x-2 text-[12.5px] text-fg-muted">
+        <span className="mt-1 flex items-center gap-x-2 text-detail text-fg-muted">
           <span className="inline-flex shrink-0 items-center gap-1.5">
             <span
               aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: eventCategoryColor(event.category) }}
+              className="h-1.5 w-1.5 rounded-full bg-(--cat)"
+              style={catVar(eventCategoryColor(event.category))}
             />
             {t(eventCategoryKey(event.category))}
           </span>
@@ -55,19 +55,19 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
           </span>
         </span>
 
-        {unlisted && <span className="mt-1 block text-[11.5px] text-fg-faint">{t("place.unlisted")}</span>}
+        {unlisted && <span className="mt-1 block text-caption text-fg-faint">{t("place.unlisted")}</span>}
 
         {/* Text, not a link: the whole row already links to the place,
             whose panel links the original listing. */}
         {source && (
-          <span className="mt-1 block text-[11.5px] text-fg-faint">
+          <span className="mt-1 block text-caption text-fg-faint">
             {t("event.source")} {source}
           </span>
         )}
 
         {/* Tickets to something already over are noise: not in the archive. */}
         {event.buyUrl && when === "time" && (
-          <span className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-accent">
+          <span className="mt-1.5 inline-flex items-center gap-1 text-meta font-semibold text-accent">
             {t("event.tickets")}
             <ArrowUpRight size={12} strokeWidth={2.5} />
           </span>

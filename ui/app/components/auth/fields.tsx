@@ -11,7 +11,7 @@ import { cn } from "~/lib/utils";
  */
 
 export const inputClass =
-  "h-10 w-full rounded-lg border border-line bg-surface px-3 text-[14px] text-fg outline-none transition-colors placeholder:text-fg-faint focus:border-accent";
+  "h-10 w-full rounded-lg border border-line bg-surface px-3 text-body text-fg outline-none transition-colors placeholder:text-fg-faint focus:border-accent";
 
 export function Field({
   label,
@@ -19,10 +19,10 @@ export function Field({
   ...input
 }: { label: string; hint?: string } & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <label className="block text-[13px] font-medium text-fg">
+    <label className="block text-ui font-medium text-fg">
       {label}
       <input {...input} className={cn(inputClass, "mt-1.5")} />
-      {hint && <span className="mt-1 block text-[12px] font-normal text-fg-muted">{hint}</span>}
+      {hint && <span className="mt-1 block text-meta font-normal text-fg-muted">{hint}</span>}
     </label>
   );
 }
@@ -34,7 +34,7 @@ export function Notice({ tone = "danger", children }: { tone?: "danger" | "ok" |
     <p
       role={tone === "danger" ? "alert" : "status"}
       className={cn(
-        "flex items-start gap-2 rounded-lg px-3 py-2 text-[13px] leading-snug",
+        "flex items-start gap-2 rounded-lg px-3 py-2 text-ui leading-snug",
         tone === "danger" && "bg-danger-weak text-danger",
         tone === "ok" && "border border-line bg-surface-2 text-fg",
         tone === "neutral" && "border border-line bg-surface-2 text-fg-muted",
@@ -59,8 +59,8 @@ export function AuthPage({ title, lead, children }: { title: string; lead?: stri
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
       <div className="mx-auto w-full max-w-[400px] px-4 py-8 md:py-14">
-        <h1 className="text-[26px] leading-[1.15] font-semibold tracking-[-0.025em]">{title}</h1>
-        {lead && <p className="mt-2 text-[14.5px] leading-relaxed text-fg-muted">{lead}</p>}
+        <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em]">{title}</h1>
+        {lead && <p className="mt-2 text-reading leading-relaxed text-fg-muted">{lead}</p>}
         <div className="mt-6">{children}</div>
       </div>
     </div>

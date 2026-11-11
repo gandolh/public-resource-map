@@ -1,4 +1,5 @@
 import type { EventCategory, PlaceCategory } from "@public-resource-map/shared";
+import type { CSSProperties } from "react";
 
 /**
  * One category icon set, authored on a 24 grid at stroke 2 with round caps, and
@@ -55,6 +56,11 @@ export const CATEGORY_VAR: Record<PlaceCategory, string> = {
 
 export function categoryColor(category: PlaceCategory): string {
   return `var(${CATEGORY_VAR[category] ?? CATEGORY_VAR.other})`;
+}
+
+/** The category hue as `--cat` on an element, for `text-(color:--cat)`, `bg-(--cat)` and the like. */
+export function catVar(color: string): CSSProperties {
+  return { "--cat": color } as CSSProperties;
 }
 
 /** i18n key for the plural (filter chip) form, e.g. "Museums". */

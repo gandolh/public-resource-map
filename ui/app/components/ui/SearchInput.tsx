@@ -15,7 +15,7 @@ export function SearchInput({ value, onChange, placeholder, clearLabel, classNam
       className={cn(
         "flex h-10 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 shadow-e2",
         "focus-within:border-accent-line focus-within:ring-2 focus-within:ring-accent/15",
-        "transition-[border-color,box-shadow] duration-[120ms]",
+        "transition-[border-color,box-shadow] duration-(--dur-1)",
         className,
       )}
     >
@@ -27,7 +27,7 @@ export function SearchInput({ value, onChange, placeholder, clearLabel, classNam
         placeholder={placeholder}
         aria-label={placeholder}
         className={cn(
-          "min-w-0 flex-1 bg-transparent text-[14px] text-fg outline-none",
+          "min-w-0 flex-1 bg-transparent text-body text-fg outline-none",
           "placeholder:text-fg-faint",
           "[&::-webkit-search-cancel-button]:appearance-none",
         )}

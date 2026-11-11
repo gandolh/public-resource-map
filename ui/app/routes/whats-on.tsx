@@ -53,10 +53,10 @@ export default function WhatsOnRoute() {
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
       <div className="mx-auto w-full max-w-[720px] px-4 py-6 md:px-6 md:py-8">
         <header>
-          <h1 className="text-[26px] leading-[1.15] font-semibold tracking-[-0.025em] text-balance md:text-[30px]">
+          <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em] text-balance md:text-hero">
             {t("whatsOn.title", { city: city.name })}
           </h1>
-          <p className="mt-1.5 text-[14px] text-fg-muted">{t("whatsOn.subtitle")}</p>
+          <p className="mt-1.5 text-body text-fg-muted">{t("whatsOn.subtitle")}</p>
         </header>
 
         <div className="mt-5 flex flex-col gap-3">
@@ -87,7 +87,7 @@ export default function WhatsOnRoute() {
         </div>
 
         {!isPending && !isError && items.length > 0 && (
-          <p className="tnum mt-4 text-[12.5px] text-fg-muted">{tn("count.events", total)}</p>
+          <p className="tnum mt-4 text-detail text-fg-muted">{tn("count.events", total)}</p>
         )}
 
         <div className="mt-2">
@@ -127,7 +127,7 @@ export default function WhatsOnRoute() {
               action={
                 <Link
                   to="/"
-                  className="inline-flex h-9 items-center rounded-lg border border-line bg-surface px-3.5 text-[13.5px] font-medium transition-colors hover:bg-surface-2"
+                  className="inline-flex h-9 items-center rounded-lg border border-line bg-surface px-3.5 text-control font-medium transition-colors hover:bg-surface-2"
                 >
                   {t("place.backToMap")}
                 </Link>
@@ -147,7 +147,7 @@ export default function WhatsOnRoute() {
           ))}
         </div>
 
-        <p className="mt-10 border-t border-line pt-4 text-[11.5px] leading-relaxed text-fg-faint">
+        <p className="mt-10 border-t border-line pt-4 text-caption leading-relaxed text-fg-faint">
           <Link to="/archive" className="underline underline-offset-2 hover:text-fg">
             {t("archive.link")}
           </Link>{" "}

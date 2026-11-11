@@ -58,7 +58,7 @@ export default function RegisterRoute() {
         <Notice tone="neutral">{t("auth.mailNote")}</Notice>
       </div>
 
-      <p className="mt-6 text-[13.5px] text-fg-muted">
+      <p className="mt-6 text-control text-fg-muted">
         {t("auth.haveAccount")}{" "}
         <Link to={loginPath(next.browser)} className="font-medium text-accent hover:underline">
           {t("auth.loginLink")}

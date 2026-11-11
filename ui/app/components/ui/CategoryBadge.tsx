@@ -1,5 +1,5 @@
 import type { PlaceCategory } from "@public-resource-map/shared";
-import { CategoryIcon, categoryColor } from "~/lib/categories";
+import { CategoryIcon, catVar, categoryColor } from "~/lib/categories";
 import { cn } from "~/lib/utils";
 
 /**
@@ -22,14 +22,11 @@ export function CategoryBadge({
         // Deliberately not a pill: this states what a place IS, it does not
         // filter anything, and the pill shape is reserved for controls that do.
         "inline-flex items-center gap-1.5 rounded-md border px-2 py-1",
-        "text-[11.5px] font-semibold tracking-[0.01em]",
+        "text-caption font-semibold tracking-[0.01em]",
+        "border-(color:--cat)/34 bg-(--cat)/10 text-(color:--cat)",
         className,
       )}
-      style={{
-        color,
-        borderColor: `color-mix(in srgb, ${color} 34%, transparent)`,
-        background: `color-mix(in srgb, ${color} 10%, transparent)`,
-      }}
+      style={catVar(color)}
     >
       <CategoryIcon category={category} size={13} strokeWidth={2.2} />
       {label}

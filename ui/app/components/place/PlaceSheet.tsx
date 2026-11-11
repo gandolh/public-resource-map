@@ -96,7 +96,7 @@ export function PlaceSheet({ place, events, eventsLoading, onClose }: PlaceSheet
     <div
       role="dialog"
       aria-label={place.name}
-      className="pointer-events-auto fixed inset-x-0 bottom-0 z-[600] flex flex-col rounded-t-xl border-t border-line bg-surface shadow-e3"
+      className="pointer-events-auto fixed inset-x-0 bottom-0 z-sheet flex flex-col rounded-t-xl border-t border-line bg-surface shadow-e3"
       style={{
         height: `${FULL * 100}dvh`,
         transform: `translateY(calc(${shift}% + ${Math.max(0, drag)}px))`,

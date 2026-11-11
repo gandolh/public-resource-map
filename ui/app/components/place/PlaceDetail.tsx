@@ -16,8 +16,8 @@ function MetaRow({ icon, label, children }: { icon: React.ReactNode; label: stri
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[10.5px] font-medium tracking-[0.08em] text-fg-faint uppercase">{label}</p>
-        <div className="mt-0.5 text-[13px] leading-snug break-words text-fg">{children}</div>
+        <p className="text-tag font-medium tracking-[0.08em] text-fg-faint uppercase">{label}</p>
+        <div className="mt-0.5 text-ui leading-snug break-words text-fg">{children}</div>
       </div>
     </div>
   );
@@ -64,13 +64,13 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
           <h2
             className={
               variant === "page"
-                ? "mt-2.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.025em] text-balance"
-                : "mt-2.5 text-[19px] leading-[1.2] font-semibold tracking-[-0.02em] text-balance"
+                ? "mt-2.5 text-display leading-[1.15] font-semibold tracking-[-0.025em] text-balance"
+                : "mt-2.5 text-heading leading-[1.2] font-semibold tracking-[-0.02em] text-balance"
             }
           >
             {place.name}
           </h2>
-          {place.address && <p className="mt-1.5 text-[13px] leading-snug text-fg-muted">{place.address}</p>}
+          {place.address && <p className="mt-1.5 text-ui leading-snug text-fg-muted">{place.address}</p>}
 
           <div className="mt-3.5 flex gap-2">
             <Button
@@ -122,7 +122,7 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
           <MetaRow icon={<MapPin size={14} strokeWidth={2} />} label={t("place.source")}>
             {place.source === "osm" ? t("place.sourceOsm") : t("place.sourceVenue")}
             {place.osmType && place.osmId && (
-              <span className="font-mono text-[11.5px] text-fg-faint">
+              <span className="font-mono text-caption text-fg-faint">
                 {" "}
                 · {place.osmType}/{place.osmId}
               </span>
@@ -132,8 +132,8 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
 
         <div className="border-t border-line">
           <div className="flex items-baseline justify-between px-4 pt-3.5 pb-0.5">
-            <h3 className="text-[13px] font-semibold tracking-[-0.01em]">{t("place.whatsOnHere")}</h3>
-            {count > 0 && <span className="tnum text-[12px] text-fg-muted">{tn("count.events", count)}</span>}
+            <h3 className="text-ui font-semibold tracking-[-0.01em]">{t("place.whatsOnHere")}</h3>
+            {count > 0 && <span className="tnum text-meta text-fg-muted">{tn("count.events", count)}</span>}
           </div>
           <EventList
             events={events}
