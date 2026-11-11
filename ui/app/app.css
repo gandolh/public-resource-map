@@ -1,5 +1,10 @@
+/* The layer order comes first, and `vendor` sits after `base`: Tailwind's reset
+   must not beat Leaflet's own borders and margins, and the app's Leaflet rules
+   in `components` still win over both with no important flags. */
+@layer theme, base, vendor, components, utilities;
+
 @import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
+@import "leaflet/dist/leaflet.css" layer(vendor);
 
 @custom-variant dark (&:is(.dark *));
 
@@ -182,6 +187,19 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --ease-out-fast: var(--ease);
+
+  /* Opacity and a short slide: the desktop place panel arriving. */
+  --animate-panel-in: panel-in var(--dur-3) var(--ease) both;
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateX(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 }
 
 /* --- base ---------------------------------------------------------------- */
@@ -212,43 +230,45 @@
     color: inherit;
     text-underline-offset: 2px;
   }
-}
 
-/* Browser surfaces we did not draw still belong to the design system. */
-::selection { background: var(--accent); color: var(--fg-on-accent); }
-:root { accent-color: var(--accent); caret-color: var(--accent); }
+  /* Browser surfaces we did not draw still belong to the design system. */
+  ::selection { background: var(--accent); color: var(--fg-on-accent); }
+  :root { accent-color: var(--accent); caret-color: var(--accent); }
 
-* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: 999px;
-  border: 3px solid var(--bg);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--fg-faint); }
+  * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 999px;
+    border: 3px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--fg-faint); }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 3px;
+  /* No `border-radius` here: the ring follows each element's own radius. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  :focus:not(:focus-visible) { outline: none; }
 }
-:focus:not(:focus-visible) { outline: none; }
 
 /* A horizontal scroller fades at its trailing edge, so a clipped chip reads as
    "there is more" rather than as a rendering fault. */
-.scroll-fade-x {
+@utility scroll-fade-x {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
   mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
 }
 
 /* Digits that sit in a column must not dance as they change. */
-.tnum { font-variant-numeric: tabular-nums; }
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
 
 /* Small utility labels — section headers, menu titles. Tracked uppercase in the
    UI face, which is what makes them read as labels without borrowing a
    monospace to signal "technical". */
-.label-cap {
+@utility label-cap {
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.13em;
@@ -258,199 +278,192 @@
 
 /* --- Leaflet, re-skinned ------------------------------------------------- */
 
-.leaflet-container {
-  background: var(--surface-2);
-  font-family: var(--font-sans);
-  outline: none;
-}
-.leaflet-container a { color: var(--accent); }
+/* Leaflet's own stylesheet is in `@layer vendor`, below `components`, so these
+  rules win over it with no important flag. Only Leaflet's own important
+   rules (a tile's `max-width`) still outrank the app. */
+@layer components {
+  .leaflet-container {
+    background: var(--surface-2);
+    font-family: var(--font-sans);
+    outline: none;
+  }
+  .leaflet-container a { color: var(--accent); }
 
-/* Leaflet stacks its own panes and controls from 200 to 1000, which floats the
-   attribution above our panel and sheet. Rather than fight each layer — and
-   push the attribution behind the tiles, which is a licence problem — give the
-   map ONE stacking context at level 0. Everything Leaflet does then resolves
-   inside it, and all app chrome (400+) sits cleanly above the whole map. */
-.leaflet-container { z-index: 0; }
+  /* Leaflet stacks its own panes and controls from 200 to 1000, which floats the
+     attribution above our panel and sheet. Rather than fight each layer — and
+     push the attribution behind the tiles, which is a licence problem — give the
+     map ONE stacking context at level 0. Everything Leaflet does then resolves
+     inside it, and all app chrome (400+) sits cleanly above the whole map. */
+  .leaflet-container { z-index: 0; }
 
-/* On a phone the bottom tab bar owns the last 56px, so map controls that would
-   sit at the very bottom are lifted clear of it. */
-@media (max-width: 767px) {
-  .leaflet-bottom { bottom: 58px; }
-  /* A sheet over the map must not leave the tiles unattributed, so the
-     attribution rides above whichever snap the sheet is resting at. */
-  .sheet-peek .leaflet-bottom { bottom: calc(46dvh + 10px); }
-  .sheet-full .leaflet-bottom { bottom: calc(82dvh + 10px); }
-}
+  /* On a phone the bottom tab bar owns the last 56px, so map controls that would
+     sit at the very bottom are lifted clear of it. */
+  @media (max-width: 767px) {
+    .leaflet-bottom { bottom: 58px; }
+    /* A sheet over the map must not leave the tiles unattributed, so the
+       attribution rides above whichever snap the sheet is resting at. */
+    .sheet-peek .leaflet-bottom { bottom: calc(46dvh + 10px); }
+    .sheet-full .leaflet-bottom { bottom: calc(82dvh + 10px); }
+  }
 
-/* Standard OSM tiles are saturated and busy — filtered toward the quiet,
-   low-saturation register the pin palette needs. Only applied on the fallback
-   basemap; real CARTO tiles are already this quiet and are left alone. */
-.map-fallback .leaflet-tile-pane {
-  filter: saturate(0.3) brightness(1.05) contrast(0.94);
-}
-.dark .map-fallback .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) saturate(0.28) brightness(0.9) contrast(0.92);
-}
+  /* Standard OSM tiles are saturated and busy — filtered toward the quiet,
+     low-saturation register the pin palette needs. Only applied on the fallback
+     basemap; real CARTO tiles are already this quiet and are left alone. */
+  .map-fallback .leaflet-tile-pane {
+    filter: saturate(0.3) brightness(1.05) contrast(0.94);
+  }
+  .dark .map-fallback .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) saturate(0.28) brightness(0.9) contrast(0.92);
+  }
 
-/* The default attribution is a white pill with 11px serif-ish text; ours has to
-   stay legible (it is a licence obligation) without shouting. */
-.leaflet-control-attribution {
-  background: color-mix(in srgb, var(--surface) 88%, transparent) !important;
-  color: var(--fg-faint) !important;
-  font-family: var(--font-sans) !important;
-  font-size: 10px !important;
-  line-height: 1.5 !important;
-  padding: 2px 8px !important;
-  border-top-left-radius: var(--radius-sm);
-  backdrop-filter: blur(6px);
-}
-.leaflet-control-attribution a { color: var(--fg-muted) !important; }
+  /* The default attribution is a white pill with 11px serif-ish text; ours has to
+     stay legible (it is a licence obligation) without shouting. */
+  .leaflet-control-attribution {
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    color: var(--fg-faint);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    line-height: 1.5;
+    padding: 2px 8px;
+    border-top-left-radius: var(--radius-sm);
+    backdrop-filter: blur(6px);
+  }
+  .leaflet-control-attribution a { color: var(--fg-muted); }
 
-.leaflet-bar {
-  border: 1px solid var(--line) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--sh-2) !important;
-  overflow: hidden;
-}
-.leaflet-bar a {
-  background: var(--surface) !important;
-  color: var(--fg) !important;
-  border-bottom: 1px solid var(--line) !important;
-  width: 32px !important;
-  height: 32px !important;
-  line-height: 30px !important;
-}
-.leaflet-bar a:hover { background: var(--surface-2) !important; }
-.leaflet-bar a:last-child { border-bottom: none !important; }
+  .leaflet-bar {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--sh-2);
+    overflow: hidden;
+  }
+  .leaflet-bar a {
+    background: var(--surface);
+    color: var(--fg);
+    border-bottom: 1px solid var(--line);
+    width: 32px;
+    height: 32px;
+    line-height: 30px;
+  }
+  .leaflet-bar a:hover { background: var(--surface-2); }
+  .leaflet-bar a:last-child { border-bottom: none; }
 
-/* Markers are our own divIcons; kill Leaflet's default box. */
-.cm-pin, .cm-cluster { background: none; border: none; }
+  /* Markers are our own divIcons; kill Leaflet's default box. */
+  .cm-pin, .cm-cluster { background: none; border: none; }
 
-/* Pins are built as HTML strings inside a divIcon, where Tailwind's compiler
-   cannot see the classes — so their styling lives here as real CSS. */
-.cmp { position: relative; }
-.cmp-drop {
-  width: 100%;
-  height: 100%;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  background: var(--c);
-  border: 2.5px solid var(--pin-stroke);
-  box-shadow: var(--sh-pin);
-  display: grid;
-  place-items: center;
-  transition: transform var(--dur-2) var(--ease);
-}
-.cmp-ico { transform: rotate(45deg); line-height: 0; color: var(--pin-ico); }
-.cmp-badge {
-  position: absolute;
-  top: -5px;
-  right: -7px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: var(--fg);
-  color: var(--bg);
-  border: 2px solid var(--pin-stroke);
-  font-size: 10.5px;
-  font-weight: 700;
-  line-height: 13px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-.cm-pin:hover .cmp-drop { transform: rotate(-45deg) scale(1.08); }
-/* Selection rings in the accent, not the category hue: a ring in the pin's own
-   colour on the pin's own colour is barely a ring, and one accent owns
-   "selected" everywhere else in the app. */
-.cmp.is-selected .cmp-drop {
-  box-shadow: var(--sh-2), 0 0 0 3px var(--surface), 0 0 0 5.5px var(--accent);
-}
+  /* Pins are built as HTML strings inside a divIcon. Tailwind scans source files
+     as plain text and does find a whole class name written inside such a string
+     (checked with its scanner, 2026-11-11). These stay CSS because `color-mix`
+     and the per-category variables read better as CSS. */
+  .cmp { position: relative; }
+  .cmp-drop {
+    width: 100%;
+    height: 100%;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: var(--c);
+    border: 2.5px solid var(--pin-stroke);
+    box-shadow: var(--sh-pin);
+    display: grid;
+    place-items: center;
+    transition: transform var(--dur-2) var(--ease);
+  }
+  .cmp-ico { transform: rotate(45deg); line-height: 0; color: var(--pin-ico); }
+  .cmp-badge {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--fg);
+    color: var(--bg);
+    border: 2px solid var(--pin-stroke);
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 13px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .cm-pin:hover .cmp-drop { transform: rotate(-45deg) scale(1.08); }
+  /* Selection rings in the accent, not the category hue: a ring in the pin's own
+     colour on the pin's own colour is barely a ring, and one accent owns
+     "selected" everywhere else in the app. */
+  .cmp.is-selected .cmp-drop {
+    box-shadow: var(--sh-2), 0 0 0 3px var(--surface), 0 0 0 5.5px var(--accent);
+  }
 
-.cmc {
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--surface);
-  /* Same stroke language as a pin — white rim, definition from a hairline ring
-     rather than a heavy dark border, so pins and clusters read as one family. */
-  border: 2.5px solid var(--pin-stroke);
-  color: var(--fg);
-  box-shadow: var(--sh-2), 0 0 0 1px var(--line-strong);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  transition: transform var(--dur-2) var(--ease);
-}
-.cm-cluster:hover .cmc { transform: scale(1.06); }
-/* Event presence on a cluster is a counted badge, not a coloured dot — the
-   number is the signal, so it survives for anyone who cannot use the hue. */
-/* Deliberately identical to `.cmp-badge` on a pin: across both marker families
-   an inverted chip in the corner means "events here", while the large centred
-   numeral means "places here". Two numerals, two unmistakably different roles. */
-.cmc-badge {
-  position: absolute;
-  top: -4px;
-  right: -6px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: var(--fg);
-  color: var(--bg);
-  border: 2px solid var(--pin-stroke);
-  font-size: 10.5px;
-  font-weight: 700;
-  line-height: 14px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
+  .cmc {
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--surface);
+    /* Same stroke language as a pin — white rim, definition from a hairline ring
+       rather than a heavy dark border, so pins and clusters read as one family. */
+    border: 2.5px solid var(--pin-stroke);
+    color: var(--fg);
+    box-shadow: var(--sh-2), 0 0 0 1px var(--line-strong);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    transition: transform var(--dur-2) var(--ease);
+  }
+  .cm-cluster:hover .cmc { transform: scale(1.06); }
+  /* Event presence on a cluster is a counted badge, not a coloured dot — the
+     number is the signal, so it survives for anyone who cannot use the hue. */
+  /* Deliberately identical to `.cmp-badge` on a pin: across both marker families
+     an inverted chip in the corner means "events here", while the large centred
+     numeral means "places here". Two numerals, two unmistakably different roles. */
+  .cmc-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--fg);
+    color: var(--bg);
+    border: 2px solid var(--pin-stroke);
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
 
-/* While a place is open, every other pin and cluster steps back. */
-.has-selection .cmp:not(.is-selected),
-.has-selection .cmc { opacity: 0.45; transition: opacity var(--dur-2) var(--ease); }
-.has-selection .cm-pin:hover .cmp,
-.has-selection .cm-cluster:hover .cmc { opacity: 1; }
+  /* While a place is open, every other pin and cluster steps back. */
+  .has-selection .cmp:not(.is-selected),
+  .has-selection .cmc { opacity: 0.45; transition: opacity var(--dur-2) var(--ease); }
+  .has-selection .cm-pin:hover .cmp,
+  .has-selection .cm-cluster:hover .cmc { opacity: 1; }
 
-/* The phone's folded attribution: a small "i" that opens it. */
-.cm-attr-toggle {
-  display: grid; place-items: center;
-  width: 24px; height: 24px; margin: 0 0 4px 6px;
-  border: 1px solid var(--line); border-radius: 999px;
-  background: var(--surface); color: var(--fg-muted);
-  font: italic 700 13px/1 Georgia, serif;
-  box-shadow: var(--shadow-e1);
-}
-.cm-attr-toggle[aria-expanded="true"] { color: var(--accent); border-color: var(--accent-line); }
+  /* The phone's folded attribution: a small "i" that opens it. */
+  .cm-attr-toggle {
+    display: grid; place-items: center;
+    width: 24px; height: 24px; margin: 0 0 4px 6px;
+    border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); color: var(--fg-muted);
+    font: italic 700 13px/1 Georgia, serif;
+    box-shadow: var(--shadow-e1);
+  }
+  .cm-attr-toggle[aria-expanded="true"] { color: var(--accent); border-color: var(--accent-line); }
 
-/* Draw-to-filter. Leaflet writes stroke and fill as SVG attributes,
-   which any CSS property outranks, so the tokens apply in both themes. */
-.cm-area { stroke: var(--accent); stroke-width: 2; fill: var(--accent); fill-opacity: 0.08; }
-.cm-area-draft { stroke: var(--accent); stroke-width: 2.5; fill: none; }
-.cm-area-rubber { stroke-dasharray: 4 5; }
-.cm-area-corner { stroke: var(--accent); stroke-width: 2; fill: var(--surface); fill-opacity: 1; }
-/* While drawing, a press draws: no panning (touch-action), and pins cannot
-   swallow a click that was meant as a corner. */
-.leaflet-container.is-drawing { cursor: crosshair; touch-action: none; }
-/* Every marker, not just the pane: Leaflet's own `.leaflet-interactive` puts
-   pointer events back on each icon, which made a corner placed on a pin open
-   that place instead. Found by the e2e polygon spec. */
-.is-drawing .leaflet-marker-pane,
-.is-drawing .leaflet-marker-pane * { pointer-events: none; }
-
-@keyframes cm-panel-in {
-  from { opacity: 0; transform: translateX(10px); }
-  to   { opacity: 1; transform: translateX(0); }
+  /* Draw-to-filter. Leaflet writes stroke and fill as SVG attributes,
+     which any CSS property outranks, so the tokens apply in both themes. */
+  .cm-area { stroke: var(--accent); stroke-width: 2; fill: var(--accent); fill-opacity: 0.08; }
+  .cm-area-draft { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+  .cm-area-rubber { stroke-dasharray: 4 5; }
+  .cm-area-corner { stroke: var(--accent); stroke-width: 2; fill: var(--surface); fill-opacity: 1; }
+  /* While drawing, a press draws: no panning (touch-action), and pins cannot
+     swallow a click that was meant as a corner. */
+  .leaflet-container.is-drawing { cursor: crosshair; touch-action: none; }
+  /* Every marker, not just the pane: Leaflet's own `.leaflet-interactive` puts
+     pointer events back on each icon, which made a corner placed on a pin open
+     that place instead. Found by the e2e polygon spec. */
+  .is-drawing .leaflet-marker-pane,
+  .is-drawing .leaflet-marker-pane * { pointer-events: none; }
 }
-/* Opacity only. This animation used to end on `transform: translateY(0)` with
-   fill-mode `both`, which permanently outranked the sheet's own snap transform
-   and pinned it open at full height. The slide is done by the snap itself. */
-@keyframes cm-sheet-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.cm-panel-in { animation: cm-panel-in var(--dur-3) var(--ease) both; }
-.cm-sheet-in { animation: cm-sheet-in var(--dur-3) var(--ease) both; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

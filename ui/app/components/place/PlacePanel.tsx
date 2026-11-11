@@ -38,7 +38,7 @@ export function PlacePanel({ place, events, eventsLoading, onClose }: PlacePanel
     <aside
       key={place.id}
       aria-label={place.name}
-      className="cm-panel-in pointer-events-auto absolute top-3 right-3 bottom-3 z-[500] flex w-[384px] flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-e3"
+      className="animate-panel-in pointer-events-auto absolute top-3 right-3 bottom-3 z-[500] flex w-[384px] flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-e3"
     >
       <button
         ref={closeRef}
