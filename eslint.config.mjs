@@ -38,12 +38,6 @@ export default [
     rules: { "n/no-process-env": "warn" },
   },
   {
-    // The Playwright specs: a `!` is a warning as in the unit tests, and they set the environment up.
-    name: "prm/e2e",
-    files: ["e2e/**/*.ts"],
-    rules: { "@typescript-eslint/no-non-null-assertion": "warn", "n/no-process-env": "off" },
-  },
-  {
     // Off for now (2026-11-11): without noUncheckedIndexedAccess this rule flags every `!` on an indexed
     // read, and its autofix strips them. It comes back with the flag.
     name: "prm/no-unnecessary-type-assertion-off",
