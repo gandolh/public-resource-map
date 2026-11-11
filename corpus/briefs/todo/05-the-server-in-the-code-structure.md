@@ -13,7 +13,7 @@
 
 **Update 2026-11-11:** brief 03 already landed dependency-cruiser. `.dependency-cruiser.cjs` extends the house preset, it runs in `check:conventions` and finds nothing, so no rule is lowered. This brief keeps the cross-feature check (`feature-through-index`) the preset carries once `features/` exists, and drops only `check-structure`'s `--warn-only`. The ESLint config is `eslint.config.mjs` (the root is not `"type": "module"`); its `n/no-process-env` warning is the block named `prm/process-env-warns`, which goes when the rule becomes an error. A session helper, `backend/src/ward/session.ts`, replaced the two `req.auth!` reads.
 
-**Order:** after 03. It touches nothing under `ui/`, so it can run before or after [brief 04](04-base-ui-by-the-conventions.md), but never at the same time (both change `package-lock.json` and the corpus status page). Run it **before** [brief 01](01-a-source-registry-and-shareable-map-links.md), so 01's adapter and registry changes land in the new folders (see Interplay).
+**Order:** after 03. It touches nothing under `ui/`, so it can run before or after [brief 04](../done/04-base-ui-by-the-conventions.md), but never at the same time (both change `package-lock.json` and the corpus status page). Run it **before** [brief 01](01-a-source-registry-and-shareable-map-links.md), so 01's adapter and registry changes land in the new folders (see Interplay).
 
 **Before you start:** run `brief-board guide` ([corpus/CLAUDE.md](../../CLAUDE.md)).
 
@@ -307,5 +307,5 @@ Follow `migrating-a-server.md`. One commit per step; after each, `npm run check`
 - [Brief 01](01-a-source-registry-and-shareable-map-links.md) adds `shared/src/sources.ts` and edits `backend/src/ingest/adapters.ts` and `pipeline.ts`. Run it after this brief, so it edits `features/ingest/`. If it must go first, this brief's move map applies to the files as 01 leaves them, and its `NODE_ENV` exception (decision 4) is already unnecessary.
 - Brief 01's source registry does not gate publishing (owner, 2026-11-10): a source with pending permission is shown and credited, and taken off if the site objects; only a `forbidden` source stays off. So the registry's check replaces only the iaBilet use of `NODE_ENV` in decision 4, and nothing else here changes.
 - [Brief 03](../done/03-the-house-style-harness.md) turned `n/no-process-env` on as a warning and removed the 58 redundant `await`s. This brief makes the rule an error and adds dependency-cruiser.
-- [Brief 04](04-base-ui-by-the-conventions.md) touches `ui/` only. Both change `package-lock.json`, so run them one at a time.
+- [Brief 04](../done/04-base-ui-by-the-conventions.md) touches `ui/` only. Both change `package-lock.json`, so run them one at a time.
 - The skills library should hear about three things before the other servers run its brief 16: the `.parse(request.` regex misses `safeParse(req.…)` and helper parsing (14 sites here), a server with no error handler leaks a thrown error's message, and the checkers assume `server/` and `web/` where this repo has `backend/` and `ui/` (with `ui/app/` as the source folder).

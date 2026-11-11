@@ -818,7 +818,7 @@ Five briefs written from measurements on a scratch copy, none built. They follow
 - 03, [the house style and the quality harness](briefs/done/03-the-house-style-harness.md): Prettier at
   width 120, a shared tsconfig base, ESLint with the typed rules, `check` and `check:fast`, a root
   `CLAUDE.md`.
-- 04, [Base UI by the conventions](briefs/todo/04-base-ui-by-the-conventions.md): the audit, nine
+- 04, [Base UI by the conventions](briefs/done/04-base-ui-by-the-conventions.md): the audit, nine
   hand-built widgets, the stylesheet's layers (Leaflet's CSS included) and the Light / Dark / System
   switch with light first.
 - 05, [the server in the code structure](briefs/todo/05-the-server-in-the-code-structure.md): zod 4, one
