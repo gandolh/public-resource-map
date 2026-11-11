@@ -6,6 +6,7 @@ import { categoryNameKey } from "~/lib/categories";
 import { directionsUrl } from "~/lib/map";
 import { Button } from "~/components/ui/Button";
 import { FavoriteStar } from "~/components/FavoriteStar";
+import { Popover, PopoverDescription, PopoverTitle } from "~/components/ui/Popover";
 import { CategoryBadge } from "~/components/ui/CategoryBadge";
 import { EventList } from "./EventList";
 
@@ -40,17 +41,19 @@ interface PlaceDetailProps {
 export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }: PlaceDetailProps) {
   const { t, tn } = useI18n();
   const [copied, setCopied] = useState(false);
+  // The clipboard can be blocked; the link is then shown, selected, to copy by hand.
+  const [manual, setManual] = useState(false);
+  const url = `${window.location.origin}/places/${place.id}`;
 
   const copyLink = async () => {
-    const url = `${window.location.origin}/places/${place.id}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard can be blocked (insecure context, permissions). Fall back to
-      // the address bar rather than failing silently.
-      window.prompt(t("place.share"), url);
+      // Clipboard can be blocked (insecure context, permissions). Show the link
+      // rather than failing silently.
+      setManual(true);
     }
   };
 
@@ -82,19 +85,39 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
               <Navigation size={15} strokeWidth={2.2} />
               {t("place.directions")}
             </Button>
-            <Button variant="secondary" size="md" onClick={() => void copyLink()} aria-live="polite">
-              {copied ? (
-                <>
-                  <Check size={15} strokeWidth={2.4} className="text-ok" />
-                  {t("place.shared")}
-                </>
-              ) : (
-                <>
-                  <Link2 size={15} strokeWidth={2.2} />
-                  {t("place.share")}
-                </>
-              )}
-            </Button>
+            <Popover
+              open={manual}
+              // The trigger copies the link; only a failed copy opens the panel, so a press never opens it by itself.
+              onOpenChange={(open) => {
+                if (!open) setManual(false);
+              }}
+              className="w-[300px] p-3.5 text-ui"
+              trigger={
+                <Button variant="secondary" size="md" onClick={() => void copyLink()} aria-live="polite">
+                  {copied ? (
+                    <>
+                      <Check size={15} strokeWidth={2.4} className="text-ok" />
+                      {t("place.shared")}
+                    </>
+                  ) : (
+                    <>
+                      <Link2 size={15} strokeWidth={2.2} />
+                      {t("place.share")}
+                    </>
+                  )}
+                </Button>
+              }
+            >
+              <PopoverTitle>{t("place.shareManual")}</PopoverTitle>
+              <PopoverDescription className="mt-1">{t("place.shareManualBody")}</PopoverDescription>
+              <input
+                readOnly
+                value={url}
+                aria-label={t("place.share")}
+                onFocus={(event) => event.currentTarget.select()}
+                className="mt-2.5 h-9 w-full rounded-lg border border-line bg-surface px-3 text-control"
+              />
+            </Popover>
             <FavoriteStar kind="place" id={place.id} name={place.name} />
           </div>
         </header>

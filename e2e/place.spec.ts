@@ -123,3 +123,35 @@ test.describe("on a phone", () => {
     await expect(page).toHaveURL(/\/prm\/$/);
   });
 });
+
+test.describe("Copy link", () => {
+  const stubClipboard = (blocked: boolean) => (page: import("@playwright/test").Page) =>
+    page.addInitScript((isBlocked) => {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: () => (isBlocked ? Promise.reject(new Error("blocked")) : Promise.resolve()) },
+      });
+    }, blocked);
+
+  test("shows the link, selected, when the clipboard is blocked", async ({ page, request }) => {
+    const place = await seededPlace(request, SEED.places.tmArtMuseum);
+    await stubClipboard(true)(page);
+    await page.goto(`places/${place.id}`);
+    await page.getByRole("button", { name: "Copy link" }).click();
+    const field = page.getByRole("textbox", { name: "Copy link" });
+    await expect(field).toHaveValue(new RegExp(`/places/${place.id}$`));
+    await expect(field).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(field).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: place.name })).toBeVisible();
+  });
+
+  test("copies, and opens nothing, when the clipboard works", async ({ page, request }) => {
+    const place = await seededPlace(request, SEED.places.tmArtMuseum);
+    await stubClipboard(false)(page);
+    await page.goto(`places/${place.id}`);
+    await page.getByRole("button", { name: "Copy link" }).click();
+    await expect(page.getByRole("button", { name: "Link copied" })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "Copy link" })).toHaveCount(0);
+  });
+});

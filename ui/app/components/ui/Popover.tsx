@@ -8,6 +8,8 @@ export interface PopoverProps {
   children: ReactNode;
   side?: ComponentProps<typeof BasePopover.Positioner>["side"];
   align?: ComponentProps<typeof BasePopover.Positioner>["align"];
+  /** Controlled: a popover that code opens, such as the share fallback. Without it the trigger opens and closes it. */
+  open?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** Width, padding and radius of the panel. */
   className?: string;
@@ -17,9 +19,9 @@ export interface PopoverProps {
  * A small panel anchored to a button, opened by a tap. Name it with a
  * `PopoverTitle` inside, or give `className`'s panel an `aria-label`.
  */
-export function Popover({ trigger, children, side, align = "end", onOpenChange, className }: PopoverProps) {
+export function Popover({ trigger, children, side, align = "end", open, onOpenChange, className }: PopoverProps) {
   return (
-    <BasePopover.Root onOpenChange={(open) => onOpenChange?.(open)}>
+    <BasePopover.Root open={open} onOpenChange={(next) => onOpenChange?.(next)}>
       <BasePopover.Trigger render={trigger} />
       <BasePopover.Portal>
         <BasePopover.Positioner side={side} align={align} sideOffset={6} className="z-popup">
