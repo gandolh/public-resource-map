@@ -240,3 +240,37 @@ One commit per step, each with `npm run typecheck`, `npm test` and `npm run buil
 - [Brief 04](04-base-ui-by-the-conventions.md) adds `better-tailwindcss` and turns `check-base-ui` strict. [Brief 05](05-the-server-in-the-code-structure.md) adds dependency-cruiser, drops `check-structure`'s `--warn-only`, and turns `n/no-process-env` into an error.
 - [Brief 01](01-a-source-registry-and-shareable-map-links.md) adds new TypeScript files (`shared/src/sources.ts`, a generator script) and edits `backend/src/ingest/adapters.ts` and `pipeline.ts`. Run it after this brief, so its files are formatted and linted from the start. It must not run while the reformat commit is being made.
 - The skills library's `check-structure` regex `.parse(request.` finds nothing here, because the routes call `safeParse(req.…)`, 14 sites in 7 files. That is brief 05's finding to pass back.
+
+## Outcome
+
+Built on 2026-11-11 on `main`, committed and not pushed: `a337b39` vendor house-style 1.1.0 and pin the tools (TypeScript 6.0.3 in the workspaces), `2d347dd` Prettier, `c22639d` `style: format with Prettier`, `ef10801` the blame ignore file, `2ae26fb` tsconfig, `9bd2fff` ESLint and its fixes, `d4506aa` the gate, `bc61c44` `CLAUDE.md`, rules and decisions entry, then this closeout.
+
+**Re-measured** at `a40f58a`: Prettier at 120 changed 99 files (1,044 added, 979 removed; the brief's 95 TypeScript files plus the `ui/tsconfig.json`, a vitest config, `vitest.workspace.ts`, five e2e specs and `docker-compose.yml`). `tsc` flag errors as the brief says (the two unused locals, the three parameter properties). ESLint with the house config (before any fix): `await-thenable` 70 (58 source, 12 tests), `no-non-null-assertion` 28 in source and 14 in tests, `no-explicit-any` 4, `no-misused-promises` 8, `no-floating-promises` 5, `no-console` 2, `no-unused-vars` 1 more than the compiler's two, `consistent-type-imports` 1, `no-useless-assignment` 1, `react-hooks` 4 (`set-state-in-effect` 3, `refs` 1), `n/no-process-env` 19. `vitest/valid-expect` 0 (the `maxArgs: 2` option), `no-unnecessary-type-assertion` not counted (off, below). Only `await-thenable` is over about 20; the brief settles it as real.
+
+**After:** 0 errors, 33 warnings: `!` in tests 14, `n/no-process-env` 19 (`backend/src`, warning until the server reads its settings from `config.ts`).
+
+**Fixes.** 69 awaits deleted; the 70th was `await Promise.all([builder, sync .get()])` in `backend/src/routes/archive.ts`, now an array with `.all()` on the builder (a bare builder is a thenable, so it needed a finisher). The 28 source `!` became guards or `flatMap`/destructuring (`ward/session.ts` is the new `subjectOf`, shared by `archive.ts` and `favorites.ts`; `lib/` may not import Fastify). The `categories.length === 1` branches in `places.ts` and `whats-on.ts` collapsed to `inArray` for one or more (same rows). Navigation promises are `void`ed, three handlers wrapped. Suppressions with reasons (not fixed): `no-console` 2 (`ui/app/lib/api.ts`: page-cap warnings, no browser logger), `react-hooks/set-state-in-effect` 3 (`i18n.tsx`, `map.tsx`, `PlaceSheet.tsx`) and `react-hooks/refs` 1 (`PlaceSheet.tsx`), `no-explicit-any` 3 in test helpers (untyped JSON bodies). `LocalStorage.ts` `Array<any>` became `unknown[]`.
+
+**Checkers** (both `--warn-only`, exit 0): `check-base-ui` 5 errors and 2 warnings (rule-3 3, rule-5 1, rule-9 2, rule-11 1); `check-structure` 58 errors and 5 warnings (rule-1 1, rule-3 21, rule-6 36, rule-11 5). knip: 0 errors, 26 unused exports and 7 unused types as warnings. dependency-cruiser: 0 violations in 175 modules.
+
+**Reformat acceptance.** An esbuild bundle compare of every `.ts`, `.tsx`, `.js`, `.mjs` and `.json` file (JSON parsed, CSS through the `css` loader) before and after: no differences, so no `{" "}` splits. `git diff -w` is not empty, as in the other repos.
+
+**Timings** (warm, load 2-5): `check:fast` 16-19 s with one file changed (typecheck is most of it), 20 s with many; `check` 55 s; `eslint .` 21 s.
+
+**Checks run:** `npm run check` (0, 234 tests), `npm run build` (0), `npx prettier --check .` (0), `npm run house-style:sync -- --check` (0), a deliberate `enum`, `!`, `console.log` in `backend/src/app.ts`, `// TODO` and `export default` (backend and ui) each failed eslint with exit 1 and were reverted, the hooks by hand (formatter formatted a messy file; Stop exited 2 with `TS2322` after a note, then 0), `npm run build -w` for `shared` then `backend` after deleting both `dist/` folders (0), `bash corpus/lint.sh` (clean).
+**Checks skipped:** `docker build` (not run in this setup); `npx playwright test` (needs a browser and a dev stack; the e2e files typecheck and lint); the live-session hook check waits for the plugin update.
+
+**Deviations.**
+- `tsconfig.base.json` keeps the house flags instead of extending the vendored base (the image copies one file; the vendored base needs `noUncheckedIndexedAccess`). The Dockerfile gained one line, `COPY tsconfig.base.json ./` in the builder stage, which the brief did not list.
+- `no-unnecessary-type-assertion` is off until `noUncheckedIndexedAccess` is on (controller's ruling).
+- ESLint and Prettier configs are `.mjs` (the root is not `"type": "module"`); knip's is `knip.config.js`.
+- `n/no-process-env` warns on all of `backend/src` outside tests, block `prm/process-env-warns`. `e2e/` gets a block for `!` as a warning.
+- `@vitest` rules apply to the unit tests only, not the Playwright specs.
+- `tw-animate-css` (unused, found by knip) was removed from `ui/package.json`. `ui/tsconfig.json` lost the deprecated `baseUrl` (TypeScript 6).
+- `typecheck` starts with `tsc -b shared`: the backend reads `shared/dist`, so a fresh clone failed before.
+- `.dependency-cruiser.cjs` names `ui/tsconfig.json` for the `~/` aliases and allows `+types` modules (typegen output). Briefs 04 and 05 carry dated lines.
+- Rules files are `ui.md` and `backend.md` as the brief names them, not the skill's `web.md` and `server.md`.
+- `ui/app/app.css` and Markdown stay out of Prettier.
+
+**For house-style:** `houseStyle({ scripts: [] })` throws ("files: Expected value to be a non-empty array") at `vendor/house-style/eslint.config.js` where the `house-style/scripts` block is built; an empty list should drop the block. `lib-without-fastify` counts a type-only `import type` from Fastify (`tsPreCompilationDeps`), which the skill does not say. `not-to-unresolvable` fails on React Router's `./+types/*` modules, so a React Router repo needs the override in `.dependency-cruiser.cjs`. The skill's rules file names (`web.md`, `server.md`) do not fit repos whose folders are `ui` and `backend`.
+

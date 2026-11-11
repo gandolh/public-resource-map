@@ -815,7 +815,7 @@ Five briefs written from measurements on a scratch copy, none built. They follow
 2026-11-09 and the grilling of 2026-11-10, and sit after brief 01 in the numbering:
 
 - 02, [Base UI 1.9.0](briefs/done/02-base-ui-1-9-0.md): the 1.6.0 to 1.9.0 bump, eight lockfile entries.
-- 03, [the house style and the quality harness](briefs/todo/03-the-house-style-harness.md): Prettier at
+- 03, [the house style and the quality harness](briefs/done/03-the-house-style-harness.md): Prettier at
   width 120, a shared tsconfig base, ESLint with the typed rules, `check` and `check:fast`, a root
   `CLAUDE.md`.
 - 04, [Base UI by the conventions](briefs/todo/04-base-ui-by-the-conventions.md): the audit, nine
@@ -847,3 +847,8 @@ The two grilling pages (the owner's answers and the technical calls) are applied
 ## [2026-11-10] done | Brief 02: `@base-ui/react` 1.6.0 to 1.9.0, pinned exactly in `ui`
 
 One commit (`chore(deps): @base-ui/react 1.9.0`): `ui/package.json` and `package-lock.json` only. One hoisted copy at `node_modules/@base-ui/react` 1.9.0, eight lockfile entries changed, no package added (`npm ls` shows no date-fns or @date-fns/tz). `npm run typecheck`, `npm run test` (234 tests in 32 files, as before) and `npm run build` pass.
+
+## [2026-11-11] done | Brief 03: the house style and the quality harness
+
+House-style 1.1.0 is vendored under `vendor/house-style/`; Prettier at width 120 reformatted 99 files in one commit (a bundle compare found no difference); `tsconfig.base.json`, `e2e/tsconfig.json`, the house ESLint config, knip, dependency-cruiser and the two convention checkers (warn-only) are in `npm run check`. 69 redundant awaits on Drizzle calls and 28 non-null assertions in source were fixed. Counts, deviations and timings are in the brief's outcome note ([briefs/done/03-the-house-style-harness.md](briefs/done/03-the-house-style-harness.md)). Owner steps: `git config blame.ignoreRevsFile .git-blame-ignore-revs`, then the deploy.
+

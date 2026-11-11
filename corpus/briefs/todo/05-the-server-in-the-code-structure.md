@@ -2,7 +2,7 @@
 
 **Depends on:**
 
-- In public-resource-map: [brief 03](03-the-house-style-harness.md), for the gate, `eslint-plugin-n`'s `no-process-env` (a warning until this brief) and `.claude/rules/backend.md`.
+- In public-resource-map: [brief 03](../done/03-the-house-style-harness.md), for the gate, `eslint-plugin-n`'s `no-process-env` (a warning until this brief) and `.claude/rules/backend.md`.
 - In the owner's skills library:
   - brief 03, *A code-structure skill for the Fastify + React apps*: rules 1-11, the `server-skeleton.md` reference, `zod-type-provider.md`, `migrating-a-server.md`, `check-structure.mjs`, and the dependency-cruiser and knip presets;
   - brief 16, *The Fastify servers adopt the code structure*: this repo's row and the method, including the zod 3 to 4 move;
@@ -306,6 +306,6 @@ Follow `migrating-a-server.md`. One commit per step; after each, `npm run check`
 
 - [Brief 01](01-a-source-registry-and-shareable-map-links.md) adds `shared/src/sources.ts` and edits `backend/src/ingest/adapters.ts` and `pipeline.ts`. Run it after this brief, so it edits `features/ingest/`. If it must go first, this brief's move map applies to the files as 01 leaves them, and its `NODE_ENV` exception (decision 4) is already unnecessary.
 - Brief 01's source registry does not gate publishing (owner, 2026-11-10): a source with pending permission is shown and credited, and taken off if the site objects; only a `forbidden` source stays off. So the registry's check replaces only the iaBilet use of `NODE_ENV` in decision 4, and nothing else here changes.
-- [Brief 03](03-the-house-style-harness.md) turned `n/no-process-env` on as a warning and removed the 58 redundant `await`s. This brief makes the rule an error and adds dependency-cruiser.
+- [Brief 03](../done/03-the-house-style-harness.md) turned `n/no-process-env` on as a warning and removed the 58 redundant `await`s. This brief makes the rule an error and adds dependency-cruiser.
 - [Brief 04](04-base-ui-by-the-conventions.md) touches `ui/` only. Both change `package-lock.json`, so run them one at a time.
 - The skills library should hear about three things before the other servers run its brief 16: the `.parse(request.` regex misses `safeParse(req.…)` and helper parsing (14 sites here), a server with no error handler leaks a thrown error's message, and the checkers assume `server/` and `web/` where this repo has `backend/` and `ui/` (with `ui/app/` as the source folder).
