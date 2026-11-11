@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Dialog } from "@base-ui/react/dialog";
 import { useQueries } from "@tanstack/react-query";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { AlertTriangle, Check, ExternalLink, Inbox, Loader2, MapPin, X } from "lucide-react";
@@ -11,6 +10,7 @@ import { useI18n } from "~/lib/i18n";
 import { DARK_TILES, LIGHT_TILES, MAP_ATTRIBUTION, useIsDarkMode } from "~/lib/map";
 import { Button } from "~/components/ui/Button";
 import { Chip } from "~/components/ui/Chip";
+import { Dialog } from "~/components/ui/Dialog";
 import { Skeleton } from "~/components/ui/Skeleton";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { cn } from "~/lib/utils";
@@ -382,192 +382,186 @@ function Drawer({
   const quarantined = row?.status === "needs-attention";
 
   return (
-    <Dialog.Root open={row !== null} onOpenChange={(next) => !next && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-overlay bg-scrim" />
-        <Dialog.Popup className="fixed top-0 right-0 z-dialog flex h-[100dvh] w-[min(100vw,480px)] flex-col border-l border-line bg-surface shadow-e3 outline-none">
-          {row && (
-            <>
-              <div className="flex items-start justify-between gap-3 border-b border-line p-4">
-                <div className="min-w-0">
-                  <Dialog.Title className="text-title leading-snug font-semibold">{row.title}</Dialog.Title>
-                  <Dialog.Description className="mt-0.5 text-detail text-fg-muted">
-                    {row.sourcePlatform} · <BucketBadge row={row} />
-                  </Dialog.Description>
-                </div>
-                <Dialog.Close
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-fg-muted hover:bg-surface-2"
-                  aria-label={t("admin.close")}
-                >
-                  <X size={16} />
-                </Dialog.Close>
-              </div>
+    <Dialog
+      open={row !== null}
+      onOpenChange={(next) => !next && onClose()}
+      closeLabel={t("admin.close")}
+      title={row?.title}
+      description={
+        row && (
+          <>
+            {row.sourcePlatform} · <BucketBadge row={row} />
+          </>
+        )
+      }
+      bodyClassName="space-y-4 p-4 text-control"
+      footer={
+        row && (
+          <>
+            {!quarantined && (
+              <Button variant="primary" size="sm" disabled={!acceptable(row)} onClick={() => onAccept(row.id)}>
+                <Check size={14} strokeWidth={2.4} />
+                {row.status === "changed" ? t("admin.acceptChange") : t("admin.accept")}
+              </Button>
+            )}
+            <Button variant="secondary" size="sm" onClick={() => onReject(row.id)}>
+              <X size={14} strokeWidth={2.4} />
+              {t("admin.reject")}
+            </Button>
+            {!quarantined && !acceptable(row) && (
+              <span className="self-center text-meta text-fg-muted">{t("admin.needsPlace")}</span>
+            )}
+          </>
+        )
+      }
+    >
+      {row && (
+        <>
+          {row.issues && (
+            <p className="rounded-lg border border-danger/30 bg-danger-weak px-3 py-2 text-danger">
+              {t(quarantined ? "admin.issues" : "admin.reviewReason", { issues: row.issues })}
+            </p>
+          )}
+          {row.cancelled && (
+            <p className="rounded-lg border border-danger/30 bg-danger-weak px-3 py-2 text-danger">
+              {t("admin.cancelled")}
+            </p>
+          )}
 
-              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 text-control">
-                {row.issues && (
-                  <p className="rounded-lg border border-danger/30 bg-danger-weak px-3 py-2 text-danger">
-                    {t(quarantined ? "admin.issues" : "admin.reviewReason", { issues: row.issues })}
-                  </p>
-                )}
-                {row.cancelled && (
-                  <p className="rounded-lg border border-danger/30 bg-danger-weak px-3 py-2 text-danger">
-                    {t("admin.cancelled")}
-                  </p>
-                )}
+          <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5">
+            <dt className="text-fg-muted">{t("admin.col.when")}</dt>
+            <dd className="tnum">
+              {longDate(row.startDate)}, {time(row.startDate)}
+              {row.endDate && ` – ${time(row.endDate)}`}
+            </dd>
+            <dt className="text-fg-muted">{t("admin.venue")}</dt>
+            <dd>{row.venueName ?? "—"}</dd>
+            {row.rawAddress && (
+              <>
+                <dt className="text-fg-muted">{t("admin.address")}</dt>
+                <dd>{row.rawAddress}</dd>
+              </>
+            )}
+            {row.price !== null && (
+              <>
+                <dt className="text-fg-muted">{t("admin.price")}</dt>
+                <dd className="tnum">
+                  {row.price} {row.currency}
+                </dd>
+              </>
+            )}
+            {row.sourceUrl && (
+              <>
+                <dt className="text-fg-muted">{t("admin.listing")}</dt>
+                <dd>
+                  <a
+                    href={row.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-1 text-accent hover:underline"
+                  >
+                    {new URL(row.sourceUrl).hostname}
+                    <ExternalLink size={12} />
+                  </a>
+                </dd>
+              </>
+            )}
+          </dl>
+          {row.description && <p className="whitespace-pre-line text-fg-muted">{row.description}</p>}
 
-                <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5">
-                  <dt className="text-fg-muted">{t("admin.col.when")}</dt>
-                  <dd className="tnum">
-                    {longDate(row.startDate)}, {time(row.startDate)}
-                    {row.endDate && ` – ${time(row.endDate)}`}
-                  </dd>
-                  <dt className="text-fg-muted">{t("admin.venue")}</dt>
-                  <dd>{row.venueName ?? "—"}</dd>
-                  {row.rawAddress && (
-                    <>
-                      <dt className="text-fg-muted">{t("admin.address")}</dt>
-                      <dd>{row.rawAddress}</dd>
-                    </>
-                  )}
-                  {row.price !== null && (
-                    <>
-                      <dt className="text-fg-muted">{t("admin.price")}</dt>
-                      <dd className="tnum">
-                        {row.price} {row.currency}
-                      </dd>
-                    </>
-                  )}
-                  {row.sourceUrl && (
-                    <>
-                      <dt className="text-fg-muted">{t("admin.listing")}</dt>
-                      <dd>
-                        <a
-                          href={row.sourceUrl}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          className="inline-flex items-center gap-1 text-accent hover:underline"
-                        >
-                          {new URL(row.sourceUrl).hostname}
-                          <ExternalLink size={12} />
-                        </a>
-                      </dd>
-                    </>
-                  )}
-                </dl>
-                {row.description && <p className="whitespace-pre-line text-fg-muted">{row.description}</p>}
-
-                {!quarantined && (
-                  <section aria-labelledby="where" className="space-y-2">
-                    <h3 id="where" className="text-meta font-semibold tracking-[0.04em] text-fg-muted uppercase">
-                      {t("admin.where")}
-                    </h3>
-                    <div className="h-[220px] overflow-hidden rounded-lg border border-line">
-                      {center ? (
-                        <MapContainer
-                          key={row.id}
-                          center={[center.lat, center.lng]}
-                          zoom={15}
-                          className="h-full w-full"
-                          attributionControl
-                        >
-                          <TileLayer url={dark ? DARK_TILES : LIGHT_TILES} attribution={MAP_ATTRIBUTION} />
-                          <Settle lat={center.lat} lng={center.lng} />
-                          <PinDrop onPin={(lat, lng) => setPin({ lat, lng })} />
-                          {known.map((p) => (
-                            <CircleMarker
-                              key={p.id}
-                              center={[p.coordinates.lat, p.coordinates.lng]}
-                              radius={p.id === row.placeId ? 9 : 6}
-                              pathOptions={{ className: p.id === row.placeId ? "cm-area" : "cm-area-corner" }}
-                            >
-                              <Tooltip>{p.name}</Tooltip>
-                            </CircleMarker>
-                          ))}
-                          {row.lat !== null && row.lng !== null && !row.placeId && (
-                            <CircleMarker center={[row.lat, row.lng]} radius={8} pathOptions={{ className: "cm-area" }}>
-                              <Tooltip>{t("admin.geocoded")}</Tooltip>
-                            </CircleMarker>
-                          )}
-                          {pin && (
-                            <CircleMarker
-                              center={[pin.lat, pin.lng]}
-                              radius={8}
-                              pathOptions={{ className: "cm-area-draft" }}
-                            />
-                          )}
-                        </MapContainer>
-                      ) : (
-                        <p className="grid h-full place-items-center px-6 text-center text-fg-muted">
-                          {t("admin.noLocation")}
-                        </p>
-                      )}
-                    </div>
-                    <p className="text-meta text-fg-faint">{t("admin.pinHint")}</p>
-
-                    {row.candidates.length > 0 && (
-                      <ul className="space-y-1.5">
-                        {row.candidates.map((c) => (
-                          <li
-                            key={c.placeId}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2"
-                          >
-                            <span className="min-w-0">
-                              <span className="block truncate font-medium">{c.name}</span>
-                              <span className="tnum text-meta text-fg-muted">
-                                {t("admin.score", { score: Math.round(c.score * 100) })}
-                              </span>
-                            </span>
-                            {c.placeId === row.placeId ? (
-                              <span className="text-meta font-semibold text-accent">{t("admin.chosen")}</span>
-                            ) : (
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                disabled={resolve.isPending}
-                                onClick={() => choosePlace(c.placeId)}
-                                aria-label={t("admin.useThisPlaceNamed", { name: c.name })}
-                              >
-                                {t("admin.useThisPlace")}
-                              </Button>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+          {!quarantined && (
+            <section aria-labelledby="where" className="space-y-2">
+              <h3 id="where" className="text-meta font-semibold tracking-[0.04em] text-fg-muted uppercase">
+                {t("admin.where")}
+              </h3>
+              <div className="h-[220px] overflow-hidden rounded-lg border border-line">
+                {center ? (
+                  <MapContainer
+                    key={row.id}
+                    center={[center.lat, center.lng]}
+                    zoom={15}
+                    className="h-full w-full"
+                    attributionControl
+                  >
+                    <TileLayer url={dark ? DARK_TILES : LIGHT_TILES} attribution={MAP_ATTRIBUTION} />
+                    <Settle lat={center.lat} lng={center.lng} />
+                    <PinDrop onPin={(lat, lng) => setPin({ lat, lng })} />
+                    {known.map((p) => (
+                      <CircleMarker
+                        key={p.id}
+                        center={[p.coordinates.lat, p.coordinates.lng]}
+                        radius={p.id === row.placeId ? 9 : 6}
+                        pathOptions={{ className: p.id === row.placeId ? "cm-area" : "cm-area-corner" }}
+                      >
+                        <Tooltip>{p.name}</Tooltip>
+                      </CircleMarker>
+                    ))}
+                    {row.lat !== null && row.lng !== null && !row.placeId && (
+                      <CircleMarker center={[row.lat, row.lng]} radius={8} pathOptions={{ className: "cm-area" }}>
+                        <Tooltip>{t("admin.geocoded")}</Tooltip>
+                      </CircleMarker>
                     )}
                     {pin && (
-                      <Button variant="secondary" size="sm" disabled={resolve.isPending} onClick={choosePin}>
-                        <MapPin size={14} />
-                        {t("admin.useThisPin")}
-                      </Button>
+                      <CircleMarker
+                        center={[pin.lat, pin.lng]}
+                        radius={8}
+                        pathOptions={{ className: "cm-area-draft" }}
+                      />
                     )}
-                    {error && (
-                      <p role="alert" className="text-detail text-danger">
-                        {error}
-                      </p>
-                    )}
-                  </section>
+                  </MapContainer>
+                ) : (
+                  <p className="grid h-full place-items-center px-6 text-center text-fg-muted">
+                    {t("admin.noLocation")}
+                  </p>
                 )}
               </div>
+              <p className="text-meta text-fg-faint">{t("admin.pinHint")}</p>
 
-              <div className="flex gap-2 border-t border-line p-4">
-                {!quarantined && (
-                  <Button variant="primary" size="sm" disabled={!acceptable(row)} onClick={() => onAccept(row.id)}>
-                    <Check size={14} strokeWidth={2.4} />
-                    {row.status === "changed" ? t("admin.acceptChange") : t("admin.accept")}
-                  </Button>
-                )}
-                <Button variant="secondary" size="sm" onClick={() => onReject(row.id)}>
-                  <X size={14} strokeWidth={2.4} />
-                  {t("admin.reject")}
+              {row.candidates.length > 0 && (
+                <ul className="space-y-1.5">
+                  {row.candidates.map((c) => (
+                    <li
+                      key={c.placeId}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium">{c.name}</span>
+                        <span className="tnum text-meta text-fg-muted">
+                          {t("admin.score", { score: Math.round(c.score * 100) })}
+                        </span>
+                      </span>
+                      {c.placeId === row.placeId ? (
+                        <span className="text-meta font-semibold text-accent">{t("admin.chosen")}</span>
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={resolve.isPending}
+                          onClick={() => choosePlace(c.placeId)}
+                          aria-label={t("admin.useThisPlaceNamed", { name: c.name })}
+                        >
+                          {t("admin.useThisPlace")}
+                        </Button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {pin && (
+                <Button variant="secondary" size="sm" disabled={resolve.isPending} onClick={choosePin}>
+                  <MapPin size={14} />
+                  {t("admin.useThisPin")}
                 </Button>
-                {!quarantined && !acceptable(row) && (
-                  <span className="self-center text-meta text-fg-muted">{t("admin.needsPlace")}</span>
-                )}
-              </div>
-            </>
+              )}
+              {error && (
+                <p role="alert" className="text-detail text-danger">
+                  {error}
+                </p>
+              )}
+            </section>
           )}
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </>
+      )}
+    </Dialog>
   );
 }
