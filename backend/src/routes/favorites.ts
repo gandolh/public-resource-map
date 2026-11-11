@@ -19,8 +19,16 @@ export async function favoriteRoutes(app: FastifyInstance) {
 
   app.get("/favorites", async (req): Promise<FavoritesDto> => {
     const subject = subjectOf(req);
-    const places = await db.select({ id: favoritePlace.placeId }).from(favoritePlace).where(eq(favoritePlace.subject, subject)).all();
-    const events = await db.select({ id: favoriteEvent.eventId }).from(favoriteEvent).where(eq(favoriteEvent.subject, subject)).all();
+    const places = await db
+      .select({ id: favoritePlace.placeId })
+      .from(favoritePlace)
+      .where(eq(favoritePlace.subject, subject))
+      .all();
+    const events = await db
+      .select({ id: favoriteEvent.eventId })
+      .from(favoriteEvent)
+      .where(eq(favoriteEvent.subject, subject))
+      .all();
     return { places: places.map((p) => p.id), events: events.map((e) => e.id) };
   });
 
@@ -31,7 +39,11 @@ export async function favoriteRoutes(app: FastifyInstance) {
       .where(and(eq(place.id, req.params.placeId), isNull(place.retiredAt)))
       .get();
     if (!target) return notFound(reply, "place");
-    await db.insert(favoritePlace).values({ subject: subjectOf(req), placeId: target.id }).onConflictDoNothing().run();
+    await db
+      .insert(favoritePlace)
+      .values({ subject: subjectOf(req), placeId: target.id })
+      .onConflictDoNothing()
+      .run();
     return reply.status(204).send();
   });
 
@@ -46,7 +58,11 @@ export async function favoriteRoutes(app: FastifyInstance) {
   app.post<{ Params: { eventId: string } }>("/favorites/events/:eventId", async (req, reply) => {
     const target = await db.select({ id: event.id }).from(event).where(eq(event.id, req.params.eventId)).get();
     if (!target) return notFound(reply, "event");
-    await db.insert(favoriteEvent).values({ subject: subjectOf(req), eventId: target.id }).onConflictDoNothing().run();
+    await db
+      .insert(favoriteEvent)
+      .values({ subject: subjectOf(req), eventId: target.id })
+      .onConflictDoNothing()
+      .run();
     return reply.status(204).send();
   });
 
@@ -84,10 +100,17 @@ export async function favoriteRoutes(app: FastifyInstance) {
       ? await db
           .select({ notificationId: notificationEvent.notificationId, eventId: notificationEvent.eventId })
           .from(notificationEvent)
-          .where(inArray(notificationEvent.notificationId, rows.map((r) => r.id)))
+          .where(
+            inArray(
+              notificationEvent.notificationId,
+              rows.map((r) => r.id),
+            ),
+          )
           .all()
       : [];
-    const eventIds = [...new Set([...links.map((l) => l.eventId), ...rows.flatMap((r) => (r.eventId ? [r.eventId] : []))])];
+    const eventIds = [
+      ...new Set([...links.map((l) => l.eventId), ...rows.flatMap((r) => (r.eventId ? [r.eventId] : []))]),
+    ];
     const events = eventIds.length
       ? await db
           .select({ id: event.id, title: event.title, startDate: event.startDate })

@@ -15,11 +15,19 @@ const ids: Record<string, string> = {};
 beforeEach(async () => {
   t = await buildTestApp();
   const add = (name: string, city: string) =>
-    t.db.insert(place).values({ name, category: "museum", city, lat: 45.75, lng: 21.22 }).returning({ id: place.id }).get().id;
+    t.db
+      .insert(place)
+      .values({ name, category: "museum", city, lat: 45.75, lng: 21.22 })
+      .returning({ id: place.id })
+      .get().id;
   tm = add("Muzeul de Artă", "Timișoara");
   bu = add("MNAR", "București");
   const ev = (title: string, placeId: string, startDate: string, extra: Partial<typeof event.$inferInsert> = {}) => {
-    ids[title] = t.db.insert(event).values({ placeId, title, category: "concert", startDate, ...extra }).returning({ id: event.id }).get().id;
+    ids[title] = t.db
+      .insert(event)
+      .values({ placeId, title, category: "concert", startDate, ...extra })
+      .returning({ id: event.id })
+      .get().id;
   };
   ev("last week", tm, ago(24 * 7));
   ev("yesterday", tm, ago(24), { category: "exhibition" });
@@ -44,7 +52,9 @@ describe("GET /api/archive", () => {
   });
 
   it("filters by event category and pages", async () => {
-    expect(titles((await t.app.inject({ method: "GET", url: "/api/archive?city=Timișoara&category=exhibition" })).json())).toEqual(["yesterday"]);
+    expect(
+      titles((await t.app.inject({ method: "GET", url: "/api/archive?city=Timișoara&category=exhibition" })).json()),
+    ).toEqual(["yesterday"]);
     const second = (await t.app.inject({ method: "GET", url: "/api/archive?city=Timișoara&pageSize=1&page=2" })).json();
     expect(titles(second)).toEqual(["last week"]);
     expect(second.total).toBe(2);

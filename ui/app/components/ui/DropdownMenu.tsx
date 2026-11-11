@@ -32,11 +32,7 @@ export function DropdownMenu({ trigger, children, align = "end", className }: Dr
   );
 }
 
-export function DropdownMenuItem({
-  className,
-  children,
-  ...props
-}: ComponentPropsWithoutRef<typeof Menu.Item>) {
+export function DropdownMenuItem({ className, children, ...props }: ComponentPropsWithoutRef<typeof Menu.Item>) {
   return (
     <Menu.Item
       className={cn(
@@ -57,21 +53,6 @@ export function DropdownMenuSeparator({ className }: { className?: string }) {
   return <Menu.Separator className={cn("-mx-1 my-1 h-px bg-line", className)} />;
 }
 
-export function DropdownMenuLabel({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "label-cap px-2.5 pt-1.5 pb-1",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
+export function DropdownMenuLabel({ className, children }: { className?: string; children: ReactNode }) {
+  return <div className={cn("label-cap px-2.5 pt-1.5 pb-1", className)}>{children}</div>;
 }

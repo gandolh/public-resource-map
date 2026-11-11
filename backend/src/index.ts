@@ -23,4 +23,8 @@ try {
 // Day-before reminders: in-process, here rather than in buildApp so
 // a test's app never starts a timer. The timer is unref'd, so it never holds
 // the process open. Each run then kicks the notification mail.
-startReminderSweep(app.db, (msg) => app.log.info(msg), () => app.notifyMail.kick());
+startReminderSweep(
+  app.db,
+  (msg) => app.log.info(msg),
+  () => app.notifyMail.kick(),
+);

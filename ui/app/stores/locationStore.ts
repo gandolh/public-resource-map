@@ -36,11 +36,12 @@ export const useLocationStore = create<LocationState>((set, get) => ({
 
     set({ loading: true });
     navigator.geolocation.getCurrentPosition(
-      (pos) => set({
-        coords: { lat: pos.coords.latitude, lng: pos.coords.longitude },
-        loading: false,
-        error: null,
-      }),
+      (pos) =>
+        set({
+          coords: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+          loading: false,
+          error: null,
+        }),
       (err) => set({ error: err.message, loading: false }),
       { timeout: 10_000, maximumAge: 60_000 },
     );

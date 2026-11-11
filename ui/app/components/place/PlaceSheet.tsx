@@ -99,9 +99,7 @@ export function PlaceSheet({ place, events, eventsLoading, onClose }: PlaceSheet
       style={{
         height: `${FULL * 100}dvh`,
         transform: `translateY(calc(${shift}% + ${Math.max(0, drag)}px))`,
-        transition: dragging.current
-          ? "none"
-          : "transform 240ms cubic-bezier(.2,.8,.2,1)",
+        transition: dragging.current ? "none" : "transform 240ms cubic-bezier(.2,.8,.2,1)",
       }}
     >
       <div

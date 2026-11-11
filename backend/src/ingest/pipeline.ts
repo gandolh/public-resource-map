@@ -188,7 +188,10 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
       } else if (existing) {
         await db.update(stagedEvent).set(fields).where(eq(stagedEvent.id, existing.id)).run();
       } else {
-        await db.insert(stagedEvent).values({ sourceId, externalKey: key, ...fields }).run();
+        await db
+          .insert(stagedEvent)
+          .values({ sourceId, externalKey: key, ...fields })
+          .run();
       }
       continue;
     }
@@ -228,7 +231,10 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
       // A listing that used to be quarantined and now parses: it joins the diff.
       await db.update(stagedEvent).set(values).where(eq(stagedEvent.id, existing.id)).run();
     } else {
-      await db.insert(stagedEvent).values({ sourceId, externalKey: key, ...values }).run();
+      await db
+        .insert(stagedEvent)
+        .values({ sourceId, externalKey: key, ...values })
+        .run();
     }
   }
 
@@ -370,7 +376,11 @@ async function reconcile(
   // A listing back after going stale is live again.
   const revive = live.status === "stale" ? { status: "live" } : {};
   if (differs || live.status === "stale") {
-    await db.update(event).set({ ...silent, ...revive, updatedAt: runAt }).where(eq(event.id, live.id)).run();
+    await db
+      .update(event)
+      .set({ ...silent, ...revive, updatedAt: runAt })
+      .where(eq(event.id, live.id))
+      .run();
     if (differs) summary.silentUpdates++;
   }
   if (!differs) summary.unchanged++;
@@ -577,4 +587,3 @@ export async function listStaged(db: DB, filter: { sourceId?: string; status?: S
     };
   });
 }
-

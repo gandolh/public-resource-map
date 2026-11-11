@@ -1,12 +1,4 @@
-import {
-  isRouteErrorResponse,
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  Link,
-} from "react-router";
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, Link } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -91,8 +83,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     : isRouteErrorResponse(error)
       ? error.statusText || "A apărut o eroare neașteptată."
       : "A apărut o eroare neașteptată.";
-  const stack =
-    import.meta.env.DEV && error instanceof Error ? error.stack : undefined;
+  const stack = import.meta.env.DEV && error instanceof Error ? error.stack : undefined;
 
   return (
     <main className="min-h-screen bg-bg text-fg flex items-center justify-center p-6">
@@ -100,9 +91,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-faint">
           {notFound ? "404" : "Eroare"}
         </p>
-        <h1 className="mt-2 text-[24px] leading-tight font-semibold tracking-[-0.02em]">
-          {title}
-        </h1>
+        <h1 className="mt-2 text-[24px] leading-tight font-semibold tracking-[-0.02em]">{title}</h1>
         <p className="mt-2 text-fg-muted">{detail}</p>
         <Link
           to="/"

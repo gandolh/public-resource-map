@@ -40,7 +40,9 @@ test("a wrong password is refused in prm's words", async ({ page }) => {
   await expect(page.getByRole("alert")).toHaveText("Wrong username or password.");
 });
 
-test("a visitor registers on prm's register page and is signed in, with no mail until Ward is linked", async ({ page }) => {
+test("a visitor registers on prm's register page and is signed in, with no mail until Ward is linked", async ({
+  page,
+}) => {
   const username = `e2e-${randomUUID().slice(0, 8)}`;
   await page.goto("register");
   await page.getByLabel("Username").fill(username);

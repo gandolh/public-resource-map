@@ -53,9 +53,7 @@ export function Segmented<T extends string>({
               // The accent, not --fg: the category chips right beside this one
               // fill with the accent when selected, and one surface may not
               // speak two selection languages.
-              active
-                ? "bg-accent text-fg-on-accent"
-                : "text-fg-muted hover:bg-surface-2 hover:text-fg",
+              active ? "bg-accent text-fg-on-accent" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
             )}
           >
             {option.label}

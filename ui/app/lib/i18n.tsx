@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { LocalStorage } from "./LocalStorage";
 
 /**
@@ -29,7 +22,7 @@ export const APP_TZ = "Europe/Bucharest";
 type Dict = Record<string, string>;
 
 const ro: Dict = {
-  "brand": "CivicMap",
+  brand: "CivicMap",
   "nav.map": "Hartă",
   "nav.whatsOn": "Ce se întâmplă",
   "nav.account": "Cont",
@@ -54,7 +47,8 @@ const ro: Dict = {
   "auth.submitRegister": "Creează contul",
   "auth.haveAccount": "Ai deja cont?",
   "auth.loginLink": "Intră",
-  "auth.mailNote": "E-mailurile de notificare vin doar prin Ward. Poți lega un cont Ward din setări; altfel notificările apar doar la clopoțel.",
+  "auth.mailNote":
+    "E-mailurile de notificare vin doar prin Ward. Poți lega un cont Ward din setări; altfel notificările apar doar la clopoțel.",
 
   "authError.invalid_credentials": "Nume sau parolă greșite.",
   "authError.too_many_attempts": "Prea multe încercări. Mai încearcă peste {seconds} s.",
@@ -83,7 +77,8 @@ const ro: Dict = {
   "settings.signInBody": "Parola, contul Ward legat și e-mailurile se schimbă de aici.",
   "settings.passwordTitle": "Parolă",
   "settings.passwordLead": "Parola cu care intri în CivicMap. Schimbând-o, celelalte sesiuni se închid.",
-  "settings.noPasswordLead": "Contul tău nu are încă parolă CivicMap: intri doar cu Ward. Pune una ca să poți intra și când Ward nu răspunde.",
+  "settings.noPasswordLead":
+    "Contul tău nu are încă parolă CivicMap: intri doar cu Ward. Pune una ca să poți intra și când Ward nu răspunde.",
   "settings.currentPassword": "Parola actuală",
   "settings.newPassword": "Parola nouă",
   "settings.changePassword": "Schimbă parola",
@@ -103,7 +98,8 @@ const ro: Dict = {
   "settings.unlinked": "Contul Ward a fost dezlegat.",
   "settings.mailTitle": "E-mailuri",
   "settings.mailLinked": "Primești e-mailuri de notificare prin Ward, la adresa confirmată acolo.",
-  "settings.mailLocalOnly": "Contul tău nu are Ward legat, așa că nu primești e-mailuri: notificările apar doar la clopoțel. CivicMap nu păstrează adrese de e-mail.",
+  "settings.mailLocalOnly":
+    "Contul tău nu are Ward legat, așa că nu primești e-mailuri: notificările apar doar la clopoțel. CivicMap nu păstrează adrese de e-mail.",
   "settings.signOutTitle": "Ieșire",
   "settings.signOut": "Ieși",
   "settings.signOutWard": "Ieși și din Ward",
@@ -179,8 +175,7 @@ const ro: Dict = {
   "place.onMap": "Vezi pe hartă",
 
   "place.noEvents": "Nimic programat aici",
-  "place.noEventsBody":
-    "Locul rămâne pe hartă — evenimentele sunt rare și apar doar când le publică organizatorul.",
+  "place.noEventsBody": "Locul rămâne pe hartă — evenimentele sunt rare și apar doar când le publică organizatorul.",
   "place.noEventsLens": "Nimic {lens} aici",
   "place.noEventsLensBody": "Încearcă „Oricând” ca să vezi tot ce urmează.",
 
@@ -195,7 +190,8 @@ const ro: Dict = {
   "archive.mine": "Evenimentele mele",
   "archive.city": "Tot din {city}",
   "archive.mineSignIn": "Conectează-te ca să-ți vezi istoricul",
-  "archive.mineSignInBody": "Aici apar evenimentele salvate și cele de la locurile pe care le urmărești, după ce au trecut.",
+  "archive.mineSignInBody":
+    "Aici apar evenimentele salvate și cele de la locurile pe care le urmărești, după ce au trecut.",
   "archive.mineEmpty": "Încă nimic în istoricul tău",
   "archive.mineEmptyBody": "Salvează evenimente sau urmărește locuri: după ce trec, apar aici.",
   "archive.cityEmpty": "Niciun eveniment trecut înregistrat în {city}",
@@ -280,7 +276,8 @@ const ro: Dict = {
   "admin.refreshAll": "Actualizează tot",
   "admin.refresh": "Actualizează",
   "admin.refreshOne": "Actualizează {name}",
-  "admin.refreshSummary": "{name}: {fetched} citite, {fresh} noi, {changed} modificate, {duplicates} duplicate, {attention} neclare, {stale} dispărute.",
+  "admin.refreshSummary":
+    "{name}: {fetched} citite, {fresh} noi, {changed} modificate, {duplicates} duplicate, {attention} neclare, {stale} dispărute.",
   "admin.refreshFailed": "{name}: eroare ({error}).",
   "admin.noSources": "Nicio sursă încă",
   "admin.noSourcesBody": "Adaugă un flux iCal verificat mai jos.",
@@ -302,24 +299,34 @@ const ro: Dict = {
   "admin.osmLead": "Reîncarcă locurile publice ale unui oraș. Locurile vin direct, fără revizuire.",
   "admin.osmSync": "Sincronizează {city}",
   "admin.osmResult": "{city}: {upserted} locuri actualizate, dintre care {inserted} noi.",
-  "admin.osmRetired": "{retired} locuri retrase (nu mai sunt în OSM), {unretired} readuse, {review} evenimente trimise la revizuire.",
-  "admin.osmHeld": "Răspunsul ar fi retras {held} locuri, peste 10% din oraș, așa că nu a fost retras niciunul. Încearcă din nou mai târziu.",
+  "admin.osmRetired":
+    "{retired} locuri retrase (nu mai sunt în OSM), {unretired} readuse, {review} evenimente trimise la revizuire.",
+  "admin.osmHeld":
+    "Răspunsul ar fi retras {held} locuri, peste 10% din oraș, așa că nu a fost retras niciunul. Încearcă din nou mai târziu.",
   "about.title": "Despre date",
-  "about.lead": "De unde vin locurile și evenimentele de pe hartă, sub ce licențe le folosim și cum ne poate cere o sursă să o scoatem.",
+  "about.lead":
+    "De unde vin locurile și evenimentele de pe hartă, sub ce licențe le folosim și cum ne poate cere o sursă să o scoatem.",
   "about.placesTitle": "Locurile",
-  "about.places": "Parcurile, bibliotecile, muzeele și instituțiile publice vin din OpenStreetMap, o hartă făcută de voluntari și publicată sub Open Database License (ODbL). Le sincronizăm periodic, așa că o corectură făcută în OpenStreetMap ajunge și aici.",
+  "about.places":
+    "Parcurile, bibliotecile, muzeele și instituțiile publice vin din OpenStreetMap, o hartă făcută de voluntari și publicată sub Open Database License (ODbL). Le sincronizăm periodic, așa că o corectură făcută în OpenStreetMap ajunge și aici.",
   "about.mapTitle": "Harta",
   "about.mapCarto": "Imaginile hărții sunt de la CARTO, desenate din datele OpenStreetMap.",
   "about.mapOsm": "Imaginile hărții sunt servite de OpenStreetMap, din aceleași date.",
   "about.eventsTitle": "Evenimentele",
-  "about.events": "Evenimentele vin doar de la publicatori publici primari: calendare municipale sau finanțate public și locurile însele. Fiecare e verificat de un om înainte să apară, își numește sursa și duce la anunțul original.",
-  "about.eventsSample": "Deocamdată, importul de evenimente e încă în lucru: evenimentele afișate acum sunt exemple create pentru testarea aplicației, nu anunțuri reale.",
+  "about.events":
+    "Evenimentele vin doar de la publicatori publici primari: calendare municipale sau finanțate public și locurile însele. Fiecare e verificat de un om înainte să apară, își numește sursa și duce la anunțul original.",
+  "about.eventsSample":
+    "Deocamdată, importul de evenimente e încă în lucru: evenimentele afișate acum sunt exemple create pentru testarea aplicației, nu anunțuri reale.",
   "about.notTitle": "Ce nu facem",
-  "about.notTickets": "Nu vindem bilete. Când sursa dă un link de bilete, îl afișăm și te trimitem acolo; altfel scrie „Fără link de bilete”.",
-  "about.notAggregators": "Nu preluăm evenimente de la agregatoare comerciale ale căror condiții interzic reutilizarea.",
-  "about.iabilet": "O integrare de probă cu iaBilet poate exista în versiunile de dezvoltare. Așteaptă permisiunea lor și e oprită în producție.",
+  "about.notTickets":
+    "Nu vindem bilete. Când sursa dă un link de bilete, îl afișăm și te trimitem acolo; altfel scrie „Fără link de bilete”.",
+  "about.notAggregators":
+    "Nu preluăm evenimente de la agregatoare comerciale ale căror condiții interzic reutilizarea.",
+  "about.iabilet":
+    "O integrare de probă cu iaBilet poate exista în versiunile de dezvoltare. Așteaptă permisiunea lor și e oprită în producție.",
   "about.removeTitle": "Scoaterea unei surse",
-  "about.remove": "Dacă publici evenimente pe care le preluăm și nu vrei să apară aici, scrie-ne și le scoatem, fără întrebări.",
+  "about.remove":
+    "Dacă publici evenimente pe care le preluăm și nu vrei să apară aici, scrie-ne și le scoatem, fără întrebări.",
   "about.removeNoContact": "Adresa de contact pentru cereri de eliminare e în curs de stabilire.",
   "event.at": "la",
   "event.until": "până pe {date}",
@@ -391,7 +398,7 @@ const ro: Dict = {
 };
 
 const en: Dict = {
-  "brand": "CivicMap",
+  brand: "CivicMap",
   "nav.map": "Map",
   "nav.whatsOn": "What's on",
   "nav.account": "Account",
@@ -416,7 +423,8 @@ const en: Dict = {
   "auth.submitRegister": "Create account",
   "auth.haveAccount": "Already have an account?",
   "auth.loginLink": "Log in",
-  "auth.mailNote": "Notification emails come only through Ward. You can link a Ward account in settings; otherwise notifications show only in the bell.",
+  "auth.mailNote":
+    "Notification emails come only through Ward. You can link a Ward account in settings; otherwise notifications show only in the bell.",
 
   "authError.invalid_credentials": "Wrong username or password.",
   "authError.too_many_attempts": "Too many attempts. Try again in {seconds} s.",
@@ -445,7 +453,8 @@ const en: Dict = {
   "settings.signInBody": "Your password, your linked Ward account and your email are managed here.",
   "settings.passwordTitle": "Password",
   "settings.passwordLead": "The password you sign in to CivicMap with. Changing it signs out your other sessions.",
-  "settings.noPasswordLead": "Your account has no CivicMap password yet: you sign in only with Ward. Set one so you can still get in when Ward isn't answering.",
+  "settings.noPasswordLead":
+    "Your account has no CivicMap password yet: you sign in only with Ward. Set one so you can still get in when Ward isn't answering.",
   "settings.currentPassword": "Current password",
   "settings.newPassword": "New password",
   "settings.changePassword": "Change password",
@@ -465,7 +474,8 @@ const en: Dict = {
   "settings.unlinked": "Ward account unlinked.",
   "settings.mailTitle": "Email",
   "settings.mailLinked": "You get notification emails through Ward, at the address confirmed there.",
-  "settings.mailLocalOnly": "Your account has no Ward linked, so you get no emails: notifications show only in the bell. CivicMap keeps no email addresses.",
+  "settings.mailLocalOnly":
+    "Your account has no Ward linked, so you get no emails: notifications show only in the bell. CivicMap keeps no email addresses.",
   "settings.signOutTitle": "Sign out",
   "settings.signOut": "Sign out",
   "settings.signOutWard": "Sign out of Ward too",
@@ -637,7 +647,8 @@ const en: Dict = {
   "admin.refreshAll": "Refresh all",
   "admin.refresh": "Refresh",
   "admin.refreshOne": "Refresh {name}",
-  "admin.refreshSummary": "{name}: {fetched} read, {fresh} new, {changed} changed, {duplicates} duplicates, {attention} unreadable, {stale} gone.",
+  "admin.refreshSummary":
+    "{name}: {fetched} read, {fresh} new, {changed} changed, {duplicates} duplicates, {attention} unreadable, {stale} gone.",
   "admin.refreshFailed": "{name}: failed ({error}).",
   "admin.noSources": "No sources yet",
   "admin.noSourcesBody": "Add a vetted iCal feed below.",
@@ -660,23 +671,31 @@ const en: Dict = {
   "admin.osmSync": "Sync {city}",
   "admin.osmResult": "{city}: {upserted} places updated, {inserted} of them new.",
   "admin.osmRetired": "{retired} places retired (no longer in OSM), {unretired} back, {review} events sent to review.",
-  "admin.osmHeld": "This answer would have retired {held} places, more than 10% of the city, so none were. Try again later.",
+  "admin.osmHeld":
+    "This answer would have retired {held} places, more than 10% of the city, so none were. Try again later.",
   "about.title": "About the data",
-  "about.lead": "Where the places and events on the map come from, the licences we use them under, and how a source can ask to be removed.",
+  "about.lead":
+    "Where the places and events on the map come from, the licences we use them under, and how a source can ask to be removed.",
   "about.placesTitle": "Places",
-  "about.places": "Parks, libraries, museums and public institutions come from OpenStreetMap, a map made by volunteers and published under the Open Database License (ODbL). We sync them periodically, so a correction made in OpenStreetMap reaches this map too.",
+  "about.places":
+    "Parks, libraries, museums and public institutions come from OpenStreetMap, a map made by volunteers and published under the Open Database License (ODbL). We sync them periodically, so a correction made in OpenStreetMap reaches this map too.",
   "about.mapTitle": "The map",
   "about.mapCarto": "Map tiles are by CARTO, drawn from OpenStreetMap data.",
   "about.mapOsm": "Map tiles are served by OpenStreetMap, from the same data.",
   "about.eventsTitle": "Events",
-  "about.events": "Events come only from public primary publishers: municipal or publicly funded calendars and the venues themselves. Each is checked by a person before it appears, names its source and links to the original listing.",
-  "about.eventsSample": "For now the event import is still being built: the events shown are samples made to test the app, not real listings.",
+  "about.events":
+    "Events come only from public primary publishers: municipal or publicly funded calendars and the venues themselves. Each is checked by a person before it appears, names its source and links to the original listing.",
+  "about.eventsSample":
+    "For now the event import is still being built: the events shown are samples made to test the app, not real listings.",
   "about.notTitle": "What we don't do",
-  "about.notTickets": "We don't sell tickets. When a source gives a ticket link we show it and send you there; otherwise the event says “No ticket link”.",
+  "about.notTickets":
+    "We don't sell tickets. When a source gives a ticket link we show it and send you there; otherwise the event says “No ticket link”.",
   "about.notAggregators": "We don't take events from commercial aggregators whose terms forbid reuse.",
-  "about.iabilet": "A proof-of-concept iaBilet integration may exist in development builds. It awaits their permission and is disabled in production.",
+  "about.iabilet":
+    "A proof-of-concept iaBilet integration may exist in development builds. It awaits their permission and is disabled in production.",
   "about.removeTitle": "Removing a source",
-  "about.remove": "If you publish events we pick up and don't want them here, write to us and we take them down, no questions asked.",
+  "about.remove":
+    "If you publish events we pick up and don't want them here, write to us and we take them down, no questions asked.",
   "about.removeNoContact": "The contact address for removal requests is still being set up.",
   "event.at": "at",
   "event.until": "until {date}",
@@ -689,8 +708,7 @@ const en: Dict = {
   "whatsOn.title": "What's on in {city}",
   "whatsOn.subtitle": "Everything coming up, at places across the city.",
   "whatsOn.empty": "Nothing scheduled right now",
-  "whatsOn.emptyBody":
-    "Events come from organisers' public calendars and are sparse. The map is useful either way.",
+  "whatsOn.emptyBody": "Events come from organisers' public calendars and are sparse. The map is useful either way.",
 
   "state.loading": "Loading",
   "state.error": "Couldn't load this",
@@ -751,9 +769,7 @@ const DICTS: Record<Lang, Dict> = { ro, en };
 
 function interpolate(template: string, vars?: Record<string, string | number>) {
   if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (whole, key: string) =>
-    key in vars ? String(vars[key]) : whole,
-  );
+  return template.replace(/\{(\w+)\}/g, (whole, key: string) => (key in vars ? String(vars[key]) : whole));
 }
 
 interface I18n {
@@ -812,20 +828,30 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     const dict = DICTS[lang];
     const plural = new Intl.PluralRules(lang);
     const timeFmt = new Intl.DateTimeFormat(lang, {
-      timeZone: APP_TZ, hour: "2-digit", minute: "2-digit", hour12: false,
+      timeZone: APP_TZ,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     });
     const dayMonthFmt = new Intl.DateTimeFormat(lang, {
-      timeZone: APP_TZ, day: "numeric", month: "short",
+      timeZone: APP_TZ,
+      day: "numeric",
+      month: "short",
     });
     const longFmt = new Intl.DateTimeFormat(lang, {
-      timeZone: APP_TZ, weekday: "long", day: "numeric", month: "long",
+      timeZone: APP_TZ,
+      weekday: "long",
+      day: "numeric",
+      month: "long",
     });
     const keyFmt = new Intl.DateTimeFormat("en-CA", {
-      timeZone: APP_TZ, year: "numeric", month: "2-digit", day: "2-digit",
+      timeZone: APP_TZ,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
 
-    const t = (key: string, vars?: Record<string, string | number>) =>
-      interpolate(dict[key] ?? ro[key] ?? key, vars);
+    const t = (key: string, vars?: Record<string, string | number>) => interpolate(dict[key] ?? ro[key] ?? key, vars);
 
     return {
       lang,
@@ -833,12 +859,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       t,
       tn: (key, count, vars) => {
         const form = plural.select(count);
-        const raw =
-          dict[`${key}_${form}`] ??
-          dict[`${key}_other`] ??
-          ro[`${key}_${form}`] ??
-          ro[`${key}_other`] ??
-          key;
+        const raw = dict[`${key}_${form}`] ?? dict[`${key}_other`] ?? ro[`${key}_${form}`] ?? ro[`${key}_other`] ?? key;
         return interpolate(raw, { n: count, ...vars });
       },
       time: (iso) => timeFmt.format(new Date(iso)),

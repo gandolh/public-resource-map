@@ -78,8 +78,14 @@ export async function archiveRoutes(app: FastifyInstance) {
     if (!q) return reply;
     const subject = req.auth!.user.id;
     // What you saved, and what happened at places you follow.
-    const saved = db.select({ id: favoriteEvent.eventId }).from(favoriteEvent).where(eq(favoriteEvent.subject, subject));
-    const followed = db.select({ id: favoritePlace.placeId }).from(favoritePlace).where(eq(favoritePlace.subject, subject));
+    const saved = db
+      .select({ id: favoriteEvent.eventId })
+      .from(favoriteEvent)
+      .where(eq(favoriteEvent.subject, subject));
+    const followed = db
+      .select({ id: favoritePlace.placeId })
+      .from(favoritePlace)
+      .where(eq(favoritePlace.subject, subject));
     const conditions = [
       pastAt(new Date().toISOString()),
       or(inArray(event.id, saved), inArray(event.placeId, followed))!,

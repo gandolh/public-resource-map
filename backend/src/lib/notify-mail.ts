@@ -284,11 +284,9 @@ export function createMailSweeper(
         again = true;
         return;
       }
-      running = new Promise<void>((resolve) => setImmediate(resolve))
-        .then(loop)
-        .finally(() => {
-          running = null;
-        });
+      running = new Promise<void>((resolve) => setImmediate(resolve)).then(loop).finally(() => {
+        running = null;
+      });
     },
     idle: () => running ?? Promise.resolve(),
   };

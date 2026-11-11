@@ -20,7 +20,11 @@ export function runReminderSweep(now: Date, db: DB): number {
   // because each midnight is resolved in Bucharest on its own day.
   const tomorrow = new Date(Date.UTC(today.year, today.month - 1, today.day + 1));
   const after = new Date(Date.UTC(today.year, today.month - 1, today.day + 2));
-  const from = zonedTimeToInstant(tomorrow.getUTCFullYear(), tomorrow.getUTCMonth() + 1, tomorrow.getUTCDate()).toISOString();
+  const from = zonedTimeToInstant(
+    tomorrow.getUTCFullYear(),
+    tomorrow.getUTCMonth() + 1,
+    tomorrow.getUTCDate(),
+  ).toISOString();
   const to = zonedTimeToInstant(after.getUTCFullYear(), after.getUTCMonth() + 1, after.getUTCDate()).toISOString();
 
   const due = db
@@ -51,11 +55,7 @@ export const SWEEP_HOUR = 9;
  * `notifyUser`, so only users with Ward linked get one; the inbox row is
  * everyone's. Returns a stop function.
  */
-export function startReminderSweep(
-  db: DB,
-  log: (msg: string) => void,
-  afterRun: () => void = () => {},
-): () => void {
+export function startReminderSweep(db: DB, log: (msg: string) => void, afterRun: () => void = () => {}): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const run = () => {
     try {
@@ -84,4 +84,3 @@ export function startReminderSweep(
   schedule();
   return () => clearTimeout(timer);
 }
-

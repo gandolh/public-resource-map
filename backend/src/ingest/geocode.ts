@@ -25,8 +25,21 @@ export type GeocodeProvider = (query: string, city: CityConfig) => Promise<Geoco
 
 /** Areas, not points: a pin at a city's or district's centroid is wrong, not approximate. */
 const TOO_COARSE = new Set([
-  "country", "state", "region", "province", "county", "municipality", "city", "town",
-  "village", "suburb", "city_district", "district", "borough", "quarter", "postcode",
+  "country",
+  "state",
+  "region",
+  "province",
+  "county",
+  "municipality",
+  "city",
+  "town",
+  "village",
+  "suburb",
+  "city_district",
+  "district",
+  "borough",
+  "quarter",
+  "postcode",
   "administrative",
 ]);
 /** Nominatim's 0–1 importance; starts permissive, to be tuned on real data. */

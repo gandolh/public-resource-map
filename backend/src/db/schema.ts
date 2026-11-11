@@ -1,14 +1,6 @@
 import { randomUUID } from "crypto";
 import { sql } from "drizzle-orm";
-import {
-  index,
-  integer,
-  primaryKey,
-  real,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 const id = () =>
   text("id")
@@ -38,9 +30,7 @@ export const place = sqliteTable(
     source: text("source").notNull().default("osm"), // 'osm' | 'event-venue'
     osmType: text("osm_type"), // node | way | relation, null unless source='osm'
     osmId: text("osm_id"), // null unless source='osm'
-    isManualPin: integer("is_manual_pin", { mode: "boolean" })
-      .notNull()
-      .default(false),
+    isManualPin: integer("is_manual_pin", { mode: "boolean" }).notNull().default(false),
     address: text("address"),
     city: text("city").notNull(),
     lat: real("lat").notNull(),
@@ -211,9 +201,7 @@ export const geocodeCache = sqliteTable(
     raw: text("raw"), // JSON: raw Nominatim response
     createdAt: createdAt(),
   },
-  (t) => [
-    uniqueIndex("geocode_cache_address_unique").on(t.normalizedAddress),
-  ],
+  (t) => [uniqueIndex("geocode_cache_address_unique").on(t.normalizedAddress)],
 );
 
 // ---------------------------------------------------------------------------
@@ -273,11 +261,7 @@ export const notification = sqliteTable(
   (t) => [
     // idempotency for per-event reminders; new-event rows have null eventId
     // (SQLite treats NULLs as distinct) so they are not collapsed here.
-    uniqueIndex("notification_subject_event_kind_unique").on(
-      t.subject,
-      t.eventId,
-      t.kind,
-    ),
+    uniqueIndex("notification_subject_event_kind_unique").on(t.subject, t.eventId, t.kind),
     index("notification_subject_idx").on(t.subject),
     index("notification_place_idx").on(t.placeId),
     index("notification_event_idx").on(t.eventId),
@@ -300,8 +284,5 @@ export const notificationEvent = sqliteTable(
       .notNull()
       .references(() => event.id),
   },
-  (t) => [
-    primaryKey({ columns: [t.notificationId, t.eventId] }),
-    index("notification_event_event_idx").on(t.eventId),
-  ],
+  (t) => [primaryKey({ columns: [t.notificationId, t.eventId] }), index("notification_event_event_idx").on(t.eventId)],
 );

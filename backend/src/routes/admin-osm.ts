@@ -1,8 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import {
-  osmSyncRequestSchema,
-  type OsmSyncRequest,
-} from "@public-resource-map/shared";
+import { osmSyncRequestSchema, type OsmSyncRequest } from "@public-resource-map/shared";
 import {
   OverpassTimeoutError,
   SyncInProgressError,
@@ -32,9 +29,7 @@ export function adminOsmRoutes(deps: SyncDeps = {}) {
       async (req, reply) => {
         const parsed = osmSyncRequestSchema.safeParse(req.body);
         if (!parsed.success) {
-          return reply
-            .status(400)
-            .send({ code: "INVALID_BODY", message: parsed.error.message });
+          return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
         }
 
         const city = resolveCity(parsed.data.city);

@@ -6,7 +6,11 @@ import type { Page } from "@playwright/test";
  * genuine pointer events, so this drives the same path a hand does.
  */
 
-const placesLabel = (page: Page) => page.locator("p.tnum").filter({ hasText: /places?/ }).first();
+const placesLabel = (page: Page) =>
+  page
+    .locator("p.tnum")
+    .filter({ hasText: /places?/ })
+    .first();
 const count = async (page: Page) => Number((await placesLabel(page).textContent())?.match(/\d+/)?.[0]);
 
 async function mapBox(page: Page) {
@@ -57,7 +61,11 @@ test("a polygon carries over to what's on, and a city change clears it with a no
   const box = await mapBox(page);
   const cx = box.x + box.width / 2;
   const cy = box.y + box.height / 2;
-  for (const [dx, dy] of [[-60, -50], [60, -50], [0, 60]]) {
+  for (const [dx, dy] of [
+    [-60, -50],
+    [60, -50],
+    [0, 60],
+  ]) {
     await page.mouse.click(cx + dx, cy + dy);
   }
   await page.getByRole("button", { name: "Done" }).click();

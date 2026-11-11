@@ -12,7 +12,11 @@ let park: string;
 beforeEach(async () => {
   t = await buildTestApp();
   const add = (name: string) =>
-    t.db.insert(place).values({ name, category: "museum", city: "Timișoara", lat: 45.75, lng: 21.22 }).returning({ id: place.id }).get().id;
+    t.db
+      .insert(place)
+      .values({ name, category: "museum", city: "Timișoara", lat: 45.75, lng: 21.22 })
+      .returning({ id: place.id })
+      .get().id;
   museum = add("Muzeul de Artă");
   park = add("Parcul Rozelor");
 });
@@ -39,7 +43,15 @@ async function publish(placeId: string, titles: string[]) {
     (title) =>
       t.db
         .insert(stagedEvent)
-        .values({ sourceId: source, placeId, matchStatus: "auto-matched", status: "new", title, startDate: "2026-11-01T17:00:00.000Z", category: "concert" })
+        .values({
+          sourceId: source,
+          placeId,
+          matchStatus: "auto-matched",
+          status: "new",
+          title,
+          startDate: "2026-11-01T17:00:00.000Z",
+          category: "concert",
+        })
         .returning({ id: stagedEvent.id })
         .get().id,
   );
@@ -87,8 +99,16 @@ describe("the new-events trigger at accept", () => {
     const inbox = (await call(fan.cookie, "GET", "/api/notifications")).body;
     expect(inbox.unread).toBe(1);
     expect(inbox.data).toHaveLength(1);
-    expect(inbox.data[0]).toMatchObject({ kind: "new-event", readAt: null, place: { id: museum, name: "Muzeul de Artă" } });
-    expect(inbox.data[0].events.map((e: { title: string }) => e.title).sort()).toEqual(["Concert", "Tur ghidat", "Vernisaj"]);
+    expect(inbox.data[0]).toMatchObject({
+      kind: "new-event",
+      readAt: null,
+      place: { id: museum, name: "Muzeul de Artă" },
+    });
+    expect(inbox.data[0].events.map((e: { title: string }) => e.title).sort()).toEqual([
+      "Concert",
+      "Tur ghidat",
+      "Vernisaj",
+    ]);
 
     // Someone who follows another place hears nothing.
     expect((await call(other.cookie, "GET", "/api/notifications")).body).toEqual({ unread: 0, data: [] });
@@ -102,7 +122,9 @@ describe("the new-events trigger at accept", () => {
     let inbox = (await call(fan.cookie, "GET", "/api/notifications")).body;
     expect(inbox.unread).toBe(2);
 
-    expect((await call(fan.cookie, "POST", "/api/notifications/read", { ids: [inbox.data[0].id] })).body).toEqual({ read: 1 });
+    expect((await call(fan.cookie, "POST", "/api/notifications/read", { ids: [inbox.data[0].id] })).body).toEqual({
+      read: 1,
+    });
     inbox = (await call(fan.cookie, "GET", "/api/notifications")).body;
     expect(inbox.unread).toBe(1);
     expect((await call(fan.cookie, "POST", "/api/notifications/read", { all: true })).body).toEqual({ read: 1 });
@@ -115,7 +137,9 @@ describe("the new-events trigger at accept", () => {
     await call(fan.cookie, "POST", `/api/favorites/places/${museum}`);
     await publish(museum, ["Unu"]);
     const [item] = (await call(fan.cookie, "GET", "/api/notifications")).body.data;
-    expect((await call(stranger.cookie, "POST", "/api/notifications/read", { ids: [item.id] })).body).toEqual({ read: 0 });
+    expect((await call(stranger.cookie, "POST", "/api/notifications/read", { ids: [item.id] })).body).toEqual({
+      read: 0,
+    });
     expect((await call(fan.cookie, "GET", "/api/notifications")).body.unread).toBe(1);
   });
 });

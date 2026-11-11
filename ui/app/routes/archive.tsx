@@ -102,7 +102,12 @@ export default function ArchiveRoute() {
                   {t("filters.all")}
                 </Chip>
                 {eventCategories.map((c) => (
-                  <Chip key={c} active={categories.includes(c)} dotColor={eventCategoryColor(c)} onClick={() => toggle(c)}>
+                  <Chip
+                    key={c}
+                    active={categories.includes(c)}
+                    dotColor={eventCategoryColor(c)}
+                    onClick={() => toggle(c)}
+                  >
                     {t(eventCategoryKey(c))}
                   </Chip>
                 ))}
@@ -177,7 +182,12 @@ export default function ArchiveRoute() {
               ))}
               {q.hasNextPage && (
                 <div className="mt-6 flex justify-center">
-                  <Button variant="secondary" size="sm" disabled={q.isFetchingNextPage} onClick={() => void q.fetchNextPage()}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={q.isFetchingNextPage}
+                    onClick={() => void q.fetchNextPage()}
+                  >
                     {q.isFetchingNextPage && <Loader2 size={14} className="animate-spin" />}
                     {t("archive.more")}
                   </Button>

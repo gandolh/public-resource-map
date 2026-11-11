@@ -1,11 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { event, place } from "../db/schema.js";
-import {
-  parseCsv,
-  whatsOnQuerySchema,
-  type WhatsOnItem,
-} from "@public-resource-map/shared";
+import { parseCsv, whatsOnQuerySchema, type WhatsOnItem } from "@public-resource-map/shared";
 import { lensWindow } from "../lib/time.js";
 import { rowToEvent } from "./event-mapper.js";
 import { liveInWindow } from "./event-window.js";
@@ -25,9 +21,7 @@ export async function whatsOnRoutes(app: FastifyInstance) {
   app.get<{ Querystring: Record<string, string> }>("/whats-on", async (req, reply) => {
     const query = whatsOnQuerySchema.safeParse(req.query);
     if (!query.success) {
-      return reply
-        .status(400)
-        .send({ code: "INVALID_QUERY", message: query.error.message });
+      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
     }
 
     const { city, category, lens, page, pageSize } = query.data;

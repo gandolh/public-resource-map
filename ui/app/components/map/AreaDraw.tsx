@@ -29,14 +29,7 @@ const toRing = (latlngs: L.LatLng[]): AreaRing => latlngs.map((ll) => [ll.lat, l
 function useLockedMap(map: L.Map, locked: boolean) {
   useEffect(() => {
     if (!locked) return;
-    const handlers = [
-      map.dragging,
-      map.touchZoom,
-      map.doubleClickZoom,
-      map.scrollWheelZoom,
-      map.boxZoom,
-      map.keyboard,
-    ];
+    const handlers = [map.dragging, map.touchZoom, map.doubleClickZoom, map.scrollWheelZoom, map.boxZoom, map.keyboard];
     const wasEnabled = handlers.map((h) => h.enabled());
     handlers.forEach((h) => h.disable());
     const container = map.getContainer();
@@ -270,12 +263,7 @@ function DrawBar({
               <Undo2 size={14} strokeWidth={2.2} />
               {t("area.undo")}
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onFinish}
-              disabled={corners < MIN_AREA_VERTICES}
-            >
+            <Button variant="primary" size="sm" onClick={onFinish} disabled={corners < MIN_AREA_VERTICES}>
               <Check size={14} strokeWidth={2.4} />
               {t("area.done")}
             </Button>
@@ -310,14 +298,7 @@ export function AreaDraw() {
       {area && drawMode === null && (
         <Polygon positions={area} pathOptions={{ className: "cm-area" }} interactive={false} />
       )}
-      {drawMode && (
-        <DrawBar
-          mode={drawMode}
-          corners={polygon.count}
-          onUndo={polygon.undo}
-          onFinish={polygon.finish}
-        />
-      )}
+      {drawMode && <DrawBar mode={drawMode} corners={polygon.count} onUndo={polygon.undo} onFinish={polygon.finish} />}
     </>
   );
 }

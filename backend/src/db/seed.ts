@@ -13,8 +13,7 @@ import { ROLES, storeHandle } from "../ward/auth.js";
  * the user is created if it does not exist. No credential lives in this repo.
  */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath =
-  process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
+const dbPath = process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
 
 // Seeding resets every place, event, favourite and notification. It is for
 // dev and e2e databases, never a live one.

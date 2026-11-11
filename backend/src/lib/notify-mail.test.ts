@@ -31,13 +31,12 @@ afterEach(async () => {
 });
 
 function eventAt(startDate: string, title = `e@${startDate}`) {
-  return t.db.insert(event).values({ placeId, title, category: "concert", startDate }).returning({ id: event.id }).get().id;
+  return t.db.insert(event).values({ placeId, title, category: "concert", startDate }).returning({ id: event.id }).get()
+    .id;
 }
 
 /** A send stub that records what it was asked (by user id), answering `answer` (or throwing it). */
-function ward(
-  answer: () => Promise<{ sent: boolean; reason?: "not_linked" }> = async () => ({ sent: true }),
-) {
+function ward(answer: () => Promise<{ sent: boolean; reason?: "not_linked" }> = async () => ({ sent: true })) {
   const asked: { subject: string; mailSubject: string; text: string }[] = [];
   const send: SendNotification = (userId, message) => {
     asked.push({ subject: userId, ...message });
@@ -57,7 +56,11 @@ function inbox() {
     eventAt("2026-08-03T15:00:00.000Z", "Vernisaj"),
     eventAt("2026-08-04T17:30:00.000Z", "Atelier\npentru copii"),
   ];
-  notifyNewEvents(t.db, batch.map((eventId) => ({ eventId, placeId })), now);
+  notifyNewEvents(
+    t.db,
+    batch.map((eventId) => ({ eventId, placeId })),
+    now,
+  );
   const tomorrow = eventAt("2026-08-02T16:00:00.000Z", "Recital");
   t.db.insert(favoriteEvent).values({ subject: "ana", eventId: tomorrow }).run();
   runReminderSweep(now, t.db);
@@ -154,7 +157,8 @@ describe("runMailSweep", () => {
 });
 
 describe("the mail's text", () => {
-  const events = (n: number) => Array.from({ length: n }, (_, i) => ({ title: `E${i + 1}`, startDate: "2026-08-03T15:00:00.000Z" }));
+  const events = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({ title: `E${i + 1}`, startDate: "2026-08-03T15:00:00.000Z" }));
 
   it("uses Romanian's three plural forms, as the bell does", () => {
     expect(newEventsMail("Sala", events(1), BASE).mailSubject).toBe("1 eveniment nou la Sala");
@@ -194,10 +198,21 @@ describe("the trigger", () => {
     await t.app.auth.identities.createLinkedUser({ subject: "ward-ana", id: "ana", username: "ana", role: "user" });
     await t.signIn("user", "dan");
     for (const subject of ["ana", "dan"]) t.db.insert(favoritePlace).values({ subject, placeId }).run();
-    t.db.insert(eventSource).values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" }).run();
+    t.db
+      .insert(eventSource)
+      .values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" })
+      .run();
     t.db
       .insert(stagedEvent)
-      .values({ id: "s1", sourceId: "src", placeId, matchStatus: "auto-matched", status: "new", title: "Concert", startDate: new Date(Date.now() + 86_400_000).toISOString() })
+      .values({
+        id: "s1",
+        sourceId: "src",
+        placeId,
+        matchStatus: "auto-matched",
+        status: "new",
+        title: "Concert",
+        startDate: new Date(Date.now() + 86_400_000).toISOString(),
+      })
       .run();
     const { cookie } = await t.signIn("admin");
 

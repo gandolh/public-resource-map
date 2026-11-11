@@ -43,9 +43,7 @@ function clusterIcon(cluster: PlaceCluster): L.DivIcon {
   const html =
     `<div aria-hidden="true" style="position:relative;width:${size}px;height:${size}px">` +
     `<div class="cmc" style="width:${size}px;height:${size}px;font-size:${font}px">${n}</div>` +
-    (events > 0
-      ? `<span class="cmc-badge">${events > 99 ? "99+" : events}</span>`
-      : "") +
+    (events > 0 ? `<span class="cmc-badge">${events > 99 ? "99+" : events}</span>` : "") +
     `</div>`;
   return L.divIcon({
     html,
@@ -95,10 +93,7 @@ export function PlaceMarkers({ places, selectedId, onSelect, clusterLabel, pinLa
     };
   }, [map]);
 
-  const project = useCallback(
-    (coords: Coordinates) => map.project([coords.lat, coords.lng], zoom),
-    [map, zoom],
-  );
+  const project = useCallback((coords: Coordinates) => map.project([coords.lat, coords.lng], zoom), [map, zoom]);
 
   const clusters = useMemo(
     // Past zoom 16 the city is spread out enough that pins no longer collide,

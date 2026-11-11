@@ -6,8 +6,7 @@ import { fileURLToPath } from "url";
 import fs from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath =
-  process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
+const dbPath = process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
 const migrationsPath = path.resolve(__dirname, "../../drizzle");
 
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });

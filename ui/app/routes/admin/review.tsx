@@ -37,8 +37,7 @@ function bucketOf(r: StagedEventDto): Bucket {
 const BUCKETS: Bucket[] = ["quarantine", "attention", "ambiguous", "changed", "venue", "ready"];
 const rank = (r: StagedEventDto) => BUCKETS.indexOf(bucketOf(r));
 /** A row Accept can take as it is. */
-const acceptable = (r: StagedEventDto) =>
-  r.status !== "needs-attention" && (r.placeId !== null || r.lat !== null);
+const acceptable = (r: StagedEventDto) => r.status !== "needs-attention" && (r.placeId !== null || r.lat !== null);
 
 export default function ReviewRoute() {
   const { t, tn } = useI18n();
@@ -159,7 +158,11 @@ export default function ReviewRoute() {
 
       {!isPending && !isError && rows.length === 0 && (
         <div className="mt-6 rounded-xl border border-line bg-surface">
-          <StateBlock icon={<Inbox size={18} strokeWidth={2} />} title={t("admin.emptyTitle")} body={t("admin.emptyBody")} />
+          <StateBlock
+            icon={<Inbox size={18} strokeWidth={2} />}
+            title={t("admin.emptyTitle")}
+            body={t("admin.emptyBody")}
+          />
         </div>
       )}
 
@@ -175,7 +178,11 @@ export default function ReviewRoute() {
               disabled={chosen.length === 0 || accept.isPending}
               onClick={() => void doAccept(chosen.filter(acceptable).map((r) => r.id))}
             >
-              {accept.isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={2.4} />}
+              {accept.isPending ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Check size={14} strokeWidth={2.4} />
+              )}
               {t("admin.acceptSelected")}
             </Button>
             <Button
@@ -200,15 +207,29 @@ export default function ReviewRoute() {
                     aria-label={t("admin.selectAll")}
                   />
                 </th>
-                <th scope="col" className="border-b border-line py-2">{t("admin.col.event")}</th>
-                <th scope="col" className="border-b border-line py-2">{t("admin.col.when")}</th>
-                <th scope="col" className="border-b border-line py-2">{t("admin.col.place")}</th>
-                <th scope="col" className="border-b border-line py-2">{t("admin.col.state")}</th>
+                <th scope="col" className="border-b border-line py-2">
+                  {t("admin.col.event")}
+                </th>
+                <th scope="col" className="border-b border-line py-2">
+                  {t("admin.col.when")}
+                </th>
+                <th scope="col" className="border-b border-line py-2">
+                  {t("admin.col.place")}
+                </th>
+                <th scope="col" className="border-b border-line py-2">
+                  {t("admin.col.state")}
+                </th>
               </tr>
             </thead>
             <tbody>
               {visible.map((r) => (
-                <Row key={r.id} row={r} selected={selected.has(r.id)} onToggle={() => toggle(r.id)} onOpen={() => setOpenId(r.id)} />
+                <Row
+                  key={r.id}
+                  row={r}
+                  selected={selected.has(r.id)}
+                  onToggle={() => toggle(r.id)}
+                  onOpen={() => setOpenId(r.id)}
+                />
               ))}
             </tbody>
           </table>
@@ -261,7 +282,12 @@ function Row({
   return (
     <tr className={cn("align-top", selected && "bg-accent-weak/60")}>
       <td className="border-b border-line py-2.5 pl-2">
-        <input type="checkbox" checked={selected} onChange={onToggle} aria-label={t("admin.select", { title: row.title })} />
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggle}
+          aria-label={t("admin.select", { title: row.title })}
+        />
       </td>
       <td className="border-b border-line py-2.5 pr-3">
         <button type="button" onClick={onOpen} className="text-left font-semibold text-fg hover:underline">
@@ -330,7 +356,9 @@ function Drawer({
   const error = resolve.isError ? resolve.error.message : null;
 
   // Coordinates for the matched place and each candidate, for the preview.
-  const placeIds = row ? [...new Set([row.placeId, ...row.candidates.map((c) => c.placeId)].filter(Boolean) as string[])] : [];
+  const placeIds = row
+    ? [...new Set([row.placeId, ...row.candidates.map((c) => c.placeId)].filter(Boolean) as string[])]
+    : [];
   const places = useQueries({
     queries: placeIds.map((id) => ({ queryKey: ["place", id], queryFn: () => fetchPlace(id) })),
   });
@@ -382,7 +410,9 @@ function Drawer({
                   </p>
                 )}
                 {row.cancelled && (
-                  <p className="rounded-lg border border-danger/30 bg-danger-weak px-3 py-2 text-danger">{t("admin.cancelled")}</p>
+                  <p className="rounded-lg border border-danger/30 bg-danger-weak px-3 py-2 text-danger">
+                    {t("admin.cancelled")}
+                  </p>
                 )}
 
                 <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5">
@@ -411,7 +441,12 @@ function Drawer({
                     <>
                       <dt className="text-fg-muted">{t("admin.listing")}</dt>
                       <dd>
-                        <a href={row.sourceUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-accent hover:underline">
+                        <a
+                          href={row.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex items-center gap-1 text-accent hover:underline"
+                        >
                           {new URL(row.sourceUrl).hostname}
                           <ExternalLink size={12} />
                         </a>
@@ -428,7 +463,13 @@ function Drawer({
                     </h3>
                     <div className="h-[220px] overflow-hidden rounded-lg border border-line">
                       {center ? (
-                        <MapContainer key={row.id} center={[center.lat, center.lng]} zoom={15} className="h-full w-full" attributionControl>
+                        <MapContainer
+                          key={row.id}
+                          center={[center.lat, center.lng]}
+                          zoom={15}
+                          className="h-full w-full"
+                          attributionControl
+                        >
                           <TileLayer url={dark ? DARK_TILES : LIGHT_TILES} attribution={MAP_ATTRIBUTION} />
                           <Settle lat={center.lat} lng={center.lng} />
                           <PinDrop onPin={(lat, lng) => setPin({ lat, lng })} />
@@ -443,14 +484,26 @@ function Drawer({
                             </CircleMarker>
                           ))}
                           {row.lat !== null && !row.placeId && (
-                            <CircleMarker center={[row.lat, row.lng!]} radius={8} pathOptions={{ className: "cm-area" }}>
+                            <CircleMarker
+                              center={[row.lat, row.lng!]}
+                              radius={8}
+                              pathOptions={{ className: "cm-area" }}
+                            >
                               <Tooltip>{t("admin.geocoded")}</Tooltip>
                             </CircleMarker>
                           )}
-                          {pin && <CircleMarker center={[pin.lat, pin.lng]} radius={8} pathOptions={{ className: "cm-area-draft" }} />}
+                          {pin && (
+                            <CircleMarker
+                              center={[pin.lat, pin.lng]}
+                              radius={8}
+                              pathOptions={{ className: "cm-area-draft" }}
+                            />
+                          )}
                         </MapContainer>
                       ) : (
-                        <p className="grid h-full place-items-center px-6 text-center text-fg-muted">{t("admin.noLocation")}</p>
+                        <p className="grid h-full place-items-center px-6 text-center text-fg-muted">
+                          {t("admin.noLocation")}
+                        </p>
                       )}
                     </div>
                     <p className="text-[12px] text-fg-faint">{t("admin.pinHint")}</p>
@@ -458,10 +511,15 @@ function Drawer({
                     {row.candidates.length > 0 && (
                       <ul className="space-y-1.5">
                         {row.candidates.map((c) => (
-                          <li key={c.placeId} className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2">
+                          <li
+                            key={c.placeId}
+                            className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2"
+                          >
                             <span className="min-w-0">
                               <span className="block truncate font-medium">{c.name}</span>
-                              <span className="tnum text-[12px] text-fg-muted">{t("admin.score", { score: Math.round(c.score * 100) })}</span>
+                              <span className="tnum text-[12px] text-fg-muted">
+                                {t("admin.score", { score: Math.round(c.score * 100) })}
+                              </span>
                             </span>
                             {c.placeId === row.placeId ? (
                               <span className="text-[12px] font-semibold text-accent">{t("admin.chosen")}</span>
@@ -486,7 +544,11 @@ function Drawer({
                         {t("admin.useThisPin")}
                       </Button>
                     )}
-                    {error && <p role="alert" className="text-[12.5px] text-danger">{error}</p>}
+                    {error && (
+                      <p role="alert" className="text-[12.5px] text-danger">
+                        {error}
+                      </p>
+                    )}
                   </section>
                 )}
               </div>

@@ -44,8 +44,7 @@ export function adminIngestRoutes(deps: IngestDeps) {
       }
       throw err;
     };
-    const invalid = (reply: FastifyReply, message: string) =>
-      reply.status(400).send({ code: "INVALID_BODY", message });
+    const invalid = (reply: FastifyReply, message: string) => reply.status(400).send({ code: "INVALID_BODY", message });
 
     const toDto = (s: typeof eventSource.$inferSelect): EventSourceDto => ({
       id: s.id,
@@ -77,7 +76,9 @@ export function adminIngestRoutes(deps: IngestDeps) {
       if (!city) return reply.status(400).send({ code: "UNKNOWN_CITY", message: `Unknown city: ${input.city}` });
       const taken = await db.select().from(eventSource).where(eq(eventSource.adapterKey, input.adapterKey)).get();
       if (taken) {
-        return reply.status(409).send({ code: "ADAPTER_KEY_TAKEN", message: `${input.adapterKey} is already a source` });
+        return reply
+          .status(409)
+          .send({ code: "ADAPTER_KEY_TAKEN", message: `${input.adapterKey} is already a source` });
       }
       const row = await db
         .insert(eventSource)

@@ -15,14 +15,7 @@ interface StateBlockProps {
  * normal case here, not an edge case, so this is a first-class component that
  * explains *why* something is empty rather than leaving a blank rectangle.
  */
-export function StateBlock({
-  icon,
-  title,
-  body,
-  action,
-  className,
-  tone = "neutral",
-}: StateBlockProps) {
+export function StateBlock({ icon, title, body, action, className, tone = "neutral" }: StateBlockProps) {
   return (
     <div className={cn("flex flex-col items-center px-5 py-8 text-center", className)}>
       {icon && (
@@ -36,9 +29,7 @@ export function StateBlock({
         </div>
       )}
       <p className="text-[14.5px] font-semibold tracking-[-0.01em] text-fg">{title}</p>
-      {body && (
-        <p className="mt-1.5 max-w-[38ch] text-[13px] leading-relaxed text-fg-muted">{body}</p>
-      )}
+      {body && <p className="mt-1.5 max-w-[38ch] text-[13px] leading-relaxed text-fg-muted">{body}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

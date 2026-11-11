@@ -8,12 +8,7 @@ import { BrandMark } from "./shell/BrandMark";
 import { CityPicker } from "./shell/CityPicker";
 import { LangToggle } from "./shell/LangToggle";
 import { Avatar } from "./ui/Avatar";
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "./ui/DropdownMenu";
+import { DropdownMenu, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "./ui/DropdownMenu";
 import { useAuthStore } from "~/stores/authStore";
 import { browserPath, loginPath, registerPath } from "~/lib/authApi";
 import { useLogout } from "../../vendor/ward/ward-auth-react.js";
@@ -114,25 +109,14 @@ function AccountTab() {
   const to = status === "authenticated" ? "/settings" : loginPath(here);
 
   return (
-    <Link
-      to={to}
-      className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] text-fg-muted"
-    >
+    <Link to={to} className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] text-fg-muted">
       <User className="h-5 w-5" aria-hidden />
       {t("nav.account")}
     </Link>
   );
 }
 
-function BottomTab({
-  to,
-  icon: Icon,
-  label,
-}: {
-  to: string;
-  icon: React.ElementType;
-  label: string;
-}) {
+function BottomTab({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) {
   const { pathname } = useLocation();
   const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
   return (
@@ -145,9 +129,7 @@ function BottomTab({
       )}
     >
       <Icon size={19} strokeWidth={active ? 2.4 : 2} />
-      <span className="max-w-full truncate text-[10.5px] leading-none font-medium">
-        {label}
-      </span>
+      <span className="max-w-full truncate text-[10.5px] leading-none font-medium">{label}</span>
     </Link>
   );
 }
@@ -174,10 +156,7 @@ export function Navbar() {
     <>
       <header className="relative z-[700] flex h-13 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-3 md:px-4">
         <div className="flex min-w-0 items-center gap-2.5">
-          <Link
-            to="/"
-            className="flex items-center gap-2 rounded-md pr-1 text-[15px] font-semibold tracking-[-0.02em]"
-          >
+          <Link to="/" className="flex items-center gap-2 rounded-md pr-1 text-[15px] font-semibold tracking-[-0.02em]">
             <BrandMark />
             <span className="hidden sm:inline">{t("brand")}</span>
           </Link>

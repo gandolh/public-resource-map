@@ -45,14 +45,10 @@ describe("the database connection", () => {
           .map((row) => row.detail)
           .join("\n");
 
-      expect(plan("SELECT id FROM place WHERE city = 'Timișoara'")).toMatch(
-        /USING INDEX place_city_idx/,
+      expect(plan("SELECT id FROM place WHERE city = 'Timișoara'")).toMatch(/USING INDEX place_city_idx/);
+      expect(plan("SELECT id FROM place WHERE lat BETWEEN 45.7 AND 45.8 AND lng BETWEEN 21.1 AND 21.3")).toMatch(
+        /USING INDEX place_lat_lng_idx/,
       );
-      expect(
-        plan(
-          "SELECT id FROM place WHERE lat BETWEEN 45.7 AND 45.8 AND lng BETWEEN 21.1 AND 21.3",
-        ),
-      ).toMatch(/USING INDEX place_lat_lng_idx/);
     } finally {
       sqlite.close();
     }

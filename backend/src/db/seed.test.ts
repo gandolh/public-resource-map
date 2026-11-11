@@ -44,7 +44,13 @@ describe("db:seed", () => {
   it("loads both cities from the OSM fixture, plus a venue OSM does not have", () => {
     const db = freshDb();
     const r = seedDatabase(db, { now: NOW });
-    const cities = new Set(db.select({ city: place.city }).from(place).all().map((p) => p.city));
+    const cities = new Set(
+      db
+        .select({ city: place.city })
+        .from(place)
+        .all()
+        .map((p) => p.city),
+    );
     expect(cities).toEqual(new Set(["Timișoara", "București"]));
     expect(r.places).toBeGreaterThan(1000);
     const venue = db.select().from(place).where(eq(place.id, SEED.places.tmPiataVictoriei)).get();
@@ -59,7 +65,15 @@ describe("db:seed", () => {
     seedDatabase(db, { now: NOW });
     expect(db.select().from(event).where(isNotNull(event.buyUrl)).all().length).toBeGreaterThan(0);
     expect(db.select().from(event).where(isNull(event.buyUrl)).all().length).toBeGreaterThan(0);
-    expect(new Set(db.select({ s: event.status }).from(event).all().map((e) => e.s))).toEqual(new Set(["live"]));
+    expect(
+      new Set(
+        db
+          .select({ s: event.status })
+          .from(event)
+          .all()
+          .map((e) => e.s),
+      ),
+    ).toEqual(new Set(["live"]));
     expect(db.select().from(event).where(eq(event.placeId, SEED.places.tmPiataVictoriei)).all()).toHaveLength(1);
   });
 

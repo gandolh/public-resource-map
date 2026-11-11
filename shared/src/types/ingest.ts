@@ -38,13 +38,7 @@ export const rawEventSchema = z.object({
 });
 export type RawEvent = z.infer<typeof rawEventSchema>;
 
-export const stagedStatuses = [
-  "new",
-  "changed",
-  "accepted",
-  "rejected",
-  "needs-attention",
-] as const;
+export const stagedStatuses = ["new", "changed", "accepted", "rejected", "needs-attention"] as const;
 export const stagedStatusSchema = z.enum(stagedStatuses);
 export type StagedStatus = z.infer<typeof stagedStatusSchema>;
 

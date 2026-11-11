@@ -29,8 +29,7 @@ function sessionCookie(res: { headers: Record<string, unknown> }): string {
   return String(header).split(";")[0]!;
 }
 
-const get = (url: string, cookie?: string) =>
-  t.app.inject({ method: "GET", url, headers: cookie ? { cookie } : {} });
+const get = (url: string, cookie?: string) => t.app.inject({ method: "GET", url, headers: cookie ? { cookie } : {} });
 
 describe("local sign-in", () => {
   it("a seeded user signs in with their password, and the cookie is scoped to /prm-api", async () => {
@@ -169,7 +168,10 @@ describe("Sign in with Ward", () => {
     expect(url.searchParams.get("redirect_uri")).toBe(`${TEST_ORIGIN}/prm-api/auth/ward/callback`);
     expect(url.searchParams.get("code_challenge_method")).toBe("S256");
     // The round trip's secrets ride a cookie scoped to the callback alone.
-    const flow = [res.headers["set-cookie"]].flat().map(String).find((c) => c.startsWith("prm_session_ward="));
+    const flow = [res.headers["set-cookie"]]
+      .flat()
+      .map(String)
+      .find((c) => c.startsWith("prm_session_ward="));
     expect(flow).toMatch(/Path=\/prm-api\/auth\/ward\/callback/);
   });
 
@@ -188,7 +190,10 @@ describe("Sign in with Ward", () => {
     expect((await get("/api/favorites", live)).statusCode).toBe(200);
 
     const ended = await wardSession("ward-dan", "sid-revoked");
-    expect((await get("/api/favorites", ended)).json()).toEqual({ error: "unauthorized", reason: "ward_session_ended" });
+    expect((await get("/api/favorites", ended)).json()).toEqual({
+      error: "unauthorized",
+      reason: "ward_session_ended",
+    });
   });
 
   it("with Ward down, a Ward session is refused and a local one keeps working", async () => {
@@ -198,7 +203,10 @@ describe("Sign in with Ward", () => {
     const local = (await t.signIn("user")).cookie;
     ward.stop();
 
-    expect((await get("/api/favorites", fromWard)).json()).toEqual({ error: "unauthorized", reason: "ward_unavailable" });
+    expect((await get("/api/favorites", fromWard)).json()).toEqual({
+      error: "unauthorized",
+      reason: "ward_unavailable",
+    });
     expect((await get("/api/favorites", local)).statusCode).toBe(200);
   });
 

@@ -52,9 +52,13 @@ describe("runReminderSweep(now)", () => {
     favouriteAt("2026-08-01T15:00:00.000Z");
     expect(runReminderSweep(now, t.db)).toBe(1);
     expect(reminders()[0].eventId).toBeTruthy();
-    expect(t.db.select().from(event).all().find((e) => e.id === reminders()[0].eventId)?.startDate).toBe(
-      "2026-08-01T21:30:00.000Z",
-    );
+    expect(
+      t.db
+        .select()
+        .from(event)
+        .all()
+        .find((e) => e.id === reminders()[0].eventId)?.startDate,
+    ).toBe("2026-08-01T21:30:00.000Z");
   });
 
   it("reminds each person who favourited it, and skips events no longer live", () => {
@@ -62,6 +66,10 @@ describe("runReminderSweep(now)", () => {
     t.db.insert(favoriteEvent).values({ subject: "b", eventId: id }).run();
     favouriteAt("2026-08-02T12:00:00.000Z", "a", "ended");
     expect(runReminderSweep(now, t.db)).toBe(2);
-    expect(reminders().map((r) => r.subject).sort()).toEqual(["a", "b"]);
+    expect(
+      reminders()
+        .map((r) => r.subject)
+        .sort(),
+    ).toEqual(["a", "b"]);
   });
 });

@@ -137,9 +137,7 @@ export default function WhatsOnRoute() {
 
           {groups.map(({ group, items: rows }) => (
             <section key={group} className="mt-5 first:mt-3">
-              <h2 className="label-cap pb-1">
-                {t(`group.${group}`)}
-              </h2>
+              <h2 className="label-cap pb-1">{t(`group.${group}`)}</h2>
               <ul>
                 {rows.map((item) => (
                   <EventPlaceRow key={item.event.id} item={item} />

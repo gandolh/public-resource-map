@@ -80,7 +80,10 @@ export default function SettingsRoute() {
 
         {user.hasPassword ? <ChangePassword /> : <FirstPassword wardEnabled={ward.enabled} />}
         <WardLink enabled={ward.enabled} linked={ward.linked} hasPassword={user.hasPassword} />
-        <Section title={t("settings.mailTitle")} lead={t(ward.linked ? "settings.mailLinked" : "settings.mailLocalOnly")} />
+        <Section
+          title={t("settings.mailTitle")}
+          lead={t(ward.linked ? "settings.mailLinked" : "settings.mailLocalOnly")}
+        />
         <SignOut fromWard={session.session.origin === "ward"} />
       </article>
     </div>
@@ -102,7 +105,13 @@ function ChangePassword() {
   return (
     <Section title={t("settings.passwordTitle")} lead={t("settings.passwordLead")}>
       <form onSubmit={submit} className="space-y-4">
-        <Field label={t("settings.currentPassword")} name="current" type="password" autoComplete="current-password" required />
+        <Field
+          label={t("settings.currentPassword")}
+          name="current"
+          type="password"
+          autoComplete="current-password"
+          required
+        />
         <Field
           label={t("settings.newPassword")}
           name="next"

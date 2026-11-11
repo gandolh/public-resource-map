@@ -16,14 +16,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * three equally-weighted choices.
  */
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-accent text-fg-on-accent hover:bg-accent-hover active:bg-accent-hover shadow-e1",
-  secondary:
-    "bg-surface text-fg border border-line hover:bg-surface-2 hover:border-line-strong",
-  ghost:
-    "text-fg-muted hover:bg-surface-2 hover:text-fg",
-  danger:
-    "bg-danger text-white hover:opacity-90",
+  primary: "bg-accent text-fg-on-accent hover:bg-accent-hover active:bg-accent-hover shadow-e1",
+  secondary: "bg-surface text-fg border border-line hover:bg-surface-2 hover:border-line-strong",
+  ghost: "text-fg-muted hover:bg-surface-2 hover:text-fg",
+  danger: "bg-danger text-white hover:opacity-90",
 };
 
 const sizes: Record<Size, string> = {
@@ -34,13 +30,7 @@ const sizes: Record<Size, string> = {
   "icon-sm": "h-8 w-8 rounded-md",
 };
 
-export function Button({
-  variant = "secondary",
-  size = "md",
-  className,
-  type = "button",
-  ...props
-}: ButtonProps) {
+export function Button({ variant = "secondary", size = "md", className, type = "button", ...props }: ButtonProps) {
   return (
     <button
       type={type}

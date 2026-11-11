@@ -3,11 +3,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { event, place } from "../db/schema.js";
-import {
-  createEventSchema,
-  nearbyQuerySchema,
-  type CreateEventInput,
-} from "@public-resource-map/shared";
+import { createEventSchema, nearbyQuerySchema, type CreateEventInput } from "@public-resource-map/shared";
 import { boundingBox } from "../lib/geo.js";
 import { rowToEvent } from "./event-mapper.js";
 import { isForeignKeyViolation } from "../lib/fk.js";
@@ -47,13 +43,7 @@ export async function eventRoutes(app: FastifyInstance) {
     const offset = (page - 1) * pageSize;
 
     const [rows, countRows] = await Promise.all([
-      db
-        .select()
-        .from(event)
-        .innerJoin(place, eq(event.placeId, place.id))
-        .where(where)
-        .limit(pageSize)
-        .offset(offset),
+      db.select().from(event).innerJoin(place, eq(event.placeId, place.id)).where(where).limit(pageSize).offset(offset),
       db
         .select({ count: sql<number>`count(*)` })
         .from(event)
@@ -84,23 +74,19 @@ export async function eventRoutes(app: FastifyInstance) {
 
   // Admin-only, like the place writes. Anonymous POSTs used to
   // publish straight to `live`, skipping the review gate.
-  app.post<{ Body: CreateEventInput }>(
-    "/events",
-    { preHandler: requireRole(ROLES.admin) },
-    async (req, reply) => {
-      const parsed = createEventSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
-      }
+  app.post<{ Body: CreateEventInput }>("/events", { preHandler: requireRole(ROLES.admin) }, async (req, reply) => {
+    const parsed = createEventSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
+    }
 
-      const id = randomUUID();
+    const id = randomUUID();
 
-      await db.insert(event).values({ id, ...parsed.data });
+    await db.insert(event).values({ id, ...parsed.data });
 
-      const row = await db.select().from(event).where(eq(event.id, id)).get();
-      return reply.status(201).send(rowToEvent(row!));
-    },
-  );
+    const row = await db.select().from(event).where(eq(event.id, id)).get();
+    return reply.status(201).send(rowToEvent(row!));
+  });
 
   app.delete<{ Params: { id: string } }>(
     "/events/:id",

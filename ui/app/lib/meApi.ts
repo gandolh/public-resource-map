@@ -1,4 +1,10 @@
-import type { FavoritesDto, InboxDto, MarkReadInput, PaginatedResponse, WhatsOnItem } from "@public-resource-map/shared";
+import type {
+  FavoritesDto,
+  InboxDto,
+  MarkReadInput,
+  PaginatedResponse,
+  WhatsOnItem,
+} from "@public-resource-map/shared";
 import { ApiRequestError } from "~/lib/api";
 
 /**

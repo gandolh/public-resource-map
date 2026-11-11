@@ -51,7 +51,12 @@ describe("pointInRing", () => {
   });
 
   it("is never inside fewer than three vertices", () => {
-    expect(pointInRing({ lat: 0, lng: 0 }, [[0, 0], [1, 1]])).toBe(false);
+    expect(
+      pointInRing({ lat: 0, lng: 0 }, [
+        [0, 0],
+        [1, 1],
+      ]),
+    ).toBe(false);
   });
 });
 

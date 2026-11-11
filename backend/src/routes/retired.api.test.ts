@@ -15,10 +15,28 @@ describe("a retired place", () => {
   beforeAll(async () => {
     t = await buildTestApp();
     await t.db.insert(place).values([
-      { id: "open", name: "Biblioteca deschisă", category: "library", source: "osm", osmType: "node", osmId: "1", city: "Timișoara", lat: 45.75, lng: 21.22 },
       {
-        id: "gone", name: "Biblioteca închisă", category: "library", source: "osm", osmType: "node", osmId: "2",
-        city: "Timișoara", lat: 45.751, lng: 21.221, retiredAt: at(-DAY),
+        id: "open",
+        name: "Biblioteca deschisă",
+        category: "library",
+        source: "osm",
+        osmType: "node",
+        osmId: "1",
+        city: "Timișoara",
+        lat: 45.75,
+        lng: 21.22,
+      },
+      {
+        id: "gone",
+        name: "Biblioteca închisă",
+        category: "library",
+        source: "osm",
+        osmType: "node",
+        osmId: "2",
+        city: "Timișoara",
+        lat: 45.751,
+        lng: 21.221,
+        retiredAt: at(-DAY),
       },
     ]);
     await t.db.insert(event).values([
@@ -29,9 +47,16 @@ describe("a retired place", () => {
     ]);
     await t.db.insert(favoritePlace).values({ subject: "ana", placeId: "gone" });
     await t.db.insert(notification).values({ subject: "ana", kind: "new-event", placeId: "gone" });
-    await t.db.insert(eventSource).values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" });
+    await t.db
+      .insert(eventSource)
+      .values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" });
     await t.db.insert(stagedEvent).values({
-      id: "pending", sourceId: "src", matchStatus: "unmatched", status: "new", title: "Concert", startDate: at(DAY),
+      id: "pending",
+      sourceId: "src",
+      matchStatus: "unmatched",
+      status: "new",
+      title: "Concert",
+      startDate: at(DAY),
     });
     cookie = (await t.signIn("user", "ana")).cookie;
     admin = (await t.signIn("admin")).cookie;
@@ -42,8 +67,7 @@ describe("a retired place", () => {
   });
 
   const get = (url: string, headers: Record<string, string> = {}) => t.app.inject({ method: "GET", url, headers });
-  const ids = (body: { data: { id?: string; event?: { id: string } }[] }) =>
-    body.data.map((r) => r.event?.id ?? r.id);
+  const ids = (body: { data: { id?: string; event?: { id: string } }[] }) => body.data.map((r) => r.event?.id ?? r.id);
 
   it("is not on the map, and its page and programme are not found", async () => {
     const list = await get("/api/places?city=Timișoara&pageSize=100");

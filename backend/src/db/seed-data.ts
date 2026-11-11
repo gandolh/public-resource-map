@@ -1,15 +1,7 @@
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import {
-  event,
-  favoriteEvent,
-  favoritePlace,
-  notification,
-  notificationEvent,
-  place,
-  stagedEvent,
-} from "./schema.js";
+import { event, favoriteEvent, favoritePlace, notification, notificationEvent, place, stagedEvent } from "./schema.js";
 import type { DB } from "./index.js";
 import { zonedParts, zonedTimeToInstant } from "../lib/time.js";
 import { notifyNewEvents } from "../lib/notify.js";
@@ -32,9 +24,10 @@ const BU = "București";
  * none of it should ever be shown to a real user as fact. Real events come
  * through ingestion from sources the owner has vetted.
  */
-export const fixture = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, "fixtures/osm-places.json"), "utf8"),
-) as { capturedAt: string; places: OsmPlaceInput[] };
+export const fixture = JSON.parse(fs.readFileSync(path.resolve(__dirname, "fixtures/osm-places.json"), "utf8")) as {
+  capturedAt: string;
+  places: OsmPlaceInput[];
+};
 
 const osmPlaces = fixture.places.map((p) => ({
   ...p,
@@ -290,7 +283,9 @@ export function seedDatabase(db: DB, { now = new Date(), demoSubject }: SeedOpti
 
     const places = [...osmPlaces, ...venues];
     for (let i = 0; i < places.length; i += CHUNK) {
-      tx.insert(place).values(places.slice(i, i + CHUNK)).run();
+      tx.insert(place)
+        .values(places.slice(i, i + CHUNK))
+        .run();
     }
     tx.insert(event).values(events).run();
   });

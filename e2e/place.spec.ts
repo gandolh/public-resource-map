@@ -17,9 +17,10 @@ test("a cold deep link opens the place with its programme and sources", async ({
   await expect(page.locator(".leaflet-container")).toBeVisible();
   // Its events credit the publisher and link the original listing.
   await expect(page.getByText("Source:").first()).toBeVisible();
-  await expect(
-    page.locator("p", { hasText: "Source:" }).getByRole("link").first(),
-  ).toHaveAttribute("href", /^https:\/\//);
+  await expect(page.locator("p", { hasText: "Source:" }).getByRole("link").first()).toHaveAttribute(
+    "href",
+    /^https:\/\//,
+  );
 });
 
 test("a link to a place in another city switches the city", async ({ page, request }) => {

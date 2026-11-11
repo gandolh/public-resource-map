@@ -4,7 +4,10 @@ import { test, expect, SEED } from "./fixtures";
 
 const count = async (text: Promise<string | null>) => Number((await text)?.match(/\d+/)?.[0]);
 const label = (page: import("@playwright/test").Page) =>
-  page.locator("p.tnum").filter({ hasText: /places?/ }).first();
+  page
+    .locator("p.tnum")
+    .filter({ hasText: /places?/ })
+    .first();
 
 test("opens on Timișoara with its places on the map", async ({ page }) => {
   await page.goto("");

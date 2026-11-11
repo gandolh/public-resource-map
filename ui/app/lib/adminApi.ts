@@ -42,8 +42,7 @@ export const adminApi = {
   createSource: (input: CreateSourceInput) => send<EventSourceDto>("POST", "/api/admin/sources", input),
   setSourceEnabled: (id: string, enabled: boolean) =>
     send<EventSourceDto>("PATCH", `/api/admin/sources/${encodeURIComponent(id)}`, { enabled }),
-  refresh: (id: string) =>
-    send<RefreshSummary>("POST", `/api/admin/sources/${encodeURIComponent(id)}/refresh`),
+  refresh: (id: string) => send<RefreshSummary>("POST", `/api/admin/sources/${encodeURIComponent(id)}/refresh`),
   refreshAll: () =>
     send<{ data: (RefreshSummary | { sourceId: string; status: "error"; error: string })[] }>(
       "POST",

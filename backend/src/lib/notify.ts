@@ -12,11 +12,7 @@ import { favoritePlace, notification, notificationEvent } from "../db/schema.js"
  *
  * Returns how many inbox items it wrote.
  */
-export function notifyNewEvents(
-  db: DB,
-  published: { eventId: string; placeId: string }[],
-  now: Date,
-): number {
+export function notifyNewEvents(db: DB, published: { eventId: string; placeId: string }[], now: Date): number {
   if (published.length === 0) return 0;
   const byPlace = new Map<string, string[]>();
   for (const { eventId, placeId } of published) {
@@ -57,4 +53,3 @@ export function notificationEvents(db: DB, ids: string[]) {
     .where(inArray(notificationEvent.notificationId, ids))
     .all();
 }
-

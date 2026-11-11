@@ -21,7 +21,10 @@ export function NoticeToast() {
   }, [notice, dismiss]);
 
   return (
-    <div role="status" className="pointer-events-none absolute inset-x-0 bottom-20 z-[600] flex justify-center px-4 md:bottom-16">
+    <div
+      role="status"
+      className="pointer-events-none absolute inset-x-0 bottom-20 z-[600] flex justify-center px-4 md:bottom-16"
+    >
       {notice && (
         <button
           type="button"

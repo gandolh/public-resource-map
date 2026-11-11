@@ -11,7 +11,10 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
 /** The API answers with `{ code, message }` on failure; surface the message. */
 export class ApiRequestError extends Error {
-  constructor(readonly status: number, message: string) {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "ApiRequestError";
   }
@@ -55,10 +58,7 @@ const PLACES_PAGE_SIZE = 1000;
 const MAX_PLACE_PAGES = 10;
 
 /** One page of places. The map wants them all: see `fetchAllPlaces`. */
-export function fetchPlaces(
-  input: PlacesQueryInput,
-  signal?: AbortSignal,
-): Promise<PaginatedResponse<Place>> {
+export function fetchPlaces(input: PlacesQueryInput, signal?: AbortSignal): Promise<PaginatedResponse<Place>> {
   return request(
     `/api/places${query({
       city: input.city,
@@ -81,10 +81,7 @@ export function fetchPlaces(
  * places) lost two thirds of its pins silently, to the map and to search
  * (whole-city loading).
  */
-export async function fetchAllPlaces(
-  input: PlacesQueryInput,
-  signal?: AbortSignal,
-): Promise<PaginatedResponse<Place>> {
+export async function fetchAllPlaces(input: PlacesQueryInput, signal?: AbortSignal): Promise<PaginatedResponse<Place>> {
   const first = await fetchPlaces({ ...input, page: 1, pageSize: PLACES_PAGE_SIZE }, signal);
   const pages = Math.ceil(first.total / PLACES_PAGE_SIZE);
   if (pages <= 1) return first;
@@ -117,10 +114,7 @@ export function fetchPlaceEvents(
   lens: EventLens = "all",
   signal?: AbortSignal,
 ): Promise<PaginatedResponse<Event>> {
-  return request(
-    `/api/places/${encodeURIComponent(id)}/events${query({ lens })}`,
-    signal,
-  );
+  return request(`/api/places/${encodeURIComponent(id)}/events${query({ lens })}`, signal);
 }
 
 export interface WhatsOnQueryInput {
@@ -131,10 +125,7 @@ export interface WhatsOnQueryInput {
   pageSize?: number;
 }
 
-export function fetchWhatsOn(
-  input: WhatsOnQueryInput,
-  signal?: AbortSignal,
-): Promise<PaginatedResponse<WhatsOnItem>> {
+export function fetchWhatsOn(input: WhatsOnQueryInput, signal?: AbortSignal): Promise<PaginatedResponse<WhatsOnItem>> {
   return request(
     `/api/whats-on${query({
       city: input.city,
@@ -192,10 +183,7 @@ export interface ArchiveQueryInput {
 }
 
 /** Past events, newest first. Public. */
-export function fetchArchive(
-  input: ArchiveQueryInput,
-  signal?: AbortSignal,
-): Promise<PaginatedResponse<WhatsOnItem>> {
+export function fetchArchive(input: ArchiveQueryInput, signal?: AbortSignal): Promise<PaginatedResponse<WhatsOnItem>> {
   return request(
     `/api/archive${query({
       city: input.city,

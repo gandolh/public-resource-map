@@ -19,9 +19,7 @@ import { liveInWindow } from "./event-window.js";
 import { requireRole } from "../../vendor/ward/ward-auth.js";
 import { ROLES } from "../ward/auth.js";
 
-function rowToPlace(
-  row: typeof place.$inferSelect & { upcomingEventCount?: number },
-): Place {
+function rowToPlace(row: typeof place.$inferSelect & { upcomingEventCount?: number }): Place {
   return {
     id: row.id,
     name: row.name,
@@ -39,9 +37,7 @@ function rowToPlace(
     openingHours: row.openingHours,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    ...(row.upcomingEventCount === undefined
-      ? {}
-      : { upcomingEventCount: row.upcomingEventCount }),
+    ...(row.upcomingEventCount === undefined ? {} : { upcomingEventCount: row.upcomingEventCount }),
   };
 }
 
@@ -75,9 +71,7 @@ export async function placeRoutes(app: FastifyInstance) {
   app.get<{ Querystring: Record<string, string> }>("/places", async (req, reply) => {
     const query = placesQuerySchema.safeParse(req.query);
     if (!query.success) {
-      return reply
-        .status(400)
-        .send({ code: "INVALID_QUERY", message: query.error.message });
+      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
     }
 
     const { city, lat, lng, radiusKm, category, lens, page, pageSize } = query.data;
@@ -115,7 +109,10 @@ export async function placeRoutes(app: FastifyInstance) {
         .orderBy(asc(place.id))
         .limit(pageSize)
         .offset(offset),
-      db.select({ count: sql<number>`count(*)` }).from(place).where(where),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(place)
+        .where(where),
     ]);
 
     return {
@@ -132,39 +129,34 @@ export async function placeRoutes(app: FastifyInstance) {
    * Live and not yet over (upcoming, or running now) — a past or retracted
    * event never reaches a user.
    */
-  app.get<{ Params: { id: string }; Querystring: Record<string, string> }>(
-    "/places/:id/events",
-    async (req, reply) => {
-      const query = placeEventsQuerySchema.safeParse(req.query);
-      if (!query.success) {
-        return reply
-          .status(400)
-          .send({ code: "INVALID_QUERY", message: query.error.message });
-      }
+  app.get<{ Params: { id: string }; Querystring: Record<string, string> }>("/places/:id/events", async (req, reply) => {
+    const query = placeEventsQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
+    }
 
-      const exists = await db
-        .select({ id: place.id })
-        .from(place)
-        .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
-        .get();
-      if (!exists) {
-        return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
-      }
+    const exists = await db
+      .select({ id: place.id })
+      .from(place)
+      .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
+      .get();
+    if (!exists) {
+      return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
+    }
 
-      const { lens, limit } = query.data;
-      const { from, to } = lensWindow(lens);
+    const { lens, limit } = query.data;
+    const { from, to } = lensWindow(lens);
 
-      const rows = await db
-        .select()
-        .from(event)
-        .where(and(eq(event.placeId, req.params.id), liveInWindow(from, to)))
-        .orderBy(asc(event.startDate))
-        .limit(limit);
+    const rows = await db
+      .select()
+      .from(event)
+      .where(and(eq(event.placeId, req.params.id), liveInWindow(from, to)))
+      .orderBy(asc(event.startDate))
+      .limit(limit);
 
-      const data: Event[] = rows.map(rowToEvent);
-      return { data, total: data.length, page: 1, pageSize: limit };
-    },
-  );
+    const data: Event[] = rows.map(rowToEvent);
+    return { data, total: data.length, page: 1, pageSize: limit };
+  });
 
   app.get<{ Params: { id: string } }>("/places/:id", async (req, reply) => {
     const row = await db
@@ -180,24 +172,20 @@ export async function placeRoutes(app: FastifyInstance) {
   // The write routes are admin-only: they were open to anyone, so
   // a curl could delete every place or publish an unreviewed event. Kept, not
   // removed, as an escape hatch for manual fixes until the admin UI exists.
-  app.post<{ Body: CreatePlaceInput }>(
-    "/places",
-    { preHandler: requireRole(ROLES.admin) },
-    async (req, reply) => {
-      const parsed = createPlaceSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
-      }
+  app.post<{ Body: CreatePlaceInput }>("/places", { preHandler: requireRole(ROLES.admin) }, async (req, reply) => {
+    const parsed = createPlaceSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
+    }
 
-      const { lat, lng, ...rest } = parsed.data;
-      const id = randomUUID();
+    const { lat, lng, ...rest } = parsed.data;
+    const id = randomUUID();
 
-      await db.insert(place).values({ id, lat, lng, ...rest });
+    await db.insert(place).values({ id, lat, lng, ...rest });
 
-      const row = await db.select().from(place).where(eq(place.id, id)).get();
-      return reply.status(201).send(rowToPlace(row!));
-    },
-  );
+    const row = await db.select().from(place).where(eq(place.id, id)).get();
+    return reply.status(201).send(rowToPlace(row!));
+  });
 
   app.delete<{ Params: { id: string } }>(
     "/places/:id",

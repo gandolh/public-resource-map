@@ -33,9 +33,7 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
       )}
 
       <span className="min-w-0 flex-1">
-        <span className="block text-[14.5px] leading-snug font-semibold tracking-[-0.01em] text-fg">
-          {event.title}
-        </span>
+        <span className="block text-[14.5px] leading-snug font-semibold tracking-[-0.01em] text-fg">{event.title}</span>
 
         {/* One line: wrapped, the "·" was left dangling at the end of the
             first. A long place name truncates instead (TP-04). */}
@@ -48,21 +46,16 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
             />
             {t(eventCategoryKey(event.category))}
           </span>
-          <span aria-hidden="true" className="text-fg-faint">·</span>
+          <span aria-hidden="true" className="text-fg-faint">
+            ·
+          </span>
           <span className="inline-flex min-w-0 items-center gap-1.5">
-            <CategoryIcon
-              category={place.category}
-              size={13}
-              className="shrink-0"
-              strokeWidth={2.2}
-            />
+            <CategoryIcon category={place.category} size={13} className="shrink-0" strokeWidth={2.2} />
             <span className="truncate">{place.name}</span>
           </span>
         </span>
 
-        {unlisted && (
-          <span className="mt-1 block text-[11.5px] text-fg-faint">{t("place.unlisted")}</span>
-        )}
+        {unlisted && <span className="mt-1 block text-[11.5px] text-fg-faint">{t("place.unlisted")}</span>}
 
         {/* Text, not a link: the whole row already links to the place,
             whose panel links the original listing. */}
@@ -81,9 +74,7 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
         )}
       </span>
 
-      {!unlisted && (
-        <MapPin size={15} strokeWidth={2} className="mt-1 shrink-0 text-fg-faint" aria-hidden="true" />
-      )}
+      {!unlisted && <MapPin size={15} strokeWidth={2} className="mt-1 shrink-0 text-fg-faint" aria-hidden="true" />}
     </>
   );
 

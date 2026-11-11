@@ -96,7 +96,15 @@ const DKB_SURVEY =
 
 const describedAs = (description: string) =>
   parseIcal(
-    feed(vevent("UID:tntm-1", "SUMMARY:O SCRISOARE PIERDUTĂ", "DTSTART:20261007T160000Z", "LOCATION:Sala Mare", `DESCRIPTION:${description}`)),
+    feed(
+      vevent(
+        "UID:tntm-1",
+        "SUMMARY:O SCRISOARE PIERDUTĂ",
+        "DTSTART:20261007T160000Z",
+        "LOCATION:Sala Mare",
+        `DESCRIPTION:${description}`,
+      ),
+    ),
   )[0].raw;
 
 describe("parseIcal: WordPress shortcodes", () => {
@@ -111,9 +119,7 @@ describe("parseIcal: WordPress shortcodes", () => {
       `durata spectacolului: 1h 10\\n\\nO SCRISOARE PIERDUTĂ\\n\\n${DKB_TICKET}\\n\\n${DKB_SURVEY}` +
         "\\n\\n&nbsp\\;\\n\\n Regulamentul spectatorului",
     );
-    expect(raw.description).toBe(
-      "durata spectacolului: 1h 10\n\nO SCRISOARE PIERDUTĂ\n\nRegulamentul spectatorului",
-    );
+    expect(raw.description).toBe("durata spectacolului: 1h 10\n\nO SCRISOARE PIERDUTĂ\n\nRegulamentul spectatorului");
     expect(raw.buyUrl).toBe(TICKET);
   });
 
@@ -126,7 +132,9 @@ describe("parseIcal: WordPress shortcodes", () => {
   it("never lifts a javascript: or http: link, and takes the first https one", () => {
     expect(describedAs('Text [button url="javascript:alert(1)" text="x"]').buyUrl).toBeUndefined();
     expect(describedAs('Text [button url="http://bilete.ro/a" text="x"]').buyUrl).toBeUndefined();
-    const raw = describedAs(`[button url="javascript:alert(1)"] ${DKB_SURVEY.replace("questionpro.eu/t/AB3u5VGZB3wa2W", "bilete.ro/b")}`);
+    const raw = describedAs(
+      `[button url="javascript:alert(1)"] ${DKB_SURVEY.replace("questionpro.eu/t/AB3u5VGZB3wa2W", "bilete.ro/b")}`,
+    );
     expect(raw.buyUrl).toBe("https://bilete.ro/b");
   });
 

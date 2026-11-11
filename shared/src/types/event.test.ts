@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createEventSchema,
-  eventCategorySchema,
-  eventSchema,
-  eventStatusSchema,
-} from "./event.js";
+import { createEventSchema, eventCategorySchema, eventSchema, eventStatusSchema } from "./event.js";
 
 describe("eventCategorySchema / eventStatusSchema", () => {
   it("accepts known enum members and rejects unknown ones", () => {
@@ -57,23 +52,15 @@ describe("createEventSchema", () => {
   });
 
   it("rejects a non-datetime startDate", () => {
-    expect(
-      createEventSchema.safeParse({ ...valid, startDate: "2026-08-01" }).success,
-    ).toBe(false);
+    expect(createEventSchema.safeParse({ ...valid, startDate: "2026-08-01" }).success).toBe(false);
   });
 
   it("rejects a negative price and a 2-letter currency", () => {
-    expect(createEventSchema.safeParse({ ...valid, price: -5 }).success).toBe(
-      false,
-    );
-    expect(createEventSchema.safeParse({ ...valid, currency: "RO" }).success).toBe(
-      false,
-    );
+    expect(createEventSchema.safeParse({ ...valid, price: -5 }).success).toBe(false);
+    expect(createEventSchema.safeParse({ ...valid, currency: "RO" }).success).toBe(false);
   });
 
   it("rejects an empty title", () => {
-    expect(createEventSchema.safeParse({ ...valid, title: "" }).success).toBe(
-      false,
-    );
+    expect(createEventSchema.safeParse({ ...valid, title: "" }).success).toBe(false);
   });
 });

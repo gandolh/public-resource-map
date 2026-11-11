@@ -3,11 +3,7 @@ import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import type { OsmSyncResult } from "@public-resource-map/shared";
 import type { DB } from "../db/index.js";
 import { event, place, stagedEvent } from "../db/schema.js";
-import {
-  OVERPASS_TAG_FILTERS,
-  mapTagsToCategory,
-  type OsmTags,
-} from "./osm-categories.js";
+import { OVERPASS_TAG_FILTERS, mapTagsToCategory, type OsmTags } from "./osm-categories.js";
 
 // ---------------------------------------------------------------------------
 // City registry — city is CONFIG, not hardcoded logic. Add a city here (key +
@@ -113,18 +109,11 @@ export interface OverpassResponse {
 }
 
 /** `signal` aborts the request; a fetcher must honour it. */
-export type OverpassFetcher = (
-  query: string,
-  signal?: AbortSignal,
-) => Promise<OverpassResponse>;
+export type OverpassFetcher = (query: string, signal?: AbortSignal) => Promise<OverpassResponse>;
 
-const OVERPASS_URL =
-  process.env.OVERPASS_URL ?? "https://overpass-api.de/api/interpreter";
+const OVERPASS_URL = process.env.OVERPASS_URL ?? "https://overpass-api.de/api/interpreter";
 
-export const fetchOverpass: OverpassFetcher = async (
-  query,
-  signal = AbortSignal.timeout(OVERPASS_HTTP_TIMEOUT_MS),
-) => {
+export const fetchOverpass: OverpassFetcher = async (query, signal = AbortSignal.timeout(OVERPASS_HTTP_TIMEOUT_MS)) => {
   const res = await fetch(OVERPASS_URL, {
     method: "POST",
     headers: {
@@ -196,10 +185,7 @@ function composeAddress(tags: OsmTags): string | null {
   const street = tags["addr:street"];
   const houseNumber = tags["addr:housenumber"];
   const city = tags["addr:city"];
-  const parts = [
-    [street, houseNumber].filter(Boolean).join(" "),
-    city,
-  ].filter((p) => p && p.length > 0);
+  const parts = [[street, houseNumber].filter(Boolean).join(" "), city].filter((p) => p && p.length > 0);
   return parts.length > 0 ? parts.join(", ") : null;
 }
 
@@ -229,10 +215,7 @@ export interface NormalizeResult {
  * (nameless pin = noise) and features Overpass returned without a resolvable
  * point; KEEPS un-addressed features (address is nullable). Pure + testable.
  */
-export function elementsToPlaces(
-  elements: OverpassElement[],
-  cityName: string,
-): NormalizeResult {
+export function elementsToPlaces(elements: OverpassElement[], cityName: string): NormalizeResult {
   const places: OsmPlaceInput[] = [];
   let skippedUnnamed = 0;
   let skippedNoGeometry = 0;
@@ -283,10 +266,7 @@ export interface UpsertResult {
   unretired: number;
 }
 
-export async function upsertOsmPlaces(
-  db: DB,
-  places: OsmPlaceInput[],
-): Promise<UpsertResult> {
+export async function upsertOsmPlaces(db: DB, places: OsmPlaceInput[]): Promise<UpsertResult> {
   let inserted = 0;
   let updated = 0;
   let skippedProtected = 0;
@@ -296,13 +276,7 @@ export async function upsertOsmPlaces(
     const existing = await db
       .select()
       .from(place)
-      .where(
-        and(
-          eq(place.source, "osm"),
-          eq(place.osmType, p.osmType),
-          eq(place.osmId, p.osmId),
-        ),
-      )
+      .where(and(eq(place.source, "osm"), eq(place.osmType, p.osmType), eq(place.osmId, p.osmId)))
       .get();
 
     if (existing) {
@@ -477,11 +451,7 @@ export class SyncInProgressError extends Error {
  */
 const syncing = new Set<string>();
 
-export async function syncOsmForCity(
-  db: DB,
-  city: CityConfig,
-  deps: SyncDeps = {},
-): Promise<OsmSyncResult> {
+export async function syncOsmForCity(db: DB, city: CityConfig, deps: SyncDeps = {}): Promise<OsmSyncResult> {
   if (syncing.has(city.key)) throw new SyncInProgressError(city.name);
   syncing.add(city.key);
   try {
@@ -491,11 +461,7 @@ export async function syncOsmForCity(
   }
 }
 
-async function runSync(
-  db: DB,
-  city: CityConfig,
-  deps: SyncDeps,
-): Promise<OsmSyncResult> {
+async function runSync(db: DB, city: CityConfig, deps: SyncDeps): Promise<OsmSyncResult> {
   const fetcher = deps.fetchOverpass ?? fetchOverpass;
   const timeoutMs = deps.timeoutMs ?? OVERPASS_HTTP_TIMEOUT_MS;
   const signal = AbortSignal.timeout(timeoutMs);
@@ -509,14 +475,8 @@ async function runSync(
   }
   const elements = response.elements ?? [];
 
-  const { places, skippedUnnamed, skippedNoGeometry } = elementsToPlaces(
-    elements,
-    city.name,
-  );
-  const { inserted, updated, skippedProtected, unretired } = await upsertOsmPlaces(
-    db,
-    places,
-  );
+  const { places, skippedUnnamed, skippedNoGeometry } = elementsToPlaces(elements, city.name);
+  const { inserted, updated, skippedProtected, unretired } = await upsertOsmPlaces(db, places);
   const { retired, retirementHeld, eventsToReview } = await retireMissingPlaces(
     db,
     city.name,

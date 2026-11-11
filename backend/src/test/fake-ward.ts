@@ -55,9 +55,7 @@ export async function createFakeWard(): Promise<FakeWard> {
           token_endpoint_auth_methods_supported: ["private_key_jwt"],
         });
       case "/ward-api/session-status":
-        return json(
-          liveSessions.has(String(body.wardSid)) ? { active: true, role: "user" } : { active: false },
-        );
+        return json(liveSessions.has(String(body.wardSid)) ? { active: true, role: "user" } : { active: false });
       case "/ward-api/notify":
         mails.push({
           subject: String(body.subject),

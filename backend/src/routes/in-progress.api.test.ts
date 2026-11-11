@@ -27,19 +27,52 @@ describe("in-progress events", () => {
         [POINT, "Clubul de aseară"],
         [FAR, "Teatrul de la iarnă"],
       ].map(([id, name], i) => ({
-        id: id!, name: name!, category: "museum", source: "osm",
-        city: "Cluj-Napoca", lat: 46.77 + i / 100, lng: 23.59,
+        id: id!,
+        name: name!,
+        category: "museum",
+        source: "osm",
+        city: "Cluj-Napoca",
+        lat: 46.77 + i / 100,
+        lng: 23.59,
       })),
     );
     await t.db.insert(event).values([
-      { id: randomUUID(), placeId: RUNNING, title: "Expoziție temporară",
-        category: "exhibition", status: "live", startDate: ago(10 * DAY), endDate: ahead(20 * DAY) },
-      { id: randomUUID(), placeId: ENDED, title: "S-a terminat ieri",
-        category: "exhibition", status: "live", startDate: ago(5 * DAY), endDate: ago(DAY) },
-      { id: randomUUID(), placeId: POINT, title: "A început acum un minut",
-        category: "concert", status: "live", startDate: ago(60_000), endDate: null },
-      { id: randomUUID(), placeId: FAR, title: "Peste o sută de zile",
-        category: "concert", status: "live", startDate: ahead(100 * DAY), endDate: null },
+      {
+        id: randomUUID(),
+        placeId: RUNNING,
+        title: "Expoziție temporară",
+        category: "exhibition",
+        status: "live",
+        startDate: ago(10 * DAY),
+        endDate: ahead(20 * DAY),
+      },
+      {
+        id: randomUUID(),
+        placeId: ENDED,
+        title: "S-a terminat ieri",
+        category: "exhibition",
+        status: "live",
+        startDate: ago(5 * DAY),
+        endDate: ago(DAY),
+      },
+      {
+        id: randomUUID(),
+        placeId: POINT,
+        title: "A început acum un minut",
+        category: "concert",
+        status: "live",
+        startDate: ago(60_000),
+        endDate: null,
+      },
+      {
+        id: randomUUID(),
+        placeId: FAR,
+        title: "Peste o sută de zile",
+        category: "concert",
+        status: "live",
+        startDate: ahead(100 * DAY),
+        endDate: null,
+      },
     ]);
   });
 
@@ -54,10 +87,7 @@ describe("in-progress events", () => {
     });
     expect(res.statusCode).toBe(200);
     return Object.fromEntries(
-      res.json().data.map((p: { id: string; upcomingEventCount: number }) => [
-        p.id,
-        p.upcomingEventCount,
-      ]),
+      res.json().data.map((p: { id: string; upcomingEventCount: number }) => [p.id, p.upcomingEventCount]),
     );
   }
 
@@ -76,9 +106,7 @@ describe("in-progress events", () => {
     expect(panel.json().data.map((e: { title: string }) => e.title)).toEqual(["Expoziție temporară"]);
 
     const list = await t.app.inject({ method: "GET", url: "/api/whats-on?city=Cluj-Napoca" });
-    expect(
-      list.json().data.map((i: { event: { title: string } }) => i.event.title),
-    ).toEqual(["Expoziție temporară"]);
+    expect(list.json().data.map((i: { event: { title: string } }) => i.event.title)).toEqual(["Expoziție temporară"]);
   });
 
   it("drops an event whose end has passed", async () => {

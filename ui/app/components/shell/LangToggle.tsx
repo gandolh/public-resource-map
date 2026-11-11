@@ -25,9 +25,7 @@ export function LangToggle() {
           className={cn(
             "h-7 rounded-md px-2 text-[11.5px] font-semibold tracking-[0.04em] uppercase",
             "transition-colors duration-[120ms]",
-            lang === option
-              ? "bg-accent text-fg-on-accent"
-              : "text-fg-faint hover:bg-surface-2 hover:text-fg",
+            lang === option ? "bg-accent text-fg-on-accent" : "text-fg-faint hover:bg-surface-2 hover:text-fg",
           )}
         >
           {option}

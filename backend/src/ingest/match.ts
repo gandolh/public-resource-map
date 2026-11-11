@@ -75,11 +75,7 @@ export type VenueMatch =
   | { status: "unmatched"; candidates: [] };
 
 /** Match a venue against the places of its city. */
-export function matchVenue(
-  venue: string,
-  places: { id: string; name: string }[],
-  cityName: string,
-): VenueMatch {
+export function matchVenue(venue: string, places: { id: string; name: string }[], cityName: string): VenueMatch {
   const scored = places
     .map((p) => ({ placeId: p.id, name: p.name, score: venueScore(venue, p.name, cityName) }))
     .filter((c) => c.score >= AMBIGUOUS_MATCH)

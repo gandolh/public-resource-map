@@ -13,14 +13,7 @@ interface ChipProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "child
  * The pill shape is reserved for filters. Nothing else in the system is fully
  * rounded, so a pill always means "this narrows what you are looking at".
  */
-export function Chip({
-  active = false,
-  dotColor,
-  count,
-  className,
-  children,
-  ...props
-}: ChipProps) {
+export function Chip({ active = false, dotColor, count, className, children, ...props }: ChipProps) {
   return (
     <button
       type="button"
@@ -39,21 +32,13 @@ export function Chip({
       {dotColor && (
         <span
           aria-hidden="true"
-          className={cn(
-            "h-2 w-2 shrink-0 rounded-full",
-            active && "ring-1 ring-inset ring-white/60",
-          )}
+          className={cn("h-2 w-2 shrink-0 rounded-full", active && "ring-1 ring-inset ring-white/60")}
           style={{ background: active ? "currentColor" : dotColor }}
         />
       )}
       {children}
       {count !== undefined && (
-        <span
-          className={cn(
-            "tnum ml-0.5 text-[11.5px]",
-            active ? "text-fg-on-accent/75" : "text-fg-faint",
-          )}
-        >
+        <span className={cn("tnum ml-0.5 text-[11.5px]", active ? "text-fg-on-accent/75" : "text-fg-faint")}>
           {count}
         </span>
       )}

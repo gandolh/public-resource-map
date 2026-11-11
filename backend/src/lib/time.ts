@@ -21,7 +21,13 @@ const PARTS = new Intl.DateTimeFormat("en-US", {
 });
 
 const WEEKDAY_INDEX: Record<string, number> = {
-  Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
 };
 
 export interface ZonedParts {
@@ -64,14 +70,7 @@ function offsetMs(instant: Date): number {
  * Two passes: the first offset guess is taken at the naive instant, the second
  * at the corrected one, which is what makes DST-transition days come out right.
  */
-export function zonedTimeToInstant(
-  year: number,
-  month: number,
-  day: number,
-  hour = 0,
-  minute = 0,
-  second = 0,
-): Date {
+export function zonedTimeToInstant(year: number, month: number, day: number, hour = 0, minute = 0, second = 0): Date {
   const naive = Date.UTC(year, month - 1, day, hour, minute, second);
   const firstGuess = new Date(naive - offsetMs(new Date(naive)));
   return new Date(naive - offsetMs(firstGuess));

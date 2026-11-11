@@ -58,9 +58,7 @@ function EventRow({ event }: { event: Event }) {
   return (
     <li className="flex gap-3 border-t border-line py-3 first:border-t-0">
       <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-surface-2">
-        <span className="tnum text-[15px] leading-none font-semibold tracking-[-0.02em]">
-          {day}
-        </span>
+        <span className="tnum text-[15px] leading-none font-semibold tracking-[-0.02em]">{day}</span>
         <span className="mt-0.5 text-[9.5px] leading-none font-medium tracking-[0.06em] text-fg-faint uppercase">
           {month}
         </span>
@@ -68,9 +66,7 @@ function EventRow({ event }: { event: Event }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-[13.5px] leading-snug font-semibold tracking-[-0.005em] text-fg">
-            {event.title}
-          </p>
+          <p className="text-[13.5px] leading-snug font-semibold tracking-[-0.005em] text-fg">{event.title}</p>
           <FavoriteStar kind="event" id={event.id} name={event.title} size="sm" />
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-fg-muted">
@@ -79,13 +75,11 @@ function EventRow({ event }: { event: Event }) {
               ? t("event.until", { date: dayMonth(event.endDate!) })
               : time(event.startDate)}
           </span>
-          <span aria-hidden="true" className="text-fg-faint">·</span>
+          <span aria-hidden="true" className="text-fg-faint">
+            ·
+          </span>
           <span className="inline-flex items-center gap-1.5">
-            <span
-              aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: color }}
-            />
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
             {t(eventCategoryKey(event.category))}
           </span>
         </div>
@@ -134,13 +128,7 @@ export function EventList({ events, loading, emptyTitle, emptyBody }: EventListP
   }
 
   if (events.length === 0) {
-    return (
-      <StateBlock
-        icon={<CalendarOff size={18} strokeWidth={2} />}
-        title={emptyTitle}
-        body={emptyBody}
-      />
-    );
+    return <StateBlock icon={<CalendarOff size={18} strokeWidth={2} />} title={emptyTitle} body={emptyBody} />;
   }
 
   const shown = expanded ? events : events.slice(0, INITIAL);
@@ -150,9 +138,7 @@ export function EventList({ events, loading, emptyTitle, emptyBody }: EventListP
     <div className="px-4 pb-1">
       {groups.map(({ group, items }) => (
         <section key={group} className="mb-1 last:mb-0">
-          <h4 className="label-cap pt-3 pb-1">
-            {t(`group.${group}`)}
-          </h4>
+          <h4 className="label-cap pt-3 pb-1">{t(`group.${group}`)}</h4>
           <ul>
             {items.map((event) => (
               <EventRow key={event.id} event={event} />
@@ -162,12 +148,7 @@ export function EventList({ events, loading, emptyTitle, emptyBody }: EventListP
       ))}
 
       {events.length > INITIAL && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-2 w-full"
-          onClick={() => setExpanded((v) => !v)}
-        >
+        <Button variant="ghost" size="sm" className="mt-2 w-full" onClick={() => setExpanded((v) => !v)}>
           {expanded ? t("place.showLess") : t("place.showAll", { n: events.length })}
         </Button>
       )}

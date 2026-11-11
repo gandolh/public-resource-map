@@ -34,8 +34,7 @@ function haversineKm(a: Coordinates, b: Coordinates): number {
   const dLng = ((b.lng - a.lng) * Math.PI) / 180;
   const lat1 = (a.lat * Math.PI) / 180;
   const lat2 = (b.lat * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  const h = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
@@ -49,7 +48,10 @@ export function nearestCity(coords: Coordinates, maxKm = 60): City | undefined {
   let bestKm = Infinity;
   for (const city of CITIES) {
     const km = haversineKm(coords, city.center);
-    if (km < bestKm) { bestKm = km; best = city; }
+    if (km < bestKm) {
+      bestKm = km;
+      best = city;
+    }
   }
   return bestKm <= maxKm ? best : undefined;
 }

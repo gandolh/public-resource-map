@@ -42,7 +42,10 @@ function parseProp(line: string): [string, Prop] | null {
 }
 
 function unescapeText(value: string): string {
-  return value.replace(/\\n/gi, "\n").replace(/\\([,;\\])/g, "$1").trim();
+  return value
+    .replace(/\\n/gi, "\n")
+    .replace(/\\([,;\\])/g, "$1")
+    .trim();
 }
 
 /** A DTSTART/DTEND as an ISO instant, or a reason it cannot be one. */

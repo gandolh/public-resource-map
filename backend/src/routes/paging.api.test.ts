@@ -14,8 +14,13 @@ describe("places paging", () => {
   beforeAll(async () => {
     t = await buildTestApp();
     const rows = Array.from({ length: COUNT }, (_, i) => ({
-      id: randomUUID(), name: `Loc ${i}`, category: "park", source: "osm",
-      city: "Iași", lat: 47.15 + i / 100_000, lng: 27.58,
+      id: randomUUID(),
+      name: `Loc ${i}`,
+      category: "park",
+      source: "osm",
+      city: "Iași",
+      lat: 47.15 + i / 100_000,
+      lng: 27.58,
     }));
     // Chunked: SQLite caps bound parameters per statement.
     for (let i = 0; i < rows.length; i += 200) {

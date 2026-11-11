@@ -21,15 +21,10 @@ export class LocalStorage {
     }
   }
 
-  static set<
-    T extends
-      | Record<string, unknown>
-      | null
-      | undefined
-      | number
-      | string
-      | Array<any>
-  >(key: string, value: T) {
+  static set<T extends Record<string, unknown> | null | undefined | number | string | Array<any>>(
+    key: string,
+    value: T,
+  ) {
     if (value === null || value === undefined) {
       return;
     }

@@ -22,27 +22,84 @@ describe("place programme + citywide what's-on", () => {
   beforeAll(async () => {
     t = await buildTestApp();
     await t.db.insert(place).values([
-      { id: MUSEUM, name: "Muzeul de Artă", category: "museum", source: "osm",
-        city: "Timișoara", lat: 45.7571, lng: 21.2287 },
-      { id: PARK, name: "Parcul Central", category: "park", source: "osm",
-        city: "Timișoara", lat: 45.7489, lng: 21.2261 },
-      { id: QUIET, name: "Biblioteca Județeană", category: "library", source: "osm",
-        city: "Timișoara", lat: 45.7601, lng: 21.2201 },
+      {
+        id: MUSEUM,
+        name: "Muzeul de Artă",
+        category: "museum",
+        source: "osm",
+        city: "Timișoara",
+        lat: 45.7571,
+        lng: 21.2287,
+      },
+      {
+        id: PARK,
+        name: "Parcul Central",
+        category: "park",
+        source: "osm",
+        city: "Timișoara",
+        lat: 45.7489,
+        lng: 21.2261,
+      },
+      {
+        id: QUIET,
+        name: "Biblioteca Județeană",
+        category: "library",
+        source: "osm",
+        city: "Timișoara",
+        lat: 45.7601,
+        lng: 21.2201,
+      },
     ]);
     await t.db.insert(event).values([
-      { id: randomUUID(), placeId: MUSEUM, title: "Expoziție Baba",
-        category: "exhibition", status: "live", startDate: inDays(3) },
-      { id: randomUUID(), placeId: MUSEUM, title: "Tur ghidat",
-        category: "workshop", status: "live", startDate: inDays(5) },
-      { id: randomUUID(), placeId: PARK, title: "Concert în parc",
-        category: "concert", status: "live", startDate: inDays(10) },
+      {
+        id: randomUUID(),
+        placeId: MUSEUM,
+        title: "Expoziție Baba",
+        category: "exhibition",
+        status: "live",
+        startDate: inDays(3),
+      },
+      {
+        id: randomUUID(),
+        placeId: MUSEUM,
+        title: "Tur ghidat",
+        category: "workshop",
+        status: "live",
+        startDate: inDays(5),
+      },
+      {
+        id: randomUUID(),
+        placeId: PARK,
+        title: "Concert în parc",
+        category: "concert",
+        status: "live",
+        startDate: inDays(10),
+      },
       // Excluded on every surface: retracted, already over, and beyond horizon.
-      { id: randomUUID(), placeId: MUSEUM, title: "Retras la sursă",
-        category: "other", status: "stale", startDate: inDays(4) },
-      { id: randomUUID(), placeId: MUSEUM, title: "Anul trecut",
-        category: "other", status: "past", startDate: inDays(-30) },
-      { id: randomUUID(), placeId: PARK, title: "Peste orizont",
-        category: "other", status: "live", startDate: inDays(200) },
+      {
+        id: randomUUID(),
+        placeId: MUSEUM,
+        title: "Retras la sursă",
+        category: "other",
+        status: "stale",
+        startDate: inDays(4),
+      },
+      {
+        id: randomUUID(),
+        placeId: MUSEUM,
+        title: "Anul trecut",
+        category: "other",
+        status: "past",
+        startDate: inDays(-30),
+      },
+      {
+        id: randomUUID(),
+        placeId: PARK,
+        title: "Peste orizont",
+        category: "other",
+        status: "live",
+        startDate: inDays(200),
+      },
     ]);
   });
 
@@ -54,10 +111,7 @@ describe("place programme + citywide what's-on", () => {
     const res = await t.app.inject({ method: "GET", url: "/api/places?city=Timișoara&pageSize=100" });
     expect(res.statusCode).toBe(200);
     const byName = Object.fromEntries(
-      res.json().data.map((p: { name: string; upcomingEventCount: number }) => [
-        p.name,
-        p.upcomingEventCount,
-      ]),
+      res.json().data.map((p: { name: string; upcomingEventCount: number }) => [p.name, p.upcomingEventCount]),
     );
     expect(byName["Muzeul de Artă"]).toBe(2); // stale, past and out-of-horizon excluded
     expect(byName["Parcul Central"]).toBe(1);
@@ -103,7 +157,6 @@ describe("place programme + citywide what's-on", () => {
 
   it("what's-on honours the map's category chips, so the two cannot disagree", async () => {
     const res = await t.app.inject({ method: "GET", url: "/api/whats-on?city=Timișoara&category=park" });
-    expect(res.json().data.map((i: { event: { title: string } }) => i.event.title))
-      .toEqual(["Concert în parc"]);
+    expect(res.json().data.map((i: { event: { title: string } }) => i.event.title)).toEqual(["Concert în parc"]);
   });
 });

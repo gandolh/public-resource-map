@@ -35,11 +35,7 @@ function weekday(date: Date): number {
  * weeks ago and closes next month. A null end is a point event and is never
  * "running" (the API drops it once it starts).
  */
-export function isRunning(
-  startIso: string,
-  endIso: string | null | undefined,
-  now: Date = new Date(),
-): boolean {
+export function isRunning(startIso: string, endIso: string | null | undefined, now: Date = new Date()): boolean {
   if (!endIso) return false;
   const t = now.getTime();
   return new Date(startIso).getTime() <= t && t <= new Date(endIso).getTime();
@@ -52,11 +48,7 @@ export function isRunning(
  * today/tomorrow have not already claimed — so on a Friday "tomorrow" wins over
  * "this weekend" for Saturday's events.
  */
-export function groupFor(
-  startIso: string,
-  endIso: string | null | undefined,
-  now: Date = new Date(),
-): DayGroup {
+export function groupFor(startIso: string, endIso: string | null | undefined, now: Date = new Date()): DayGroup {
   if (isRunning(startIso, endIso, now)) return "today";
   const start = new Date(startIso);
   const key = dayKey(start);

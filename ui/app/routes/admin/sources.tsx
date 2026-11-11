@@ -54,7 +54,12 @@ export default function SourcesRoute() {
           <h1 className="text-[24px] font-semibold tracking-[-0.02em]">{t("admin.sources")}</h1>
           <p className="mt-1 text-[13.5px] text-fg-muted">{t("admin.sourcesLead")}</p>
         </div>
-        <Button variant="primary" size="sm" disabled={refreshAll.isPending || !data?.length} onClick={() => void runAll()}>
+        <Button
+          variant="primary"
+          size="sm"
+          disabled={refreshAll.isPending || !data?.length}
+          onClick={() => void runAll()}
+        >
           {refreshAll.isPending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           {t("admin.refreshAll")}
         </Button>
@@ -90,16 +95,26 @@ export default function SourcesRoute() {
       )}
       {data && data.length === 0 && (
         <div className="mt-6 rounded-xl border border-line bg-surface">
-          <StateBlock icon={<Radio size={18} strokeWidth={2} />} title={t("admin.noSources")} body={t("admin.noSourcesBody")} />
+          <StateBlock
+            icon={<Radio size={18} strokeWidth={2} />}
+            title={t("admin.noSources")}
+            body={t("admin.noSourcesBody")}
+          />
         </div>
       )}
       {data && data.length > 0 && (
         <table className="mt-5 w-full border-separate border-spacing-0 text-left text-[13px]">
           <thead>
             <tr className="text-[11.5px] tracking-[0.04em] text-fg-muted uppercase">
-              <th scope="col" className="border-b border-line py-2">{t("admin.col.source")}</th>
-              <th scope="col" className="border-b border-line py-2">{t("admin.col.health")}</th>
-              <th scope="col" className="border-b border-line py-2">{t("admin.col.lastRun")}</th>
+              <th scope="col" className="border-b border-line py-2">
+                {t("admin.col.source")}
+              </th>
+              <th scope="col" className="border-b border-line py-2">
+                {t("admin.col.health")}
+              </th>
+              <th scope="col" className="border-b border-line py-2">
+                {t("admin.col.lastRun")}
+              </th>
               <th scope="col" className="border-b border-line py-2">
                 <span className="sr-only">{t("admin.col.actions")}</span>
               </th>
@@ -150,14 +165,18 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
       <td className="border-b border-line py-2.5 pr-3">
         <Health status={source.lastStatus} />
         {source.lastEventCount !== null && (
-          <span className="tnum mt-1 block text-[12px] text-fg-muted">{t("admin.lastCount", { n: source.lastEventCount })}</span>
+          <span className="tnum mt-1 block text-[12px] text-fg-muted">
+            {t("admin.lastCount", { n: source.lastEventCount })}
+          </span>
         )}
       </td>
       <td className="tnum border-b border-line py-2.5 pr-3 text-fg-muted">
         {source.lastRunAt ? `${dayMonth(source.lastRunAt)} · ${time(source.lastRunAt)}` : "—"}
         {source.lastSuccessfulAt && source.lastSuccessfulAt !== source.lastRunAt && (
           <span className="block text-[12px]">
-            {t("admin.lastSuccess", { when: `${dayMonth(source.lastSuccessfulAt)} · ${time(source.lastSuccessfulAt)}` })}
+            {t("admin.lastSuccess", {
+              when: `${dayMonth(source.lastSuccessfulAt)} · ${time(source.lastSuccessfulAt)}`,
+            })}
           </span>
         )}
       </td>
@@ -181,7 +200,11 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
           {refresh.isPending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           {t("admin.refresh")}
         </Button>
-        {refresh.isError && <span role="alert" className="mt-1 block text-[12px] text-danger">{refresh.error.message}</span>}
+        {refresh.isError && (
+          <span role="alert" className="mt-1 block text-[12px] text-danger">
+            {refresh.error.message}
+          </span>
+        )}
       </td>
     </tr>
   );
@@ -196,7 +219,9 @@ function AddSource() {
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const slug = String(form.get("slug") ?? "").trim().toLowerCase();
+    const slug = String(form.get("slug") ?? "")
+      .trim()
+      .toLowerCase();
     create.mutate(
       {
         name: String(form.get("name") ?? ""),
@@ -243,7 +268,11 @@ function AddSource() {
               ))}
             </select>
           </label>
-          {create.isError && <p role="alert" className="text-[12.5px] text-danger">{create.error.message}</p>}
+          {create.isError && (
+            <p role="alert" className="text-[12.5px] text-danger">
+              {create.error.message}
+            </p>
+          )}
           <div className="flex gap-2">
             <Button type="submit" variant="primary" size="sm" disabled={create.isPending}>
               {t("admin.add")}
@@ -269,7 +298,11 @@ function OsmSync() {
       <div className="mt-3 flex flex-wrap gap-2">
         {CITIES.map((c) => (
           <Button key={c.id} variant="secondary" size="sm" disabled={sync.isPending} onClick={() => sync.mutate(c.id)}>
-            {sync.isPending && sync.variables === c.id ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+            {sync.isPending && sync.variables === c.id ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <RefreshCw size={14} />
+            )}
             {t("admin.osmSync", { city: c.name })}
           </Button>
         ))}
@@ -289,7 +322,11 @@ function OsmSync() {
           {t("admin.osmHeld", { held: sync.data.retirementHeld })}
         </p>
       )}
-      {sync.isError && <p role="alert" className="mt-3 text-[12.5px] text-danger">{sync.error.message}</p>}
+      {sync.isError && (
+        <p role="alert" className="mt-3 text-[12.5px] text-danger">
+          {sync.error.message}
+        </p>
+      )}
     </section>
   );
 }

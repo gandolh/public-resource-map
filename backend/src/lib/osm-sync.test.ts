@@ -24,7 +24,12 @@ describe("centroid", () => {
   });
 
   it("returns the midpoint for two points", () => {
-    expect(centroid([{ lat: 0, lng: 0 }, { lat: 10, lng: 20 }])).toEqual({
+    expect(
+      centroid([
+        { lat: 0, lng: 0 },
+        { lat: 10, lng: 20 },
+      ]),
+    ).toEqual({
       lat: 5,
       lng: 10,
     });
@@ -105,10 +110,7 @@ describe("elementsToPlaces", () => {
   ];
 
   it("normalizes kept features, drops un-named + geometry-less, keeps un-addressed", () => {
-    const { places, skippedUnnamed, skippedNoGeometry } = elementsToPlaces(
-      elements,
-      "Timișoara",
-    );
+    const { places, skippedUnnamed, skippedNoGeometry } = elementsToPlaces(elements, "Timișoara");
 
     expect(skippedUnnamed).toBe(1);
     expect(skippedNoGeometry).toBe(1);
@@ -271,20 +273,12 @@ describe("upsertOsmPlaces + syncOsmForCity (no clobber)", () => {
     expect(result).toEqual({ inserted: 1, updated: 1, skippedProtected: 1, unretired: 0 });
 
     // event-venue row untouched
-    const ev = await t.db
-      .select()
-      .from(place)
-      .where(eq(place.id, eventVenueId))
-      .get();
+    const ev = await t.db.select().from(place).where(eq(place.id, eventVenueId)).get();
     expect(ev?.name).toBe("Event Venue");
     expect(ev?.source).toBe("event-venue");
 
     // manual pin untouched (name + coords preserved)
-    const mp = await t.db
-      .select()
-      .from(place)
-      .where(eq(place.id, manualPinId))
-      .get();
+    const mp = await t.db.select().from(place).where(eq(place.id, manualPinId)).get();
     expect(mp?.name).toBe("Admin Manual Pin");
     expect(mp?.lat).toBe(45.71);
 
@@ -347,9 +341,7 @@ describe("syncOsmForCity: timeout and one sync per city", () => {
   });
 
   const library: OverpassResponse = {
-    elements: [
-      { type: "node", id: 10, lat: 45.75, lon: 21.22, tags: { name: "Biblioteca", amenity: "library" } },
-    ],
+    elements: [{ type: "node", id: 10, lat: 45.75, lon: 21.22, tags: { name: "Biblioteca", amenity: "library" } }],
   };
 
   /** An Overpass that answers only when told to. */
@@ -397,9 +389,9 @@ describe("syncOsmForCity: timeout and one sync per city", () => {
     const held = heldOverpass();
     const first = syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: held.fetcher });
 
-    await expect(
-      syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => library }),
-    ).rejects.toBeInstanceOf(SyncInProgressError);
+    await expect(syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => library })).rejects.toBeInstanceOf(
+      SyncInProgressError,
+    );
     const other = await syncOsmForCity(t.db, CITIES.bucuresti, { fetchOverpass: async () => ({ elements: [] }) });
     expect(other.city).toBe("București");
 
@@ -444,10 +436,13 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
     })),
   });
   const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
-  const sync = (ids: number[]) =>
-    syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => answer(ids) });
+  const sync = (ids: number[]) => syncOsmForCity(t.db, CITIES.timisoara, { fetchOverpass: async () => answer(ids) });
   const byOsmId = (osmId: string) =>
-    t.db.select().from(place).where(and(eq(place.source, "osm"), eq(place.osmId, osmId))).get();
+    t.db
+      .select()
+      .from(place)
+      .where(and(eq(place.source, "osm"), eq(place.osmId, osmId)))
+      .get();
   const listedIds = async () =>
     (await t.db.select({ osmId: place.osmId }).from(place).where(isNull(place.retiredAt)).all()).map((r) => r.osmId);
 
@@ -472,12 +467,27 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
     await t.db.insert(place).values([
       { id: "venue", name: "Club", category: "other", source: "event-venue", city: "Timișoara", lat: 45.7, lng: 21.2 },
       {
-        id: "pin", name: "Pinned by hand", category: "other", source: "osm", osmType: "node", osmId: "999",
-        isManualPin: true, city: "Timișoara", lat: 45.71, lng: 21.21,
+        id: "pin",
+        name: "Pinned by hand",
+        category: "other",
+        source: "osm",
+        osmType: "node",
+        osmId: "999",
+        isManualPin: true,
+        city: "Timișoara",
+        lat: 45.71,
+        lng: 21.21,
       },
       {
-        id: "buc", name: "Biblioteca din București", category: "library", source: "osm", osmType: "node",
-        osmId: "777", city: "București", lat: 44.43, lng: 26.1,
+        id: "buc",
+        name: "Biblioteca din București",
+        category: "library",
+        source: "osm",
+        osmType: "node",
+        osmId: "777",
+        city: "București",
+        lat: 44.43,
+        lng: 26.1,
       },
     ]);
     await sync(range(20));
@@ -506,16 +516,37 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
   it("sends upcoming events at a retired place back to review, and leaves past ones", async () => {
     await sync(range(20));
     const lib = (await byOsmId("5"))!;
-    await t.db.insert(eventSource).values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" });
+    await t.db
+      .insert(eventSource)
+      .values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" });
     const day = 86_400_000;
     await t.db.insert(event).values([
-      { id: "soon", placeId: lib.id, title: "Lectură", category: "community", startDate: new Date(Date.now() + day).toISOString() },
-      { id: "past", placeId: lib.id, title: "Lectură veche", category: "community", startDate: new Date(Date.now() - day).toISOString() },
+      {
+        id: "soon",
+        placeId: lib.id,
+        title: "Lectură",
+        category: "community",
+        startDate: new Date(Date.now() + day).toISOString(),
+      },
+      {
+        id: "past",
+        placeId: lib.id,
+        title: "Lectură veche",
+        category: "community",
+        startDate: new Date(Date.now() - day).toISOString(),
+      },
     ]);
     await t.db.insert(stagedEvent).values(
       ["soon", "past"].map((id) => ({
-        id: `staged-${id}`, sourceId: "src", placeId: lib.id, eventId: id, matchStatus: "auto-matched",
-        status: "accepted", title: id, startDate: new Date().toISOString(), payload: JSON.stringify({ title: id }),
+        id: `staged-${id}`,
+        sourceId: "src",
+        placeId: lib.id,
+        eventId: id,
+        matchStatus: "auto-matched",
+        status: "accepted",
+        title: id,
+        startDate: new Date().toISOString(),
+        payload: JSON.stringify({ title: id }),
       })),
     );
 
@@ -531,7 +562,9 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
     // In the review queue, with its reason.
     const { cookie } = await t.signIn("admin");
     const queue = await t.app.inject({ method: "GET", url: "/api/admin/staged-events", headers: { cookie } });
-    const row = (queue.json() as { data: { id: string; issues: string | null }[] }).data.find((r) => r.id === "staged-soon");
+    const row = (queue.json() as { data: { id: string; issues: string | null }[] }).data.find(
+      (r) => r.id === "staged-soon",
+    );
     expect(row?.issues).toMatch(/retired/);
   });
 });

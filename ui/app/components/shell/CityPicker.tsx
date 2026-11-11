@@ -30,11 +30,7 @@ export function CityPicker() {
       <DropdownMenuLabel>{t("city.label")}</DropdownMenuLabel>
       {CITIES.map((option) => (
         <DropdownMenuItem key={option.id} onClick={() => setCity(option)}>
-          <Check
-            size={14}
-            strokeWidth={2.5}
-            className={option.id === city.id ? "text-accent" : "opacity-0"}
-          />
+          <Check size={14} strokeWidth={2.5} className={option.id === city.id ? "text-accent" : "opacity-0"} />
           {option.name}
         </DropdownMenuItem>
       ))}

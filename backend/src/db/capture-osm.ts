@@ -1,13 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  CITIES,
-  buildOverpassQuery,
-  elementsToPlaces,
-  fetchOverpass,
-  type OsmPlaceInput,
-} from "../lib/osm-sync.js";
+import { CITIES, buildOverpassQuery, elementsToPlaces, fetchOverpass, type OsmPlaceInput } from "../lib/osm-sync.js";
 
 /**
  * Refresh the frozen OSM fixture that `db:seed` loads. This is the
@@ -55,10 +49,7 @@ async function capture() {
     places.push(...result.places);
   }
   places.sort(
-    (a, b) =>
-      a.city.localeCompare(b.city) ||
-      a.osmType.localeCompare(b.osmType) ||
-      Number(a.osmId) - Number(b.osmId),
+    (a, b) => a.city.localeCompare(b.city) || a.osmType.localeCompare(b.osmType) || Number(a.osmId) - Number(b.osmId),
   );
   const fixture: OsmFixture = {
     capturedAt: new Date().toISOString().slice(0, 10),

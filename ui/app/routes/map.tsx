@@ -29,8 +29,7 @@ export const meta: MetaFunction = () => [
   { title: "CivicMap — locurile publice din orașul tău" },
   {
     name: "description",
-    content:
-      "Parcuri, biblioteci, muzee și instituții publice din Timișoara și București, cu ce se întâmplă la ele.",
+    content: "Parcuri, biblioteci, muzee și instituții publice din Timișoara și București, cu ce se întâmplă la ele.",
   },
 ];
 
@@ -38,9 +37,7 @@ function filterBySearch(places: Place[], search: string): Place[] {
   const q = normalizeText(search.trim());
   if (!q) return places;
   return places.filter(
-    (p) =>
-      normalizeText(p.name).includes(q) ||
-      (p.address ? normalizeText(p.address).includes(q) : false),
+    (p) => normalizeText(p.name).includes(q) || (p.address ? normalizeText(p.address).includes(q) : false),
   );
 }
 
@@ -60,13 +57,7 @@ function ActiveFilterChips() {
   const clearArea = useAppStore((s) => s.clearArea);
 
   const chip = (key: string, label: string, onRemove: () => void, dot?: string) => (
-    <Chip
-      key={key}
-      active
-      dotColor={dot}
-      onClick={onRemove}
-      aria-label={t("filters.remove", { filter: label })}
-    >
+    <Chip key={key} active dotColor={dot} onClick={onRemove} aria-label={t("filters.remove", { filter: label })}>
       {label}
       <X size={13} strokeWidth={2.4} aria-hidden="true" />
     </Chip>
@@ -76,9 +67,7 @@ function ActiveFilterChips() {
     <div className="flex flex-wrap justify-center gap-1.5">
       {search.trim() && chip("search", `“${search.trim()}”`, () => setSearch(""))}
       {lens !== "all" && chip("lens", t(`lens.${lens}`), () => setLens("all"))}
-      {categories.map((c) =>
-        chip(c, t(categoryLabelKey(c)), () => toggleCategory(c), categoryColor(c)),
-      )}
+      {categories.map((c) => chip(c, t(categoryLabelKey(c)), () => toggleCategory(c), categoryColor(c)))}
       {area && chip("area", t("area.chip"), clearArea)}
     </div>
   );
@@ -207,7 +196,12 @@ function MapControls() {
       )}
     >
       <div className="overflow-hidden rounded-lg border border-line shadow-e2">
-        <button type="button" aria-label={t("map.zoomIn")} onClick={() => map.zoomIn()} className={`${btn} border-b border-line`}>
+        <button
+          type="button"
+          aria-label={t("map.zoomIn")}
+          onClick={() => map.zoomIn()}
+          className={`${btn} border-b border-line`}
+        >
           <Plus size={16} strokeWidth={2.2} />
         </button>
         <button type="button" aria-label={t("map.zoomOut")} onClick={() => map.zoomOut()} className={btn}>
@@ -268,14 +262,15 @@ export default function MapRoute() {
   // round-tripping: the whole city is in memory, so filtering is instant and
   // works offline-ish.
   const places = useMemo(
-    () => filterBySearch((data?.data ?? []).filter((p) => inArea(p.coordinates, area)), search),
+    () =>
+      filterBySearch(
+        (data?.data ?? []).filter((p) => inArea(p.coordinates, area)),
+        search,
+      ),
     [data, search, area],
   );
 
-  const withEvents = useMemo(
-    () => places.filter((p) => (p.upcomingEventCount ?? 0) > 0).length,
-    [places],
-  );
+  const withEvents = useMemo(() => places.filter((p) => (p.upcomingEventCount ?? 0) > 0).length, [places]);
 
   // With an area drawn the count says so: "12 places in this area".
   const placesKey = area ? "count.inArea" : "count.places";
@@ -331,7 +326,11 @@ export default function MapRoute() {
           <AttributionControl position="bottomleft" prefix={false} ref={setAttribution} />
           <AboutDataLink control={attribution} />
           <AttributionToggle control={attribution} />
-          <MapBridge onReady={(m) => { mapRef.current = m; }} />
+          <MapBridge
+            onReady={(m) => {
+              mapRef.current = m;
+            }}
+          />
           <CityRecenter lat={city.center.lat} lng={city.center.lng} zoom={city.zoom} />
           {coords && <UserLocationMarker coords={coords} />}
           <PlaceMarkers
@@ -348,11 +347,7 @@ export default function MapRoute() {
         </MapContainer>
       )}
 
-      <FilterBar
-        resultLabel={resultLabel}
-        compactLabel={compactLabel}
-        placeCount={isPending ? null : places.length}
-      />
+      <FilterBar resultLabel={resultLabel} compactLabel={compactLabel} placeCount={isPending ? null : places.length} />
 
       {isError && (
         <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-[450] mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">

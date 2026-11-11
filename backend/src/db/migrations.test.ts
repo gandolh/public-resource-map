@@ -61,7 +61,9 @@ const normalizeDefault = (value: string | null) =>
 function shape(db: Database.Database) {
   const tables = (
     db
-      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%' ORDER BY name")
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%' ORDER BY name",
+      )
       .all() as { name: string }[]
   ).map((t) => t.name);
   return Object.fromEntries(

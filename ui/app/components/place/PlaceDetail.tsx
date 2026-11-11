@@ -9,24 +9,14 @@ import { FavoriteStar } from "~/components/FavoriteStar";
 import { CategoryBadge } from "~/components/ui/CategoryBadge";
 import { EventList } from "./EventList";
 
-function MetaRow({
-  icon,
-  label,
-  children,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
-}) {
+function MetaRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-2.5 border-t border-line py-2.5 first:border-t-0">
       <span className="mt-0.5 shrink-0 text-fg-faint" aria-hidden="true">
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[10.5px] font-medium tracking-[0.08em] text-fg-faint uppercase">
-          {label}
-        </p>
+        <p className="text-[10.5px] font-medium tracking-[0.08em] text-fg-faint uppercase">{label}</p>
         <div className="mt-0.5 text-[13px] leading-snug break-words text-fg">{children}</div>
       </div>
     </div>
@@ -47,12 +37,7 @@ interface PlaceDetailProps {
  * two divergent place views is exactly how a deep link ends up showing less
  * than a pin click.
  */
-export function PlaceDetail({
-  place,
-  events,
-  eventsLoading,
-  variant = "panel",
-}: PlaceDetailProps) {
+export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }: PlaceDetailProps) {
   const { t, tn } = useI18n();
   const [copied, setCopied] = useState(false);
 
@@ -85,18 +70,14 @@ export function PlaceDetail({
           >
             {place.name}
           </h2>
-          {place.address && (
-            <p className="mt-1.5 text-[13px] leading-snug text-fg-muted">{place.address}</p>
-          )}
+          {place.address && <p className="mt-1.5 text-[13px] leading-snug text-fg-muted">{place.address}</p>}
 
           <div className="mt-3.5 flex gap-2">
             <Button
               variant="primary"
               size="md"
               className="flex-1"
-              onClick={() =>
-                window.open(directionsUrl(place.coordinates), "_blank", "noopener,noreferrer")
-              }
+              onClick={() => window.open(directionsUrl(place.coordinates), "_blank", "noopener,noreferrer")}
             >
               <Navigation size={15} strokeWidth={2.2} />
               {t("place.directions")}
@@ -133,12 +114,7 @@ export function PlaceDetail({
           )}
           {place.website && (
             <MetaRow icon={<Globe size={14} strokeWidth={2} />} label={t("place.website")}>
-              <a
-                href={place.website}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-accent hover:underline"
-              >
+              <a href={place.website} target="_blank" rel="noreferrer noopener" className="text-accent hover:underline">
                 {place.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
               </a>
             </MetaRow>
@@ -156,12 +132,8 @@ export function PlaceDetail({
 
         <div className="border-t border-line">
           <div className="flex items-baseline justify-between px-4 pt-3.5 pb-0.5">
-            <h3 className="text-[13px] font-semibold tracking-[-0.01em]">
-              {t("place.whatsOnHere")}
-            </h3>
-            {count > 0 && (
-              <span className="tnum text-[12px] text-fg-muted">{tn("count.events", count)}</span>
-            )}
+            <h3 className="text-[13px] font-semibold tracking-[-0.01em]">{t("place.whatsOnHere")}</h3>
+            {count > 0 && <span className="tnum text-[12px] text-fg-muted">{tn("count.events", count)}</span>}
           </div>
           <EventList
             events={events}

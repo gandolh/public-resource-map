@@ -67,14 +67,20 @@ export type EventLens = z.infer<typeof eventLensSchema>;
  * A comma-separated query list (`?category=park,museum`). Kept as a plain
  * string on the wire so the URL stays readable and shareable.
  */
-export const csvSchema = z
-  .string()
-  .transform((raw) => raw.split(",").map((v) => v.trim()).filter(Boolean));
+export const csvSchema = z.string().transform((raw) =>
+  raw
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean),
+);
 
 /** Parse a `?category=a,b` param into a list, tolerating absent/empty values. */
 export function parseCsv(raw: string | undefined): string[] {
   if (!raw) return [];
-  return raw.split(",").map((v) => v.trim()).filter(Boolean);
+  return raw
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
 
 /**

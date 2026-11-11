@@ -21,12 +21,24 @@ afterEach(async () => {
 
 /** What prm's database held before 2026-10-13: rows keyed by Ward subjects. */
 function legacyRows(db: TestApp["db"]) {
-  db.insert(place).values({ id: "museum", name: "Muzeul", category: "museum", city: "Timișoara", lat: 45.75, lng: 21.22 }).run();
-  db.insert(event).values({ id: "show", placeId: "museum", title: "Show", category: "concert", startDate: "2030-01-01T18:00:00.000Z" }).run();
-  db.insert(favoritePlace).values([
-    { subject: ANA, placeId: "museum" },
-    { subject: TWIN, placeId: "museum" },
-  ]).run();
+  db.insert(place)
+    .values({ id: "museum", name: "Muzeul", category: "museum", city: "Timișoara", lat: 45.75, lng: 21.22 })
+    .run();
+  db.insert(event)
+    .values({
+      id: "show",
+      placeId: "museum",
+      title: "Show",
+      category: "concert",
+      startDate: "2030-01-01T18:00:00.000Z",
+    })
+    .run();
+  db.insert(favoritePlace)
+    .values([
+      { subject: ANA, placeId: "museum" },
+      { subject: TWIN, placeId: "museum" },
+    ])
+    .run();
   db.insert(favoriteEvent).values({ subject: DAN, eventId: "show" }).run();
   db.insert(notification).values({ subject: DAN, kind: "reminder", eventId: "show", placeId: "museum" }).run();
 }

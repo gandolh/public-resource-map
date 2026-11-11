@@ -113,9 +113,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   hasFilters: () => {
     const s = get();
-    return (
-      s.categories.length > 0 || s.lens !== "all" || s.search.trim() !== "" || s.area !== null
-    );
+    return s.categories.length > 0 || s.lens !== "all" || s.search.trim() !== "" || s.area !== null;
   },
 
   clearFilters: () => set({ categories: [], lens: "all", search: "", area: null }),

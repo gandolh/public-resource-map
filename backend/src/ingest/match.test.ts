@@ -49,9 +49,7 @@ describe("matchVenue", () => {
 
 describe("normalizeAddress", () => {
   it("expands street abbreviations so spellings share a cache key", () => {
-    expect(normalizeAddress("Str. Miron Costin nr. 2", TM)).toBe(
-      normalizeAddress("Strada Miron Costin 2", TM),
-    );
+    expect(normalizeAddress("Str. Miron Costin nr. 2", TM)).toBe(normalizeAddress("Strada Miron Costin 2", TM));
     expect(normalizeAddress("Bd. Revoluției 5", TM)).toBe("bulevardul revolutiei 5 timisoara");
   });
   it("keeps the same street in two cities apart", () => {

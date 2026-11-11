@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Event, EventLens, PaginatedResponse, Place, PlaceCategory, WhatsOnItem }
-  from "@public-resource-map/shared";
-import {
-  fetchAllPlaces,
-  fetchAllWhatsOn,
-  fetchPlace,
-  fetchPlaceEvents,
-  fetchWhatsOn,
-} from "~/lib/api";
+import type {
+  Event,
+  EventLens,
+  PaginatedResponse,
+  Place,
+  PlaceCategory,
+  WhatsOnItem,
+} from "@public-resource-map/shared";
+import { fetchAllPlaces, fetchAllWhatsOn, fetchPlace, fetchPlaceEvents, fetchWhatsOn } from "~/lib/api";
 
 /**
  * The city's places for the map. Keyed on city + category chips + lens so the
@@ -15,11 +15,7 @@ import {
  * and `placeholderData` keeps the previous pins on screen while the next set
  * loads — the map never blinks empty mid-filter.
  */
-export function usePlaces(input: {
-  city: string;
-  categories: PlaceCategory[];
-  lens: EventLens;
-}) {
+export function usePlaces(input: { city: string; categories: PlaceCategory[]; lens: EventLens }) {
   return useQuery<PaginatedResponse<Place>>({
     queryKey: ["places", input.city, [...input.categories].sort().join(","), input.lens],
     queryFn: ({ signal }) => fetchAllPlaces(input, signal),
@@ -61,8 +57,7 @@ export function useWhatsOn(input: {
   const { everything = false, ...query } = input;
   return useQuery<PaginatedResponse<WhatsOnItem>>({
     queryKey: ["whats-on", query.city, [...query.categories].sort().join(","), query.lens, everything],
-    queryFn: ({ signal }) =>
-      everything ? fetchAllWhatsOn(query, signal) : fetchWhatsOn(query, signal),
+    queryFn: ({ signal }) => (everything ? fetchAllWhatsOn(query, signal) : fetchWhatsOn(query, signal)),
     placeholderData: (prev) => prev,
   });
 }

@@ -16,10 +16,8 @@ describe("Europe/Bucharest time", () => {
   });
 
   it("maps a local wall-clock time back to the right instant across DST", () => {
-    expect(zonedTimeToInstant(2026, 9, 4, 23, 59, 59).toISOString())
-      .toBe("2026-09-04T20:59:59.000Z");
-    expect(zonedTimeToInstant(2026, 1, 14, 23, 59, 59).toISOString())
-      .toBe("2026-01-14T21:59:59.000Z");
+    expect(zonedTimeToInstant(2026, 9, 4, 23, 59, 59).toISOString()).toBe("2026-09-04T20:59:59.000Z");
+    expect(zonedTimeToInstant(2026, 1, 14, 23, 59, 59).toISOString()).toBe("2026-01-14T21:59:59.000Z");
   });
 
   it("'today' runs from now to the end of the local day, not the UTC day", () => {

@@ -8,11 +8,7 @@
  * place that still has events is a refusal, not a server fault.
  */
 export function isForeignKeyViolation(error: unknown): boolean {
-  for (
-    let e = error as { code?: unknown; cause?: unknown } | undefined, depth = 0;
-    e && depth < 5;
-    depth++
-  ) {
+  for (let e = error as { code?: unknown; cause?: unknown } | undefined, depth = 0; e && depth < 5; depth++) {
     if (e.code === "SQLITE_CONSTRAINT_FOREIGNKEY") return true;
     e = e.cause as typeof e;
   }

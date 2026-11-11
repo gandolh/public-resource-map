@@ -9,13 +9,7 @@ interface SearchInputProps {
   className?: string;
 }
 
-export function SearchInput({
-  value,
-  onChange,
-  placeholder,
-  clearLabel,
-  className,
-}: SearchInputProps) {
+export function SearchInput({ value, onChange, placeholder, clearLabel, className }: SearchInputProps) {
   return (
     <div
       className={cn(

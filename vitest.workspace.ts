@@ -11,8 +11,4 @@
  * (`@testing-library/react`) are still deferred; they would widen that
  * project's include and environment.
  */
-export const projects = [
-  "./backend/vitest.config.ts",
-  "./shared/vitest.config.ts",
-  "./ui/vitest.config.ts",
-];
+export const projects = ["./backend/vitest.config.ts", "./shared/vitest.config.ts", "./ui/vitest.config.ts"];

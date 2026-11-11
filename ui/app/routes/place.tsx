@@ -78,9 +78,7 @@ export default function PlaceRoute() {
     if (!map || lat === undefined || lng === undefined) return;
     const zoom = Math.max(map.getZoom(), 16);
     const point = map.project([lat, lng], zoom);
-    const shifted = isMobile
-      ? point.add([0, SHEET_OFFSET_Y])
-      : point.add([PANEL_OFFSET_X, 0]);
+    const shifted = isMobile ? point.add([0, SHEET_OFFSET_Y]) : point.add([PANEL_OFFSET_X, 0]);
     map.flyTo(map.unproject(shifted, zoom), zoom, { duration: 0.55 });
   }, [lat, lng, isMobile, getMap]);
 

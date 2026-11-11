@@ -35,9 +35,7 @@ const restrictedAdapter: SourceAdapter = { ...fakeAdapter, productionAllowed: fa
 /** Club Daos geocodes inside Timișoara; anything else is a miss. */
 const geocoder: GeocodeProvider = async (query) => {
   geocodes.push(query);
-  return query.includes("Daos")
-    ? { lat: 45.75, lng: 21.23, importance: 0.2, granularity: "building", raw: {} }
-    : null;
+  return query.includes("Daos") ? { lat: 45.75, lng: 21.23, importance: 0.2, granularity: "building", raw: {} } : null;
 };
 
 const listing = (over: Partial<Record<string, unknown>> = {}): AdapterRow => ({
@@ -130,8 +128,26 @@ describe("the admin gate", () => {
 describe("sources", () => {
   it("are created, listed, and refuse an unknown adapter or a taken key", async () => {
     await addSource();
-    expect((await call("POST", "/api/admin/sources", { name: "x", adapterKey: "nope", mechanism: "ical", city: "timisoara" })).body.code).toBe("UNKNOWN_ADAPTER");
-    expect((await call("POST", "/api/admin/sources", { name: "x", adapterKey: "test:cpt", mechanism: "ical", city: "timisoara" })).status).toBe(409);
+    expect(
+      (
+        await call("POST", "/api/admin/sources", {
+          name: "x",
+          adapterKey: "nope",
+          mechanism: "ical",
+          city: "timisoara",
+        })
+      ).body.code,
+    ).toBe("UNKNOWN_ADAPTER");
+    expect(
+      (
+        await call("POST", "/api/admin/sources", {
+          name: "x",
+          adapterKey: "test:cpt",
+          mechanism: "ical",
+          city: "timisoara",
+        })
+      ).status,
+    ).toBe(409);
     const list = (await call("GET", "/api/admin/sources")).body.data;
     expect(list).toHaveLength(1);
     expect(list[0]).toMatchObject({ adapterKey: "test:cpt", city: TM, enabled: true, lastStatus: null });
@@ -145,7 +161,12 @@ describe("a refresh stages a diff and publishes nothing", () => {
       listing(),
       listing(), // the same UID twice in one feed
       // Dated from today: the last check reads the public, upcoming-only list.
-      listing({ externalId: "uid-muzeu", title: "Tur ghidat", venue: "Muzeul Timișoara", startDate: new Date(Date.now() + 30 * 86_400_000).toISOString() }),
+      listing({
+        externalId: "uid-muzeu",
+        title: "Tur ghidat",
+        venue: "Muzeul Timișoara",
+        startDate: new Date(Date.now() + 30 * 86_400_000).toISOString(),
+      }),
       listing({ externalId: "uid-daos", title: "Seară rock", venue: "Club Daos", address: "Str. Daos 1" }),
       { raw: { externalId: "uid-bad", venue: "x" } }, // no title, no date
       { raw: { externalId: "uid-rrule", title: "Weekly" }, problem: "a recurring event (RRULE)" },
@@ -186,7 +207,12 @@ describe("accept, reject, resolve", () => {
     feed = [
       listing(),
       // Dated from today: the last check reads the public, upcoming-only list.
-      listing({ externalId: "uid-muzeu", title: "Tur ghidat", venue: "Muzeul Timișoara", startDate: new Date(Date.now() + 30 * 86_400_000).toISOString() }),
+      listing({
+        externalId: "uid-muzeu",
+        title: "Tur ghidat",
+        venue: "Muzeul Timișoara",
+        startDate: new Date(Date.now() + 30 * 86_400_000).toISOString(),
+      }),
       listing({ externalId: "uid-daos", title: "Seară rock", venue: "Club Daos", address: "Str. Daos 1" }),
       listing({ externalId: "uid-daos-2", title: "Seară jazz", venue: "Club Daos", address: "Str. Daos 1" }),
     ];
@@ -199,8 +225,12 @@ describe("accept, reject, resolve", () => {
     expect(first.skipped).toEqual([{ id: ids["Tur ghidat"], reason: expect.stringMatching(/needs a place/) }]);
 
     const museum = t.db.select().from(place).where(eq(place.name, "Muzeul de Artă Timișoara")).get()!;
-    expect((await call("POST", `/api/admin/staged-events/${ids["Tur ghidat"]}/place`, { placeId: museum.id })).status).toBe(200);
-    expect((await call("POST", "/api/admin/staged-events/accept", { ids: [ids["Tur ghidat"]] })).body.accepted).toHaveLength(1);
+    expect(
+      (await call("POST", `/api/admin/staged-events/${ids["Tur ghidat"]}/place`, { placeId: museum.id })).status,
+    ).toBe(200);
+    expect(
+      (await call("POST", "/api/admin/staged-events/accept", { ids: [ids["Tur ghidat"]] })).body.accepted,
+    ).toHaveLength(1);
 
     expect(liveEvents()).toHaveLength(4);
     const venues = t.db.select().from(place).where(eq(place.source, "event-venue")).all();
@@ -217,8 +247,12 @@ describe("accept, reject, resolve", () => {
     feed = [listing({ externalId: "u", title: "Undeva", venue: "Nicăieri cunoscut" })];
     await refresh(id);
     const [row] = await staged();
-    expect((await call("POST", `/api/admin/staged-events/${row.id}/place`, { lat: 44.43, lng: 26.1 })).body.code).toBe("PIN_OUTSIDE_CITY");
-    expect((await call("POST", `/api/admin/staged-events/${row.id}/place`, { lat: 45.76, lng: 21.24 })).status).toBe(200);
+    expect((await call("POST", `/api/admin/staged-events/${row.id}/place`, { lat: 44.43, lng: 26.1 })).body.code).toBe(
+      "PIN_OUTSIDE_CITY",
+    );
+    expect((await call("POST", `/api/admin/staged-events/${row.id}/place`, { lat: 45.76, lng: 21.24 })).status).toBe(
+      200,
+    );
     await call("POST", "/api/admin/staged-events/accept", { ids: [row.id] });
     expect(t.db.select().from(place).where(eq(place.source, "event-venue")).get()).toMatchObject({ isManualPin: true });
   });

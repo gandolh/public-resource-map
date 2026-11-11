@@ -90,9 +90,7 @@ function Item({ item }: { item: NotificationDto }) {
         // No place, or one OSM no longer has: named, not a broken link.
         <div className="px-3.5 py-2.5">
           {content}
-          {item.place && (
-            <span className="mt-0.5 block text-[12px] text-fg-faint">{t("place.unlisted")}</span>
-          )}
+          {item.place && <span className="mt-0.5 block text-[12px] text-fg-faint">{t("place.unlisted")}</span>}
         </div>
       )}
     </li>

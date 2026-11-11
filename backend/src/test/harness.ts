@@ -75,8 +75,7 @@ export async function buildTestApp(
     async signIn(role = "user", id = randomUUID()) {
       const { accounts } = app.auth;
       const user =
-        (await accounts.findUserById(id)) ??
-        (await accounts.createUser({ id, username: `${role}-${id}`, role }));
+        (await accounts.findUserById(id)) ?? (await accounts.createUser({ id, username: `${role}-${id}`, role }));
       const { token } = await accounts.startSession(user.id);
       return { cookie: `prm_session=${token}`, id: user.id };
     },

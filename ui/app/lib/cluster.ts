@@ -25,11 +25,7 @@ export interface Point {
  * loaded points; a clustering plugin would be a dependency, a Leaflet-version
  * risk and a second styling system for the sake of thirty lines.
  */
-export function clusterPlaces(
-  places: Place[],
-  project: (coords: Coordinates) => Point,
-  cellPx = 72,
-): PlaceCluster[] {
+export function clusterPlaces(places: Place[], project: (coords: Coordinates) => Point, cellPx = 72): PlaceCluster[] {
   const cells = new Map<string, Place[]>();
 
   for (const place of places) {

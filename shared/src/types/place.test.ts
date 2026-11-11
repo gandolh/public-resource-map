@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createPlaceSchema,
-  placeCategorySchema,
-  placeSchema,
-  placeSourceSchema,
-} from "./place.js";
+import { createPlaceSchema, placeCategorySchema, placeSchema, placeSourceSchema } from "./place.js";
 
 describe("placeCategorySchema", () => {
   it("accepts a known category and rejects an unknown one", () => {
@@ -46,14 +41,8 @@ describe("placeSchema", () => {
   });
 
   it("rejects coordinates outside the valid lat/lng range", () => {
-    expect(
-      placeSchema.safeParse({ ...base, coordinates: { lat: 91, lng: 21.2 } })
-        .success,
-    ).toBe(false);
-    expect(
-      placeSchema.safeParse({ ...base, coordinates: { lat: 45, lng: 181 } })
-        .success,
-    ).toBe(false);
+    expect(placeSchema.safeParse({ ...base, coordinates: { lat: 91, lng: 21.2 } }).success).toBe(false);
+    expect(placeSchema.safeParse({ ...base, coordinates: { lat: 45, lng: 181 } }).success).toBe(false);
   });
 
   it("rejects an omitted nullable field (null is required, undefined is not)", () => {

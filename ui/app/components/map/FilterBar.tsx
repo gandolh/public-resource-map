@@ -186,21 +186,14 @@ export function FilterBar({
           <div className="mt-2">
             <AreaControls />
           </div>
-          <p className="tnum mt-2.5 border-t border-line pt-2 text-[12px] text-fg-muted">
-            {resultLabel}
-          </p>
+          <p className="tnum mt-2.5 border-t border-line pt-2 text-[12px] text-fg-muted">{resultLabel}</p>
         </div>
       </div>
 
       <div className="pointer-events-none absolute bottom-4 left-1/2 z-[400] hidden -translate-x-1/2 flex-col items-center gap-2 md:flex">
         <LensBanner placeCount={placeCount} />
         <div className="pointer-events-auto">
-          <Segmented
-            value={lens}
-            options={lensOptions}
-            onChange={setLens}
-            label={t("lens.label")}
-          />
+          <Segmented value={lens} options={lensOptions} onChange={setLens} label={t("lens.label")} />
         </div>
       </div>
 
@@ -221,9 +214,7 @@ export function FilterBar({
             aria-label={t("filters.title")}
             className={cn(
               "relative grid h-10 w-10 shrink-0 place-items-center rounded-lg border shadow-e2 transition-colors",
-              openOnMobile
-                ? "border-accent bg-accent text-fg-on-accent"
-                : "border-line bg-surface text-fg-muted",
+              openOnMobile ? "border-accent bg-accent text-fg-on-accent" : "border-line bg-surface text-fg-muted",
             )}
           >
             {openOnMobile ? <X size={17} strokeWidth={2.2} /> : <SlidersHorizontal size={17} strokeWidth={2} />}
@@ -262,9 +253,7 @@ export function FilterBar({
             <div className="mt-2">
               <AreaControls onStart={() => setOpenOnMobile(false)} />
             </div>
-            <p className="tnum mt-2 border-t border-line pt-2 text-[12px] text-fg-muted">
-              {resultLabel}
-            </p>
+            <p className="tnum mt-2 border-t border-line pt-2 text-[12px] text-fg-muted">{resultLabel}</p>
           </div>
         )}
       </div>
