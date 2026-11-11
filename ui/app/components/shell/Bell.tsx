@@ -34,7 +34,7 @@ export function Bell() {
         >
           <BellIcon size={18} strokeWidth={2} />
           {unread > 0 && (
-            <span className="tnum absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-micro font-bold text-fg-on-accent">
+            <span className="absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-micro font-bold text-fg-on-accent tnum">
               {unread > 9 ? "9+" : unread}
             </span>
           )}
@@ -71,7 +71,7 @@ function Item({ item }: { item: NotificationDto }) {
         </span>
       )}
       {item.kind === "reminder" && item.events[0] && (
-        <span className="tnum mt-0.5 block text-meta text-fg-muted">
+        <span className="mt-0.5 block text-meta text-fg-muted tnum">
           {dayMonth(item.events[0].startDate)} · {time(item.events[0].startDate)}
         </span>
       )}

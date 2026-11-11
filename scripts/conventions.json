@@ -3,5 +3,37 @@
   "web": ["ui/app"],
   "server": ["backend/src"],
   "shared": ["shared/src"],
-  "stylesheet": "app.css"
+  "stylesheet": "app.css",
+  "exceptions": [
+    {
+      "check": "base-ui",
+      "rule": 7,
+      "path": "ui/app/app.css",
+      "reason": "One global prefers-reduced-motion rule (the last block of app.css) stops every animation and transition, Leaflet's included, so motion-safe: on each utility would add nothing; the transitions key on data-starting-style and data-ending-style where Base UI animates a popup."
+    },
+    {
+      "check": "base-ui",
+      "rule": 5,
+      "path": "ui/app/components/ui/Chip.tsx",
+      "reason": "Inline style sets only the --cat custom property, a category hue that is data and cannot be a class; the utilities (bg-(--cat)) read it."
+    },
+    {
+      "check": "base-ui",
+      "rule": 5,
+      "path": "ui/app/components/ui/CategoryBadge.tsx",
+      "reason": "Inline style sets only the --cat custom property, a category hue that is data and cannot be a class; the utilities read it."
+    },
+    {
+      "check": "base-ui",
+      "rule": 5,
+      "path": "ui/app/components/place/EventList.tsx",
+      "reason": "Inline style sets only the --cat custom property, a category hue that is data and cannot be a class; the utilities read it."
+    },
+    {
+      "check": "base-ui",
+      "rule": 5,
+      "path": "ui/app/components/place/EventPlaceRow.tsx",
+      "reason": "Inline style sets only the --cat custom property, a category hue that is data and cannot be a class; the utilities read it."
+    }
+  ]
 }

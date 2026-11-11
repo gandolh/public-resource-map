@@ -35,7 +35,7 @@ export function Button({ variant = "secondary", size = "md", className, type = "
     <button
       type={type}
       className={cn(
-        "inline-flex select-none items-center justify-center font-medium",
+        "inline-flex items-center justify-center font-medium select-none",
         "transition-[background-color,border-color,color,opacity] duration-(--dur-1) ease-out-fast",
         "disabled:pointer-events-none disabled:opacity-45",
         variants[variant],

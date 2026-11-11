@@ -85,7 +85,7 @@ export default function ArchiveRoute() {
           {/* One panel for both tabs: the list below follows the chosen one. */}
           <TabPanel value={tab}>
             {!needsSignIn && (
-              <div className="scroll-fade-x -mx-4 mt-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="-mx-4 mt-4 [scrollbar-width:none] overflow-x-auto scroll-fade-x px-4 [&::-webkit-scrollbar]:hidden">
                 <div className="flex gap-1.5">
                   <Chip active={categories.length === 0} onClick={() => setCategories([])}>
                     {t("filters.all")}
@@ -158,10 +158,10 @@ export default function ArchiveRoute() {
 
             {items.length > 0 && (
               <>
-                <p className="tnum mt-4 text-detail text-fg-muted">{tn("count.events", total)}</p>
+                <p className="mt-4 text-detail text-fg-muted tnum">{tn("count.events", total)}</p>
                 {groups.map((g) => (
                   <section key={g.key} className="mt-5 first:mt-3">
-                    <h2 className="label-cap pb-1">{g.label}</h2>
+                    <h2 className="pb-1 label-cap">{g.label}</h2>
                     <ul>
                       {g.items.map((item) => (
                         <EventPlaceRow key={item.event.id} item={item} when="date" />

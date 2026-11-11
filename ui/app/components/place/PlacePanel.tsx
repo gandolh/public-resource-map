@@ -39,14 +39,14 @@ export function PlacePanel({ place, events, eventsLoading, onClose }: PlacePanel
     <aside
       key={place.id}
       aria-label={place.name}
-      className="animate-panel-in pointer-events-auto absolute top-3 right-3 bottom-3 z-panel flex w-[384px] flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-e3"
+      className="pointer-events-auto absolute top-3 right-3 bottom-3 z-panel flex w-[384px] animate-panel-in flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-e3"
     >
       <button
         ref={closeRef}
         type="button"
         onClick={onClose}
         aria-label={t("place.close")}
-        className="absolute top-3 right-3 z-10 grid h-7 w-7 place-items-center rounded-md border border-line bg-surface/85 text-fg-muted backdrop-blur transition-colors hover:bg-surface-2 hover:text-fg"
+        className="absolute top-3 right-3 z-10 grid h-7 w-7 place-items-center rounded-md border border-line bg-surface/85 text-fg-muted backdrop-blur-sm transition-colors hover:bg-surface-2 hover:text-fg"
       >
         <X size={15} strokeWidth={2.2} />
       </button>

@@ -37,7 +37,7 @@ export function SearchInput({ value, onChange, placeholder, clearLabel, classNam
           type="button"
           onClick={() => onChange("")}
           aria-label={clearLabel}
-          className="-mr-1 grid h-6 w-6 shrink-0 place-items-center rounded text-fg-faint transition-colors hover:bg-surface-2 hover:text-fg"
+          className="-mr-1 grid h-6 w-6 shrink-0 place-items-center rounded-xs text-fg-faint transition-colors hover:bg-surface-2 hover:text-fg"
         >
           <X size={14} strokeWidth={2.5} />
         </button>

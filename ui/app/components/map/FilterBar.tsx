@@ -186,7 +186,7 @@ export function FilterBar({
           <div className="mt-2">
             <AreaControls />
           </div>
-          <p className="tnum mt-2.5 border-t border-line pt-2 text-meta text-fg-muted">{resultLabel}</p>
+          <p className="mt-2.5 border-t border-line pt-2 text-meta text-fg-muted tnum">{resultLabel}</p>
         </div>
       </div>
 
@@ -220,7 +220,7 @@ export function FilterBar({
             {openOnMobile ? <X size={17} strokeWidth={2.2} /> : <SlidersHorizontal size={17} strokeWidth={2} />}
             {/* How many filters are hiding behind this button, stated on it. */}
             {!openOnMobile && hiddenFilters > 0 && (
-              <span className="tnum absolute -top-1.5 -right-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-micro font-bold text-fg-on-accent">
+              <span className="absolute -top-1.5 -right-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-micro font-bold text-fg-on-accent tnum">
                 {hiddenFilters}
               </span>
             )}
@@ -238,7 +238,7 @@ export function FilterBar({
           />
           {/* rounded-md, not a pill: this reports a count, it does not filter,
               and the desktop card states the same datum as plain text. */}
-          <span className="tnum truncate rounded-md border border-line bg-surface px-2 py-1 text-caption text-fg-muted shadow-e1">
+          <span className="truncate rounded-md border border-line bg-surface px-2 py-1 text-caption text-fg-muted tnum shadow-e1">
             {compactLabel}
           </span>
         </div>
@@ -247,13 +247,13 @@ export function FilterBar({
 
         {openOnMobile && (
           <div className="pointer-events-auto rounded-xl border border-line bg-surface p-2.5 shadow-e2">
-            <div className="scroll-fade-x -mx-2.5 overflow-x-auto px-2.5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="-mx-2.5 [scrollbar-width:none] overflow-x-auto scroll-fade-x px-2.5 pb-1 [&::-webkit-scrollbar]:hidden">
               <CategoryChips compact />
             </div>
             <div className="mt-2">
               <AreaControls onStart={() => setOpenOnMobile(false)} />
             </div>
-            <p className="tnum mt-2 border-t border-line pt-2 text-meta text-fg-muted">{resultLabel}</p>
+            <p className="mt-2 border-t border-line pt-2 text-meta text-fg-muted tnum">{resultLabel}</p>
           </div>
         )}
       </div>

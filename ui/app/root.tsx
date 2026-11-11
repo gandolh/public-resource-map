@@ -89,9 +89,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const stack = import.meta.env.DEV && error instanceof Error ? error.stack : undefined;
 
   return (
-    <main className="min-h-screen bg-bg text-fg flex items-center justify-center p-6">
+    <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-fg">
       <div className="w-full max-w-md">
-        <p className="text-note font-semibold uppercase tracking-[0.14em] text-fg-faint">
+        <p className="text-note font-semibold tracking-[0.14em] text-fg-faint uppercase">
           {notFound ? "404" : "Eroare"}
         </p>
         <h1 className="mt-2 text-headline leading-tight font-semibold tracking-[-0.02em]">{title}</h1>

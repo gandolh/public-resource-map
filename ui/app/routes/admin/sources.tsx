@@ -167,12 +167,12 @@ function SourceRow({ source, onSummary }: { source: EventSourceDto; onSummary: (
       <td className="border-b border-line py-2.5 pr-3">
         <Health status={source.lastStatus} />
         {source.lastEventCount !== null && (
-          <span className="tnum mt-1 block text-meta text-fg-muted">
+          <span className="mt-1 block text-meta text-fg-muted tnum">
             {t("admin.lastCount", { n: source.lastEventCount })}
           </span>
         )}
       </td>
-      <td className="tnum border-b border-line py-2.5 pr-3 text-fg-muted">
+      <td className="border-b border-line py-2.5 pr-3 text-fg-muted tnum">
         {source.lastRunAt ? `${dayMonth(source.lastRunAt)} · ${time(source.lastRunAt)}` : "—"}
         {source.lastSuccessfulAt && source.lastSuccessfulAt !== source.lastRunAt && (
           <span className="block text-meta">

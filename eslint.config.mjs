@@ -9,6 +9,8 @@ export default [
   ...houseStyle({
     root: import.meta.dirname,
     web: "ui/app",
+    // The stylesheet Tailwind reads: the correctness rules and the class order are errors.
+    tailwind: { css: "ui/app/app.css", order: true },
     server: "backend/src",
     // vitest's rules belong to the unit tests only; the Playwright specs in e2e/ get their own block below.
     tests: ["backend/src/**/*.test.ts", "shared/src/**/*.test.ts", "ui/app/**/*.test.{ts,tsx}"],
@@ -29,6 +31,18 @@ export default [
     typed: { allowDefaultProject: ["playwright.config.ts", "vitest.config.ts", "vitest.workspace.ts"] },
     ignores: ["docs/**", "ui/build/**", "ui/.react-router/**", "e2e/.data/**", "playwright-report/**"],
   }),
+  {
+    // Marker classes: no utility, only a hook for a rule in app.css (the map wrapper's state, and the
+    // standard-tile fallback). Naming them here keeps the unknown-class check honest for everything else.
+    name: "prm/tailwind-marker-classes",
+    files: ["ui/app/**/*.{ts,tsx}"],
+    rules: {
+      "better-tailwindcss/no-unknown-classes": [
+        "error",
+        { ignore: ["has-selection", "sheet-peek", "sheet-full", "map-fallback"] },
+      ],
+    },
+  },
   {
     // A warning for now (2026-11-11): these files still read the environment themselves. When the server
     // takes its settings from config.ts, this block goes and the rule is an error again.

@@ -44,7 +44,7 @@ export function Chip({ active = false, dotColor, count, className, children, ...
       )}
       {children}
       {count !== undefined && (
-        <span className={cn("tnum ml-0.5 text-caption", active ? "text-fg-on-accent/75" : "text-fg-faint")}>
+        <span className={cn("ml-0.5 text-caption tnum", active ? "text-fg-on-accent/75" : "text-fg-faint")}>
           {count}
         </span>
       )}

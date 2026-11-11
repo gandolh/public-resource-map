@@ -60,7 +60,7 @@ export function PlaceSheet({ place, events, eventsLoading, onClose }: PlaceSheet
     >
       <BottomSheetClose
         aria-label={t("place.close")}
-        className="absolute top-3 right-3 z-10 grid h-7 w-7 place-items-center rounded-md border border-line bg-surface/85 text-fg-muted backdrop-blur"
+        className="absolute top-3 right-3 z-10 grid h-7 w-7 place-items-center rounded-md border border-line bg-surface/85 text-fg-muted backdrop-blur-sm"
       >
         <X size={15} strokeWidth={2.2} />
       </BottomSheetClose>

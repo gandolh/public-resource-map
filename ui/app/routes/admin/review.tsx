@@ -171,8 +171,8 @@ export default function ReviewRoute() {
         <>
           {/* The bulk toolbar sticks to the top of the scrolling pane, so it is
               in reach however far down the queue the reviewer is. */}
-          <div className="sticky top-0 z-10 -mx-2 mt-4 flex items-center gap-2 bg-bg/95 px-2 py-2 backdrop-blur">
-            <span className="tnum text-ui text-fg-muted">{t("admin.selected", { n: chosen.length })}</span>
+          <div className="sticky top-0 z-10 -mx-2 mt-4 flex items-center gap-2 bg-bg/95 px-2 py-2 backdrop-blur-sm">
+            <span className="text-ui text-fg-muted tnum">{t("admin.selected", { n: chosen.length })}</span>
             <Button
               variant="primary"
               size="sm"
@@ -290,7 +290,7 @@ function Row({
         </button>
         <span className="block text-meta text-fg-muted">{row.sourcePlatform}</span>
       </td>
-      <td className="tnum border-b border-line py-2.5 pr-3 whitespace-nowrap text-fg-muted">
+      <td className="border-b border-line py-2.5 pr-3 whitespace-nowrap text-fg-muted tnum">
         {dayMonth(row.startDate)} · {time(row.startDate)}
       </td>
       <td className="border-b border-line py-2.5 pr-3 text-fg-muted">{placeLabel}</td>
@@ -521,7 +521,7 @@ function Drawer({
                     >
                       <span className="min-w-0">
                         <span className="block truncate font-medium">{c.name}</span>
-                        <span className="tnum text-meta text-fg-muted">
+                        <span className="text-meta text-fg-muted tnum">
                           {t("admin.score", { score: Math.round(c.score * 100) })}
                         </span>
                       </span>

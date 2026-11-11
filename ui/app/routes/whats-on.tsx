@@ -61,7 +61,7 @@ export default function WhatsOnRoute() {
 
         <div className="mt-5 flex flex-col gap-3">
           <Segmented value={lens} options={lensOptions} onChange={setLens} label={t("lens.label")} />
-          <div className="scroll-fade-x -mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="-mx-4 [scrollbar-width:none] overflow-x-auto scroll-fade-x px-4 [&::-webkit-scrollbar]:hidden">
             <div className="flex gap-1.5">
               <Chip active={categories.length === 0} onClick={clearCategories}>
                 {t("filters.all")}
@@ -87,7 +87,7 @@ export default function WhatsOnRoute() {
         </div>
 
         {!isPending && !isError && items.length > 0 && (
-          <p className="tnum mt-4 text-detail text-fg-muted">{tn("count.events", total)}</p>
+          <p className="mt-4 text-detail text-fg-muted tnum">{tn("count.events", total)}</p>
         )}
 
         <div className="mt-2">
@@ -137,7 +137,7 @@ export default function WhatsOnRoute() {
 
           {groups.map(({ group, items: rows }) => (
             <section key={group} className="mt-5 first:mt-3">
-              <h2 className="label-cap pb-1">{t(`group.${group}`)}</h2>
+              <h2 className="pb-1 label-cap">{t(`group.${group}`)}</h2>
               <ul>
                 {rows.map((item) => (
                   <EventPlaceRow key={item.event.id} item={item} />

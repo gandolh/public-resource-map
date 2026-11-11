@@ -58,7 +58,7 @@ function EventRow({ event }: { event: Event }) {
   return (
     <li className="flex gap-3 border-t border-line py-3 first:border-t-0">
       <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-surface-2">
-        <span className="tnum text-lead leading-none font-semibold tracking-[-0.02em]">{day}</span>
+        <span className="text-lead leading-none font-semibold tracking-[-0.02em] tnum">{day}</span>
         <span className="mt-0.5 text-nano leading-none font-medium tracking-[0.06em] text-fg-faint uppercase">
           {month}
         </span>
@@ -93,7 +93,7 @@ function EventRow({ event }: { event: Event }) {
             href={event.buyUrl}
             target="_blank"
             rel="noreferrer noopener"
-            className="mt-1.5 inline-flex items-center gap-1 rounded text-meta font-semibold text-accent hover:underline"
+            className="mt-1.5 inline-flex items-center gap-1 rounded-xs text-meta font-semibold text-accent hover:underline"
           >
             {t("event.tickets")}
             <ArrowUpRight size={13} strokeWidth={2.5} />
@@ -138,7 +138,7 @@ export function EventList({ events, loading, emptyTitle, emptyBody }: EventListP
     <div className="px-4 pb-1">
       {groups.map(({ group, items }) => (
         <section key={group} className="mb-1 last:mb-0">
-          <h4 className="label-cap pt-3 pb-1">{t(`group.${group}`)}</h4>
+          <h4 className="pt-3 pb-1 label-cap">{t(`group.${group}`)}</h4>
           <ul>
             {items.map((event) => (
               <EventRow key={event.id} event={event} />

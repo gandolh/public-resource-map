@@ -23,11 +23,11 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
   const body = (
     <>
       {running && event.endDate ? (
-        <span className="tnum w-12 shrink-0 pt-0.5 text-caption leading-tight font-semibold text-fg">
+        <span className="w-12 shrink-0 pt-0.5 text-caption leading-tight font-semibold text-fg tnum">
           {t("event.until", { date: dayMonth(event.endDate) })}
         </span>
       ) : (
-        <span className="tnum w-12 shrink-0 pt-0.5 text-control font-semibold tracking-[-0.01em] text-fg">
+        <span className="w-12 shrink-0 pt-0.5 text-control font-semibold tracking-[-0.01em] text-fg tnum">
           {when === "date" ? dayMonth(event.startDate) : time(event.startDate)}
         </span>
       )}

@@ -88,7 +88,7 @@ export default function PlaceRoute() {
 
   if (isError) {
     return (
-      <div className="pointer-events-auto absolute top-1/2 right-3 left-3 z-sheet mx-auto w-[min(92%,360px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3 md:left-auto md:translate-y-0 md:top-3 md:w-[384px]">
+      <div className="pointer-events-auto absolute top-1/2 right-3 left-3 z-sheet mx-auto w-[min(92%,360px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3 md:top-3 md:left-auto md:w-[384px] md:translate-y-0">
         <StateBlock
           tone="danger"
           icon={<AlertTriangle size={18} strokeWidth={2} />}

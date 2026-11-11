@@ -156,7 +156,7 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
         <div className="border-t border-line">
           <div className="flex items-baseline justify-between px-4 pt-3.5 pb-0.5">
             <h3 className="text-ui font-semibold tracking-[-0.01em]">{t("place.whatsOnHere")}</h3>
-            {count > 0 && <span className="tnum text-meta text-fg-muted">{tn("count.events", count)}</span>}
+            {count > 0 && <span className="text-meta text-fg-muted tnum">{tn("count.events", count)}</span>}
           </div>
           <EventList
             events={events}
