@@ -1,0 +1,26 @@
+# Markdown stays out of Prettier (decided 2026-11-10): the corpus is prose its own lint governs.
+*.md
+
+# The stylesheet keeps its hand-aligned token tables; Prettier can take it once it is split into layers.
+*.css
+
+# Generated or vendored copies.
+backend/vendor/
+ui/vendor/
+vendor/house-style/
+
+# Generated or frozen data: Drizzle's snapshots and the frozen OSM capture.
+backend/drizzle/
+backend/src/db/fixtures/
+
+# Lockfile, build output, test artifacts.
+package-lock.json
+**/build/
+**/dist/
+**/.react-router/
+e2e/.data/
+playwright-report/
+test-results/
+
+# A separate package with its own checks.
+docs/
