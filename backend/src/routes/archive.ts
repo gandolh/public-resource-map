@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import { desc, eq, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { archiveQuerySchema, parseCsv, type ArchiveQuery, type WhatsOnItem } from "@public-resource-map/shared";
 import { event, favoriteEvent, favoritePlace, place } from "../db/schema.js";
-import { subjectOf } from "../lib/auth.js";
+import { subjectOf } from "../ward/session.js";
 import { rowToEvent } from "./event-mapper.js";
 import { pastAt } from "./event-window.js";
 

@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { markReadSchema, type FavoritesDto, type InboxDto, type NotificationDto } from "@public-resource-map/shared";
-import { subjectOf } from "../lib/auth.js";
+import { subjectOf } from "../ward/session.js";
 import { event, favoriteEvent, favoritePlace, notification, notificationEvent, place } from "../db/schema.js";
 
 /**
