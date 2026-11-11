@@ -1,7 +1,8 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useI18n } from "~/lib/i18n";
-import { DropdownMenu, DropdownMenuItem, DropdownMenuLabel } from "./ui/DropdownMenu";
+import { isTheme } from "~/lib/theme";
+import { DropdownMenu, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "./ui/DropdownMenu";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -28,12 +29,14 @@ export function ThemeToggle() {
       }
     >
       <DropdownMenuLabel>{t("theme.toggle")}</DropdownMenuLabel>
-      {options.map(({ value, label, icon: Icon }) => (
-        <DropdownMenuItem key={value} onClick={() => setTheme(value)}>
-          <Icon size={14} strokeWidth={2} className={value === theme ? "text-accent" : "text-fg-faint"} />
-          {label}
-        </DropdownMenuItem>
-      ))}
+      <DropdownMenuRadioGroup value={theme} onValueChange={(value) => isTheme(value) && setTheme(value)}>
+        {options.map(({ value, label, icon: Icon }) => (
+          <DropdownMenuRadioItem key={value} value={value}>
+            <Icon size={14} strokeWidth={2} className="text-fg-faint group-data-checked:text-accent" />
+            {label}
+          </DropdownMenuRadioItem>
+        ))}
+      </DropdownMenuRadioGroup>
     </DropdownMenu>
   );
 }

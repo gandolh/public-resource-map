@@ -6,7 +6,8 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css" layer(vendor);
 
-@custom-variant dark (&:is(.dark *));
+/* `dark:` follows the theme switch (base-ui rule 14), set as `data-theme` on <html>, never the system alone. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ===========================================================================
    CivicMap design tokens.
@@ -86,7 +87,7 @@
   --dur-3: 240ms;
 }
 
-.dark {
+:root[data-theme="dark"] {
   --bg:            #0b0d11;
   --surface:       #14171d;
   --surface-2:     #1a1e25;
@@ -250,7 +251,7 @@
     color-scheme: light;
     -webkit-text-size-adjust: 100%;
   }
-  html.dark { color-scheme: dark; }
+  :root[data-theme="dark"] { color-scheme: dark; }
 
   body {
     margin: 0;
@@ -349,7 +350,7 @@
   .map-fallback .leaflet-tile-pane {
     filter: saturate(0.3) brightness(1.05) contrast(0.94);
   }
-  .dark .map-fallback .leaflet-tile-pane {
+  [data-theme="dark"] .map-fallback .leaflet-tile-pane {
     filter: invert(1) hue-rotate(180deg) saturate(0.28) brightness(0.9) contrast(0.92);
   }
 

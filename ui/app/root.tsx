@@ -2,6 +2,7 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, 
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { THEME_BOOT_SCRIPT, THEME_COLORS } from "~/lib/theme";
 
 const DIRECTION_CONTRACT = `<!--
   DIRECTION CONTRACT — CivicMap (seed 6c65d315, scope: direction, mode: operate)
@@ -48,8 +49,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0b0d11" media="(prefers-color-scheme: dark)" />
+        {/* One colour, rewritten by the boot script and by the theme provider, so the browser bar follows the switch. */}
+        <meta name="theme-color" content={THEME_COLORS.light} />
+        {/* Sets data-theme before the first paint, so a returning dark visitor never sees a light flash. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <Meta />
         <Links />
       </head>

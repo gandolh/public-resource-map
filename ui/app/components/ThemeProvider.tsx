@@ -2,8 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { LocalStorage } from "~/lib/LocalStorage";
-
-type Theme = "dark" | "light" | "system";
+import { applyTheme, isTheme, THEME_KEY, type Theme } from "~/lib/theme";
 
 type ThemeProviderProps = {
   children: React.ReactNode;
@@ -17,40 +16,43 @@ type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "light",
   setTheme: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
+/**
+ * Light, Dark or System, kept on this device. A first visit is light, whatever the operating system
+ * says; System follows the operating system and its changes. The resolved theme is `data-theme` on
+ * <html>, which the stylesheet's tokens and its `dark:` variant read.
+ */
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
-  storageKey = "vite-ui-theme",
+  defaultTheme = "light",
+  storageKey = THEME_KEY,
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => (LocalStorage.get(storageKey) as Theme) || defaultTheme);
+  const [theme, setTheme] = useState<Theme>(() => {
+    const stored = LocalStorage.get<unknown>(storageKey);
+    return isTheme(stored) ? stored : defaultTheme;
+  });
 
   useEffect(() => {
-    const root = window.document.documentElement;
-
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-
-      root.classList.add(systemTheme);
-      return;
-    }
-
-    root.classList.add(theme);
+    applyTheme(theme);
+    if (theme !== "system") return;
+    // System follows the operating system live.
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const follow = () => applyTheme("system");
+    query.addEventListener("change", follow);
+    return () => query.removeEventListener("change", follow);
   }, [theme]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      LocalStorage.set(storageKey, theme);
-      setTheme(theme);
+    setTheme: (next: Theme) => {
+      LocalStorage.set(storageKey, next);
+      setTheme(next);
     },
   };
 

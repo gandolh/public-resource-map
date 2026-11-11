@@ -77,7 +77,11 @@ test.describe("on a phone", () => {
     await page.goto(`places/${place.id}`);
     const sheet = page.getByRole("dialog", { name: place.name });
     await expect(sheet).toBeVisible();
-    const top = async () => Math.round((await sheet.boundingBox())!.y);
+    const top = async () => {
+      const box = await sheet.boundingBox();
+      if (!box) throw new Error("the sheet is not on screen");
+      return Math.round(box.y);
+    };
     await expect.poll(top).toBe(Math.round(844 * 0.54));
 
     // The map pans.

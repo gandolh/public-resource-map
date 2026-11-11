@@ -47,16 +47,16 @@ export function directionsUrl({ lat, lng }: Coordinates): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 }
 
-/** Reactively tracks whether the `dark` class is present on <html>. */
+/** Reactively tracks whether <html> is drawn in the dark theme (`data-theme`). */
 export function useIsDarkMode(): boolean {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
-    const update = () => setDark(root.classList.contains("dark"));
+    const update = () => setDark(root.dataset.theme === "dark");
     update();
     const observer = new MutationObserver(update);
-    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
     return () => observer.disconnect();
   }, []);
 

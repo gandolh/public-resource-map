@@ -56,3 +56,28 @@ export function DropdownMenuSeparator({ className }: { className?: string }) {
 export function DropdownMenuLabel({ className, children }: { className?: string; children: ReactNode }) {
   return <div className={cn("label-cap px-2.5 pt-1.5 pb-1", className)}>{children}</div>;
 }
+
+/** A group of menu items of which exactly one is chosen: the screen reader hears which. */
+export const DropdownMenuRadioGroup = Menu.RadioGroup;
+
+/** One choice in a `DropdownMenuRadioGroup`. Choosing it closes the menu, as an ordinary item does. */
+export function DropdownMenuRadioItem({
+  className,
+  children,
+  ...props
+}: ComponentPropsWithoutRef<typeof Menu.RadioItem>) {
+  return (
+    <Menu.RadioItem
+      closeOnClick
+      className={cn(
+        "group flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-control text-fg outline-none",
+        "transition-colors duration-(--dur-1) data-highlighted:bg-surface-2 hover:bg-surface-2",
+        "data-disabled:pointer-events-none data-disabled:opacity-45",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </Menu.RadioItem>
+  );
+}
