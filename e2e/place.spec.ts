@@ -47,3 +47,22 @@ test("the tab names the place, and leaving it gives the right title back", async
   await page.getByRole("link", { name: "What's on" }).first().click();
   await expect(page).toHaveTitle("Ce se întâmplă — CivicMap");
 });
+
+test("Escape closes the follow popover first, and the place only on the next press", async ({ page, request }) => {
+  const place = await seededPlace(request, SEED.places.tmArtMuseum);
+  await page.goto(`places/${place.id}`);
+  await expect(page.getByRole("heading", { name: place.name })).toBeVisible();
+
+  // Signed out, the star explains itself in a popover.
+  await page.getByRole("button", { name: `Follow ${place.name}` }).click();
+  const popover = page.getByRole("dialog").filter({ hasText: "Sign in" });
+  await expect(popover).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(popover).toHaveCount(0);
+  await expect(page).toHaveURL(new RegExp(`places/${place.id}$`));
+  await expect(page.getByRole("heading", { name: place.name })).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(page).toHaveURL(/\/prm\/$/);
+});

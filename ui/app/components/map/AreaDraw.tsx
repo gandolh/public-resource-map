@@ -231,7 +231,8 @@ function DrawBar({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setDrawMode(null);
+      // An Esc that a control already used (a popup closing) isn't ours.
+      if (e.key === "Escape" && !e.defaultPrevented) setDrawMode(null);
       if (e.key === "Enter" && mode === "polygon") onFinish();
     };
     window.addEventListener("keydown", onKey);

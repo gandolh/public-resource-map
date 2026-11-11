@@ -28,7 +28,8 @@ export function PlacePanel({ place, events, eventsLoading, onClose }: PlacePanel
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      // An Esc that a control already used (a popover closing) isn't the panel's.
+      if (e.key === "Escape" && !e.defaultPrevented) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
