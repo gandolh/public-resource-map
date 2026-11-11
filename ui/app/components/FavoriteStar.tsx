@@ -1,4 +1,3 @@
-import { Popover } from "@base-ui/react/popover";
 import { Link, useLocation } from "react-router";
 import { Bell, BellRing, Star } from "lucide-react";
 import { useFavorites, useToggleFavorite, PENDING_FAVORITE } from "~/hooks/useFavorites";
@@ -6,6 +5,7 @@ import { useAuthStore } from "~/stores/authStore";
 import { useI18n } from "~/lib/i18n";
 import { browserPath, loginPath, registerPath } from "~/lib/authApi";
 import type { FavoriteKind } from "~/lib/meApi";
+import { Popover, PopoverDescription, PopoverTitle } from "~/components/ui/Popover";
 import { cn } from "~/lib/utils";
 
 /**
@@ -66,32 +66,30 @@ export function FavoriteStar({
   const next = browserPath(location.pathname, `?${params}`);
 
   return (
-    <Popover.Root>
-      <Popover.Trigger aria-label={label} title={label} className={look}>
-        <Icon size={iconSize} strokeWidth={2.2} />
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align="end" className="z-popup">
-          <Popover.Popup className="w-[260px] rounded-xl border border-line bg-surface p-3.5 text-ui shadow-e3 outline-none">
-            <Popover.Title className="font-semibold text-fg">{t(`fav.${kind}.why`)}</Popover.Title>
-            <Popover.Description className="mt-1 text-fg-muted">{t("fav.signInBody")}</Popover.Description>
-            <div className="mt-3 flex gap-2">
-              <Link
-                to={loginPath(next)}
-                className="inline-flex h-8 items-center rounded-md bg-accent px-3 font-medium text-fg-on-accent"
-              >
-                {t("nav.login")}
-              </Link>
-              <Link
-                to={registerPath(next)}
-                className="inline-flex h-8 items-center rounded-md border border-line px-3 font-medium text-fg"
-              >
-                {t("nav.register")}
-              </Link>
-            </div>
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
-    </Popover.Root>
+    <Popover
+      className="w-[260px] p-3.5 text-ui"
+      trigger={
+        <button type="button" aria-label={label} title={label} className={look}>
+          <Icon size={iconSize} strokeWidth={2.2} />
+        </button>
+      }
+    >
+      <PopoverTitle>{t(`fav.${kind}.why`)}</PopoverTitle>
+      <PopoverDescription className="mt-1">{t("fav.signInBody")}</PopoverDescription>
+      <div className="mt-3 flex gap-2">
+        <Link
+          to={loginPath(next)}
+          className="inline-flex h-8 items-center rounded-md bg-accent px-3 font-medium text-fg-on-accent"
+        >
+          {t("nav.login")}
+        </Link>
+        <Link
+          to={registerPath(next)}
+          className="inline-flex h-8 items-center rounded-md border border-line px-3 font-medium text-fg"
+        >
+          {t("nav.register")}
+        </Link>
+      </div>
+    </Popover>
   );
 }

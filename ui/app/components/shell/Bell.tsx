@@ -1,10 +1,10 @@
 import { Link } from "react-router";
-import { Popover } from "@base-ui/react/popover";
 import { Bell as BellIcon } from "lucide-react";
 import type { NotificationDto } from "@public-resource-map/shared";
 import { useInbox, useMarkAllRead } from "~/hooks/useFavorites";
 import { useAuthStore } from "~/stores/authStore";
 import { useI18n } from "~/lib/i18n";
+import { Popover, PopoverTitle } from "~/components/ui/Popover";
 import { cn } from "~/lib/utils";
 
 /**
@@ -20,41 +20,38 @@ export function Bell() {
   const unread = data?.unread ?? 0;
 
   return (
-    <Popover.Root
+    <Popover
+      align="end"
+      className="w-[320px] overflow-hidden"
       onOpenChange={(open) => {
         if (open && unread > 0) markAll.mutate();
       }}
+      trigger={
+        <button
+          type="button"
+          aria-label={unread > 0 ? t("bell.labelUnread", { n: unread }) : t("bell.label")}
+          className="relative grid h-9 w-9 place-items-center rounded-lg text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+        >
+          <BellIcon size={18} strokeWidth={2} />
+          {unread > 0 && (
+            <span className="tnum absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-micro font-bold text-fg-on-accent">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </button>
+      }
     >
-      <Popover.Trigger
-        aria-label={unread > 0 ? t("bell.labelUnread", { n: unread }) : t("bell.label")}
-        className="relative grid h-9 w-9 place-items-center rounded-lg text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
-      >
-        <BellIcon size={18} strokeWidth={2} />
-        {unread > 0 && (
-          <span className="tnum absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-micro font-bold text-fg-on-accent">
-            {unread > 9 ? "9+" : unread}
-          </span>
-        )}
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align="end" className="z-popup">
-          <Popover.Popup className="w-[320px] overflow-hidden rounded-xl border border-line bg-surface shadow-e3 outline-none">
-            <Popover.Title className="border-b border-line px-3.5 py-2.5 text-ui font-semibold">
-              {t("bell.label")}
-            </Popover.Title>
-            {!data?.data.length ? (
-              <p className="px-3.5 py-6 text-center text-ui text-fg-muted">{t("bell.empty")}</p>
-            ) : (
-              <ul className="max-h-[360px] overflow-y-auto">
-                {data.data.map((item) => (
-                  <Item key={item.id} item={item} />
-                ))}
-              </ul>
-            )}
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
-    </Popover.Root>
+      <PopoverTitle className="border-b border-line px-3.5 py-2.5 text-ui">{t("bell.label")}</PopoverTitle>
+      {!data?.data.length ? (
+        <p className="px-3.5 py-6 text-center text-ui text-fg-muted">{t("bell.empty")}</p>
+      ) : (
+        <ul className="max-h-[360px] overflow-y-auto">
+          {data.data.map((item) => (
+            <Item key={item.id} item={item} />
+          ))}
+        </ul>
+      )}
+    </Popover>
   );
 }
 
