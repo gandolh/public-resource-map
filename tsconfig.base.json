@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // The house flags, kept here rather than extending the vendored house-style base: the image build copies
+  // only this file, and the vendored base turns on noUncheckedIndexedAccess, which this repo can't take yet.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    // Off for now (2026-11-11): 94 errors (84 in backend, 52 of them in tests, 10 in ui). When the flag
+    // comes on, so does @typescript-eslint/no-unnecessary-type-assertion in eslint.config.js.
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}

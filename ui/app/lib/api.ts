@@ -11,11 +11,11 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
 /** The API answers with `{ code, message }` on failure; surface the message. */
 export class ApiRequestError extends Error {
-  constructor(
-    readonly status: number,
-    message: string,
-  ) {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
     super(message);
+    this.status = status;
     this.name = "ApiRequestError";
   }
 }

@@ -27,6 +27,8 @@ COPY ui/package.json ./ui/
 RUN npm ci
 
 FROM deps AS builder
+# The workspaces' tsconfigs extend this one file.
+COPY tsconfig.base.json ./
 COPY shared ./shared
 COPY backend ./backend
 # shared first: backend's tsconfig references it as a project.

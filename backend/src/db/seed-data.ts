@@ -11,7 +11,6 @@ import { SEED, osmKey, seedId } from "./seed-ids.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const TM = "Timișoara";
-const BU = "București";
 
 /**
  * PLACES ARE REAL. `fixtures/osm-places.json` is a frozen OSM sync of both

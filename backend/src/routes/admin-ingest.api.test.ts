@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { buildTestApp, type TestApp } from "../test/harness.js";
-import { event, place, stagedEvent } from "../db/schema.js";
+import { event, place } from "../db/schema.js";
 import type { AdapterRow, SourceAdapter } from "../ingest/adapters.js";
 import type { GeocodeProvider } from "../ingest/geocode.js";
 
