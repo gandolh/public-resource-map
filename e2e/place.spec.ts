@@ -66,3 +66,60 @@ test("Escape closes the follow popover first, and the place only on the next pre
   await page.keyboard.press("Escape");
   await expect(page).toHaveURL(/\/prm\/$/);
 });
+
+test.describe("on a phone", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  // base-ui rule 15 / brief 04, decision 3: the sheet is a non-modal Drawer, so the map behind a peeking
+  // sheet still takes pans and pin taps.
+  test("the map stays usable at the sheet's peek, and the sheet follows a swipe", async ({ page, request }) => {
+    const place = await seededPlace(request, SEED.places.tmArtMuseum);
+    await page.goto(`places/${place.id}`);
+    const sheet = page.getByRole("dialog", { name: place.name });
+    await expect(sheet).toBeVisible();
+    const top = async () => Math.round((await sheet.boundingBox())!.y);
+    await expect.poll(top).toBe(Math.round(844 * 0.54));
+
+    // The map pans.
+    const pane = page.locator(".leaflet-map-pane");
+    const before = await pane.evaluate((el) => (el as HTMLElement).style.transform);
+    await page.mouse.move(200, 250);
+    await page.mouse.down();
+    await page.mouse.move(120, 280, { steps: 8 });
+    await page.mouse.up();
+    await expect.poll(() => pane.evaluate((el) => (el as HTMLElement).style.transform)).not.toBe(before);
+    await expect(sheet).toBeVisible();
+
+    // A pin above the sheet opens another place.
+    const here = page.url();
+    const pins = page.locator(".cm-pin");
+    const count = await pins.count();
+    for (let i = 0; i < count && page.url() === here; i++) {
+      const box = await pins.nth(i).boundingBox();
+      if (box && box.y > 170 && box.y + box.height < 380) {
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+        await page.waitForTimeout(300);
+      }
+    }
+    expect(page.url()).not.toBe(here);
+    await expect(page.getByRole("dialog").filter({ has: page.getByRole("heading") })).toBeVisible();
+    await page.goto(`places/${place.id}`);
+    await expect(sheet).toBeVisible();
+    await expect.poll(top).toBe(Math.round(844 * 0.54));
+
+    // A swipe up reaches the full height, a swipe down the peek, and another closes it.
+    const drag = async (to: number) => {
+      const y = (await top()) + 12;
+      await page.mouse.move(195, y);
+      await page.mouse.down();
+      await page.mouse.move(195, y + to, { steps: 10 });
+      await page.mouse.up();
+    };
+    await drag(-250);
+    await expect.poll(top).toBe(Math.round(844 * 0.18));
+    await drag(260);
+    await expect.poll(top).toBe(Math.round(844 * 0.54));
+    await drag(260);
+    await expect(page).toHaveURL(/\/prm\/$/);
+  });
+});
