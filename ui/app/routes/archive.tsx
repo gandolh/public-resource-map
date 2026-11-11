@@ -30,8 +30,12 @@ function byMonth(items: WhatsOnItem[], lang: string) {
   for (const item of items) {
     const ended = item.event.endDate ?? item.event.startDate;
     const k = key.format(new Date(ended));
-    if (!groups.has(k)) groups.set(k, { label: label.format(new Date(ended)), items: [] });
-    groups.get(k)!.items.push(item);
+    let group = groups.get(k);
+    if (!group) {
+      group = { label: label.format(new Date(ended)), items: [] };
+      groups.set(k, group);
+    }
+    group.items.push(item);
   }
   return [...groups.entries()].map(([k, g]) => ({ key: k, ...g }));
 }

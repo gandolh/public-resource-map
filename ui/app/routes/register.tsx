@@ -26,7 +26,7 @@ export default function RegisterRoute() {
   const { register, pending, error } = useRegister();
 
   useEffect(() => {
-    if (session.status === "signed_in") navigate(next.router, { replace: true });
+    if (session.status === "signed_in") void navigate(next.router, { replace: true });
   }, [session.status, navigate, next.router]);
 
   const submit = (e: FormEvent<HTMLFormElement>) => {

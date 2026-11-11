@@ -1,5 +1,5 @@
 import type { Event } from "@public-resource-map/shared";
-import { event } from "../db/schema.js";
+import type { event } from "../db/schema.js";
 
 /**
  * One row→`Event` mapping, shared by every surface that returns events (the

@@ -46,7 +46,7 @@ describe("placeSchema", () => {
   });
 
   it("rejects an omitted nullable field (null is required, undefined is not)", () => {
-    const { description, ...withoutDescription } = base;
+    const { description: _description, ...withoutDescription } = base;
     expect(placeSchema.safeParse(withoutDescription).success).toBe(false);
   });
 });

@@ -89,8 +89,7 @@ export async function placeRoutes(app: FastifyInstance) {
     }
 
     const categories = parseCsv(category);
-    if (categories.length === 1) conditions.push(eq(place.category, categories[0]!));
-    else if (categories.length > 1) conditions.push(inArray(place.category, categories));
+    if (categories.length > 0) conditions.push(inArray(place.category, categories));
 
     // The timing lens removes places rather than dimming them — at city pin
     // density a dimmed pin is invisible (locked 2026-06-28 stress test).
@@ -135,7 +134,7 @@ export async function placeRoutes(app: FastifyInstance) {
       return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
     }
 
-    const exists = await db
+    const exists = db
       .select({ id: place.id })
       .from(place)
       .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
@@ -159,7 +158,7 @@ export async function placeRoutes(app: FastifyInstance) {
   });
 
   app.get<{ Params: { id: string } }>("/places/:id", async (req, reply) => {
-    const row = await db
+    const row = db
       .select()
       .from(place)
       .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
@@ -183,8 +182,9 @@ export async function placeRoutes(app: FastifyInstance) {
 
     await db.insert(place).values({ id, lat, lng, ...rest });
 
-    const row = await db.select().from(place).where(eq(place.id, id)).get();
-    return reply.status(201).send(rowToPlace(row!));
+    const row = db.select().from(place).where(eq(place.id, id)).get();
+    if (!row) throw new Error(`Place ${id} was not found after its insert`);
+    return reply.status(201).send(rowToPlace(row));
   });
 
   app.delete<{ Params: { id: string } }>(

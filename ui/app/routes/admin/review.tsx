@@ -371,7 +371,7 @@ function Drawer({
   const center =
     pin ??
     (chosen ? chosen.coordinates : null) ??
-    (row?.lat != null ? { lat: row.lat, lng: row.lng! } : null) ??
+    (row?.lat != null && row.lng != null ? { lat: row.lat, lng: row.lng } : null) ??
     known[0]?.coordinates ??
     sourceCity?.center ??
     null;
@@ -483,12 +483,8 @@ function Drawer({
                               <Tooltip>{p.name}</Tooltip>
                             </CircleMarker>
                           ))}
-                          {row.lat !== null && !row.placeId && (
-                            <CircleMarker
-                              center={[row.lat, row.lng!]}
-                              radius={8}
-                              pathOptions={{ className: "cm-area" }}
-                            >
+                          {row.lat !== null && row.lng !== null && !row.placeId && (
+                            <CircleMarker center={[row.lat, row.lng]} radius={8} pathOptions={{ className: "cm-area" }}>
                               <Tooltip>{t("admin.geocoded")}</Tooltip>
                             </CircleMarker>
                           )}

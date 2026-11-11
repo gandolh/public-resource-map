@@ -273,17 +273,17 @@ describe("upsertOsmPlaces + syncOsmForCity (no clobber)", () => {
     expect(result).toEqual({ inserted: 1, updated: 1, skippedProtected: 1, unretired: 0 });
 
     // event-venue row untouched
-    const ev = await t.db.select().from(place).where(eq(place.id, eventVenueId)).get();
+    const ev = t.db.select().from(place).where(eq(place.id, eventVenueId)).get();
     expect(ev?.name).toBe("Event Venue");
     expect(ev?.source).toBe("event-venue");
 
     // manual pin untouched (name + coords preserved)
-    const mp = await t.db.select().from(place).where(eq(place.id, manualPinId)).get();
+    const mp = t.db.select().from(place).where(eq(place.id, manualPinId)).get();
     expect(mp?.name).toBe("Admin Manual Pin");
     expect(mp?.lat).toBe(45.71);
 
     // osm node 1 updated in place
-    const lib = await t.db
+    const lib = t.db
       .select()
       .from(place)
       .where(and(eq(place.osmType, "node"), eq(place.osmId, "1")))
@@ -444,14 +444,19 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
       .where(and(eq(place.source, "osm"), eq(place.osmId, osmId)))
       .get();
   const listedIds = async () =>
-    (await t.db.select({ osmId: place.osmId }).from(place).where(isNull(place.retiredAt)).all()).map((r) => r.osmId);
+    t.db
+      .select({ osmId: place.osmId })
+      .from(place)
+      .where(isNull(place.retiredAt))
+      .all()
+      .map((r) => r.osmId);
 
   it("retires a place missing from the next answer, and lists it again when it is back", async () => {
     await sync(range(20));
     const second = await sync(range(20).filter((id) => id !== 5));
     expect(second).toMatchObject({ retired: 1, unretired: 0, retirementHeld: 0 });
 
-    const gone = await byOsmId("5");
+    const gone = byOsmId("5");
     expect(gone?.retiredAt).not.toBeNull(); // the row stays
     expect(await listedIds()).not.toContain("5");
     const res = await t.app.inject({ method: "GET", url: `/api/places/${gone!.id}` });
@@ -459,8 +464,8 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
 
     const third = await sync(range(20));
     expect(third).toMatchObject({ retired: 0, unretired: 1 });
-    expect((await byOsmId("5"))?.retiredAt).toBeNull();
-    expect((await byOsmId("5"))?.id).toBe(gone!.id);
+    expect(byOsmId("5")?.retiredAt).toBeNull();
+    expect(byOsmId("5")?.id).toBe(gone!.id);
   });
 
   it("never retires a manual pin, an event venue, or another city's place", async () => {
@@ -493,7 +498,7 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
     await sync(range(20));
     const again = await sync(range(20));
     expect(again.retired).toBe(0);
-    const kept = await t.db.select({ id: place.id, retiredAt: place.retiredAt }).from(place).all();
+    const kept = t.db.select({ id: place.id, retiredAt: place.retiredAt }).from(place).all();
     for (const id of ["venue", "pin", "buc"]) {
       expect(kept.find((p) => p.id === id)?.retiredAt, id).toBeNull();
     }
@@ -515,7 +520,7 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
 
   it("sends upcoming events at a retired place back to review, and leaves past ones", async () => {
     await sync(range(20));
-    const lib = (await byOsmId("5"))!;
+    const lib = byOsmId("5")!;
     await t.db
       .insert(eventSource)
       .values({ id: "src", name: "Feed", adapterKey: "ical:feed", mechanism: "ical", city: "Timișoara" });
@@ -553,10 +558,10 @@ describe("syncOsmForCity: retiring places OSM no longer has", () => {
     const result = await sync(range(20).filter((id) => id !== 5));
     expect(result).toMatchObject({ retired: 1, eventsToReview: 1 });
 
-    const soon = await t.db.select().from(stagedEvent).where(eq(stagedEvent.id, "staged-soon")).get();
+    const soon = t.db.select().from(stagedEvent).where(eq(stagedEvent.id, "staged-soon")).get();
     expect(soon).toMatchObject({ status: "changed", placeId: null, matchStatus: "unmatched" });
     expect(JSON.parse(soon!.payload!).issues).toMatch(/Biblioteca 5.*no longer in OpenStreetMap/);
-    const past = await t.db.select().from(stagedEvent).where(eq(stagedEvent.id, "staged-past")).get();
+    const past = t.db.select().from(stagedEvent).where(eq(stagedEvent.id, "staged-past")).get();
     expect(past?.status).toBe("accepted");
 
     // In the review queue, with its reason.

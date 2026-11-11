@@ -29,6 +29,7 @@ const signIn = (role: "user" | "admin" = "user") => t.signIn(role);
 
 async function call(cookie: string | null, method: "GET" | "POST" | "DELETE", url: string, payload?: unknown) {
   const res = await t.app.inject({ method, url, payload: payload as object, headers: cookie ? { cookie } : {} });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- response bodies are untyped JSON that the tests read freely
   return { status: res.statusCode, body: res.body ? (JSON.parse(res.body) as any) : null };
 }
 

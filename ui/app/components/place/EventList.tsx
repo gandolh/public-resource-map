@@ -71,8 +71,8 @@ function EventRow({ event }: { event: Event }) {
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-fg-muted">
           <span className="tnum">
-            {isRunning(event.startDate, event.endDate)
-              ? t("event.until", { date: dayMonth(event.endDate!) })
+            {isRunning(event.startDate, event.endDate) && event.endDate
+              ? t("event.until", { date: dayMonth(event.endDate) })
               : time(event.startDate)}
           </span>
           <span aria-hidden="true" className="text-fg-faint">

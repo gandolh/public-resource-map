@@ -94,12 +94,13 @@ function ChangePassword() {
   const { t } = useI18n();
   const { changePassword, pending, error, done } = useChangePassword();
 
-  const submit = async (e: FormEvent<HTMLFormElement>) => {
+  const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formEl = e.currentTarget;
     const form = new FormData(formEl);
-    const ok = await changePassword(String(form.get("current") ?? ""), String(form.get("next") ?? ""));
-    if (ok) formEl.reset();
+    void changePassword(String(form.get("current") ?? ""), String(form.get("next") ?? "")).then((ok) => {
+      if (ok) formEl.reset();
+    });
   };
 
   return (
@@ -213,8 +214,10 @@ function SignOut({ fromWard }: { fromWard: boolean }) {
         <Button
           variant="secondary"
           disabled={out.pending}
-          onClick={async () => {
-            if (await out.logout()) navigate("/");
+          onClick={() => {
+            void out.logout().then((ok) => {
+              if (ok) void navigate("/");
+            });
           }}
         >
           {t("settings.signOut")}

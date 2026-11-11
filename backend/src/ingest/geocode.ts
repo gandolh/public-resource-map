@@ -68,13 +68,12 @@ export async function geocodeAddress(
   city: CityConfig,
 ): Promise<{ lat: number; lng: number } | null> {
   const key = normalizeAddress(address, city.name);
-  const cached = await db.select().from(geocodeCache).where(eq(geocodeCache.normalizedAddress, key)).get();
+  const cached = db.select().from(geocodeCache).where(eq(geocodeCache.normalizedAddress, key)).get();
   if (cached) return cached.lat !== null && cached.lng !== null ? { lat: cached.lat, lng: cached.lng } : null;
 
   const hit = await provider(`${address}, ${city.name}`, city);
   const usable = hit && rejectReason(hit, city) === null ? hit : null;
-  await db
-    .insert(geocodeCache)
+  db.insert(geocodeCache)
     .values({
       normalizedAddress: key,
       city: city.name,
@@ -99,7 +98,8 @@ export function nominatimProvider(opts: {
   fetchImpl?: typeof fetch;
   minIntervalMs?: number;
 }): GeocodeProvider | null {
-  if (!opts.userAgent?.trim()) return null;
+  const userAgent = opts.userAgent?.trim();
+  if (!userAgent) return null;
   const doFetch = opts.fetchImpl ?? fetch;
   const interval = opts.minIntervalMs ?? 1000;
   let next = 0;
@@ -123,7 +123,7 @@ export function nominatimProvider(opts: {
       if (wait > 0) await new Promise((r) => setTimeout(r, wait));
       next = Date.now() + interval;
       const res = await doFetch(url, {
-        headers: { "user-agent": opts.userAgent!.trim() },
+        headers: { "user-agent": userAgent },
         signal: AbortSignal.timeout(15_000),
       });
       if (!res.ok) throw new Error(`Nominatim answered ${res.status}`);

@@ -61,7 +61,7 @@ export async function eventRoutes(app: FastifyInstance) {
 
   app.get<{ Params: { id: string } }>("/events/:id", async (req, reply) => {
     // An event at a retired place is hidden with it.
-    const row = await db
+    const row = db
       .select({ event })
       .from(event)
       .innerJoin(place, eq(place.id, event.placeId))
@@ -84,8 +84,9 @@ export async function eventRoutes(app: FastifyInstance) {
 
     await db.insert(event).values({ id, ...parsed.data });
 
-    const row = await db.select().from(event).where(eq(event.id, id)).get();
-    return reply.status(201).send(rowToEvent(row!));
+    const row = db.select().from(event).where(eq(event.id, id)).get();
+    if (!row) throw new Error(`Event ${id} was not found after its insert`);
+    return reply.status(201).send(rowToEvent(row));
   });
 
   app.delete<{ Params: { id: string } }>(

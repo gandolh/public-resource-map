@@ -91,8 +91,8 @@ export function groupByDay<T>(
     if (list) list.push(item);
     else buckets.set(group, [item]);
   }
-  return ORDER.filter((g) => buckets.has(g)).map((group) => ({
-    group,
-    items: buckets.get(group)!,
-  }));
+  return ORDER.flatMap((group) => {
+    const items = buckets.get(group);
+    return items ? [{ group, items }] : [];
+  });
 }

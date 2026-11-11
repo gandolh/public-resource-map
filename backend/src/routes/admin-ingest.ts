@@ -61,7 +61,7 @@ export function adminIngestRoutes(deps: IngestDeps) {
     });
 
     app.get("/admin/sources", guard, async () => {
-      const rows = await db.select().from(eventSource).orderBy(eventSource.name).all();
+      const rows = db.select().from(eventSource).orderBy(eventSource.name).all();
       return { data: rows.map(toDto) };
     });
 
@@ -74,13 +74,13 @@ export function adminIngestRoutes(deps: IngestDeps) {
       }
       const city = resolveCity(input.city);
       if (!city) return reply.status(400).send({ code: "UNKNOWN_CITY", message: `Unknown city: ${input.city}` });
-      const taken = await db.select().from(eventSource).where(eq(eventSource.adapterKey, input.adapterKey)).get();
+      const taken = db.select().from(eventSource).where(eq(eventSource.adapterKey, input.adapterKey)).get();
       if (taken) {
         return reply
           .status(409)
           .send({ code: "ADAPTER_KEY_TAKEN", message: `${input.adapterKey} is already a source` });
       }
-      const row = await db
+      const row = db
         .insert(eventSource)
         .values({ ...input, url: input.url ?? null, city: city.name, enabled: input.enabled ?? true })
         .returning()
@@ -91,7 +91,7 @@ export function adminIngestRoutes(deps: IngestDeps) {
     app.patch<{ Params: { id: string } }>("/admin/sources/:id", guard, async (req, reply) => {
       const enabled = (req.body as { enabled?: unknown } | undefined)?.enabled;
       if (typeof enabled !== "boolean") return invalid(reply, "enabled must be a boolean");
-      const row = await db
+      const row = db
         .update(eventSource)
         .set({ enabled, updatedAt: new Date().toISOString() })
         .where(eq(eventSource.id, req.params.id))
@@ -112,7 +112,7 @@ export function adminIngestRoutes(deps: IngestDeps) {
     // One after another, not in parallel: the geocoder's rate limit is shared,
     // and a failing source must not stop the rest.
     app.post("/admin/sources/refresh-all", guard, async () => {
-      const sources = await db.select().from(eventSource).where(eq(eventSource.enabled, true)).all();
+      const sources = db.select().from(eventSource).where(eq(eventSource.enabled, true)).all();
       const results = [];
       for (const source of sources) {
         try {

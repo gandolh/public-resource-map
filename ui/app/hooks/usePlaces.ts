@@ -26,7 +26,10 @@ export function usePlaces(input: { city: string; categories: PlaceCategory[]; le
 export function usePlace(id: string | null | undefined) {
   return useQuery<Place>({
     queryKey: ["place", id],
-    queryFn: ({ signal }) => fetchPlace(id!, signal),
+    queryFn: ({ signal }) => {
+      if (!id) throw new Error("usePlace runs only once it has an id");
+      return fetchPlace(id, signal);
+    },
     enabled: Boolean(id),
   });
 }
@@ -39,7 +42,10 @@ export function usePlace(id: string | null | undefined) {
 export function usePlaceEvents(id: string | null | undefined) {
   return useQuery<PaginatedResponse<Event>>({
     queryKey: ["place-events", id],
-    queryFn: ({ signal }) => fetchPlaceEvents(id!, "all", signal),
+    queryFn: ({ signal }) => {
+      if (!id) throw new Error("usePlaceEvents runs only once it has an id");
+      return fetchPlaceEvents(id, "all", signal);
+    },
     enabled: Boolean(id),
   });
 }

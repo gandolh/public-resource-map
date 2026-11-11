@@ -38,8 +38,8 @@ export function clusterPlaces(places: Place[], project: (coords: Coordinates) =>
 
   const clusters: PlaceCluster[] = [];
   for (const [key, members] of cells) {
-    if (members.length === 1) {
-      const only = members[0]!;
+    const [only] = members;
+    if (only && members.length === 1) {
       clusters.push({
         id: only.id,
         center: only.coordinates,

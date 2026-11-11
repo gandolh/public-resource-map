@@ -43,6 +43,7 @@ export function PlaceSheet({ place, events, eventsLoading, onClose }: PlaceSheet
   const dragging = useRef(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- a new place starts the sheet at its peek height; keying the sheet by place would do the same
     setSnap("peek");
     setDrag(0);
   }, [place.id]);
@@ -99,6 +100,7 @@ export function PlaceSheet({ place, events, eventsLoading, onClose }: PlaceSheet
       style={{
         height: `${FULL * 100}dvh`,
         transform: `translateY(calc(${shift}% + ${Math.max(0, drag)}px))`,
+        // eslint-disable-next-line react-hooks/refs -- the ref is set by pointer handlers that also set state, so a render follows each change
         transition: dragging.current ? "none" : "transform 240ms cubic-bezier(.2,.8,.2,1)",
       }}
     >

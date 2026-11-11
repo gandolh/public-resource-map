@@ -82,7 +82,7 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
               <Navigation size={15} strokeWidth={2.2} />
               {t("place.directions")}
             </Button>
-            <Button variant="secondary" size="md" onClick={copyLink} aria-live="polite">
+            <Button variant="secondary" size="md" onClick={() => void copyLink()} aria-live="polite">
               {copied ? (
                 <>
                   <Check size={15} strokeWidth={2.4} className="text-ok" />

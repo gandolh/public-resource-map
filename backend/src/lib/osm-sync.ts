@@ -273,7 +273,7 @@ export async function upsertOsmPlaces(db: DB, places: OsmPlaceInput[]): Promise<
   let unretired = 0;
 
   for (const p of places) {
-    const existing = await db
+    const existing = db
       .select()
       .from(place)
       .where(and(eq(place.source, "osm"), eq(place.osmType, p.osmType), eq(place.osmId, p.osmId)))
@@ -350,7 +350,7 @@ export async function retireMissingPlaces(
   now: string,
 ): Promise<RetireResult> {
   const seenKeys = new Set(seen.map((p) => `${p.osmType}/${p.osmId}`));
-  const listed = await db
+  const listed = db
     .select({ id: place.id, osmType: place.osmType, osmId: place.osmId, isManualPin: place.isManualPin })
     .from(place)
     .where(and(eq(place.source, "osm"), eq(place.city, cityName), isNull(place.retiredAt)))
@@ -362,7 +362,7 @@ export async function retireMissingPlaces(
   }
 
   const ids = missing.map((p) => p.id);
-  await db.update(place).set({ retiredAt: now, updatedAt: now }).where(inArray(place.id, ids)).run();
+  db.update(place).set({ retiredAt: now, updatedAt: now }).where(inArray(place.id, ids)).run();
   return { retired: ids.length, retirementHeld: 0, eventsToReview: await reviewEventsAt(db, ids, now) };
 }
 
@@ -373,7 +373,7 @@ export async function retireMissingPlaces(
  * to review; one created by hand stays where it is, hidden with its place.
  */
 async function reviewEventsAt(db: DB, placeIds: string[], now: string): Promise<number> {
-  const upcoming = await db
+  const upcoming = db
     .select({ id: event.id, placeName: place.name })
     .from(event)
     .innerJoin(place, eq(place.id, event.placeId))
@@ -387,7 +387,7 @@ async function reviewEventsAt(db: DB, placeIds: string[], now: string): Promise<
     .all();
   let sent = 0;
   for (const e of upcoming) {
-    const rows = await db
+    const rows = db
       .select({ id: stagedEvent.id, payload: stagedEvent.payload })
       .from(stagedEvent)
       .where(and(eq(stagedEvent.eventId, e.id), eq(stagedEvent.status, "accepted")))
@@ -395,8 +395,7 @@ async function reviewEventsAt(db: DB, placeIds: string[], now: string): Promise<
     for (const row of rows) {
       const payload = row.payload ? (JSON.parse(row.payload) as Record<string, unknown>) : {};
       payload.issues = `Its place, ${e.placeName}, is no longer in OpenStreetMap and was retired. Pick a place or drop a pin.`;
-      await db
-        .update(stagedEvent)
+      db.update(stagedEvent)
         .set({
           status: "changed",
           placeId: null,

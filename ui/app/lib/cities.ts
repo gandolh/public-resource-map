@@ -12,12 +12,14 @@ export interface City {
   zoom: number;
 }
 
+const TIMISOARA: City = { id: "timisoara", name: "Timișoara", center: { lat: 45.7539, lng: 21.2257 }, zoom: 14 };
+
 export const CITIES: City[] = [
-  { id: "timisoara", name: "Timișoara", center: { lat: 45.7539, lng: 21.2257 }, zoom: 14 },
+  TIMISOARA,
   { id: "bucuresti", name: "București", center: { lat: 44.4353, lng: 26.1025 }, zoom: 13 },
 ];
 
-export const DEFAULT_CITY = CITIES[0]!;
+export const DEFAULT_CITY = TIMISOARA;
 
 export function cityById(id: string | undefined): City {
   return CITIES.find((c) => c.id === id) ?? DEFAULT_CITY;

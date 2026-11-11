@@ -22,9 +22,9 @@ export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when
   const rowClass = "flex gap-3.5 py-3.5 md:gap-4 md:px-2 md:-mx-2 md:rounded-lg";
   const body = (
     <>
-      {running ? (
+      {running && event.endDate ? (
         <span className="tnum w-12 shrink-0 pt-0.5 text-[11.5px] leading-tight font-semibold text-fg">
-          {t("event.until", { date: dayMonth(event.endDate!) })}
+          {t("event.until", { date: dayMonth(event.endDate) })}
         </span>
       ) : (
         <span className="tnum w-12 shrink-0 pt-0.5 text-[13.5px] font-semibold tracking-[-0.01em] text-fg">

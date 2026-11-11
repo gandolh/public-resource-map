@@ -108,7 +108,7 @@ function listingFields(e: RawEvent, sourceName: string) {
 
 /** Run one source's refresh and stage its diff. */
 export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps): Promise<RefreshSummary> {
-  const source = await db.select().from(eventSource).where(eq(eventSource.id, sourceId)).get();
+  const source = db.select().from(eventSource).where(eq(eventSource.id, sourceId)).get();
   if (!source) throw new IngestError("SOURCE_NOT_FOUND", "No such source", 404);
   if (!source.enabled) throw new IngestError("SOURCE_DISABLED", `${source.name} is disabled`, 409);
   const adapter = adapterFor(source.adapterKey, deps.adapters);
@@ -141,8 +141,7 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
     rows = await adapter.read({ source, fetchText: deps.fetchText });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    await db
-      .update(eventSource)
+    db.update(eventSource)
       .set({ lastStatus: "error", lastRunAt: runAt, updatedAt: runAt })
       .where(eq(eventSource.id, sourceId))
       .run();
@@ -150,7 +149,7 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
   }
 
   // A retired place is no venue for a new listing.
-  const cityPlaces = await db
+  const cityPlaces = db
     .select({ id: place.id, name: place.name })
     .from(place)
     .where(and(eq(place.city, city.name), isNull(place.retiredAt)))
@@ -185,12 +184,11 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
         updatedAt: runAt,
       };
       if (existing && existing.status !== "needs-attention") {
-        await db.update(stagedEvent).set({ lastSeenAt: runAt }).where(eq(stagedEvent.id, existing.id)).run();
+        db.update(stagedEvent).set({ lastSeenAt: runAt }).where(eq(stagedEvent.id, existing.id)).run();
       } else if (existing) {
-        await db.update(stagedEvent).set(fields).where(eq(stagedEvent.id, existing.id)).run();
+        db.update(stagedEvent).set(fields).where(eq(stagedEvent.id, existing.id)).run();
       } else {
-        await db
-          .insert(stagedEvent)
+        db.insert(stagedEvent)
           .values({ sourceId, externalKey: key, ...fields })
           .run();
       }
@@ -230,10 +228,9 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
     };
     if (existing) {
       // A listing that used to be quarantined and now parses: it joins the diff.
-      await db.update(stagedEvent).set(values).where(eq(stagedEvent.id, existing.id)).run();
+      db.update(stagedEvent).set(values).where(eq(stagedEvent.id, existing.id)).run();
     } else {
-      await db
-        .insert(stagedEvent)
+      db.insert(stagedEvent)
         .values({ sourceId, externalKey: key, ...values })
         .run();
     }
@@ -248,8 +245,7 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
       ? "suspect"
       : "ok";
   summary.status = status;
-  await db
-    .update(eventSource)
+  db.update(eventSource)
     .set({
       lastStatus: status,
       lastEventCount: summary.fetched,
@@ -290,14 +286,14 @@ async function resolveVenue(
 async function isCrossSourceDuplicate(db: DB, e: RawEvent, sourceId: string, city: CityConfig) {
   const title = normalizeText(e.title);
   const day = bucharestDay(e.startDate);
-  const live = await db
+  const live = db
     .select({ startDate: event.startDate })
     .from(event)
     .innerJoin(place, eq(place.id, event.placeId))
     .where(and(eq(event.normalizedTitle, title), eq(place.city, city.name)))
     .all();
   if (live.some((r) => bucharestDay(r.startDate) === day)) return true;
-  const staged = await db
+  const staged = db
     .select({ startDate: stagedEvent.startDate, sourceId: stagedEvent.sourceId })
     .from(stagedEvent)
     .innerJoin(eventSource, eq(eventSource.id, stagedEvent.sourceId))
@@ -331,7 +327,7 @@ async function reconcile(
 ) {
   const seenNow = { lastSeenAt: runAt, updatedAt: runAt };
   if (existing.status === "rejected") {
-    await db.update(stagedEvent).set(seenNow).where(eq(stagedEvent.id, existing.id)).run();
+    db.update(stagedEvent).set(seenNow).where(eq(stagedEvent.id, existing.id)).run();
     summary.unchanged++;
     return;
   }
@@ -340,8 +336,7 @@ async function reconcile(
   const rematch = venueMoved ? await resolveVenue(db, e, cityPlaces, city, geocoder) : {};
 
   if (existing.status !== "accepted" || !existing.eventId) {
-    await db
-      .update(stagedEvent)
+    db.update(stagedEvent)
       .set({ ...listingFields(e, sourceName), ...rematch, ...seenNow })
       .where(eq(stagedEvent.id, existing.id))
       .run();
@@ -349,7 +344,7 @@ async function reconcile(
     return;
   }
 
-  const live = await db.select().from(event).where(eq(event.id, existing.eventId)).get();
+  const live = db.select().from(event).where(eq(event.id, existing.eventId)).get();
   if (!live) return;
   const reReview =
     !sameInstant(live.startDate, e.startDate) ||
@@ -357,8 +352,7 @@ async function reconcile(
     venueMoved ||
     e.cancelled === true;
   if (reReview) {
-    await db
-      .update(stagedEvent)
+    db.update(stagedEvent)
       .set({ ...listingFields(e, sourceName), ...rematch, status: "changed", ...seenNow })
       .where(eq(stagedEvent.id, existing.id))
       .run();
@@ -377,16 +371,14 @@ async function reconcile(
   // A listing back after going stale is live again.
   const revive = live.status === "stale" ? { status: "live" } : {};
   if (differs || live.status === "stale") {
-    await db
-      .update(event)
+    db.update(event)
       .set({ ...silent, ...revive, updatedAt: runAt })
       .where(eq(event.id, live.id))
       .run();
     if (differs) summary.silentUpdates++;
   }
   if (!differs) summary.unchanged++;
-  await db
-    .update(stagedEvent)
+  db.update(stagedEvent)
     .set({ ...listingFields(e, sourceName), ...seenNow })
     .where(eq(stagedEvent.id, existing.id))
     .run();
@@ -394,7 +386,7 @@ async function reconcile(
 
 /** Accepted events the source stopped listing more than the grace window ago turn stale. */
 async function markVanished(db: DB, sourceId: string, cutoff: string, runAt: string): Promise<number> {
-  const gone = await db
+  const gone = db
     .select({ eventId: stagedEvent.eventId })
     .from(stagedEvent)
     .where(
@@ -406,9 +398,9 @@ async function markVanished(db: DB, sourceId: string, cutoff: string, runAt: str
       ),
     )
     .all();
-  const ids = gone.map((g) => g.eventId!).filter(Boolean);
+  const ids = gone.flatMap((g) => (g.eventId ? [g.eventId] : []));
   if (ids.length === 0) return 0;
-  const result = await db
+  const result = db
     .update(event)
     .set({ status: "stale", updatedAt: runAt })
     .where(and(inArray(event.id, ids), eq(event.status, "live")))
@@ -501,6 +493,7 @@ function venuePlace(tx: Tx, row: StagedRow, cityName: string, at: string): strin
     .all()
     .find((p) => normalizeVenue(p.name) === wanted);
   if (known) return known.id;
+  if (row.lat === null || row.lng === null) throw new Error(`Staged event ${row.id} has no coordinates for its venue`);
   return tx
     .insert(place)
     .values({
@@ -510,8 +503,8 @@ function venuePlace(tx: Tx, row: StagedRow, cityName: string, at: string): strin
       isManualPin: row.matchStatus === "manual",
       address: row.rawAddress,
       city: cityName,
-      lat: row.lat!,
-      lng: row.lng!,
+      lat: row.lat,
+      lng: row.lng,
       updatedAt: at,
     })
     .returning({ id: place.id })
@@ -520,7 +513,7 @@ function venuePlace(tx: Tx, row: StagedRow, cityName: string, at: string): strin
 
 /** Reject pending rows; a rejected listing does not come back on later refreshes. */
 export async function rejectStaged(db: DB, ids: string[], now: Date) {
-  const res = await db
+  const res = db
     .update(stagedEvent)
     .set({ status: "rejected", updatedAt: now.toISOString() })
     .where(and(inArray(stagedEvent.id, ids), inArray(stagedEvent.status, PENDING)))
@@ -530,23 +523,22 @@ export async function rejectStaged(db: DB, ids: string[], now: Date) {
 
 /** Settle a staged row's place: an existing place in its city, or a manual pin inside the city. */
 export async function resolveStagedPlace(db: DB, id: string, input: ResolvePlaceInput, now: Date) {
-  const row = await db.select().from(stagedEvent).where(eq(stagedEvent.id, id)).get();
+  const row = db.select().from(stagedEvent).where(eq(stagedEvent.id, id)).get();
   if (!row) throw new IngestError("STAGED_NOT_FOUND", "No such staged event", 404);
   if (!PENDING.includes(row.status as StagedStatus) || row.status === "needs-attention") {
     throw new IngestError("NOT_RESOLVABLE", `A ${row.status} row cannot be placed`, 409);
   }
-  const source = await db.select().from(eventSource).where(eq(eventSource.id, row.sourceId)).get();
+  const source = db.select().from(eventSource).where(eq(eventSource.id, row.sourceId)).get();
   const city = source?.city ? resolveCity(source.city) : null;
   if (!city) throw new IngestError("UNKNOWN_CITY", "The row's source has no known city");
   const at = now.toISOString();
 
   if ("placeId" in input) {
-    const target = await db.select().from(place).where(eq(place.id, input.placeId)).get();
+    const target = db.select().from(place).where(eq(place.id, input.placeId)).get();
     if (!target || target.city !== city.name || target.retiredAt) {
       throw new IngestError("PLACE_NOT_IN_CITY", `No such place in ${city.name}`, 400);
     }
-    await db
-      .update(stagedEvent)
+    db.update(stagedEvent)
       .set({ placeId: target.id, matchStatus: "manual", lat: null, lng: null, updatedAt: at })
       .where(eq(stagedEvent.id, id))
       .run();
@@ -555,8 +547,7 @@ export async function resolveStagedPlace(db: DB, id: string, input: ResolvePlace
     if (input.lat < south || input.lat > north || input.lng < west || input.lng > east) {
       throw new IngestError("PIN_OUTSIDE_CITY", `That point is outside ${city.name}`, 400);
     }
-    await db
-      .update(stagedEvent)
+    db.update(stagedEvent)
       .set({ placeId: null, matchStatus: "manual", lat: input.lat, lng: input.lng, updatedAt: at })
       .where(eq(stagedEvent.id, id))
       .run();
@@ -566,7 +557,7 @@ export async function resolveStagedPlace(db: DB, id: string, input: ResolvePlace
 
 /** The diff, newest first; pending rows unless a status is asked for. */
 export async function listStaged(db: DB, filter: { sourceId?: string; status?: StagedStatus }) {
-  const rows = await db
+  const rows = db
     .select()
     .from(stagedEvent)
     .where(

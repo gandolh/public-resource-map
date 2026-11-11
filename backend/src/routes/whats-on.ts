@@ -31,8 +31,7 @@ export async function whatsOnRoutes(app: FastifyInstance) {
     if (city) conditions.push(eq(place.city, city));
 
     const categories = parseCsv(category);
-    if (categories.length === 1) conditions.push(eq(place.category, categories[0]!));
-    else if (categories.length > 1) conditions.push(inArray(place.category, categories));
+    if (categories.length > 0) conditions.push(inArray(place.category, categories));
 
     const where = sql.join(conditions, sql` AND `);
     const offset = (page - 1) * pageSize;

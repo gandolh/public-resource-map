@@ -65,7 +65,7 @@ async function build(production = false) {
     "Muzeul de Artă Timișoara",
     "Muzeul Național al Banatului",
   ]) {
-    await t.db.insert(place).values({ name, category: "museum", city: TM, lat: 45.75, lng: 21.22 }).run();
+    t.db.insert(place).values({ name, category: "museum", city: TM, lat: 45.75, lng: 21.22 }).run();
   }
 }
 
@@ -75,6 +75,7 @@ async function as(role: "user" | "admin"): Promise<string> {
 
 async function call(method: "GET" | "POST" | "PATCH", url: string, payload?: unknown) {
   const res = await t.app.inject({ method, url, payload: payload as object, headers: { cookie: await as("admin") } });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- response bodies are untyped JSON that the tests read freely
   return { status: res.statusCode, body: res.json() as any };
 }
 
@@ -92,6 +93,7 @@ async function addSource(adapterKey = "test:cpt", city = "timisoara") {
 
 const refresh = async (id: string) => (await call("POST", `/api/admin/sources/${id}/refresh`)).body;
 const staged = async (status?: string) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- response bodies are untyped JSON that the tests read freely
   (await call("GET", `/api/admin/staged-events${status ? `?status=${status}` : ""}`)).body.data as any[];
 const liveEvents = () => t.db.select().from(event).all();
 

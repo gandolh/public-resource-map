@@ -303,7 +303,8 @@ export function seedDatabase(db: DB, { now = new Date(), demoSubject }: SeedOpti
         { subject: demo, placeId: PLACE.buArtMuseum },
       ])
       .run();
-    const saved = events.find((e) => e.placeId === PLACE.tmTheatre)!;
+    const saved = events.find((e) => e.placeId === PLACE.tmTheatre);
+    if (!saved) throw new Error("The seed has no event at the theatre to save");
     db.insert(favoriteEvent).values({ subject: demo, eventId: saved.id }).run();
     notifyNewEvents(
       db,

@@ -88,6 +88,7 @@ export async function fetchAllPlaces(input: PlacesQueryInput, signal?: AbortSign
 
   const fetched = Math.min(pages, MAX_PLACE_PAGES);
   if (pages > MAX_PLACE_PAGES) {
+    // eslint-disable-next-line no-console -- tells the developer a list was cut short by its page cap; there is no logger in the browser
     console.warn(
       `Loading ${fetched * PLACES_PAGE_SIZE} of ${first.total} places: past the ${MAX_PLACE_PAGES}-page cap.`,
     );
@@ -158,6 +159,7 @@ export async function fetchAllWhatsOn(
 
   const fetched = Math.min(pages, MAX_WHATS_ON_PAGES);
   if (pages > MAX_WHATS_ON_PAGES) {
+    // eslint-disable-next-line no-console -- tells the developer a list was cut short by its page cap; there is no logger in the browser
     console.warn(
       `Loading ${fetched * WHATS_ON_PAGE_SIZE} of ${first.total} events: past the ${MAX_WHATS_ON_PAGES}-page cap.`,
     );

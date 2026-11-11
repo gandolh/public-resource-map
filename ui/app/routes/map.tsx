@@ -96,7 +96,7 @@ function AboutDataLink({ control }: { control: Control.Attribution | null }) {
       if (!(e.target instanceof Element) || !e.target.closest("[data-about-data]")) return;
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
-      navigate("/about-data");
+      void navigate("/about-data");
     };
     container?.addEventListener("click", onClick);
     return () => container?.removeEventListener("click", onClick);
@@ -243,6 +243,7 @@ export default function MapRoute() {
   const mapRef = useRef<LeafletMap | null>(null);
   const [attribution, setAttribution] = useState<Control.Attribution | null>(null);
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- marks the first client render, so the map mounts after hydration
   useEffect(() => setMounted(true), []);
 
   const { coords, error: locError } = useUserLocation();
@@ -336,7 +337,9 @@ export default function MapRoute() {
           <PlaceMarkers
             places={places}
             selectedId={selectedId}
-            onSelect={(place) => navigate(`/places/${place.id}`)}
+            onSelect={(place) => {
+              void navigate(`/places/${place.id}`);
+            }}
             clusterLabel={(n) => t("map.cluster", { n })}
             pinLabel={(p) =>
               p.upcomingEventCount ? `${p.name} · ${tn("count.events", p.upcomingEventCount)}` : p.name

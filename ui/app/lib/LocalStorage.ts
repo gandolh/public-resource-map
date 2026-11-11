@@ -3,7 +3,7 @@ export class LocalStorage {
     // Storage can be absent (prerender) or throw (Safari private mode, blocked
     // site data). A missing preference is a working state, not an error.
     if (typeof window === "undefined") return undefined;
-    let item: string | null = null;
+    let item: string | null;
     try {
       item = window.localStorage.getItem(key);
     } catch {
@@ -21,7 +21,7 @@ export class LocalStorage {
     }
   }
 
-  static set<T extends Record<string, unknown> | null | undefined | number | string | Array<any>>(
+  static set<T extends Record<string, unknown> | null | undefined | number | string | unknown[]>(
     key: string,
     value: T,
   ) {

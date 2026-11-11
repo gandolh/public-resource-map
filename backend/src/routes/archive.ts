@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import { desc, eq, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { archiveQuerySchema, parseCsv, type ArchiveQuery, type WhatsOnItem } from "@public-resource-map/shared";
 import { event, favoriteEvent, favoritePlace, place } from "../db/schema.js";
+import { subjectOf } from "../lib/auth.js";
 import { rowToEvent } from "./event-mapper.js";
 import { pastAt } from "./event-window.js";
 
@@ -17,7 +18,7 @@ export async function archiveRoutes(app: FastifyInstance) {
 
   async function page(where: SQL, q: ArchiveQuery) {
     const offset = (q.page - 1) * q.pageSize;
-    const [rows, count] = await Promise.all([
+    const [rows, count] = [
       db
         .select()
         .from(event)
@@ -25,14 +26,15 @@ export async function archiveRoutes(app: FastifyInstance) {
         .where(where)
         .orderBy(desc(ended), desc(event.id))
         .limit(q.pageSize)
-        .offset(offset),
+        .offset(offset)
+        .all(),
       db
         .select({ n: sql<number>`count(*)` })
         .from(event)
         .innerJoin(place, eq(event.placeId, place.id))
         .where(where)
         .get(),
-    ]);
+    ];
     const data: WhatsOnItem[] = rows.map((r) => ({
       event: rowToEvent(r.event),
       place: {
@@ -76,7 +78,7 @@ export async function archiveRoutes(app: FastifyInstance) {
   app.get("/archive/mine", async (req, reply) => {
     const q = parse(req.query, reply);
     if (!q) return reply;
-    const subject = req.auth!.user.id;
+    const subject = subjectOf(req);
     // What you saved, and what happened at places you follow.
     const saved = db
       .select({ id: favoriteEvent.eventId })
@@ -86,11 +88,9 @@ export async function archiveRoutes(app: FastifyInstance) {
       .select({ id: favoritePlace.placeId })
       .from(favoritePlace)
       .where(eq(favoritePlace.subject, subject));
-    const conditions = [
-      pastAt(new Date().toISOString()),
-      or(inArray(event.id, saved), inArray(event.placeId, followed))!,
-      ...categoryFilter(q),
-    ];
+    const mine = or(inArray(event.id, saved), inArray(event.placeId, followed));
+    if (!mine) throw new Error("or() of two conditions came back empty");
+    const conditions = [pastAt(new Date().toISOString()), mine, ...categoryFilter(q)];
     return page(sql.join(conditions, sql` AND `), q);
   });
 }

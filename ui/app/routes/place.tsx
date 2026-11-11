@@ -82,7 +82,9 @@ export default function PlaceRoute() {
     map.flyTo(map.unproject(shifted, zoom), zoom, { duration: 0.55 });
   }, [lat, lng, isMobile, getMap]);
 
-  const close = () => navigate("/");
+  const close = () => {
+    void navigate("/");
+  };
 
   if (isError) {
     return (

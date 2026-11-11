@@ -21,11 +21,13 @@ import { event } from "../db/schema.js";
  * resolve to the event table (the place table has no date columns).
  */
 export function liveInWindow(from: string, to: string): SQL {
-  return and(
+  const window = and(
     eq(event.status, "live"),
     lte(event.startDate, to),
     gte(sql`coalesce(${event.endDate}, ${event.startDate})`, from),
-  )!;
+  );
+  if (!window) throw new Error("and() of three conditions came back empty");
+  return window;
 }
 
 /**
@@ -36,5 +38,7 @@ export function liveInWindow(from: string, to: string): SQL {
  * has none, is behind `now`.
  */
 export function pastAt(now: string): SQL {
-  return and(eq(event.status, "live"), sql`coalesce(${event.endDate}, ${event.startDate}) < ${now}`)!;
+  const past = and(eq(event.status, "live"), sql`coalesce(${event.endDate}, ${event.startDate}) < ${now}`);
+  if (!past) throw new Error("and() of two conditions came back empty");
+  return past;
 }

@@ -1,6 +1,7 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyReply } from "fastify";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { markReadSchema, type FavoritesDto, type InboxDto, type NotificationDto } from "@public-resource-map/shared";
+import { subjectOf } from "../lib/auth.js";
 import { event, favoriteEvent, favoritePlace, notification, notificationEvent, place } from "../db/schema.js";
 
 /**
@@ -12,19 +13,17 @@ import { event, favoriteEvent, favoritePlace, notification, notificationEvent, p
  */
 export async function favoriteRoutes(app: FastifyInstance) {
   const db = app.db;
-  // The library's guard has run: every request here has `auth`.
-  const subjectOf = (req: FastifyRequest) => req.auth!.user.id;
   const notFound = (reply: FastifyReply, what: string) =>
     reply.status(404).send({ code: "NOT_FOUND", message: `No such ${what}` });
 
   app.get("/favorites", async (req): Promise<FavoritesDto> => {
     const subject = subjectOf(req);
-    const places = await db
+    const places = db
       .select({ id: favoritePlace.placeId })
       .from(favoritePlace)
       .where(eq(favoritePlace.subject, subject))
       .all();
-    const events = await db
+    const events = db
       .select({ id: favoriteEvent.eventId })
       .from(favoriteEvent)
       .where(eq(favoriteEvent.subject, subject))
@@ -33,14 +32,13 @@ export async function favoriteRoutes(app: FastifyInstance) {
   });
 
   app.post<{ Params: { placeId: string } }>("/favorites/places/:placeId", async (req, reply) => {
-    const target = await db
+    const target = db
       .select({ id: place.id })
       .from(place)
       .where(and(eq(place.id, req.params.placeId), isNull(place.retiredAt)))
       .get();
     if (!target) return notFound(reply, "place");
-    await db
-      .insert(favoritePlace)
+    db.insert(favoritePlace)
       .values({ subject: subjectOf(req), placeId: target.id })
       .onConflictDoNothing()
       .run();
@@ -48,18 +46,16 @@ export async function favoriteRoutes(app: FastifyInstance) {
   });
 
   app.delete<{ Params: { placeId: string } }>("/favorites/places/:placeId", async (req, reply) => {
-    await db
-      .delete(favoritePlace)
+    db.delete(favoritePlace)
       .where(and(eq(favoritePlace.subject, subjectOf(req)), eq(favoritePlace.placeId, req.params.placeId)))
       .run();
     return reply.status(204).send();
   });
 
   app.post<{ Params: { eventId: string } }>("/favorites/events/:eventId", async (req, reply) => {
-    const target = await db.select({ id: event.id }).from(event).where(eq(event.id, req.params.eventId)).get();
+    const target = db.select({ id: event.id }).from(event).where(eq(event.id, req.params.eventId)).get();
     if (!target) return notFound(reply, "event");
-    await db
-      .insert(favoriteEvent)
+    db.insert(favoriteEvent)
       .values({ subject: subjectOf(req), eventId: target.id })
       .onConflictDoNothing()
       .run();
@@ -67,8 +63,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
   });
 
   app.delete<{ Params: { eventId: string } }>("/favorites/events/:eventId", async (req, reply) => {
-    await db
-      .delete(favoriteEvent)
+    db.delete(favoriteEvent)
       .where(and(eq(favoriteEvent.subject, subjectOf(req)), eq(favoriteEvent.eventId, req.params.eventId)))
       .run();
     return reply.status(204).send();
@@ -77,7 +72,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
   app.get("/notifications", async (req, reply): Promise<InboxDto> => {
     reply.header("cache-control", "no-store");
     const subject = subjectOf(req);
-    const rows = await db
+    const rows = db
       .select({
         id: notification.id,
         kind: notification.kind,
@@ -97,7 +92,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
 
     // A reminder names its event; a new-event item names its batch's events.
     const links = rows.length
-      ? await db
+      ? db
           .select({ notificationId: notificationEvent.notificationId, eventId: notificationEvent.eventId })
           .from(notificationEvent)
           .where(
@@ -112,7 +107,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
       ...new Set([...links.map((l) => l.eventId), ...rows.flatMap((r) => (r.eventId ? [r.eventId] : []))]),
     ];
     const events = eventIds.length
-      ? await db
+      ? db
           .select({ id: event.id, title: event.title, startDate: event.startDate })
           .from(event)
           .where(inArray(event.id, eventIds))
@@ -126,12 +121,18 @@ export async function favoriteRoutes(app: FastifyInstance) {
       createdAt: r.createdAt,
       readAt: r.readAt,
       // A followed place OSM dropped is named, not linked.
-      place: r.placeId ? { id: r.placeId, name: r.placeName!, listed: r.placeRetiredAt === null } : null,
+      place:
+        r.placeId && r.placeName !== null
+          ? { id: r.placeId, name: r.placeName, listed: r.placeRetiredAt === null }
+          : null,
       events: (r.eventId ? [r.eventId] : links.filter((l) => l.notificationId === r.id).map((l) => l.eventId))
-        .flatMap((id) => (byId.has(id) ? [byId.get(id)!] : []))
+        .flatMap((id) => {
+          const linked = byId.get(id);
+          return linked ? [linked] : [];
+        })
         .sort((a, b) => a.startDate.localeCompare(b.startDate)),
     }));
-    const unread = await db
+    const unread = db
       .select({ n: sql<number>`count(*)` })
       .from(notification)
       .where(and(eq(notification.subject, subject), isNull(notification.readAt)))
@@ -143,7 +144,7 @@ export async function favoriteRoutes(app: FastifyInstance) {
     const parsed = markReadSchema.safeParse(req.body);
     if (!parsed.success) return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
     const subject = subjectOf(req);
-    const res = await db
+    const res = db
       .update(notification)
       .set({ readAt: new Date().toISOString() })
       .where(

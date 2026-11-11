@@ -79,8 +79,10 @@ function ProfileMenu() {
           <DropdownMenuSeparator />
           <DropdownMenuItem render={<Link to="/settings" />}>{t("nav.settings")}</DropdownMenuItem>
           <DropdownMenuItem
-            onClick={async () => {
-              if (await logout()) navigate("/");
+            onClick={() => {
+              void logout().then((ok) => {
+                if (ok) void navigate("/");
+              });
             }}
           >
             {t("nav.signOut")}

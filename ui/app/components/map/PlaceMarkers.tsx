@@ -112,8 +112,8 @@ export function PlaceMarkers({ places, selectedId, onSelect, clusterLabel, pinLa
   return (
     <>
       {clusters.map((cluster) => {
-        if (cluster.places.length === 1) {
-          const place = cluster.places[0]!;
+        const [place] = cluster.places;
+        if (place && cluster.places.length === 1) {
           const selected = place.id === selectedId;
           return (
             <Marker

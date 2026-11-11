@@ -812,6 +812,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>("ro");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the stored language is only known on the client, after the first render matches the prerender
     setLangState(detectLang());
   }, []);
 

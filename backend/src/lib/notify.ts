@@ -29,7 +29,8 @@ export function notifyNewEvents(db: DB, published: { eventId: string; placeId: s
       .where(inArray(favoritePlace.placeId, [...byPlace.keys()]))
       .all();
     for (const { subject, placeId } of fans) {
-      const eventIds = byPlace.get(placeId)!;
+      const eventIds = byPlace.get(placeId);
+      if (!eventIds) continue;
       const row = tx
         .insert(notification)
         .values({ subject, kind: "new-event", placeId, batchId, createdAt: at })
