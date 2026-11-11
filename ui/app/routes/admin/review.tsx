@@ -9,6 +9,7 @@ import { fetchPlace } from "~/lib/api";
 import { useI18n } from "~/lib/i18n";
 import { DARK_TILES, LIGHT_TILES, MAP_ATTRIBUTION, useIsDarkMode } from "~/lib/map";
 import { Button } from "~/components/ui/Button";
+import { Checkbox } from "~/components/ui/Checkbox";
 import { Chip } from "~/components/ui/Chip";
 import { Dialog } from "~/components/ui/Dialog";
 import { Skeleton } from "~/components/ui/Skeleton";
@@ -200,10 +201,9 @@ export default function ReviewRoute() {
             <thead>
               <tr className="text-caption tracking-[0.04em] text-fg-muted uppercase">
                 <th scope="col" className="w-9 border-b border-line py-2 pl-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={allVisibleSelected}
-                    onChange={toggleVisible}
+                    onCheckedChange={toggleVisible}
                     aria-label={t("admin.selectAll")}
                   />
                 </th>
@@ -282,12 +282,7 @@ function Row({
   return (
     <tr className={cn("align-top", selected && "bg-accent-weak/60")}>
       <td className="border-b border-line py-2.5 pl-2">
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={onToggle}
-          aria-label={t("admin.select", { title: row.title })}
-        />
+        <Checkbox checked={selected} onCheckedChange={onToggle} aria-label={t("admin.select", { title: row.title })} />
       </td>
       <td className="border-b border-line py-2.5 pr-3">
         <button type="button" onClick={onOpen} className="text-left font-semibold text-fg hover:underline">
