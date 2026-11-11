@@ -1,13 +1,13 @@
 import { useEffect } from "react";
+import { notify } from "~/components/ui/toast";
 import { useI18n } from "~/lib/i18n";
 import { useAppStore } from "~/stores/appStore";
 
-const VISIBLE_MS = 5000;
-
 /**
  * The shell's one-off messages, such as a drawn area cleared by a city change
- * (draw-to-filter): a filter must never vanish without a word. Shown for a few
- * seconds, announced politely, and tappable away.
+ * (draw-to-filter): a filter must never vanish without a word. The store holds
+ * the notice until this hands it to the toast host, which shows it for a few
+ * seconds and announces it politely.
  */
 export function NoticeToast() {
   const { t } = useI18n();
@@ -16,24 +16,9 @@ export function NoticeToast() {
 
   useEffect(() => {
     if (!notice) return;
-    const timer = setTimeout(dismiss, VISIBLE_MS);
-    return () => clearTimeout(timer);
-  }, [notice, dismiss]);
+    notify({ title: t("area.cleared") });
+    dismiss();
+  }, [notice, dismiss, t]);
 
-  return (
-    <div
-      role="status"
-      className="pointer-events-none absolute inset-x-0 bottom-20 z-sheet flex justify-center px-4 md:bottom-16"
-    >
-      {notice && (
-        <button
-          type="button"
-          onClick={dismiss}
-          className="pointer-events-auto rounded-lg border border-line bg-surface px-3.5 py-2 text-ui text-fg shadow-e3"
-        >
-          {t("area.cleared")}
-        </button>
-      )}
-    </div>
-  );
+  return null;
 }

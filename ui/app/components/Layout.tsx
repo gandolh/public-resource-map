@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Navbar } from "./Navbar";
 import { NoticeToast } from "./shell/NoticeToast";
 import { ThemeProvider } from "./ThemeProvider";
+import { ToastHost } from "./ui/toast";
 import { I18nProvider } from "~/lib/i18n";
 import { queryClient } from "~/lib/queryClient";
 
@@ -12,7 +13,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ToastHost>{children}</ToastHost>
+        </ThemeProvider>
       </I18nProvider>
     </QueryClientProvider>
   );
