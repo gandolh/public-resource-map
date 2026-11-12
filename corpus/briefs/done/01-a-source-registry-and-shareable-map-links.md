@@ -136,3 +136,58 @@ from feeding the public map.
   load, at 1280 and 390 px.
 - `npm run typecheck`, the tests and the builds pass.
 - `decisions.md` has the revisit, and `log.md` has the entry.
+
+## Outcome (2026-11-12)
+
+Built, checked, awaiting the deploy (`node cli.ts public-resource-map all`, after brief 05's
+own deploy steps). Commits a09966c, 0a51299, 67d503f, 459a38f, 8a1ed8a, cf0ecc3, 9c6c617,
+2d2441c, 5bc974a.
+
+**What shipped**
+
+- **The registry.** `shared/src/sources.ts`: OpenStreetMap (Overpass), Nominatim, the OSM and
+  CARTO tiles, Filarmonica Banatul, Teatrul Național Timișoara and iaBilet, each with host,
+  use, licence, `reuse`, terms summary, credit (RO and EN), `termsCheckedOn` and research link.
+  The two tile sources have no recorded terms check, so they are `permission-pending` (an open
+  question). `npm run sources` writes `DATA_SOURCES.md` (table, where credits show, a carve-out
+  per non-permitted source); `backend/src/features/sources/registry.test.ts` fails when stale.
+- **Adapters and the hold-back.** `SourceAdapter.sources` names the registry publishers an
+  adapter reads (a type error without one, proved with `@ts-expect-error`). A source row is tied
+  to a publisher by its feed URL's host, so stored rows need no new column and no slug. Adding a
+  source refuses a feed on no registered publisher (400 `UNKNOWN_SOURCE`), and refreshing an old
+  row on one answers 409 `SOURCE_NOT_REGISTERED`. `features/sources/` holds back a `forbidden`
+  source's events and the venues only its events made on every public read (places and their
+  pin counts, programmes, events, what's on, the archive), and in favouriting, the bell's event
+  list and the reminder sweep; accept skips its staged rows; its pending or held-back copies are
+  no cross-source duplicate. Nothing is deleted: the flip test serves one database under three
+  registries. The per-adapter `productionAllowed` flag is gone: a `forbidden` source refreshes in
+  development only.
+- **Credits.** Places carry `credits` (OpenStreetMap, or the publishers whose published events
+  point at a venue) and events `credit` (a registry id or null). A capture of 12 public replies
+  before and after matched byte for byte once those fields were removed.
+- **UI.** The map's attribution is built from the registry (OpenStreetMap, the tiles in use, the
+  publishers of venues on screen); the About page takes its credits from it and lists the
+  approved publishers; the place panel and event rows show registry credits.
+- **Map links.** `/?city=…&q=…&f=…&when=…&map=z/lat/lng` and `/places/:id?…`; `place=` is an
+  alias and `/map?…` keeps its query. The store reads the URL on load (a named city beats the
+  stored city and the location); the map writes it back with `history.replaceState`, so Back
+  leaves the map. Copy link copies the view under the base path.
+
+**Deviations**
+
+- Paths: `backend/src/ingest/*` is `backend/src/features/ingest/*`; the hold-back lives in a new
+  route-less feature, `features/sources/`; the URL state is `ui/app/lib/mapUrl.ts` and
+  `hooks/useMapUrl.ts` with a `readUrl` action in the store; the map is `/`, not `/map`.
+- `when` (the lens) is in the URL too; the drawn area is not (ephemeral by decision).
+- The staleness test is in the backend (shared has no Node types); the renderer is in `shared`.
+- The map credit reads "(ODbL 1.0)" where it read "(ODbL)".
+- Copy link now carries the view (`?city=…`).
+- Adding a source is a code change (a registry entry and the adapter's `sources`), as decision
+  2 implies.
+- Not built: the bell can still name a held-back venue, queued mail is not withdrawn, and
+  `whats-on.tsx` keeps its own footer credit.
+
+**Checks.** `npm run check` exit 0 (316 tests); `npm run build` exit 0; `npm run test:e2e` 44 of
+44 on one run (it shares the baseline's cold-deep-link flakes under load); screenshots at 1280
+and 390 px, light and dark, of a `/map?city&q&f&place` link; the About text diffed in RO and EN
+(one added line each).

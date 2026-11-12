@@ -76,5 +76,5 @@ Answered 2026-11-10: Q39 (Hallmark, with taste-skill 2.5's useful parts; approva
 ## Interplay
 
 - Brief 04 owns the layers, the wrappers and the theme switch; this brief changes the tokens and layout on top. The switch must survive in both themes, and the map's tiles must still follow it (CARTO when keyed, the filtered OpenStreetMap fallback otherwise).
-- [Brief 01](01-a-source-registry-and-shareable-map-links.md) puts a source credit on the map and the About page. The redesign keeps that credit legible and in place.
+- [Brief 01](../done/01-a-source-registry-and-shareable-map-links.md) puts a source credit on the map and the About page. The redesign keeps that credit legible and in place.
 - Brief 03's formatter and lint run on every redesign commit.

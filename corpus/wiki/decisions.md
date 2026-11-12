@@ -1,6 +1,6 @@
 ---
 summary: Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's dated answers since 2026-10-04 — check before relitigating anything; identity, UI and stack live in split-out pages.
-updated: 2026-11-02
+updated: 2026-11-12
 ---
 
 # Decisions
@@ -12,7 +12,7 @@ Locked tech and design choices. Don't relitigate without an explicit revisit + l
 This page passed ~200 lines, so three groups moved, unchanged:
 - [decisions-identity.md](decisions-identity.md): the original auth design and "Identity is Ward's".
 - [decisions-ui.md](decisions-ui.md): visual direction, interface language, the basemap constraint, the 2026-06-29 design direction.
-- [decisions-engineering.md](decisions-engineering.md): the stack and code conventions.
+- [decisions-engineering.md](decisions-engineering.md): the stack and code conventions, and (since 2026-11-12) the accepted `npm audit` finding.
 
 ## Product direction (locked 2026-06-28, revised 2026-06-28 after ToS check)
 
@@ -36,6 +36,12 @@ This page passed ~200 lines, so three groups moved, unchanged:
 - **Images: text-only cards, no artwork** (locked separately). Categories conveyed via **color coding**, not images. This removes the copyright-on-artwork + bandwidth-theft risk, independent of the ToS issue.
 - **Decision: build the iaBilet adapter as POC only.** Obtaining explicit permission (or an official partner/feed) is a **hard blocker before any business/public launch** of that integration. Logged, not hand-waved.
 - **OSM/Overpass is the one clean source** (ODbL — reuse permitted with attribution), which is why the product anchor pivoted to resources-first.
+
+## Legal posture, revisited 2026-11-12: the source registry (owner, 2026-11-10)
+
+- **The registry is code:** `shared/src/sources.ts`, one entry per source the app reads, with its host, licence, `reuse` (`permitted`, `permission-pending` or `forbidden`), its credit in RO and EN, and the date its terms were read. `DATA_SOURCES.md` is generated from it (`npm run sources`), with a carve-out for every source that is not `permitted`; a test fails when the file is stale. A source with no recorded terms check is `permission-pending`. Rejected: a hand-written `DATA_SOURCES.md` only.
+- **The registry credits, and only `forbidden` is kept off** (owner, the skills library's Q38). An adapter names the registry publishers it reads (a type error without one), and a source row is tied to one by its feed URL's host. Rows from a `permitted` or `permission-pending` source are published and credited: `credits` on a place, `credit` on an event, the map's attribution, the About page. A `forbidden` source's events, and the event venues only its events made, are held back on every public read, never deleted, so flipping the source back restores them. A flip is a registry edit and a deploy; there is no admin switch.
+- **The iaBilet rule reads the registry:** a `forbidden` source refreshes in development only (`NODE_ENV=production` refuses it), and accept skips its staged rows. This replaced the per-adapter production flag.
 
 ## Source discovery — API-first, scrape-last (locked 2026-06-28)
 
@@ -164,10 +170,6 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Single VPS** via the `bootstrap-vps-deploy` pattern: **Caddy** (automatic HTTPS — required for geolocation + Secure cookies) serving the static SPA, **pm2** running **one process: the Fastify backend** (which serves the REST API *and* runs the in-process daily reminder sweep), and a **host volume for `app.db`** (SQLite in a container without a persistent volume loses the DB on redeploy).
 - **No separate cron process** (corrects the earlier plan): ingestion is admin-triggered (no cron); the only scheduled job — the day-before reminder — runs **in-process inside the Fastify API** (see Favorites & notifications). The previously-planned "separate ingestion cron pm2 process" no longer exists — don't provision it.
 - Not serverless/PaaS for v1 — SQLite persistence + cron + a real filesystem fit a VPS far better.
-
-## Known/accepted issues
-
-- **`npm audit`: 4 moderate (esbuild GHSA-67mh-4wv8-2f99).** Sole source is `drizzle-kit`'s transitive `@esbuild-kit/core-utils → esbuild@~0.18.20`. Accepted, not fixed: (1) dev-tooling only — `drizzle-kit` never ships to production and isn't used by any npm script (migrations run via `drizzle-orm`'s migrator through `tsx`; drizzle-kit is only for manual `generate`); (2) the advisory requires running esbuild's dev server, which `drizzle-kit generate` does not; (3) `0.31.10` is the latest stable and still pins the vulnerable esbuild — only `1.0.0-beta`/`rc` drop it; (4) an `esbuild` override won't apply because `@esbuild-kit/core-utils` uses the incompatible 0.18 platform-package layout. `npm audit fix --force` would *downgrade* drizzle-kit to 0.18.1 — do not run it.
 
 ## Data model
 

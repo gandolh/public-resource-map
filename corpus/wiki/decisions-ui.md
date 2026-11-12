@@ -1,6 +1,6 @@
 ---
-summary: Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, the basemap constraint, and (2026-11-11) the theme switch and the Base UI conventions.
-updated: 2026-11-11
+summary: Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, the basemap constraint, and (2026-11-11) the theme switch and the Base UI conventions, and (2026-11-12) the map state in the URL.
+updated: 2026-11-12
 ---
 
 # Decisions — visual direction and interface
@@ -40,6 +40,12 @@ The base-ui skill's rules, applied to this app (brief 04). `check-base-ui` is st
 - **The stylesheet is in layers**: `theme, base, vendor, components, utilities`. Leaflet's CSS is `layer(vendor)` after `base`; the app's Leaflet and pin rules are in `components`. Only the two token blocks sit outside a layer, and `!important` is left only in the reduced-motion rule (an accepted rule-7 exception). The focus ring no longer sets a `border-radius`, so it follows each element's own radius.
 - **Named scales, same values.** The 17 text sizes are `--text-*` (`text-meta` for 12px, and so on), the z-indexes are `--z-index-*` (`z-chrome` 400 up to `z-popup` 1000), durations use `--dur-1` and the easing is `ease-out-fast`. A new token's name also goes into `cn()` in `ui/app/lib/utils.ts`.
 - **Category hues are a `--cat` custom property**, set inline from data and read by `bg-(--cat)` and the like; the pin rules stay CSS (Tailwind does find a class written whole inside a string, but the per-category variables and `color-mix` read better as CSS).
+
+## The map's state in its URL (2026-11-12)
+
+- **A map URL is a share link:** `/?city=timisoara&q=…&f=library,park&when=today&map=15/45.75390/21.22570`, and `/places/:id?…` with a place open. `city`, `q` and `f` are the store's city, search and categories, `when` its lens, and `map` (zoom/lat/lng, OpenStreetMap's order) the camera, written only once the user moved the map. The drawn area stays out (ephemeral). `place=<id>` is an alias for the path, and the old `/map?…` keeps its query.
+- **The store reads the URL once on load; every change goes back with `replace`,** so Back leaves the map instead of stepping through pans. Opening a place still pushes. A link that names a city wins over the visitor's stored city and location; a place's own city still wins over the link's. Parameters the map doesn't own (a favourite waiting for sign-in) are kept. Copy link copies the place with the view around it, under the base path.
+- Rejected: a "Copy link" button that encodes the state while the URL stays bare.
 
 ## Interface language (locked 2026-09-04)
 

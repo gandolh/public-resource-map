@@ -32,12 +32,12 @@ ui  ──►  shared  ◄──  backend
 
 | Path | Module | What |
 |---|---|---|
-| `/` | `routes/map.tsx` | the map; home |
+| `/` | `routes/map.tsx` | the map; home. Its state is in the query (`city`, `q`, `f`, `when`, `map`; [decisions-ui.md](decisions-ui.md)) |
 | `/places/:id` | `routes/place.tsx` | child of `/`, so the map stays mounted under the place panel |
 | `/whats-on` | `routes/whats-on.tsx` | the city's upcoming events, on the map's filters |
 | `/archive` | `routes/archive.tsx` | past events, citywide or mine |
 | `/about-data` | `routes/about-data.tsx` | sources, licences, takedown contact |
-| `/map`, `/events`, `/resources/:id` | `routes/legacy.*.tsx` | old URLs; a `clientLoader` redirects to `/`, `/whats-on`, `/places/:id` |
+| `/map`, `/events`, `/resources/:id` | `routes/legacy.*.tsx` | old URLs; a `clientLoader` redirects to `/` (keeping the query), `/whats-on`, `/places/:id` |
 | `/admin`, `/admin/sources` | `routes/admin/` | own shell (`AdminLayout`), code-split from the public pages |
 
 ### Current UI file map
@@ -54,14 +54,15 @@ app/
     ThemeProvider.tsx    context + localStorage persistence, `data-theme`, System follows the OS
     ThemeToggle.tsx      light / dark / system (a menu of radio items)
     map/                 PlaceMarkers (pins + clusters), FilterBar (chips, lens, draw entry),
-                         AreaDraw (freehand + polygon), UserLocationMarker
+                         AreaDraw (freehand + polygon), UserLocationMarker, SourceCredits (the
+                         attribution from the registry), CityRecenter, CameraTracker (user moves)
     place/               PlaceDetail (the one place view), PlacePanel (desktop), PlaceSheet (phone: a non-modal Drawer),
                          EventList, EventPlaceRow (what's-on and archive rows)
     shell/               Bell (inbox), BrandMark, CityPicker, LangToggle, NoticeToast
     ui/                  the Base UI wrappers: Popover, Dialog, Drawer (BottomSheet), toast, Tabs, Segmented
                          (RadioGroup), Chip (Toggle), Checkbox, Select, DropdownMenu; and Avatar, Button,
                          CategoryBadge, SearchInput, Skeleton, StateBlock (empty / zero results / error)
-  hooks/                 usePlaces (+ usePlace, usePlaceEvents), useFavorites (+ inbox),
+  hooks/                 useMapUrl (the map's state in its URL), usePlaces (+ usePlace, usePlaceEvents), useFavorites (+ inbox),
                          useArchive, useAdmin, useIsMobile, useUserLocation
   lib/
     api.ts               typed fetch for the public API (whole-city places, what's-on, archive)
@@ -75,7 +76,8 @@ app/
     cluster.ts           screen-space grid clustering
     area.ts              point-in-drawn-area
     dates.ts             Bucharest calendar days and the day groups
-    map.ts               basemap tiles (CARTO with a key, filtered OSM without)
+    map.ts               basemap tiles (CARTO with a key, filtered OSM without), the map's credits from the registry
+    mapUrl.ts            the map's state in its URL: parse, write, the share link under the base path
     queryClient.ts, LocalStorage.ts, utils.ts (cn, normalizeText)
   stores/
     appStore.ts          Zustand — city, chips, lens, drawn area: one store for map + what's-on
@@ -86,7 +88,7 @@ app/
     place.tsx            place panel/sheet over the live map; a cold visit centres on the place
     whats-on.tsx         citywide, day-grouped list
     archive.tsx          month-grouped past events, paged
-    about-data.tsx       attribution and the data posture
+    about-data.tsx       attribution and the data posture; credits and publishers from the source registry
     redirects.tsx        the redirects behind legacy.map / legacy.events / legacy.resource
     admin/               AdminLayout, review.tsx (staged-event queue), sources.tsx
 ```
@@ -107,14 +109,16 @@ The house code structure (the `code-structure` skill; adopted 2026-11-12, see [d
 ```
 server.ts      the process: loadConfig(), buildApp, close-with-grace, listen; the reminder sweep
 app.ts         buildApp(config): the error plugin, the zod compilers, CORS, auth, then each
-               feature by name with the AppContext (db, mail sweeper, ingest and OSM deps)
+               feature by name with the AppContext (db, mail sweeper, ingest and OSM deps,
+               the source registry)
 config.ts      the one reader of process.env (zod; ConfigError names every bad variable)
 plugins/       errors (the error and not-found handlers, { code, message }),
                auth/ (accounts, the library's plugin and guard, PUBLIC_ROUTES, subjects)
 features/      places, events, whats-on, archive, favorites, notifications, osm (sync,
                categories), ingest (pipeline, adapters, iCal, matching, geocoder, schemas),
-               reminders (inbox items, the mail sweeper, the daily sweep); each used
-               through its index.ts
+               reminders (inbox items, the mail sweeper, the daily sweep), sources (what
+               the public sees by source: the forbidden hold-back and the credits); each
+               used through its index.ts
 lib/           pure helpers: ApiError and the error body, the page and id schemas, geo, time, fk
 db/            schema, index (createDb), migrate, seed (+ seed-data, seed-ids), the account
                scripts, capture-osm, fixtures/
@@ -154,7 +158,9 @@ with the first issue's path and message; an unknown route is 404 `NOT_FOUND`; an
 is a 500 `INTERNAL` with a fixed message, never the thrown one. The vendored `/auth/*` routes are
 the library's own.
 
-Public place reads skip retired places. Proximity filtering uses a bounding-box approximation (not Haversine). Good enough for city-scale use.
+Public place reads skip retired places, and every public read skips what the source registry holds
+back: a `forbidden` source's events, and the event venues only its events made
+(`features/sources/`). Places carry `credits` and events `credit`, registry ids. Proximity filtering uses a bounding-box approximation (not Haversine). Good enough for city-scale use.
 
 ### Data layer — place-centric schema (the schema consolidation, then Ward)
 
@@ -178,7 +184,9 @@ One Drizzle schema (`backend/src/db/schema.ts`). It was consolidated on 2026-07-
 
 ## Shared (`shared/`)
 
-**Zod schemas + types derived via `z.infer`** (not pure types — it has runtime code: the Zod schemas; backend imports them so shape + validation share one source of truth). Seven modules, re-exported from `src/index.ts`:
+**Zod schemas + types derived via `z.infer`** (not pure types — it has runtime code: the Zod schemas; backend imports them so shape + validation share one source of truth). Nine modules, re-exported from `src/index.ts`:
+
+- `sources.ts` — the source registry: every outside source with its host, licence, `reuse`, credit (RO and EN) and terms date; `sourceIdSchema` for the credit fields, `publisherForUrl` (a feed URL's publisher, by host). `data-sources.ts` renders `DATA_SOURCES.md` from it (`npm run sources`)
 
 - `types/common.ts` — `coordinatesSchema`/`Coordinates`, `httpUrlSchema` (http(s) only), `PaginatedResponse<T>`, `ApiError`, `nearbyQuerySchema`/`NearbyQuery`, the timing lens (`eventLenses`: today/weekend/all), `parseCsv`, and the query schemas for `/api/places`, `/api/places/:id/events` and `/api/whats-on`
 - `types/place.ts` — `placeSchema`/`Place`, `placeCategorySchema`/`PlaceCategory` (park/library/clinic/museum/townhall/community_center/education/theater/sports/cultural_center/other), `placeSourceSchema`/`PlaceSource` (`osm`\|`event-venue`), `createPlaceSchema`/`CreatePlaceInput`. `Place` carries `source`, `osmType`/`osmId`, `isManualPin`, nullable `address`, `city`, `coordinates`.

@@ -49,7 +49,7 @@ The repo adopted the estate's quality harness. `npm run check` (typecheck, lint,
 The API follows the estate's `code-structure` skill. `config.ts` is the one reader of the environment, `server.ts` runs the process, `app.ts` builds the app without listening, and the code splits by feature (`features/<name>/` with an `index.ts`) instead of by layer. Every route declares its schemas through `@fastify/type-provider-zod`, a response included, and one error plugin answers every error in the repo's `{ code, message }`.
 
 - **The directory stays `backend/`,** not the skill's `server/`. A rename would touch the Dockerfile's `COPY` lines, the compose volume, the `prm-migrate` entrypoint, the workspace name and the vitest projects, for no gain. `scripts/conventions.json` names the roots for the checkers.
-- **`NODE_ENV` is read once, as `config.production`.** The legal posture keeps an adapter that has not cleared it (the iaBilet rule) off production, and the image sets `NODE_ENV=production`. A purpose-named variable would leave the safeguard off wherever a deploy forgot it. This is the one `check-structure` exception, and it goes when the source registry's `forbidden` state replaces the iaBilet rule.
+- **`NODE_ENV` is read once, as `config.production`.** The legal posture keeps an adapter that has not cleared it (the iaBilet rule) off production, and the image sets `NODE_ENV=production`. A purpose-named variable would leave the safeguard off wherever a deploy forgot it. This is the one `check-structure` exception. Since 2026-11-12 the rule reads the source registry: a `forbidden` source refreshes in development only.
 - **`PUBLIC_ORIGIN` is required everywhere.** It used to be required only in production. The database and seed scripts read smaller sets and don't need it. There is no `.env` loader in code: the dev scripts pass the root `.env` to Node, so a missing variable fails the parse, naming it.
 - **`AUTH_TRUSTED_PROXIES` is the one proxy list.** It sets Fastify's `trustProxy` and the library's login lockout.
 - **Timeouts:**
@@ -64,3 +64,7 @@ The API follows the estate's `code-structure` skill. `config.ts` is the one read
   - `@fastify/autoload`, because registration by name is greppable and keeps the option types;
   - TypeBox, because zod is already the contract in `shared/`;
   - extracting a `store.ts` per feature now: the handlers keep their Drizzle queries, so the layout, the schemas and the error handling don't land in one diff with a fourth change.
+
+## Known/accepted issues (moved from decisions.md 2026-11-12)
+
+- **`npm audit`: 4 moderate (esbuild GHSA-67mh-4wv8-2f99).** Sole source is `drizzle-kit`'s transitive `@esbuild-kit/core-utils → esbuild@~0.18.20`. Accepted, not fixed: (1) dev-tooling only — `drizzle-kit` never ships to production and isn't used by any npm script (migrations run via `drizzle-orm`'s migrator through `tsx`; drizzle-kit is only for manual `generate`); (2) the advisory requires running esbuild's dev server, which `drizzle-kit generate` does not; (3) `0.31.10` is the latest stable and still pins the vulnerable esbuild — only `1.0.0-beta`/`rc` drop it; (4) an `esbuild` override won't apply because `@esbuild-kit/core-utils` uses the incompatible 0.18 platform-package layout. `npm audit fix --force` would *downgrade* drizzle-kit to 0.18.1 — do not run it.

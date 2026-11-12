@@ -7,6 +7,8 @@ updated: 2026-11-12
 
 _Last updated: 2026-11-02_
 
+**2026-11-12 (later):** brief 01, [a source registry and map links that can be shared](../briefs/done/01-a-source-registry-and-shareable-map-links.md), is built and awaits a deploy (`all`, after brief 05's). `shared/src/sources.ts` lists every source with its licence and reuse status, `DATA_SOURCES.md` is generated from it, the public API holds back a `forbidden` source's rows and credits the rest, and the map's state is in its URL. See [decisions.md](decisions.md) (the Legal posture revisit) and [open-questions.md](open-questions.md) (the tiles' terms).
+
 **2026-11-12:** brief 05, [the server in the code structure](../briefs/done/05-the-server-in-the-code-structure.md), is built and awaits a deploy (`all`). The API reads its settings from `config.ts`, runs from `server.ts`, splits by feature, and declares a zod schema on every route, a response included, on zod 4.6.7. `check-structure` is strict. See [decisions-engineering.md](decisions-engineering.md).
 
 **2026-11-11 (later):** brief 04, [Base UI by the conventions](../briefs/done/04-base-ui-by-the-conventions.md), is built and awaits a deploy: the stylesheet is in layers, every Base UI part sits behind a wrapper, the place sheet is a Drawer, and the Light / Dark / System switch keys off `data-theme` and starts light. See [decisions-ui.md](decisions-ui.md).
@@ -15,7 +17,7 @@ _Last updated: 2026-11-02_
 
 **2026-11-10:** brief 02 (Base UI 1.9.0) was built and awaits a deploy; see [log.md](../log.md).
 
-**2026-11-09:** brief 01, [a source registry and map links that can be shared](../briefs/todo/01-a-source-registry-and-shareable-map-links.md), was filed and waits on the owner's grilling of 2026-11-10.
+**2026-11-09:** brief 01 was filed; it waited on the owner's grilling of 2026-11-10.
 
 ## 🟢 The UI is now the new model
 
@@ -69,7 +71,7 @@ Still open:
 | Event ingestion | **done 2026-10-03 (pipeline)** — iCal adapter, match/geocode/dedup/reconcile/health, staged diff + admin API, 45 tests. **First sources decided 2026-10-06:** Filarmonica Banatul and Teatrul Național Timișoara, approved; adding them is the owner's whenever they want, not an open step (the iCal shortcode fix is done: shortcodes stripped, TNTM's eventim button becomes the buy link). **București stays places-only for now** (owner, 2026-10-07) |
 | Favorites + notifications | **done 2026-10-03 (in-app)** — star/remind-me, signed-out → Ward → favourite completed, coalesced new-event items at accept, 09:00 Bucharest reminder sweep, bell. **Email since 2026-10-07** (notification email): Ward mails each inbox row on prm's behalf; prm still holds no addresses. Ward's footer is English (decided 2026-10-28) |
 | Place-centric UI | **done** — the last pieces (star, bell) shipped with 05 on 2026-10-03 |
-| Attribution | **done 2026-10-03** — `© OpenStreetMap contributors` + CARTO, `/about-data`, per-event source credit. **Owed: `VITE_DATA_CONTACT`** (the takedown address) before launch; the page's "events are samples" callout goes when 04 lands |
+| Attribution | **done 2026-10-03** — `© OpenStreetMap contributors` + CARTO, `/about-data`, per-event source credit; **since 2026-11-12 all from the source registry** (`shared/src/sources.ts`, `DATA_SOURCES.md`). **Owed: `VITE_DATA_CONTACT`** (the takedown address) before launch; the page's "events are samples" callout goes when 04 lands |
 | Test plans | **done 2026-10-04** — TP-01…07 rewritten place-centric + sign-in/favourites/ingestion, each case mapped to its test or marked manual; walked against the local Ward ([RESULTS](../test-plans/RESULTS.md)): six bugs fixed (unnamed pins, Enter on a pin, login return, category guesser…), TP-05 fails on Ward's sign-out |
 | Platform optimization | **closed 2026-10-03** — WAL + NORMAL + FKs + 5 s busy wait, tested; indexes verified; bbox-fetch superseded by whole-city loading (20/15); canvas/batching wait for a measured slowdown |
 | Public UI interactions | **done 2026-10-03** — plus removable filter chips + widen hint on zero results, a lens banner, selection dimming, the phone's folded attribution. Two sheet snaps kept (owner's call); favorites/bell are 05's |
