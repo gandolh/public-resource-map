@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapPath, mapSearch, mapShareUrl, parseMapSearch } from "./mapUrl";
+import { mapPath, mapSearch, mapSearchKeeping, mapShareUrl, parseMapSearch } from "./mapUrl";
 
 describe("parseMapSearch", () => {
   it("reads the city, search, filters, lens, camera and place", () => {
@@ -47,6 +47,16 @@ describe("mapSearch", () => {
   it("round-trips through parseMapSearch", () => {
     const view = { city: "bucuresti", q: "a&b=c?", f: ["museum" as const], when: "today" as const };
     expect(parseMapSearch(mapSearch(view))).toEqual(view);
+  });
+});
+
+describe("mapSearchKeeping", () => {
+  it("keeps another feature's parameters (a favourite pending sign-in), after the map's own", () => {
+    expect(mapSearchKeeping({ city: "timisoara", q: "x" }, "?favorite=place%3A1&q=old&map=1/2/3")).toBe(
+      "?city=timisoara&q=x&favorite=place%3A1",
+    );
+    expect(mapSearchKeeping({}, "?favorite=place%3A1")).toBe("?favorite=place%3A1");
+    expect(mapSearchKeeping({ city: "timisoara" }, "")).toBe("?city=timisoara");
   });
 });
 

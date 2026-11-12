@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAppStore } from "~/stores/appStore";
-import { mapPath, mapSearch, parseMapSearch, type MapCamera } from "~/lib/mapUrl";
+import { mapPath, mapSearchKeeping, parseMapSearch, type MapCamera } from "~/lib/mapUrl";
 
 /** What the URL held when the map loaded. */
 export interface LoadedView {
@@ -30,10 +30,12 @@ export function useMapUrl() {
   const [camera, setCamera] = useState<MapCamera | null>(null);
 
   useEffect(() => {
-    const view = parseMapSearch(location.search);
+    // The address bar, not the router: while a single-page build hydrates, the router can still
+    // be on the shell's "/" with no query.
+    const view = parseMapSearch(window.location.search);
     readUrl(view);
     // `place=<id>` is an alias for the place's own path.
-    if (view.place && !location.pathname.startsWith("/places/")) {
+    if (view.place && !window.location.pathname.includes("/places/")) {
       void navigate(mapPath(view), { replace: true });
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the URL is only read on the client, once, after the first render
@@ -43,15 +45,15 @@ export function useMapUrl() {
   }, []);
 
   useEffect(() => {
-    // Not before the URL is read, and not while the `place` alias is on its way to the path.
+    // Not before the URL is read, not while the `place` alias is on its way to the path, and not
+    // while the router is still on another path than the address bar (hydrating): a write then
+    // would replace a deep link with the shell's "/".
     if (!loaded || new URLSearchParams(location.search).has("place")) return;
-    const next = mapSearch({
-      city,
-      q: search,
-      f: categories,
-      when: lens === "all" ? undefined : lens,
-      map: camera ?? undefined,
-    });
+    if (window.location.pathname !== `${import.meta.env.BASE_URL}${location.pathname.slice(1)}`) return;
+    const next = mapSearchKeeping(
+      { city, q: search, f: categories, when: lens === "all" ? undefined : lens, map: camera ?? undefined },
+      location.search,
+    );
     if (next !== location.search) void navigate({ pathname: location.pathname, search: next }, { replace: true });
   }, [loaded, city, search, categories, lens, camera, location.pathname, location.search, navigate]);
 

@@ -73,6 +73,21 @@ export function mapSearch(view: MapView): string {
   return parts.length ? `?${parts.join("&")}` : "";
 }
 
+/** The query keys the map owns; any other (a pending favourite after sign-in) is someone else's. */
+const MAP_KEYS = new Set(["city", "q", "f", "when", "map", "place"]);
+
+/**
+ * The query for a view, keeping every parameter of `current` the map does not own, after its own,
+ * so writing the view never drops another feature's parameter.
+ */
+export function mapSearchKeeping(view: MapView, current: string): string {
+  const own = mapSearch(view);
+  const foreign = [...new URLSearchParams(current)].filter(([key]) => !MAP_KEYS.has(key));
+  if (foreign.length === 0) return own;
+  const rest = new URLSearchParams(foreign).toString();
+  return own ? `${own}&${rest}` : `?${rest}`;
+}
+
 /** The app-relative path of a view: the place page when one is selected, else the map. */
 export function mapPath(view: MapView): string {
   const { place, ...rest } = view;
