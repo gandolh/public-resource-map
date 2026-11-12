@@ -1,12 +1,8 @@
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import cors from "@fastify/cors";
 import type BetterSqlite3 from "better-sqlite3";
-import { createDb, type DB } from "./db/index.js";
-import { errors } from "./plugins/errors.js";
-import { registerAuth, type Auth } from "./plugins/auth/index.js";
-import { adoptWardSubjects } from "./plugins/auth/subjects.js";
-import { WardUnavailableError, type WardClient } from "../vendor/ward/ward-auth.js";
 import type { Config } from "./config.js";
+import { createDb, type DB } from "./db/index.js";
 import { archiveRoutes } from "./features/archive/index.js";
 import { eventRoutes } from "./features/events/index.js";
 import { favoriteRoutes } from "./features/favorites/index.js";
@@ -16,15 +12,30 @@ import { adminOsmRoutes, overpassFetcher, type SyncDeps } from "./features/osm/i
 import { placeRoutes } from "./features/places/index.js";
 import { createMailSweeper, type MailSweeper } from "./features/reminders/index.js";
 import { whatsOnRoutes } from "./features/whats-on/index.js";
+import { authPlugin, createAuth, WardUnavailableError, type WardClient } from "./plugins/auth/index.js";
+import { adoptWardSubjects } from "./plugins/auth/subjects.js";
+import { errors } from "./plugins/errors.js";
 
-declare module "fastify" {
-  interface FastifyInstance {
-    db: DB;
-    /** prm's accounts and their Ward links (since 2026-10-13). */
-    auth: Auth;
-    /** Notification email through Ward: kicked after an accept and the daily sweep. */
-    notifyMail: MailSweeper;
-  }
+/**
+ * What the features are handed, built here once and passed to each as its plugin options. Each
+ * feature names the part it takes in its own `Options` type, so none imports this file; a test
+ * replaces a part through `BuildAppOptions`, never through a decorator.
+ */
+export interface AppContext {
+  config: Config;
+  db: DB;
+  /** Notification email through Ward: kicked after an accept and after the daily sweep. */
+  notifyMail: MailSweeper;
+  /** Event ingestion's sources, geocoder and clock. */
+  ingest: IngestDeps;
+  /** The OSM sync's Overpass call. */
+  osm: SyncDeps;
+}
+
+/** The app and the context it was built with: server.ts starts the reminder sweep from it. */
+export interface App {
+  app: FastifyInstance;
+  context: AppContext;
 }
 
 /** Fastify's options that belong to the process. server.ts sets them; a test leaves them out. */
@@ -59,17 +70,17 @@ export interface BuildAppOptions {
 }
 
 /**
- * Build a Fastify app instance, never listening. server.ts calls this with the
- * process's options (the logger, the timeouts, `trustProxy`); tests call it
- * with an injected temp DB and drive it via `app.inject()`.
+ * Build the app, never listening. server.ts calls this with the process's options (the logger,
+ * the timeouts, `trustProxy`); tests call it with an injected temp DB and drive it via
+ * `app.inject()`. It registers in a fixed order: the error handlers, CORS, the accounts (before
+ * every route), then the features by name.
  */
-export async function buildApp(config: Config, opts: BuildAppOptions = {}): Promise<FastifyInstance> {
+export async function buildApp(config: Config, opts: BuildAppOptions = {}): Promise<App> {
   const app = Fastify(opts.server);
   // First: the error and not-found handlers, on the root, before anything that can throw.
   await app.register(errors);
 
   const { db, sqlite } = opts.db ?? createDb(config.databasePath);
-  app.decorate("db", db);
 
   await app.register(cors, {
     origin: config.corsOrigin,
@@ -85,8 +96,8 @@ export async function buildApp(config: Config, opts: BuildAppOptions = {}): Prom
    * hook and refuses whatever `plugins/auth/index.ts` does not list as public. The
    * admin routes add `requireRole("admin")` on top.
    */
-  const auth = await registerAuth(app, { sqlite, wardClient: opts.ward, config });
-  app.decorate("auth", auth);
+  const auth = await createAuth({ sqlite, wardClient: opts.ward, config });
+  await app.register(authPlugin, { auth, config });
 
   // Rows keyed by a Ward subject from before prm had users get a linked user
   // whose id is that subject. Skips what exists, so it runs on every boot.
@@ -103,8 +114,8 @@ export async function buildApp(config: Config, opts: BuildAppOptions = {}): Prom
   // Only a Ward-linked user can be mailed: Ward holds the addresses. Without
   // Ward configured nothing is sent and the rows wait, as for an outage.
   const ward = auth.wardClient;
-  const mail = createMailSweeper(
-    app.db,
+  const notifyMail = createMailSweeper(
+    db,
     (userId, message) =>
       ward
         ? auth.identities.notifyUser(ward, userId, message)
@@ -112,25 +123,32 @@ export async function buildApp(config: Config, opts: BuildAppOptions = {}): Prom
     app.log,
     config.appUrl,
   );
-  app.decorate("notifyMail", mail);
   // One hook, in order: the mail in flight, then the database, if the app opened it.
   app.addHook("onClose", async () => {
-    await mail.idle();
+    await notifyMail.idle();
     if (!opts.db) sqlite.close();
   });
 
-  await app.register(placeRoutes, { prefix: "/api" });
-  await app.register(adminOsmRoutes({ fetchOverpass: overpassFetcher(config.overpassUrl), ...opts.osm }), {
-    prefix: "/api",
-  });
-  await app.register(adminIngestRoutes({ ...defaultIngestDeps(config), ...opts.ingest }), { prefix: "/api" });
-  await app.register(eventRoutes, { prefix: "/api" });
-  await app.register(whatsOnRoutes, { prefix: "/api" });
-  await app.register(favoriteRoutes, { prefix: "/api" });
-  await app.register(notificationRoutes, { prefix: "/api" });
-  await app.register(archiveRoutes, { prefix: "/api" });
+  const context: AppContext = {
+    config,
+    db,
+    notifyMail,
+    ingest: { ...defaultIngestDeps(config), ...opts.ingest },
+    osm: { fetchOverpass: overpassFetcher(config.overpassUrl), ...opts.osm },
+  };
+
+  // The features, each encapsulated, all under `/api`.
+  const api = { ...context, prefix: "/api" };
+  await app.register(placeRoutes, api);
+  await app.register(adminOsmRoutes, api);
+  await app.register(adminIngestRoutes, api);
+  await app.register(eventRoutes, api);
+  await app.register(whatsOnRoutes, api);
+  await app.register(favoriteRoutes, api);
+  await app.register(notificationRoutes, api);
+  await app.register(archiveRoutes, api);
 
   app.get("/health", async () => ({ status: "ok" }));
 
-  return app;
+  return { app, context };
 }

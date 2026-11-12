@@ -22,7 +22,7 @@ try {
   process.exit(1);
 }
 
-const app = await buildApp(config, {
+const { app, context } = await buildApp(config, {
   server: {
     logger: true,
     // Caddy's network, so `request.ip` is the client's address, not the proxy's. None: the socket peer.
@@ -52,7 +52,7 @@ await app.listen({ port: config.port, host: config.host });
 // a test's app never starts a timer. The timer is unref'd, so it never holds
 // the process open. Each run then kicks the notification mail.
 startReminderSweep(
-  app.db,
+  context.db,
   (msg) => app.log.info(msg),
-  () => app.notifyMail.kick(),
+  () => context.notifyMail.kick(),
 );

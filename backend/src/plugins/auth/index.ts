@@ -1,4 +1,5 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 import type BetterSqlite3 from "better-sqlite3";
 import {
   createAccounts,
@@ -91,11 +92,10 @@ export function storeHandle(sqlite: BetterSqlite3.Database): SqliteHandle {
 }
 
 /**
- * Build the accounts and register the plugin. Call it **before any route**:
- * the guard is a hook on the root instance, and Fastify copies hooks into a
- * child only when the child is created.
+ * prm's accounts over its database, and the Ward client: from `config.ward` (none when
+ * `WARD_OIDC_ISSUER` is unset), or the one a test passes (`null`: no Ward).
  */
-export async function registerAuth(app: FastifyInstance, options: AuthOptions): Promise<Auth> {
+export async function createAuth(options: AuthOptions): Promise<Auth> {
   const accounts = createAccounts({ store: createSqliteStore(storeHandle(options.sqlite)) });
   const identities = createWardIdentities({ accounts });
 
@@ -107,22 +107,36 @@ export async function registerAuth(app: FastifyInstance, options: AuthOptions): 
   } else {
     wardClient = options.wardClient ?? undefined;
   }
+  return { accounts, identities, wardClient };
+}
 
-  const base = options.config.appBase;
+/** The auth plugin's options: the accounts `createAuth` built, and the settings sign-in needs. */
+export interface AuthPluginOptions {
+  auth: Auth;
+  config: AuthOptions["config"];
+}
+
+/**
+ * The library's plugin: sessions, the sign-in routes and the guard. Wrapped in fastify-plugin,
+ * so the guard stays a hook on the root instance. Register it **before any route**: Fastify
+ * copies hooks into a child only when the child is created.
+ */
+const registerAuth: FastifyPluginAsync<AuthPluginOptions> = async (app, { auth, config }) => {
+  const base = config.appBase;
   await app.register(wardAuth, {
-    accounts,
+    accounts: auth.accounts,
     cookieName: "prm_session",
     cookiePath: API_PREFIX,
-    publicOrigin: options.config.publicOrigin,
+    publicOrigin: config.publicOrigin,
     // The same list Fastify's `trustProxy` gets: the proxy's network, so the login lockout
     // counts each client rather than the proxy.
-    trustedProxies: options.config.trustedProxies,
+    trustedProxies: config.trustedProxies,
     publicRoutes: [...PUBLIC_ROUTES],
     registration: { role: ROLES.user },
-    ...(wardClient && {
+    ...(auth.wardClient && {
       ward: {
-        client: wardClient,
-        identities,
+        client: auth.wardClient,
+        identities: auth.identities,
         loginPath: `${base}login`,
         settingsPath: `${base}settings`,
         afterSignInPath: base,
@@ -131,6 +145,11 @@ export async function registerAuth(app: FastifyInstance, options: AuthOptions): 
       },
     }),
   });
+};
 
-  return { accounts, identities, wardClient };
-}
+export const authPlugin = fp(registerAuth, { name: "auth" });
+
+/** The admin guard, for a route's `preHandler`. */
+export { requireRole } from "../../../vendor/ward/ward-auth.js";
+export { subjectOf } from "./session.js";
+export { WardUnavailableError, type WardClient } from "../../../vendor/ward/ward-auth.js";

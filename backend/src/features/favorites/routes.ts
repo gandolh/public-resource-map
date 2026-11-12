@@ -1,8 +1,9 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { and, eq, isNull } from "drizzle-orm";
 import type { FavoritesDto } from "@public-resource-map/shared";
-import { subjectOf } from "../../plugins/auth/session.js";
+import { subjectOf } from "../../plugins/auth/index.js";
 import { event, favoriteEvent, favoritePlace, place } from "../../db/schema.js";
+import type { DB } from "../../db/index.js";
 
 /**
  * Favourites. Everything here is per person, keyed on
@@ -11,8 +12,12 @@ import { event, favoriteEvent, favoritePlace, place } from "../../db/schema.js";
  * `plugins/auth/index.ts`. Adding and removing are idempotent, so a double tap or a
  * retried request leaves one row or none.
  */
-export async function favoriteRoutes(app: FastifyInstance) {
-  const db = app.db;
+/** What this feature takes from the app's context. */
+export interface Options {
+  db: DB;
+}
+
+export async function favoriteRoutes(app: FastifyInstance, { db }: Options) {
   const notFound = (reply: FastifyReply, what: string) =>
     reply.status(404).send({ code: "NOT_FOUND", message: `No such ${what}` });
 

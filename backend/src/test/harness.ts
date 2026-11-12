@@ -4,8 +4,16 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { createDb, type DB } from "../db/index.js";
-import { buildApp, type BuildAppOptions } from "../app.js";
+import { buildApp, type AppContext, type BuildAppOptions } from "../app.js";
 import { loadConfig, type Config } from "../config.js";
+import { storeHandle } from "../plugins/auth/index.js";
+import {
+  createAccounts,
+  createSqliteStore,
+  createWardIdentities,
+  type Accounts,
+  type WardIdentities,
+} from "../../vendor/ward/ward-auth.js";
 
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
@@ -21,8 +29,13 @@ export interface SignedIn {
 
 export interface TestApp {
   app: FastifyInstance;
+  /** What the features were handed: a test waits on `context.notifyMail.idle()`. */
+  context: AppContext;
   db: DB;
   sqlite: BetterSqlite3.Database;
+  /** prm's accounts and their Ward links, over the same database the app uses. */
+  accounts: Accounts;
+  identities: WardIdentities;
   /**
    * A local user with `role`, signed in, as a cookie header. A real session
    * from the shared library, so the real guard and `requireRole` decide what
@@ -66,7 +79,7 @@ export async function buildTestApp(
   // Settings from a fixed environment, never the process's: a test never reaches a real
   // Overpass, Nominatim or Ward, whatever the shell running it has set.
   const config: Config = { ...loadConfig({ PUBLIC_ORIGIN: TEST_ORIGIN }), ...opts.config };
-  const app = await buildApp(config, {
+  const { app, context } = await buildApp(config, {
     db: { db, sqlite },
     ward: opts.ward ?? null,
     ingest: opts.ingest,
@@ -74,12 +87,18 @@ export async function buildTestApp(
   });
   await app.ready();
 
+  // The library keeps its state in the database, so accounts built here see what the app's see.
+  const accounts = createAccounts({ store: createSqliteStore(storeHandle(sqlite)) });
+  const identities = createWardIdentities({ accounts });
+
   return {
     app,
+    context,
     db,
     sqlite,
+    accounts,
+    identities,
     async signIn(role = "user", id = randomUUID()) {
-      const { accounts } = app.auth;
       const user =
         (await accounts.findUserById(id)) ?? (await accounts.createUser({ id, username: `${role}-${id}`, role }));
       const { token } = await accounts.startSession(user.id);

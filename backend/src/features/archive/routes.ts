@@ -2,7 +2,8 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import { desc, eq, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { archiveQuerySchema, parseCsv, type ArchiveQuery, type WhatsOnItem } from "@public-resource-map/shared";
 import { event, favoriteEvent, favoritePlace, place } from "../../db/schema.js";
-import { subjectOf } from "../../plugins/auth/session.js";
+import type { DB } from "../../db/index.js";
+import { subjectOf } from "../../plugins/auth/index.js";
 import { pastAt, rowToEvent } from "../events/index.js";
 
 /**
@@ -11,8 +12,12 @@ import { pastAt, rowToEvent } from "../events/index.js";
  * links to its place. The citywide list is public; "mine" (events you saved,
  * and events at places you follow) is yours alone.
  */
-export async function archiveRoutes(app: FastifyInstance) {
-  const db = app.db;
+/** What this feature takes from the app's context. */
+export interface Options {
+  db: DB;
+}
+
+export async function archiveRoutes(app: FastifyInstance, { db }: Options) {
   const ended = sql`coalesce(${event.endDate}, ${event.startDate})`;
 
   async function page(where: SQL, q: ArchiveQuery) {

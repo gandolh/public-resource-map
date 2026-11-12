@@ -190,7 +190,7 @@ describe("the trigger", () => {
       .values({ name: "Muzeul de Artă", category: "museum", city: "Timișoara", lat: 45.75, lng: 21.22 })
       .returning({ id: place.id })
       .get().id;
-    await t.app.auth.identities.createLinkedUser({ subject: "ward-ana", id: "ana", username: "ana", role: "user" });
+    await t.identities.createLinkedUser({ subject: "ward-ana", id: "ana", username: "ana", role: "user" });
     await t.signIn("user", "dan");
     for (const subject of ["ana", "dan"]) t.db.insert(favoritePlace).values({ subject, placeId }).run();
     t.db
@@ -218,7 +218,7 @@ describe("the trigger", () => {
       payload: { ids: ["s1"] },
     });
     expect(res.json().notified).toBe(2);
-    await t.app.notifyMail.idle();
+    await t.context.notifyMail.idle();
     // Ward is asked by subject, never by prm's id; dan has no address at Ward.
     expect(fake.mails).toHaveLength(1);
     expect(fake.mails[0]).toMatchObject({ subject: "ward-ana", mailSubject: "1 eveniment nou la Muzeul de Artă" });

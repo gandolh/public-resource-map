@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { and, asc, eq, inArray, isNull, sql, getTableColumns } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { event, place } from "../../db/schema.js";
+import type { DB } from "../../db/index.js";
 import {
   createPlaceSchema,
   parseCsv,
@@ -15,8 +16,7 @@ import { lensWindow } from "../../lib/time.js";
 import { liveInWindow, rowToEvent } from "../events/index.js";
 import { rowToPlace } from "./mapper.js";
 import { isForeignKeyViolation } from "../../lib/fk.js";
-import { requireRole } from "../../../vendor/ward/ward-auth.js";
-import { ROLES } from "../../plugins/auth/index.js";
+import { requireRole, ROLES } from "../../plugins/auth/index.js";
 
 /**
  * Live events at a place that are on during the lens window (starting in it, or
@@ -29,7 +29,7 @@ import { ROLES } from "../../plugins/auth/index.js";
  * silently resolves both sides to the subquery's own table and every count
  * comes back zero. The builder emits `"event"."place_id" = "place"."id"`.
  */
-function upcomingCountExpr(db: FastifyInstance["db"], from: string, to: string) {
+function upcomingCountExpr(db: DB, from: string, to: string) {
   const sub = db
     .select({ c: sql<number>`count(*)` })
     .from(event)
@@ -42,9 +42,12 @@ function upcomingCountExpr(db: FastifyInstance["db"], from: string, to: string) 
  * OSM data is ingested once (see `POST /api/admin/osm/sync`) and never fetched
  * from Overpass on user traffic. Renames the transitional `/api/resources`.
  */
-export async function placeRoutes(app: FastifyInstance) {
-  const db = app.db;
+/** What this feature takes from the app's context. */
+export interface Options {
+  db: DB;
+}
 
+export async function placeRoutes(app: FastifyInstance, { db }: Options) {
   app.get<{ Querystring: Record<string, string> }>("/places", async (req, reply) => {
     const query = placesQuerySchema.safeParse(req.query);
     if (!query.success) {

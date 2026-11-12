@@ -1,7 +1,7 @@
 import { and, asc, eq, gte, isNull, sql } from "drizzle-orm";
 import type { DB } from "../../db/index.js";
 import { event, notification, notificationEvent, place } from "../../db/schema.js";
-import { WardUnavailableError } from "../../../vendor/ward/ward-auth.js";
+import { WardUnavailableError } from "../../plugins/auth/index.js";
 import { APP_TZ, zonedParts } from "../../lib/time.js";
 
 /**

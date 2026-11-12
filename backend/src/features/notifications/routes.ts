@@ -1,16 +1,20 @@
 import type { FastifyInstance } from "fastify";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { markReadSchema, type InboxDto, type NotificationDto } from "@public-resource-map/shared";
-import { subjectOf } from "../../plugins/auth/session.js";
+import { subjectOf } from "../../plugins/auth/index.js";
 import { event, notification, notificationEvent, place } from "../../db/schema.js";
+import type { DB } from "../../db/index.js";
 
 /**
  * The inbox: per person, keyed on the local user id (the `subject` column), and signed-in only:
  * none of it is on the public allowlist in `plugins/auth/index.ts`.
  */
-export async function notificationRoutes(app: FastifyInstance) {
-  const db = app.db;
+/** What this feature takes from the app's context. */
+export interface Options {
+  db: DB;
+}
 
+export async function notificationRoutes(app: FastifyInstance, { db }: Options) {
   app.get("/notifications", async (req, reply): Promise<InboxDto> => {
     reply.header("cache-control", "no-store");
     const subject = subjectOf(req);

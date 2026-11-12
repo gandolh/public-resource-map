@@ -34,7 +34,7 @@ const get = (url: string, cookie?: string) => t.app.inject({ method: "GET", url,
 describe("local sign-in", () => {
   it("a seeded user signs in with their password, and the cookie is scoped to /prm-api", async () => {
     t = await buildTestApp();
-    await t.app.auth.accounts.createUser({ username: "ana", password: "a long enough password", role: "user" });
+    await t.accounts.createUser({ username: "ana", password: "a long enough password", role: "user" });
 
     const res = await post("/auth/login", { username: "ana", password: "a long enough password" });
     expect(res.statusCode).toBe(200);
@@ -48,7 +48,7 @@ describe("local sign-in", () => {
 
   it("a wrong password is invalid_credentials, the same answer as an unknown name", async () => {
     t = await buildTestApp();
-    await t.app.auth.accounts.createUser({ username: "ana", password: "a long enough password", role: "user" });
+    await t.accounts.createUser({ username: "ana", password: "a long enough password", role: "user" });
     for (const body of [
       { username: "ana", password: "not the password" },
       { username: "nobody", password: "a long enough password" },
@@ -129,7 +129,7 @@ describe("the guard", () => {
 
   it("refuses a session that began with Ward when Ward is not configured", async () => {
     t = await buildTestApp();
-    const { accounts } = t.app.auth;
+    const { accounts } = t;
     const user = await accounts.createUser({ username: "ana", role: "user" });
     const { token } = await accounts.startSession(user.id, { origin: "ward", wardSid: "sid-1" });
     const res = await get("/api/favorites", `prm_session=${token}`);
@@ -148,8 +148,8 @@ describe("Sign in with Ward", () => {
 
   /** A user linked to `subject`, signed in through Ward under `wardSid`. */
   async function wardSession(subject: string, wardSid: string): Promise<string> {
-    const user = await t.app.auth.identities.createLinkedUser({ subject, username: subject, role: "user" });
-    const { token } = await t.app.auth.accounts.startSession(user.id, { origin: "ward", wardSid });
+    const user = await t.identities.createLinkedUser({ subject, username: subject, role: "user" });
+    const { token } = await t.accounts.startSession(user.id, { origin: "ward", wardSid });
     return `prm_session=${token}`;
   }
 

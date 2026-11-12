@@ -46,7 +46,7 @@ function legacyRows(db: TestApp["db"]) {
 describe("adopting Ward subjects on boot", () => {
   it("makes each subject a linked user whose id is the subject, with no password", async () => {
     t = await buildTestApp({ before: legacyRows });
-    const { accounts, identities } = t.app.auth;
+    const { accounts, identities } = t;
 
     for (const subject of [ANA, DAN, TWIN]) {
       const user = await identities.findUserBySubject(subject);
@@ -61,7 +61,7 @@ describe("adopting Ward subjects on boot", () => {
   it("a migrated person sees their rows once signed in", async () => {
     t = await buildTestApp({ before: legacyRows });
     // Their next "Sign in with Ward" finds the linked user, not a new one.
-    const { user, created } = await t.app.auth.identities.userForSignIn({
+    const { user, created } = await t.identities.userForSignIn({
       subject: DAN,
       username: "dan",
       role: "admin",
@@ -83,12 +83,12 @@ describe("adopting Ward subjects on boot", () => {
     const local = await t.signIn("user");
     t.db.insert(favoritePlace).values({ subject: local.id, placeId: "museum" }).run();
 
-    expect(await adoptWardSubjects(t.sqlite, t.app.auth.identities)).toEqual({ created: [], skipped: [] });
-    expect(await t.app.auth.identities.findUserBySubject(local.id)).toBeUndefined();
+    expect(await adoptWardSubjects(t.sqlite, t.identities)).toEqual({ created: [], skipped: [] });
+    expect(await t.identities.findUserBySubject(local.id)).toBeUndefined();
   });
 
   it("an empty database creates nobody", async () => {
     t = await buildTestApp();
-    expect(await adoptWardSubjects(t.sqlite, t.app.auth.identities)).toEqual({ created: [], skipped: [] });
+    expect(await adoptWardSubjects(t.sqlite, t.identities)).toEqual({ created: [], skipped: [] });
   });
 });
