@@ -90,3 +90,22 @@ describe("places API (GET /api/places [+ /:id])", () => {
     expect(missing.statusCode).toBe(404);
   });
 });
+
+describe("the places replies go through their schema", () => {
+  it("answers a stored value the schema refuses with the fixed 500, not the row", async () => {
+    const t = await buildTestApp();
+    try {
+      // A category no client knows: the schema's enum refuses to send it.
+      t.db
+        .insert(place)
+        .values({ id: "odd", name: "Odd", category: "spaceport", city: "Timișoara", lat: 45.7, lng: 21.2 })
+        .run();
+      const res = await t.app.inject({ method: "GET", url: "/api/places/odd" });
+      expect(res.statusCode).toBe(500);
+      expect(res.json()).toEqual({ code: "INTERNAL", message: "Something went wrong on the server." });
+      expect(res.body).not.toContain("spaceport");
+    } finally {
+      await t.close();
+    }
+  });
+});

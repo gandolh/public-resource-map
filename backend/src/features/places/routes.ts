@@ -1,4 +1,5 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
+import { z } from "zod";
 import { and, asc, eq, inArray, isNull, sql, getTableColumns } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { event, place } from "../../db/schema.js";
@@ -8,8 +9,9 @@ import {
   parseCsv,
   placeEventsQuerySchema,
   placesQuerySchema,
+  eventSchema,
+  placeSchema,
   type Event,
-  type CreatePlaceInput,
 } from "@public-resource-map/shared";
 import { boundingBox } from "../../lib/geo.js";
 import { lensWindow } from "../../lib/time.js";
@@ -17,6 +19,9 @@ import { liveInWindow, rowToEvent } from "../events/index.js";
 import { rowToPlace } from "./mapper.js";
 import { isForeignKeyViolation } from "../../lib/fk.js";
 import { requireRole, ROLES } from "../../plugins/auth/index.js";
+import { errorBodySchema } from "../../lib/api-error.js";
+import { pageOf } from "../../lib/page.js";
+import { idParamsSchema } from "../../lib/params.js";
 
 /**
  * Live events at a place that are on during the lens window (starting in it, or
@@ -37,24 +42,23 @@ function upcomingCountExpr(db: DB, from: string, to: string) {
   return sql<number>`(${sub})`;
 }
 
-/**
- * Public places API. Serves the map + place panel FAST from SQLite —
- * OSM data is ingested once (see `POST /api/admin/osm/sync`) and never fetched
- * from Overpass on user traffic. Renames the transitional `/api/resources`.
- */
 /** What this feature takes from the app's context. */
 export interface Options {
   db: DB;
 }
 
-export async function placeRoutes(app: FastifyInstance, { db }: Options) {
-  app.get<{ Querystring: Record<string, string> }>("/places", async (req, reply) => {
-    const query = placesQuerySchema.safeParse(req.query);
-    if (!query.success) {
-      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
-    }
-
-    const { city, lat, lng, radiusKm, category, lens, page, pageSize } = query.data;
+/**
+ * Public places API. Serves the map + place panel FAST from SQLite —
+ * OSM data is ingested once (see `POST /api/admin/osm/sync`) and never fetched
+ * from Overpass on user traffic. Renames the transitional `/api/resources`.
+ */
+export const placeRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+  const listSchema = {
+    querystring: placesQuerySchema,
+    response: { 200: pageOf(placeSchema), 400: errorBodySchema },
+  };
+  app.get("/places", { schema: listSchema }, async (req) => {
+    const { city, lat, lng, radiusKm, category, lens, page, pageSize } = req.query;
 
     const { from, to } = lensWindow(lens);
     const eventCount = upcomingCountExpr(db, from, to);
@@ -108,12 +112,12 @@ export async function placeRoutes(app: FastifyInstance, { db }: Options) {
    * Live and not yet over (upcoming, or running now) — a past or retracted
    * event never reaches a user.
    */
-  app.get<{ Params: { id: string }; Querystring: Record<string, string> }>("/places/:id/events", async (req, reply) => {
-    const query = placeEventsQuerySchema.safeParse(req.query);
-    if (!query.success) {
-      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
-    }
-
+  const eventsSchema = {
+    params: idParamsSchema,
+    querystring: placeEventsQuerySchema,
+    response: { 200: pageOf(eventSchema), 400: errorBodySchema, 404: errorBodySchema },
+  };
+  app.get("/places/:id/events", { schema: eventsSchema }, async (req, reply) => {
     const exists = db
       .select({ id: place.id })
       .from(place)
@@ -123,7 +127,7 @@ export async function placeRoutes(app: FastifyInstance, { db }: Options) {
       return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
     }
 
-    const { lens, limit } = query.data;
+    const { lens, limit } = req.query;
     const { from, to } = lensWindow(lens);
 
     const rows = await db
@@ -137,7 +141,8 @@ export async function placeRoutes(app: FastifyInstance, { db }: Options) {
     return { data, total: data.length, page: 1, pageSize: limit };
   });
 
-  app.get<{ Params: { id: string } }>("/places/:id", async (req, reply) => {
+  const oneSchema = { params: idParamsSchema, response: { 200: placeSchema, 404: errorBodySchema } };
+  app.get("/places/:id", { schema: oneSchema }, async (req, reply) => {
     const row = db
       .select()
       .from(place)
@@ -151,13 +156,9 @@ export async function placeRoutes(app: FastifyInstance, { db }: Options) {
   // The write routes are admin-only: they were open to anyone, so
   // a curl could delete every place or publish an unreviewed event. Kept, not
   // removed, as an escape hatch for manual fixes until the admin UI exists.
-  app.post<{ Body: CreatePlaceInput }>("/places", { preValidation: requireRole(ROLES.admin) }, async (req, reply) => {
-    const parsed = createPlaceSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
-    }
-
-    const { lat, lng, ...rest } = parsed.data;
+  const createSchema = { body: createPlaceSchema, response: { 201: placeSchema, 400: errorBodySchema } };
+  app.post("/places", { preValidation: requireRole(ROLES.admin), schema: createSchema }, async (req, reply) => {
+    const { lat, lng, ...rest } = req.body;
     const id = randomUUID();
 
     await db.insert(place).values({ id, lat, lng, ...rest });
@@ -167,25 +168,25 @@ export async function placeRoutes(app: FastifyInstance, { db }: Options) {
     return reply.status(201).send(rowToPlace(row));
   });
 
-  app.delete<{ Params: { id: string } }>(
-    "/places/:id",
-    { preValidation: requireRole(ROLES.admin) },
-    async (req, reply) => {
-      let result;
-      try {
-        result = await db.delete(place).where(eq(place.id, req.params.id));
-      } catch (err) {
-        // Still referenced by an event, a staged event, a favorite or a
-        // notification: a refusal, not a 500.
-        if (isForeignKeyViolation(err)) {
-          return reply.status(409).send({ code: "PLACE_IN_USE", message: "Place is still referenced" });
-        }
-        throw err;
+  const deleteSchema = {
+    params: idParamsSchema,
+    response: { 204: z.null(), 404: errorBodySchema, 409: errorBodySchema },
+  };
+  app.delete("/places/:id", { preValidation: requireRole(ROLES.admin), schema: deleteSchema }, async (req, reply) => {
+    let result;
+    try {
+      result = await db.delete(place).where(eq(place.id, req.params.id));
+    } catch (err) {
+      // Still referenced by an event, a staged event, a favorite or a
+      // notification: a refusal, not a 500.
+      if (isForeignKeyViolation(err)) {
+        return reply.status(409).send({ code: "PLACE_IN_USE", message: "Place is still referenced" });
       }
-      if (result.changes === 0) {
-        return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
-      }
-      return reply.status(204).send();
-    },
-  );
-}
+      throw err;
+    }
+    if (result.changes === 0) {
+      return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
+    }
+    return reply.status(204).send(null);
+  });
+};
