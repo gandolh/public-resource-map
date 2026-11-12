@@ -1,6 +1,6 @@
 ---
 summary: Identity decisions: prm's own accounts with "Sign in with Ward" as a linked second way in (2026-10-13), and the superseded designs before it (prm-only auth, then Ward-only identity).
-updated: 2026-11-02
+updated: 2026-11-12
 ---
 
 # Decisions — identity
@@ -67,7 +67,7 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
   `WardUnavailableError`, not an invalid token; only "no key matches this
   token's `kid`" stays a 401. The client's injected `fetch` reaches the key set
   too (`jose`'s `customFetch`), so tests cover that path.
-- **prm hand-writes its Ward client** (`backend/src/ward/`) rather than
+- **prm hand-writes its Ward client** (`backend/src/ward/`, since 2026-11-12 `backend/src/plugins/auth/`) rather than
   importing a shared package — the estate decided against one because these
   repos are separate checkouts that `npm ci` independently. The contract is
   `wzd_auth/corpus/wiki/integrating.md`.
@@ -104,7 +104,7 @@ built here on 2026-10-13. Each app keeps its own accounts and login page;
   `admin`, anything else becomes `user`). `db:seed-users` creates users from
   the environment or a prompt; `db:set-role` changes a role.
 - **Public by allowlist.** The library guards every route that
-  `backend/src/ward/auth.ts` does not list: the map's reads, `/health` and the
+  `backend/src/plugins/auth/index.ts` does not list: the map's reads, `/health` and the
   plugin's own sign-in routes are public, and everything per-person or admin is
   signed-in by default. A public route never resolves a session, so `/api/me`
   is gone; the UI asks `GET /prm-api/auth/session`.
@@ -115,7 +115,7 @@ built here on 2026-10-13. Each app keeps its own accounts and login page;
   sign-in finds their rows. prm never stored usernames or roles, so a migrated
   user is `user-<first 8 characters>` with the role `user`; a former admin is
   promoted with `db:set-role`. No Drizzle migration: the library migrates its
-  own tables, and this step is code (`backend/src/ward/subjects.ts`).
+  own tables, and this step is code (`backend/src/plugins/auth/subjects.ts`).
 - **Revoke-everywhere holds for Ward sessions only**: a session that began
   with Ward is checked against Ward at most every 30 seconds and refused
   (`ward_unavailable`) when Ward cannot answer; a local session is never

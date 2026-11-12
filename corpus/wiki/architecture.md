@@ -1,6 +1,6 @@
 ---
 summary: How the code is put together: the ui → shared ← backend workspaces, the UI file map, backend routes and services, and what lives in shared.
-updated: 2026-11-02
+updated: 2026-11-12
 ---
 
 # Architecture
@@ -95,27 +95,31 @@ app/
 
 - **Server**: Fastify 5 with `@fastify/cors` (`credentials: true`, so Ward's cookie arrives)
 - **Database**: SQLite via `better-sqlite3` + Drizzle ORM
-- **Validation**: Zod (request bodies and query strings)
-- **Identity**: Ward; `jose` verifies its tokens locally (`ward/`)
+- **Validation**: Zod through `@fastify/type-provider-zod`: every route declares its params, query, body and a response schema per status it sends, so a field no schema names never leaves the server
+- **Identity**: prm's own accounts and "Sign in with Ward", from Ward's vendored library (`plugins/auth/`)
 - **DB file**: `backend/data/app.db` (gitignored), or `DATABASE_PATH`, which the deploy points outside the rsynced tree
 - **Migrations**: Drizzle Kit → `backend/drizzle/`, applied with `npm run db:migrate` (`drizzle-orm`'s migrator via tsx). Five: `0000` the consolidated place-centric schema (the schema consolidation), `0001` the Ward cutover (hand-written: drops the user tables, rebuilds the per-person ones empty and keyed on `subject`), `0002` ingestion keys on `staged_event` (the event ingestion pipeline), `0003` reconciles 0001 with `schema.ts` (the 0001 reconciliation), `0004` `place.retired_at` (OSM retirement). `migrations.test.ts` fails when the migrated database drifts from `schema.ts`.
 
 ### Backend modules (`src/`)
 
+The house code structure (the `code-structure` skill; adopted 2026-11-12, see [decisions-engineering.md](decisions-engineering.md)):
+
 ```
-index.ts       listen on PORT (3001); start the daily reminder sweep
-app.ts         buildApp(): CORS, Ward wiring, the mail sweeper, the route plugins under /api
-routes/        places, events, whats-on, archive, favorites (+ inbox), me, admin-osm,
-               admin-ingest; event-mapper + event-window shared by the read routes
-ward/          client (JWT verify + introspection, 30 s cache), plugin (request.ward,
-               requireAuth, requireAdmin), config, wire types
-ingest/        pipeline (fetch → dedup → match → geocode → reconcile → staged diff),
-               adapters, iCal reader, venue matching, Nominatim geocoder
-lib/           osm-sync (Overpass, city registry, retiring), osm-categories, notify (new-event
-               items at accept), notify-mail (mail via Ward), geo, time, fk
-jobs/          reminder-sweep: day-before reminders at 09:00 Bucharest
-db/            schema, index (createDb), migrate, seed (+ seed-data, seed-ids), capture-osm, fixtures/
-test/          harness (in-memory DB + injected Ward), fake-ward, real-ward
+server.ts      the process: loadConfig(), buildApp, close-with-grace, listen; the reminder sweep
+app.ts         buildApp(config): the error plugin, the zod compilers, CORS, auth, then each
+               feature by name with the AppContext (db, mail sweeper, ingest and OSM deps)
+config.ts      the one reader of process.env (zod; ConfigError names every bad variable)
+plugins/       errors (the error and not-found handlers, { code, message }),
+               auth/ (accounts, the library's plugin and guard, PUBLIC_ROUTES, subjects)
+features/      places, events, whats-on, archive, favorites, notifications, osm (sync,
+               categories), ingest (pipeline, adapters, iCal, matching, geocoder, schemas),
+               reminders (inbox items, the mail sweeper, the daily sweep); each used
+               through its index.ts
+lib/           pure helpers: ApiError and the error body, the page and id schemas, geo, time, fk
+db/            schema, index (createDb), migrate, seed (+ seed-data, seed-ids), the account
+               scripts, capture-osm, fixtures/
+test/          harness (buildTestApp: in-memory DB, settings from a fixed environment),
+               fake-ward, cross-feature/ (tests that span features)
 ```
 
 ### API routes
@@ -126,14 +130,13 @@ test/          harness (in-memory DB + injected Ward), fake-ward, real-ward
 | GET | `/api/places` | a city's places (or a bbox), category chips + timing lens, each with `upcomingEventCount` (public) |
 | GET | `/api/places/:id` | single place (public) |
 | GET | `/api/places/:id/events` | what is on at a place in the lens window (public) |
-| POST · DELETE | `/api/places`, `/api/places/:id` | create / delete a place — **admin only** (`requireAdmin`); 409 `PLACE_IN_USE` while anything references it |
+| POST · DELETE | `/api/places`, `/api/places/:id` | create / delete a place — **admin only**; 409 `PLACE_IN_USE` while anything references it |
 | GET | `/api/events` | events near a point (+ from/to date filters) (public) |
 | GET | `/api/events/:id` | single event (public) |
 | POST · DELETE | `/api/events`, `/api/events/:id` | create (publishes straight to `live`) / delete an event — **admin only**; 409 `EVENT_IN_USE` while referenced |
 | GET | `/api/whats-on` | the city's upcoming events with their places, on the map's filters (public) |
 | GET | `/api/archive` | past events citywide, newest first (public) |
 | GET | `/api/archive/mine` | past events you saved or at places you follow — **signed in** |
-| GET | `/api/me` | the signed-in Ward caller, narrowed |
 | GET | `/api/favorites` | your followed places and saved events — **signed in** |
 | POST · DELETE | `/api/favorites/places/:placeId`, `/api/favorites/events/:eventId` | follow / unfollow, idempotent — **signed in** |
 | GET · POST | `/api/notifications`, `/api/notifications/read` | the inbox; mark items (or all) read — **signed in** |
@@ -143,9 +146,13 @@ test/          harness (in-memory DB + injected Ward), fake-ward, real-ward
 | GET | `/api/admin/staged-events` | the review queue — **admin only** |
 | POST | `/api/admin/staged-events/accept`, `…/reject`, `…/:id/place` | accept (goes live, notifies followers, kicks mail), reject, or set a staged event's place by hand — **admin only** |
 
-"Signed in" is `requireAuth`; "admin only" is `requireAdmin` (401 anonymous, 403 without `prm:admin`).
-Ward is asked only by those two guards and `/api/me`, through `resolveWard`, at most once per
-request. A public route never asks, even when a `ward_session` cookie comes in (Ward-only-where-needed).
+"Public" is the allowlist in `plugins/auth/index.ts` (`PUBLIC_ROUTES`); the library's guard
+refuses everything else signed out (401). "Admin only" adds `requireRole("admin")` in
+`preValidation`, before the route's schemas run, so a signed-in user who isn't an admin gets 403
+before any 400. A failed input check is 400 `INVALID_QUERY`, `INVALID_BODY` or `INVALID_PARAMS`
+with the first issue's path and message; an unknown route is 404 `NOT_FOUND`; anything unexpected
+is a 500 `INTERNAL` with a fixed message, never the thrown one. The vendored `/auth/*` routes are
+the library's own.
 
 Public place reads skip retired places. Proximity filtering uses a bounding-box approximation (not Haversine). Good enough for city-scale use.
 
@@ -167,7 +174,7 @@ One Drizzle schema (`backend/src/db/schema.ts`). It was consolidated on 2026-07-
 | `notification` | 05 | `subject`, `kind` (`new-event`\|`reminder`), nullable `placeId`/`eventId`, `batchId` (coalesces a new-event batch), `readAt`, `emailedAt` | **unique `(subject,eventId,kind)`** (reminder idempotency; new-event rows have null `eventId`) | `place`, `event` |
 | `notification_event` | 05, 29 | join: `notificationId`, `eventId` | **PK `(notificationId,eventId)`**; index `eventId`; deleted with its notification | `notification`, `event` |
 
-**Lifecycle:** an `event` is never hard-deleted when it ends — it flips `status` to `past` (powers the archive page); OSM re-sync upserts only `source='osm'` places (never clobbers `event-venue` or manual pins) and sets `retiredAt` on the ones OSM no longer has (OSM retirement); new-event notifications are coalesced per `(place, batch)` and fan out via `notification_event`, reminders are per-event. Each row is mailed once through Ward's `POST /notify` by `lib/notify-mail.ts`, kicked after an accept and after the daily reminder run; `emailedAt` marks it (notification email).
+**Lifecycle:** an `event` is never hard-deleted when it ends — it flips `status` to `past` (powers the archive page); OSM re-sync upserts only `source='osm'` places (never clobbers `event-venue` or manual pins) and sets `retiredAt` on the ones OSM no longer has (OSM retirement); new-event notifications are coalesced per `(place, batch)` and fan out via `notification_event`, reminders are per-event. Each row is mailed once through Ward's `POST /notify` by `features/reminders/notify-mail.ts`, kicked after an accept and after the daily reminder run; `emailedAt` marks it (notification email).
 
 ## Shared (`shared/`)
 

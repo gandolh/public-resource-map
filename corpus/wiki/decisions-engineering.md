@@ -1,6 +1,6 @@
 ---
 summary: Locked stack (npm workspaces, React Router 8, pinned versions…) and code conventions — check before changing tooling or style.
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 
 # Decisions — stack and code conventions
@@ -41,5 +41,26 @@ The repo adopted the estate's quality harness. `npm run check` (typecheck, lint,
 - **What Prettier skips** (`.prettierignore`): Markdown (the corpus is prose its own lint governs); `*.css` (`ui/app/app.css` would change 391 of 461 lines, and its aligned token tables are its own style; it can join once it is split into layers); `backend/drizzle/` and `backend/src/db/fixtures/` (generated or frozen: the OSM capture alone is 36,743 lines); the vendored Ward and house-style copies; the lockfile and build output; and the `docs/` workspace.
 - **tsconfig.** `tsconfig.base.json` carries the house flags itself instead of extending the vendored base: the image's builder stage copies only that one file, and the vendored base turns on `noUncheckedIndexedAccess`, which this repo cannot take yet (94 errors: 84 in `backend`, 52 of them in tests, and 10 in `ui`). With the flag off, `@typescript-eslint/no-unnecessary-type-assertion` is off too, because it calls every `!` on an indexed read unnecessary and its autofix strips them; both come back together. `NodeNext` for `shared` and `backend`, `bundler` for `ui`, and `e2e/` has its own tsconfig so the typecheck and typed lint cover it. TypeScript is 6.0.3 in every workspace (`baseUrl` went from `ui/tsconfig.json`; its `paths` resolve from the file).
 - **The 58 awaits.** Drizzle's better-sqlite3 driver answers synchronously, so `await db...all()` awaited a plain array. `@typescript-eslint/await-thenable` found 70 (58 in `backend/src`, 12 in tests) and they were deleted. A query builder with no `.all()`, `.get()` or `.run()` is a thenable and still needs its `await`.
-- **The checks that wait.** `check-base-ui` and `check-structure` run `--warn-only` until the Base UI and server work clear their findings; `n/no-process-env` is a warning on `backend/src` until the server reads its settings from one `config.ts`. dependency-cruiser runs strict from the start and found nothing.
+- **The checks that waited.** `check-base-ui` and `check-structure` ran `--warn-only` until the Base UI and server work cleared their findings, and `n/no-process-env` was a warning on `backend/src` until the server read its settings from one `config.ts`; `check-base-ui` went strict with the Base UI work, and the other two with the server work on 2026-11-12. dependency-cruiser ran strict from the start.
 - **Rejected:** a git dependency on the house configs (no `git` in the image); `exactOptionalPropertyTypes` (30 and 8 errors, counted for later); Prettier on Markdown and on `app.css`; ESLint `project` instead of `projectService` (29.5 s against 19.5 s).
+
+## The server in the house code structure (2026-11-12)
+
+The API follows the estate's `code-structure` skill. `config.ts` is the one reader of the environment, `server.ts` runs the process, `app.ts` builds the app without listening, and the code splits by feature (`features/<name>/` with an `index.ts`) instead of by layer. Every route declares its schemas through `@fastify/type-provider-zod`, a response included, and one error plugin answers every error in the repo's `{ code, message }`.
+
+- **The directory stays `backend/`,** not the skill's `server/`. A rename would touch the Dockerfile's `COPY` lines, the compose volume, the `prm-migrate` entrypoint, the workspace name and the vitest projects, for no gain. `scripts/conventions.json` names the roots for the checkers.
+- **`NODE_ENV` is read once, as `config.production`.** The legal posture keeps an adapter that has not cleared it (the iaBilet rule) off production, and the image sets `NODE_ENV=production`. A purpose-named variable would leave the safeguard off wherever a deploy forgot it. This is the one `check-structure` exception, and it goes when the source registry's `forbidden` state replaces the iaBilet rule.
+- **`PUBLIC_ORIGIN` is required everywhere.** It used to be required only in production. The database and seed scripts read smaller sets and don't need it. There is no `.env` loader in code: the dev scripts pass the root `.env` to Node, so a missing variable fails the parse, naming it.
+- **`AUTH_TRUSTED_PROXIES` is the one proxy list.** It sets Fastify's `trustProxy` and the library's login lockout.
+- **Timeouts:**
+  - `connectionTimeout` and `requestTimeout` are 180 s. The OSM sync waits up to 100 s on Overpass.
+  - The two ingest refreshes lift the socket timeout for themselves, because sources run one after another at the geocoder's pace.
+  - `keepAliveTimeout` is 125 s, above Caddy's 2-minute idle upstream.
+- **The admin guard runs in `preValidation`,** not `preHandler`. Fastify validates between the two, so a signed-in non-admin still gets 403 before any 400 describing an admin route's input.
+- **Typed plugin options, no decorators.** `buildApp` builds an `AppContext` (settings, database, mail sweeper, ingest and OSM dependencies) and registers each feature with it. Each feature names what it takes in its own `Options` type, so no feature imports `app.ts`, which would close a cycle that dependency-cruiser counts. Tests replace parts through `buildTestApp`'s options.
+- **Server-only response schemas live in their feature** (`features/ingest/schemas.ts`). Each is typed against the shared DTO the UI reads, so the two can't drift. The schemas the UI imports stay in `shared/`.
+- **Rejected:**
+  - renaming `backend/` to `server/`;
+  - `@fastify/autoload`, because registration by name is greppable and keeps the option types;
+  - TypeBox, because zod is already the contract in `shared/`;
+  - extracting a `store.ts` per feature now: the handlers keep their Drizzle queries, so the layout, the schemas and the error handling don't land in one diff with a fourth change.
