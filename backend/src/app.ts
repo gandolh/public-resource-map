@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastif
 import cors from "@fastify/cors";
 import type BetterSqlite3 from "better-sqlite3";
 import { createDb, type DB } from "./db/index.js";
+import { errors } from "./plugins/errors.js";
 import { placeRoutes } from "./routes/places.js";
 import { adminOsmRoutes } from "./routes/admin-osm.js";
 import { adminIngestRoutes } from "./routes/admin-ingest.js";
@@ -65,6 +66,8 @@ export interface BuildAppOptions {
  */
 export async function buildApp(config: Config, opts: BuildAppOptions = {}): Promise<FastifyInstance> {
   const app = Fastify(opts.server);
+  // First: the error and not-found handlers, on the root, before anything that can throw.
+  await app.register(errors);
 
   const { db, sqlite } = opts.db ?? createDb(config.databasePath);
   app.decorate("db", db);

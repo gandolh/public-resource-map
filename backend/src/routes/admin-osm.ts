@@ -1,12 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { osmSyncRequestSchema, type OsmSyncRequest } from "@public-resource-map/shared";
-import {
-  OverpassTimeoutError,
-  SyncInProgressError,
-  resolveCity,
-  syncOsmForCity,
-  type SyncDeps,
-} from "../lib/osm-sync.js";
+import { resolveCity, syncOsmForCity, type SyncDeps } from "../lib/osm-sync.js";
 import { requireRole } from "../../vendor/ward/ward-auth.js";
 import { ROLES } from "../ward/auth.js";
 
@@ -40,17 +34,8 @@ export function adminOsmRoutes(deps: SyncDeps) {
           });
         }
 
-        try {
-          return await syncOsmForCity(db, city, deps);
-        } catch (err) {
-          if (err instanceof SyncInProgressError) {
-            return reply.status(409).send({ code: "SYNC_IN_PROGRESS", message: err.message });
-          }
-          if (err instanceof OverpassTimeoutError) {
-            return reply.status(504).send({ code: "OVERPASS_TIMEOUT", message: err.message });
-          }
-          throw err;
-        }
+        // A sync already running (409) and an Overpass timeout (504) are ApiErrors.
+        return syncOsmForCity(db, city, deps);
       },
     );
   };

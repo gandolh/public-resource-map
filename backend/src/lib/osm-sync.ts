@@ -1,3 +1,4 @@
+import { ApiError } from "./api-error.js";
 import { randomUUID } from "node:crypto";
 import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import type { OsmSyncResult } from "@public-resource-map/shared";
@@ -426,9 +427,10 @@ export interface SyncDeps {
 }
 
 /** Overpass did not answer in time. Nothing was written. */
-export class OverpassTimeoutError extends Error {
+export class OverpassTimeoutError extends ApiError {
   constructor(city: string, timeoutMs: number) {
     super(
+      "OVERPASS_TIMEOUT",
       `Overpass did not answer within ${Math.round(timeoutMs / 1000)} s, so ${city} was not synced. ` +
         "Nothing changed; try again later.",
     );
@@ -437,9 +439,9 @@ export class OverpassTimeoutError extends Error {
 }
 
 /** A second sync of a city while the first is still running. */
-export class SyncInProgressError extends Error {
+export class SyncInProgressError extends ApiError {
   constructor(city: string) {
-    super(`An OSM sync of ${city} is already running. Wait for it to finish.`);
+    super("SYNC_IN_PROGRESS", `An OSM sync of ${city} is already running. Wait for it to finish.`);
     this.name = "SyncInProgressError";
   }
 }

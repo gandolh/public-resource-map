@@ -9,6 +9,7 @@ import {
   type StagedStatus,
 } from "@public-resource-map/shared";
 import type { Config } from "../config.js";
+import { ApiError, type ErrorCode } from "../lib/api-error.js";
 import type { DB } from "../db/index.js";
 import { event, eventSource, place, stagedEvent } from "../db/schema.js";
 import { resolveCity, type CityConfig } from "../lib/osm-sync.js";
@@ -54,14 +55,11 @@ export const GRACE_MS = 3 * 24 * 60 * 60 * 1000;
 const SUSPECT_RATIO = 0.5;
 const SUSPECT_MIN_PREVIOUS = 4;
 
-export class IngestError extends Error {
-  readonly code: string;
-  readonly status: number;
-
-  constructor(code: string, message: string, status = 400) {
-    super(message);
-    this.code = code;
-    this.status = status;
+/** A refusal from the pipeline; the error plugin answers it with its code's status. */
+export class IngestError extends ApiError {
+  constructor(code: ErrorCode, message: string) {
+    super(code, message);
+    this.name = "IngestError";
   }
 }
 
@@ -113,12 +111,12 @@ function listingFields(e: RawEvent, sourceName: string) {
 /** Run one source's refresh and stage its diff. */
 export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps): Promise<RefreshSummary> {
   const source = db.select().from(eventSource).where(eq(eventSource.id, sourceId)).get();
-  if (!source) throw new IngestError("SOURCE_NOT_FOUND", "No such source", 404);
-  if (!source.enabled) throw new IngestError("SOURCE_DISABLED", `${source.name} is disabled`, 409);
+  if (!source) throw new IngestError("SOURCE_NOT_FOUND", "No such source");
+  if (!source.enabled) throw new IngestError("SOURCE_DISABLED", `${source.name} is disabled`);
   const adapter = adapterFor(source.adapterKey, deps.adapters);
   if (!adapter) throw new IngestError("UNKNOWN_ADAPTER", `No adapter for ${source.adapterKey}`);
   if (deps.production && !adapter.productionAllowed) {
-    throw new IngestError("ADAPTER_NOT_ALLOWED", `${source.adapterKey} may not run in production`, 403);
+    throw new IngestError("ADAPTER_NOT_ALLOWED", `${source.adapterKey} may not run in production`);
   }
   const city = source.city ? resolveCity(source.city) : null;
   if (!city) throw new IngestError("UNKNOWN_CITY", `${source.name} has no known city`);
@@ -528,9 +526,9 @@ export async function rejectStaged(db: DB, ids: string[], now: Date) {
 /** Settle a staged row's place: an existing place in its city, or a manual pin inside the city. */
 export async function resolveStagedPlace(db: DB, id: string, input: ResolvePlaceInput, now: Date) {
   const row = db.select().from(stagedEvent).where(eq(stagedEvent.id, id)).get();
-  if (!row) throw new IngestError("STAGED_NOT_FOUND", "No such staged event", 404);
+  if (!row) throw new IngestError("STAGED_NOT_FOUND", "No such staged event");
   if (!PENDING.includes(row.status as StagedStatus) || row.status === "needs-attention") {
-    throw new IngestError("NOT_RESOLVABLE", `A ${row.status} row cannot be placed`, 409);
+    throw new IngestError("NOT_RESOLVABLE", `A ${row.status} row cannot be placed`);
   }
   const source = db.select().from(eventSource).where(eq(eventSource.id, row.sourceId)).get();
   const city = source?.city ? resolveCity(source.city) : null;
@@ -540,7 +538,7 @@ export async function resolveStagedPlace(db: DB, id: string, input: ResolvePlace
   if ("placeId" in input) {
     const target = db.select().from(place).where(eq(place.id, input.placeId)).get();
     if (!target || target.city !== city.name || target.retiredAt) {
-      throw new IngestError("PLACE_NOT_IN_CITY", `No such place in ${city.name}`, 400);
+      throw new IngestError("PLACE_NOT_IN_CITY", `No such place in ${city.name}`);
     }
     db.update(stagedEvent)
       .set({ placeId: target.id, matchStatus: "manual", lat: null, lng: null, updatedAt: at })
@@ -549,7 +547,7 @@ export async function resolveStagedPlace(db: DB, id: string, input: ResolvePlace
   } else {
     const { south, west, north, east } = city.bbox;
     if (input.lat < south || input.lat > north || input.lng < west || input.lng > east) {
-      throw new IngestError("PIN_OUTSIDE_CITY", `That point is outside ${city.name}`, 400);
+      throw new IngestError("PIN_OUTSIDE_CITY", `That point is outside ${city.name}`);
     }
     db.update(stagedEvent)
       .set({ placeId: null, matchStatus: "manual", lat: input.lat, lng: input.lng, updatedAt: at })

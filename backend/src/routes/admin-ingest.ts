@@ -50,12 +50,6 @@ export function adminIngestRoutes(deps: IngestDeps) {
       },
     };
 
-    const fail = (reply: FastifyReply, err: unknown) => {
-      if (err instanceof IngestError) {
-        return reply.status(err.status).send({ code: err.code, message: err.message });
-      }
-      throw err;
-    };
     const invalid = (reply: FastifyReply, message: string) => reply.status(400).send({ code: "INVALID_BODY", message });
 
     const toDto = (s: typeof eventSource.$inferSelect): EventSourceDto => ({
@@ -113,12 +107,8 @@ export function adminIngestRoutes(deps: IngestDeps) {
       return toDto(row);
     });
 
-    app.post<{ Params: { id: string } }>("/admin/sources/:id/refresh", slow, async (req, reply) => {
-      try {
-        return await refreshSource(db, req.params.id, deps);
-      } catch (err) {
-        return fail(reply, err);
-      }
+    app.post<{ Params: { id: string } }>("/admin/sources/:id/refresh", slow, async (req) => {
+      return refreshSource(db, req.params.id, deps);
     });
 
     // One after another, not in parallel: the geocoder's rate limit is shared,
@@ -161,11 +151,7 @@ export function adminIngestRoutes(deps: IngestDeps) {
     app.post<{ Params: { id: string } }>("/admin/staged-events/:id/place", guard, async (req, reply) => {
       const parsed = resolvePlaceSchema.safeParse(req.body);
       if (!parsed.success) return invalid(reply, parsed.error.message);
-      try {
-        return await resolveStagedPlace(db, req.params.id, parsed.data, deps.now());
-      } catch (err) {
-        return fail(reply, err);
-      }
+      return resolveStagedPlace(db, req.params.id, parsed.data, deps.now());
     });
   };
 }
