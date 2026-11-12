@@ -1,5 +1,7 @@
 import { Socket } from "node:net";
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
+import type { FastifyRequest } from "fastify";
+import { z } from "zod";
 import { eq } from "drizzle-orm";
 import {
   createSourceSchema,
@@ -25,6 +27,26 @@ import {
   type IngestDeps,
 } from "./pipeline.js";
 import { requireRole, ROLES } from "../../plugins/auth/index.js";
+import { errorBodySchema } from "../../lib/api-error.js";
+import { idParamsSchema } from "../../lib/params.js";
+import {
+  acceptResultSchema,
+  patchSourceSchema,
+  refreshAllSchema,
+  refreshSummarySchema,
+  rejectResultSchema,
+  sourceSchema,
+  stagedEventSchema,
+} from "./schemas.js";
+
+/** What this feature takes from the app's context. */
+export interface Options {
+  db: DB;
+  /** The sources, geocoder and clock; a test passes fakes. */
+  ingest: IngestDeps;
+  /** Kicked after an accept that wrote inbox rows, so their mail goes out. */
+  notifyMail: MailSweeper;
+}
 
 /**
  * The admin side of event ingestion. Every route is behind
@@ -35,30 +57,22 @@ import { requireRole, ROLES } from "../../plugins/auth/index.js";
  * second makes a cold refresh slow, which is acceptable for an admin pressing
  * a button and not for anything a visitor waits on.
  */
-/** What this feature takes from the app's context. */
-export interface Options {
-  db: DB;
-  /** The sources, geocoder and clock; a test passes fakes. */
-  ingest: IngestDeps;
-  /** Kicked after an accept that wrote inbox rows, so their mail goes out. */
-  notifyMail: MailSweeper;
-}
-
-export async function adminIngestRoutes(app: FastifyInstance, { db, ingest: deps, notifyMail }: Options) {
-  const guard = { preValidation: requireRole(ROLES.admin) };
+export const adminIngestRoutes: FastifyPluginAsyncZod<Options> = async (app, { db, ingest: deps, notifyMail }) => {
+  const guard = requireRole(ROLES.admin);
   /*
    * A refresh can outlast the server's 180 s `connectionTimeout`: sources run one after
    * another, each fetch may take 15 s, and the geocoder asks once a second. Its socket waits
    * as long as it takes. (`inject()` has no socket.)
    */
-  const slow = {
-    ...guard,
-    onRequest: async (req: FastifyRequest) => {
-      if (req.raw.socket instanceof Socket) req.raw.socket.setTimeout(0);
-    },
+  const unbounded = async (req: FastifyRequest) => {
+    if (req.raw.socket instanceof Socket) req.raw.socket.setTimeout(0);
   };
-
-  const invalid = (reply: FastifyReply, message: string) => reply.status(400).send({ code: "INVALID_BODY", message });
+  /*
+   * From the error plugin: an IngestError answers its code's status in this body. No 403: the
+   * guard's own 403 body is the library's, and a declared status encodes every reply on it
+   * (ADAPTER_NOT_ALLOWED's 403 goes out unchecked).
+   */
+  const refused = { 400: errorBodySchema, 404: errorBodySchema, 409: errorBodySchema };
 
   const toDto = (s: typeof eventSource.$inferSelect): EventSourceDto => ({
     id: s.id,
@@ -74,89 +88,140 @@ export async function adminIngestRoutes(app: FastifyInstance, { db, ingest: deps
     lastRunAt: s.lastRunAt,
   });
 
-  app.get("/admin/sources", guard, async () => {
-    const rows = db.select().from(eventSource).orderBy(eventSource.name).all();
-    return { data: rows.map(toDto) };
-  });
+  app.get(
+    "/admin/sources",
+    { preValidation: guard, schema: { response: { 200: z.object({ data: z.array(sourceSchema) }) } } },
+    async () => {
+      const rows = db.select().from(eventSource).orderBy(eventSource.name).all();
+      return { data: rows.map(toDto) };
+    },
+  );
 
-  app.post("/admin/sources", guard, async (req, reply) => {
-    const parsed = createSourceSchema.safeParse(req.body);
-    if (!parsed.success) return invalid(reply, parsed.error.message);
-    const input = parsed.data;
-    if (!adapterFor(input.adapterKey, deps.adapters)) {
-      return reply.status(400).send({ code: "UNKNOWN_ADAPTER", message: `No adapter for ${input.adapterKey}` });
-    }
-    const city = resolveCity(input.city);
-    if (!city) return reply.status(400).send({ code: "UNKNOWN_CITY", message: `Unknown city: ${input.city}` });
-    const taken = db.select().from(eventSource).where(eq(eventSource.adapterKey, input.adapterKey)).get();
-    if (taken) {
-      return reply.status(409).send({ code: "ADAPTER_KEY_TAKEN", message: `${input.adapterKey} is already a source` });
-    }
-    const row = db
-      .insert(eventSource)
-      .values({ ...input, url: input.url ?? null, city: city.name, enabled: input.enabled ?? true })
-      .returning()
-      .get();
-    return reply.status(201).send(toDto(row));
-  });
+  app.post(
+    "/admin/sources",
+    {
+      preValidation: guard,
+      schema: { body: createSourceSchema, response: { 201: sourceSchema, 400: errorBodySchema, 409: errorBodySchema } },
+    },
+    async (req, reply) => {
+      const input = req.body;
+      if (!adapterFor(input.adapterKey, deps.adapters)) {
+        return reply.status(400).send({ code: "UNKNOWN_ADAPTER", message: `No adapter for ${input.adapterKey}` });
+      }
+      const city = resolveCity(input.city);
+      if (!city) return reply.status(400).send({ code: "UNKNOWN_CITY", message: `Unknown city: ${input.city}` });
+      const taken = db.select().from(eventSource).where(eq(eventSource.adapterKey, input.adapterKey)).get();
+      if (taken) {
+        return reply
+          .status(409)
+          .send({ code: "ADAPTER_KEY_TAKEN", message: `${input.adapterKey} is already a source` });
+      }
+      const row = db
+        .insert(eventSource)
+        .values({ ...input, url: input.url ?? null, city: city.name, enabled: input.enabled ?? true })
+        .returning()
+        .get();
+      return reply.status(201).send(toDto(row));
+    },
+  );
 
-  app.patch<{ Params: { id: string } }>("/admin/sources/:id", guard, async (req, reply) => {
-    const enabled = (req.body as { enabled?: unknown } | undefined)?.enabled;
-    if (typeof enabled !== "boolean") return invalid(reply, "enabled must be a boolean");
-    const row = db
-      .update(eventSource)
-      .set({ enabled, updatedAt: new Date().toISOString() })
-      .where(eq(eventSource.id, req.params.id))
-      .returning()
-      .get();
-    if (!row) return reply.status(404).send({ code: "SOURCE_NOT_FOUND", message: "No such source" });
-    return toDto(row);
-  });
+  app.patch(
+    "/admin/sources/:id",
+    {
+      preValidation: guard,
+      schema: {
+        params: idParamsSchema,
+        body: patchSourceSchema,
+        response: { 200: sourceSchema, 400: errorBodySchema, 404: errorBodySchema },
+      },
+    },
+    async (req, reply) => {
+      const row = db
+        .update(eventSource)
+        .set({ enabled: req.body.enabled, updatedAt: new Date().toISOString() })
+        .where(eq(eventSource.id, req.params.id))
+        .returning()
+        .get();
+      if (!row) return reply.status(404).send({ code: "SOURCE_NOT_FOUND", message: "No such source" });
+      return toDto(row);
+    },
+  );
 
-  app.post<{ Params: { id: string } }>("/admin/sources/:id/refresh", slow, async (req) => {
-    return refreshSource(db, req.params.id, deps);
-  });
+  app.post(
+    "/admin/sources/:id/refresh",
+    {
+      onRequest: unbounded,
+      preValidation: guard,
+      schema: { params: idParamsSchema, response: { 200: refreshSummarySchema, ...refused } },
+    },
+    async (req) => refreshSource(db, req.params.id, deps),
+  );
 
   // One after another, not in parallel: the geocoder's rate limit is shared,
   // and a failing source must not stop the rest.
-  app.post("/admin/sources/refresh-all", slow, async () => {
-    const sources = db.select().from(eventSource).where(eq(eventSource.enabled, true)).all();
-    const results = [];
-    for (const source of sources) {
-      try {
-        results.push(await refreshSource(db, source.id, deps));
-      } catch (err) {
-        if (!(err instanceof IngestError)) throw err;
-        results.push({ sourceId: source.id, status: "error" as const, error: err.message });
+  app.post(
+    "/admin/sources/refresh-all",
+    { onRequest: unbounded, preValidation: guard, schema: { response: { 200: refreshAllSchema } } },
+    async () => {
+      const sources = db.select().from(eventSource).where(eq(eventSource.enabled, true)).all();
+      const results = [];
+      for (const source of sources) {
+        try {
+          results.push(await refreshSource(db, source.id, deps));
+        } catch (err) {
+          if (!(err instanceof IngestError)) throw err;
+          results.push({ sourceId: source.id, status: "error" as const, error: err.message });
+        }
       }
-    }
-    return { data: results };
-  });
+      return { data: results };
+    },
+  );
 
-  app.get("/admin/staged-events", guard, async (req, reply) => {
-    const parsed = stagedQuerySchema.safeParse(req.query);
-    if (!parsed.success) return invalid(reply, parsed.error.message);
-    return { data: await listStaged(db, parsed.data) };
-  });
+  app.get(
+    "/admin/staged-events",
+    {
+      preValidation: guard,
+      schema: {
+        querystring: stagedQuerySchema,
+        response: { 200: z.object({ data: z.array(stagedEventSchema) }), 400: errorBodySchema },
+      },
+    },
+    async (req) => ({ data: await listStaged(db, req.query) }),
+  );
 
-  app.post("/admin/staged-events/accept", guard, async (req, reply) => {
-    const parsed = stagedIdsSchema.safeParse(req.body);
-    if (!parsed.success) return invalid(reply, parsed.error.message);
-    const result = acceptStaged(db, parsed.data.ids, deps.now());
-    // New inbox rows also go out as mail, after this response.
-    if (result.notified > 0) notifyMail.kick();
-    return result;
-  });
+  app.post(
+    "/admin/staged-events/accept",
+    {
+      preValidation: guard,
+      schema: { body: stagedIdsSchema, response: { 200: acceptResultSchema, 400: errorBodySchema } },
+    },
+    async (req) => {
+      const result = acceptStaged(db, req.body.ids, deps.now());
+      // New inbox rows also go out as mail, after this response.
+      if (result.notified > 0) notifyMail.kick();
+      return result;
+    },
+  );
 
-  app.post("/admin/staged-events/reject", guard, async (req, reply) => {
-    const parsed = stagedIdsSchema.safeParse(req.body);
-    if (!parsed.success) return invalid(reply, parsed.error.message);
-    return rejectStaged(db, parsed.data.ids, deps.now());
-  });
+  app.post(
+    "/admin/staged-events/reject",
+    {
+      preValidation: guard,
+      schema: { body: stagedIdsSchema, response: { 200: rejectResultSchema, 400: errorBodySchema } },
+    },
+    async (req) => rejectStaged(db, req.body.ids, deps.now()),
+  );
 
-  app.post<{ Params: { id: string } }>("/admin/staged-events/:id/place", guard, async (req, reply) => {
-    const parsed = resolvePlaceSchema.safeParse(req.body);
-    if (!parsed.success) return invalid(reply, parsed.error.message);
-    return resolveStagedPlace(db, req.params.id, parsed.data, deps.now());
-  });
-}
+  app.post(
+    "/admin/staged-events/:id/place",
+    {
+      preValidation: guard,
+      schema: {
+        params: idParamsSchema,
+        body: resolvePlaceSchema,
+        response: { 200: stagedEventSchema, ...refused },
+      },
+    },
+    async (req) => resolveStagedPlace(db, req.params.id, req.body, deps.now()),
+  );
+};

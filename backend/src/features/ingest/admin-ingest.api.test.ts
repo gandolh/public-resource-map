@@ -374,3 +374,19 @@ describe("source health", () => {
     expect(res.body.code).toBe("ADAPTER_NOT_ALLOWED");
   });
 });
+
+describe("the staged rows go through their schema", () => {
+  it("sends only the review page's fields: a column added to the table never reaches the client", async () => {
+    t.sqlite.exec("ALTER TABLE staged_event ADD COLUMN internal_note TEXT DEFAULT 'not for clients'");
+    const id = await addSource();
+    feed = [listing()];
+    await refresh(id);
+    const res = await call("GET", "/api/admin/staged-events");
+    expect(res.status).toBe(200);
+    const [row] = res.body.data as Record<string, unknown>[];
+    expect(row).toMatchObject({ title: "Concert de toamnă", candidates: expect.any(Array) as unknown[] });
+    for (const key of ["internalNote", "internal_note", "externalKey", "normalizedTitle", "payload", "lastSeenAt"]) {
+      expect(row).not.toHaveProperty(key);
+    }
+  });
+});

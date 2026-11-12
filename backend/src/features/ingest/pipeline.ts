@@ -6,6 +6,7 @@ import {
   type RefreshSummary,
   type ResolvePlaceInput,
   type SourceHealth,
+  type MatchStatus,
   type StagedStatus,
 } from "@public-resource-map/shared";
 import type { Config } from "../../config.js";
@@ -17,7 +18,7 @@ import { zonedParts } from "../../lib/time.js";
 import { notifyNewEvents } from "../reminders/index.js";
 import { adapterFor, builtInAdapters, textFetcher, type AdapterRegistry } from "./adapters.js";
 import { geocodeAddress, nominatimProvider, type GeocodeProvider } from "./geocode.js";
-import { matchVenue, normalizeText, normalizeVenue } from "./match.js";
+import { matchVenue, normalizeText, normalizeVenue, type MatchCandidate } from "./match.js";
 
 /**
  * The event ingestion pipeline: fetch → validate → dedup → match
@@ -554,7 +555,22 @@ export async function resolveStagedPlace(db: DB, id: string, input: ResolvePlace
       .where(eq(stagedEvent.id, id))
       .run();
   }
-  return db.select().from(stagedEvent).where(eq(stagedEvent.id, id)).get();
+  const updated = db.select().from(stagedEvent).where(eq(stagedEvent.id, id)).get();
+  if (!updated) throw new Error(`Staged event ${id} was not found after its update`);
+  return stagedDto(updated);
+}
+
+/** A staged row as the review page reads it: its candidates and its payload's notes unpacked. */
+function stagedDto({ payload, candidates, ...r }: StagedRow) {
+  const parsed = payload ? (JSON.parse(payload) as { issues?: string; cancelled?: boolean }) : {};
+  return {
+    ...r,
+    matchStatus: r.matchStatus as MatchStatus,
+    status: r.status as StagedStatus,
+    candidates: candidates ? (JSON.parse(candidates) as MatchCandidate[]) : [],
+    issues: parsed.issues ?? null,
+    cancelled: parsed.cancelled === true,
+  };
 }
 
 /** The diff, newest first; pending rows unless a status is asked for. */
@@ -571,13 +587,5 @@ export async function listStaged(db: DB, filter: { sourceId?: string; status?: S
     .orderBy(stagedEvent.startDate)
     .limit(1000)
     .all();
-  return rows.map(({ payload, candidates, ...r }) => {
-    const parsed = payload ? (JSON.parse(payload) as { issues?: string; cancelled?: boolean }) : {};
-    return {
-      ...r,
-      candidates: candidates ? (JSON.parse(candidates) as unknown[]) : [],
-      issues: parsed.issues ?? null,
-      cancelled: parsed.cancelled === true,
-    };
-  });
+  return rows.map(stagedDto);
 }
