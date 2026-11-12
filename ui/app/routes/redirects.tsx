@@ -7,8 +7,9 @@ import type { LoaderFunctionArgs } from "react-router";
  * one place-centric model, so old links land on their replacement rather than
  * on a 404.
  */
-export function mapRedirect() {
-  return redirect("/");
+/** `/map?city=…&q=…&f=…&place=…` keeps its query: the map at `/` reads it. */
+export function mapRedirect({ request }: LoaderFunctionArgs) {
+  return redirect(`/${new URL(request.url).search}`);
 }
 
 export function eventsRedirect() {

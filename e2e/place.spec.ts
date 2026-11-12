@@ -60,11 +60,11 @@ test("Escape closes the follow popover first, and the place only on the next pre
 
   await page.keyboard.press("Escape");
   await expect(popover).toHaveCount(0);
-  await expect(page).toHaveURL(new RegExp(`places/${place.id}$`));
+  await expect(page).toHaveURL(new RegExp(`places/${place.id}(\\?[^/]*)?$`));
   await expect(page.getByRole("heading", { name: place.name })).toBeVisible();
 
   await page.keyboard.press("Escape");
-  await expect(page).toHaveURL(/\/prm\/$/);
+  await expect(page).toHaveURL(/\/prm\/(\?[^/]*)?$/);
 });
 
 test.describe("on a phone", () => {
@@ -95,17 +95,19 @@ test.describe("on a phone", () => {
     await expect(sheet).toBeVisible();
 
     // A pin above the sheet opens another place.
-    const here = page.url();
+    // The path, not the URL: the pan itself rewrites the query (the camera).
+    const path = () => new URL(page.url()).pathname;
+    const here = path();
     const pins = page.locator(".cm-pin");
     const count = await pins.count();
-    for (let i = 0; i < count && page.url() === here; i++) {
+    for (let i = 0; i < count && path() === here; i++) {
       const box = await pins.nth(i).boundingBox();
       if (box && box.y > 170 && box.y + box.height < 380) {
         await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
         await page.waitForTimeout(300);
       }
     }
-    expect(page.url()).not.toBe(here);
+    expect(path()).not.toBe(here);
     await expect(page.getByRole("dialog").filter({ has: page.getByRole("heading") })).toBeVisible();
     await page.goto(`places/${place.id}`);
     await expect(sheet).toBeVisible();
@@ -124,7 +126,7 @@ test.describe("on a phone", () => {
     await drag(260);
     await expect.poll(top).toBe(Math.round(844 * 0.54));
     await drag(260);
-    await expect(page).toHaveURL(/\/prm\/$/);
+    await expect(page).toHaveURL(/\/prm\/(\?[^/]*)?$/);
   });
 });
 
@@ -143,7 +145,8 @@ test.describe("Copy link", () => {
     await page.goto(`places/${place.id}`);
     await page.getByRole("button", { name: "Copy link" }).click();
     const field = page.getByRole("textbox", { name: "Copy link" });
-    await expect(field).toHaveValue(new RegExp(`/places/${place.id}$`));
+    // The link carries the map's view around the place: here, its city.
+    await expect(field).toHaveValue(new RegExp(`/prm/places/${place.id}\\?city=timisoara$`));
     await expect(field).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(field).toHaveCount(0);

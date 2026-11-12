@@ -30,10 +30,10 @@ test("Enter on a focused pin opens its place, and Escape closes it", async ({ pa
   await page.goto(`places/${SEED.places.tmArtMuseum}`);
   await expect(page.getByRole("heading", { name: "Muzeul de Artă" })).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page).toHaveURL(/\/prm\/$/);
+  await expect(page).toHaveURL(/\/prm\/(\?[^/]*)?$/);
   await page.getByRole("button", { name: /^Muzeul de Artă · / }).focus();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(new RegExp(`places/${SEED.places.tmArtMuseum}$`));
+  await expect(page).toHaveURL(new RegExp(`places/${SEED.places.tmArtMuseum}(\\?[^/]*)?$`));
 });
 
 test("a category chip and the timing lens narrow the same count", async ({ page }) => {

@@ -48,7 +48,7 @@ test("a visitor registers on prm's register page and is signed in, with no mail 
   await page.getByLabel("Username").fill(username);
   await page.getByLabel("Password").fill("a long enough password");
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(/\/prm\/$/);
+  await expect(page).toHaveURL(/\/prm\/(\?[^/]*)?$/);
 
   await page.getByRole("button", { name: "Account", exact: true }).click();
   await page.getByRole("menuitem", { name: "Account settings" }).click();
@@ -57,5 +57,5 @@ test("a visitor registers on prm's register page and is signed in, with no mail 
   await expect(page.getByText(/so you get no emails/)).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
-  await expect(page).toHaveURL(/\/prm\/$/);
+  await expect(page).toHaveURL(/\/prm\/(\?[^/]*)?$/);
 });

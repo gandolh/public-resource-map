@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useLocation, useNavigate, useOutletContext, useParams } from "react-router";
 import { AlertTriangle } from "lucide-react";
 import type { MapOutletContext } from "./map";
 import { PlacePanel } from "~/components/place/PlacePanel";
@@ -26,6 +26,7 @@ const SHEET_OFFSET_Y = 150;
 export default function PlaceRoute() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const { t } = useI18n();
   const isMobile = useIsMobile();
   const { places, getMap } = useOutletContext<MapOutletContext>();
@@ -82,8 +83,9 @@ export default function PlaceRoute() {
     map.flyTo(map.unproject(shifted, zoom), zoom, { duration: 0.55 });
   }, [lat, lng, isMobile, getMap]);
 
+  // Back to the map, keeping the view's query (city, search, filters, camera).
   const close = () => {
-    void navigate("/");
+    void navigate({ pathname: "/", search });
   };
 
   if (isError) {

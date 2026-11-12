@@ -3,6 +3,7 @@ import type { EventLens, PlaceCategory } from "@public-resource-map/shared";
 import { CITIES, DEFAULT_CITY, cityById, type City } from "~/lib/cities";
 import { LocalStorage } from "~/lib/LocalStorage";
 import type { AreaRing } from "~/lib/area";
+import type { MapView } from "~/lib/mapUrl";
 
 const CITY_KEY = "civicmap-city";
 
@@ -48,6 +49,12 @@ interface AppState {
    */
   adoptCity: (city: City) => void;
   hydrateCity: () => void;
+  /**
+   * Take what a map URL asks for (`lib/mapUrl.ts`), once, on load: its city (persisted, like
+   * `adoptCity`, so `hydrateCity` reads it back), search, categories and lens. Fields the URL
+   * leaves out keep their value.
+   */
+  readUrl: (view: MapView) => void;
   toggleCategory: (category: PlaceCategory) => void;
   clearCategories: () => void;
   setLens: (lens: EventLens) => void;
@@ -92,6 +99,19 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (stored && CITIES.some((c) => c.id === stored)) {
       set({ city: cityById(stored) });
     }
+  },
+
+  readUrl: (view) => {
+    const next: Partial<AppState> = {};
+    if (view.city && CITIES.some((c) => c.id === view.city)) {
+      const city = cityById(view.city);
+      LocalStorage.set(CITY_KEY, city.id);
+      Object.assign(next, { city, ...leaveArea(get(), city) });
+    }
+    if (view.q !== undefined) next.search = view.q;
+    if (view.f !== undefined) next.categories = view.f;
+    if (view.when !== undefined) next.lens = view.when;
+    set(next);
   },
 
   toggleCategory: (category) =>

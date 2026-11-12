@@ -17,6 +17,6 @@ test("a row opens its place on the map", async ({ page }) => {
   const row = page.locator("main li a").first();
   await expect(row).toBeVisible();
   await row.click();
-  await expect(page).toHaveURL(/\/prm\/places\/[0-9a-f-]+$/);
+  await expect(page).toHaveURL(/\/prm\/places\/[0-9a-f-]+(\?[^/]*)?$/);
   await expect(page.locator(".leaflet-container")).toBeVisible();
 });

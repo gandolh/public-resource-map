@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useLocation } from "react-router";
 import { Check, Clock, Globe, Link2, MapPin, Navigation, Phone } from "lucide-react";
 import { sourceById, type Event, type Place, type SourceId } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
 import { categoryNameKey } from "~/lib/categories";
-import { directionsUrl, placeUrl } from "~/lib/map";
+import { directionsUrl } from "~/lib/map";
+import { mapShareUrl, parseMapSearch } from "~/lib/mapUrl";
 import { Button } from "~/components/ui/Button";
 import { FavoriteStar } from "~/components/FavoriteStar";
 import { Popover, PopoverDescription, PopoverTitle } from "~/components/ui/Popover";
@@ -64,7 +66,9 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
   const [copied, setCopied] = useState(false);
   // The clipboard can be blocked; the link is then shown, selected, to copy by hand.
   const [manual, setManual] = useState(false);
-  const url = placeUrl(place.id);
+  // The place with the map's view around it: city, search, filters and camera, as the URL holds them.
+  const { search } = useLocation();
+  const url = mapShareUrl({ ...parseMapSearch(search), place: place.id });
 
   const copyLink = async () => {
     try {

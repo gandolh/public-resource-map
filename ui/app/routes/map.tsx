@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AttributionControl, MapContainer, TileLayer, useMap } from "react-leaflet";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import L, { type Control } from "leaflet";
 import type { Map as LeafletMap } from "leaflet";
 import { AlertTriangle, Crosshair, Loader2, Minus, Plus, SearchX, X } from "lucide-react";
@@ -10,7 +10,10 @@ import { AreaDraw } from "~/components/map/AreaDraw";
 import { FilterBar } from "~/components/map/FilterBar";
 import { PlaceMarkers } from "~/components/map/PlaceMarkers";
 import { UserLocationMarker } from "~/components/map/UserLocationMarker";
+import { CameraTracker } from "~/components/map/CameraTracker";
+import { CityRecenter } from "~/components/map/CityRecenter";
 import { SourceCredits } from "~/components/map/SourceCredits";
+import { useMapUrl } from "~/hooks/useMapUrl";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { Button } from "~/components/ui/Button";
 import { Chip } from "~/components/ui/Chip";
@@ -152,22 +155,6 @@ function MapBridge({ onReady }: { onReady: (map: LeafletMap) => void }) {
   return null;
 }
 
-/**
- * Centre on the city when it changes, unless a place is open: then the place
- * route's `flyTo` owns the camera, and a city switch (a deep link adopting the
- * place's city, or hydration) must not yank the view to the city centre.
- * Read at effect time, not as a dependency, so closing the panel does not
- * recentre either.
- */
-function CityRecenter({ lat, lng, zoom }: { lat: number; lng: number; zoom: number }) {
-  const map = useMap();
-  useEffect(() => {
-    if (useAppStore.getState().selectedId !== null) return;
-    map.setView([lat, lng], zoom, { animate: true });
-  }, [map, lat, lng, zoom]);
-  return null;
-}
-
 function MapControls() {
   const { t } = useI18n();
   const map = useMap();
@@ -229,6 +216,8 @@ function MapControls() {
 export default function MapRoute() {
   const { t, tn, lang } = useI18n();
   const navigate = useNavigate();
+  const { search: query } = useLocation();
+  const { loaded, setCamera } = useMapUrl();
   const dark = useIsDarkMode();
 
   const city = useAppStore((s) => s.city);
@@ -252,11 +241,12 @@ export default function MapRoute() {
   // cities, follow them there — but never override a city they picked by hand.
   const touchedCity = useRef(false);
   useEffect(() => {
-    if (!coords || touchedCity.current) return;
+    // A link that names its city keeps it: it is the view someone shared.
+    if (!coords || touchedCity.current || !loaded || loaded.city) return;
     touchedCity.current = true;
     const near = nearestCity(coords);
     if (near && near.id !== city.id) setCity(near);
-  }, [coords, city.id, setCity]);
+  }, [coords, city.id, setCity, loaded]);
 
   const { data, isPending, isError, refetch } = usePlaces({ city: city.name, categories, lens });
 
@@ -313,10 +303,10 @@ export default function MapRoute() {
         sheetSnap === "full" && "sheet-full",
       )}
     >
-      {mounted && (
+      {mounted && loaded && (
         <MapContainer
-          center={[city.center.lat, city.center.lng]}
-          zoom={city.zoom}
+          center={loaded.camera ? [loaded.camera.lat, loaded.camera.lng] : [city.center.lat, city.center.lng]}
+          zoom={loaded.camera?.zoom ?? city.zoom}
           zoomControl={false}
           attributionControl={false}
           // react-leaflet only applies `className` when it creates the
@@ -336,13 +326,21 @@ export default function MapRoute() {
               mapRef.current = m;
             }}
           />
-          <CityRecenter lat={city.center.lat} lng={city.center.lng} zoom={city.zoom} />
+          <CityRecenter
+            lat={city.center.lat}
+            lng={city.center.lng}
+            zoom={city.zoom}
+            keepFirst={loaded.camera !== undefined}
+            onRecenter={() => setCamera(null)}
+          />
+          <CameraTracker onMove={setCamera} />
           {coords && <UserLocationMarker coords={coords} />}
           <PlaceMarkers
             places={places}
             selectedId={selectedId}
             onSelect={(place) => {
-              void navigate(`/places/${place.id}`);
+              // The view's query goes along, so the place's URL still shares the same view.
+              void navigate({ pathname: `/places/${place.id}`, search: query });
             }}
             clusterLabel={(n) => t("map.cluster", { n })}
             pinLabel={(p) =>
