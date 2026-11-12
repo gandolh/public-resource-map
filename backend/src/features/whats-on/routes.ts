@@ -1,10 +1,17 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import { asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { event, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
-import { parseCsv, whatsOnQuerySchema, type WhatsOnItem } from "@public-resource-map/shared";
+import { errorBodySchema } from "../../lib/api-error.js";
+import { pageOf } from "../../lib/page.js";
+import { parseCsv, whatsOnItemSchema, whatsOnQuerySchema, type WhatsOnItem } from "@public-resource-map/shared";
 import { lensWindow } from "../../lib/time.js";
 import { liveInWindow, rowToEvent } from "../events/index.js";
+
+/** What this feature takes from the app's context. */
+export interface Options {
+  db: DB;
+}
 
 /**
  * `GET /api/whats-on` — the citywide, date-first lens on exactly the data the
@@ -15,19 +22,14 @@ import { liveInWindow, rowToEvent } from "../events/index.js";
  * This replaces the old event-centric `/events` grid as a *user* surface; the
  * `/events` route stays as a plain CRUD/proximity endpoint.
  */
-/** What this feature takes from the app's context. */
-export interface Options {
-  db: DB;
-}
+export const whatsOnRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+  const schema = {
+    querystring: whatsOnQuerySchema,
+    response: { 200: pageOf(whatsOnItemSchema), 400: errorBodySchema },
+  };
 
-export async function whatsOnRoutes(app: FastifyInstance, { db }: Options) {
-  app.get<{ Querystring: Record<string, string> }>("/whats-on", async (req, reply) => {
-    const query = whatsOnQuerySchema.safeParse(req.query);
-    if (!query.success) {
-      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
-    }
-
-    const { city, category, lens, page, pageSize } = query.data;
+  app.get("/whats-on", { schema }, async (req) => {
+    const { city, category, lens, page, pageSize } = req.query;
     const { from, to } = lensWindow(lens);
 
     const conditions = [liveInWindow(from, to), isNull(place.retiredAt)];
@@ -69,4 +71,4 @@ export async function whatsOnRoutes(app: FastifyInstance, { db }: Options) {
 
     return { data, total: countRows[0]?.count ?? 0, page, pageSize };
   });
-}
+};
