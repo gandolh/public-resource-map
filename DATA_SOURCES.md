@@ -21,7 +21,7 @@ this file is generated from it, and a test fails when the two disagree.
   event venue on screen. It links to the About page.
 - **On a place:** its panel names the source of the place (OpenStreetMap, or the publishers whose events
   created it), and each event names its publisher.
-- **On the About page** (`/about-data`): the licences, in Romanian and English, with the event publishers.
+- **On the About page** (`/about-data`): the licences, in Romanian and English, with the approved event publishers.
 
 ## Carve-outs
 
