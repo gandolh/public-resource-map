@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AttributionControl, MapContainer, TileLayer, useMap } from "react-leaflet";
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import L, { type Control } from "leaflet";
 import type { Map as LeafletMap } from "leaflet";
 import { AlertTriangle, Crosshair, Loader2, Minus, Plus, SearchX, X } from "lucide-react";
@@ -216,7 +216,6 @@ function MapControls() {
 export default function MapRoute() {
   const { t, tn, lang } = useI18n();
   const navigate = useNavigate();
-  const { search: query } = useLocation();
   const { loaded, setCamera } = useMapUrl();
   const dark = useIsDarkMode();
 
@@ -340,7 +339,7 @@ export default function MapRoute() {
             selectedId={selectedId}
             onSelect={(place) => {
               // The view's query goes along, so the place's URL still shares the same view.
-              void navigate({ pathname: `/places/${place.id}`, search: query });
+              void navigate({ pathname: `/places/${place.id}`, search: window.location.search });
             }}
             clusterLabel={(n) => t("map.cluster", { n })}
             pinLabel={(p) =>

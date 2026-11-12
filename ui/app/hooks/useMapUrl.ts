@@ -13,7 +13,7 @@ export interface LoadedView {
 
 /**
  * Keeps the map's state in its URL (`lib/mapUrl.ts`). On load the store reads the URL once;
- * after that every change is written back with `replace`, never `push`, so Back leaves the map
+ * after that every change is written back in place (`history.replaceState`), never pushed, so Back leaves the map
  * instead of stepping through each pan, search key or filter. Opening a place still pushes, as
  * it always did. `loaded` is null until the URL has been read: the map waits for it, so it opens
  * at the link's camera rather than flying there.
@@ -45,17 +45,19 @@ export function useMapUrl() {
   }, []);
 
   useEffect(() => {
-    // Not before the URL is read, not while the `place` alias is on its way to the path, and not
-    // while the router is still on another path than the address bar (hydrating): a write then
-    // would replace a deep link with the shell's "/".
-    if (!loaded || new URLSearchParams(location.search).has("place")) return;
-    if (window.location.pathname !== `${import.meta.env.BASE_URL}${location.pathname.slice(1)}`) return;
+    // Not before the URL is read, and not while the `place` alias is on its way to the path.
+    if (!loaded || new URLSearchParams(window.location.search).has("place")) return;
     const next = mapSearchKeeping(
       { city, q: search, f: categories, when: lens === "all" ? undefined : lens, map: camera ?? undefined },
-      location.search,
+      window.location.search,
     );
-    if (next !== location.search) void navigate({ pathname: location.pathname, search: next }, { replace: true });
-  }, [loaded, city, search, categories, lens, camera, location.pathname, location.search, navigate]);
+    if (next === window.location.search) return;
+    // The address bar only, keeping the router's own history state: a router navigation per
+    // keystroke or pan would re-render every route as a transition, and on a cold deep link it
+    // held the place's first render back. The router's `location` (it runs again on each of its
+    // navigations, which may drop the query) is a trigger here, never the source.
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${next}${window.location.hash}`);
+  }, [loaded, city, search, categories, lens, camera, location.pathname, location.search]);
 
   return { loaded, camera, setCamera };
 }
