@@ -1,9 +1,26 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { z } from "zod";
 import { markReadSchema, type InboxDto, type NotificationDto } from "@public-resource-map/shared";
 import { subjectOf } from "../../plugins/auth/index.js";
 import { event, notification, notificationEvent, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
+import { errorBodySchema } from "../../lib/api-error.js";
+
+/** `GET /api/notifications`: the newest 50 items, and how many are unread. */
+const inboxSchema: z.ZodType<InboxDto> = z.object({
+  unread: z.number(),
+  data: z.array(
+    z.object({
+      id: z.string(),
+      kind: z.enum(["new-event", "reminder"]),
+      createdAt: z.string(),
+      readAt: z.string().nullable(),
+      place: z.object({ id: z.string(), name: z.string(), listed: z.boolean() }).nullable(),
+      events: z.array(z.object({ id: z.string(), title: z.string(), startDate: z.string() })),
+    }),
+  ),
+});
 
 /**
  * The inbox: per person, keyed on the local user id (the `subject` column), and signed-in only:
@@ -14,8 +31,8 @@ export interface Options {
   db: DB;
 }
 
-export async function notificationRoutes(app: FastifyInstance, { db }: Options) {
-  app.get("/notifications", async (req, reply): Promise<InboxDto> => {
+export const notificationRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+  app.get("/notifications", { schema: { response: { 200: inboxSchema } } }, async (req, reply) => {
     reply.header("cache-control", "no-store");
     const subject = subjectOf(req);
     const rows = db
@@ -86,21 +103,29 @@ export async function notificationRoutes(app: FastifyInstance, { db }: Options) 
     return { unread: unread?.n ?? 0, data };
   });
 
-  app.post("/notifications/read", async (req, reply) => {
-    const parsed = markReadSchema.safeParse(req.body);
-    if (!parsed.success) return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
-    const subject = subjectOf(req);
-    const res = db
-      .update(notification)
-      .set({ readAt: new Date().toISOString() })
-      .where(
-        and(
-          eq(notification.subject, subject),
-          isNull(notification.readAt),
-          "ids" in parsed.data ? inArray(notification.id, parsed.data.ids) : undefined,
-        ),
-      )
-      .run();
-    return { read: res.changes };
-  });
-}
+  app.post(
+    "/notifications/read",
+    {
+      schema: {
+        body: markReadSchema,
+        response: { 200: z.object({ read: z.number() }), 400: errorBodySchema },
+      },
+    },
+    async (req) => {
+      const input = req.body;
+      const subject = subjectOf(req);
+      const res = db
+        .update(notification)
+        .set({ readAt: new Date().toISOString() })
+        .where(
+          and(
+            eq(notification.subject, subject),
+            isNull(notification.readAt),
+            "ids" in input ? inArray(notification.id, input.ids) : undefined,
+          ),
+        )
+        .run();
+      return { read: res.changes };
+    },
+  );
+};
