@@ -3,7 +3,7 @@ import { loadSeedConfig } from "../config.js";
 import { createDb } from "./index.js";
 import { fixture, seedDatabase } from "./seed-data.js";
 import { createAccounts, createSqliteStore } from "../../vendor/ward/ward-auth.js";
-import { ROLES, storeHandle } from "../ward/auth.js";
+import { ROLES, storeHandle } from "../plugins/auth/index.js";
 
 /**
  * `npm run db:seed -w backend`: reset the dev database to the Timișoara +

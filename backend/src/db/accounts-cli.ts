@@ -4,7 +4,7 @@ import readline from "node:readline";
 import Database from "better-sqlite3";
 import { createAccounts, createSqliteStore, type Accounts } from "../../vendor/ward/ward-auth.js";
 import { loadDatabaseConfig } from "../config.js";
-import { storeHandle } from "../ward/auth.js";
+import { storeHandle } from "../plugins/auth/index.js";
 
 /**
  * What the account scripts (`seed-users.ts`, `set-role.ts`, the demo user in

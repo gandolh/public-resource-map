@@ -1,4 +1,4 @@
-import { ROLES } from "../ward/auth.js";
+import { ROLES } from "../plugins/auth/index.js";
 import { openAccounts } from "./accounts-cli.js";
 
 /**

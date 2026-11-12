@@ -1,0 +1,188 @@
+import type { FastifyInstance } from "fastify";
+import { and, asc, eq, inArray, isNull, sql, getTableColumns } from "drizzle-orm";
+import { randomUUID } from "crypto";
+import { event, place } from "../../db/schema.js";
+import {
+  createPlaceSchema,
+  parseCsv,
+  placeEventsQuerySchema,
+  placesQuerySchema,
+  type Event,
+  type CreatePlaceInput,
+} from "@public-resource-map/shared";
+import { boundingBox } from "../../lib/geo.js";
+import { lensWindow } from "../../lib/time.js";
+import { liveInWindow, rowToEvent } from "../events/index.js";
+import { rowToPlace } from "./mapper.js";
+import { isForeignKeyViolation } from "../../lib/fk.js";
+import { requireRole } from "../../../vendor/ward/ward-auth.js";
+import { ROLES } from "../../plugins/auth/index.js";
+
+/**
+ * Live events at a place that are on during the lens window (starting in it, or
+ * already running through it: see `liveInWindow`), as a correlated
+ * scalar subquery. This is what lets a pin show "3 things on here" without the
+ * map firing one request per pin.
+ *
+ * Built through the query builder rather than a raw `sql` template on purpose:
+ * a hand-written template renders its columns unqualified, so `place_id = id`
+ * silently resolves both sides to the subquery's own table and every count
+ * comes back zero. The builder emits `"event"."place_id" = "place"."id"`.
+ */
+function upcomingCountExpr(db: FastifyInstance["db"], from: string, to: string) {
+  const sub = db
+    .select({ c: sql<number>`count(*)` })
+    .from(event)
+    .where(and(eq(event.placeId, place.id), liveInWindow(from, to)));
+  return sql<number>`(${sub})`;
+}
+
+/**
+ * Public places API. Serves the map + place panel FAST from SQLite —
+ * OSM data is ingested once (see `POST /api/admin/osm/sync`) and never fetched
+ * from Overpass on user traffic. Renames the transitional `/api/resources`.
+ */
+export async function placeRoutes(app: FastifyInstance) {
+  const db = app.db;
+
+  app.get<{ Querystring: Record<string, string> }>("/places", async (req, reply) => {
+    const query = placesQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
+    }
+
+    const { city, lat, lng, radiusKm, category, lens, page, pageSize } = query.data;
+
+    const { from, to } = lensWindow(lens);
+    const eventCount = upcomingCountExpr(db, from, to);
+
+    // A retired place (OSM no longer has it) is on no public surface.
+    const conditions = [isNull(place.retiredAt)];
+    if (city) conditions.push(eq(place.city, city));
+    if (lat !== undefined && lng !== undefined) {
+      const box = boundingBox(lat, lng, radiusKm);
+      conditions.push(sql`${place.lat} BETWEEN ${box.minLat} AND ${box.maxLat}`);
+      conditions.push(sql`${place.lng} BETWEEN ${box.minLng} AND ${box.maxLng}`);
+    }
+
+    const categories = parseCsv(category);
+    if (categories.length > 0) conditions.push(inArray(place.category, categories));
+
+    // The timing lens removes places rather than dimming them — at city pin
+    // density a dimmed pin is invisible (locked 2026-06-28 stress test).
+    if (lens !== "all") conditions.push(sql`${eventCount} > 0`);
+
+    const where = sql.join(conditions, sql` AND `);
+    const offset = (page - 1) * pageSize;
+
+    const [rows, countRows] = await Promise.all([
+      db
+        .select({ ...getTableColumns(place), upcomingEventCount: eventCount })
+        .from(place)
+        .where(where)
+        // A total order, so pages are disjoint and repeatable: without it SQLite
+        // returns scan order and offset paging can overlap or skip.
+        .orderBy(asc(place.id))
+        .limit(pageSize)
+        .offset(offset),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(place)
+        .where(where),
+    ]);
+
+    return {
+      data: rows.map(rowToPlace),
+      total: countRows[0]?.count ?? 0,
+      page,
+      pageSize,
+    };
+  });
+
+  /**
+   * What is on at one place. This is the other half of the place panel: the
+   * panel's identity block comes from `/places/:id`, its programme from here.
+   * Live and not yet over (upcoming, or running now) — a past or retracted
+   * event never reaches a user.
+   */
+  app.get<{ Params: { id: string }; Querystring: Record<string, string> }>("/places/:id/events", async (req, reply) => {
+    const query = placeEventsQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
+    }
+
+    const exists = db
+      .select({ id: place.id })
+      .from(place)
+      .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
+      .get();
+    if (!exists) {
+      return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
+    }
+
+    const { lens, limit } = query.data;
+    const { from, to } = lensWindow(lens);
+
+    const rows = await db
+      .select()
+      .from(event)
+      .where(and(eq(event.placeId, req.params.id), liveInWindow(from, to)))
+      .orderBy(asc(event.startDate))
+      .limit(limit);
+
+    const data: Event[] = rows.map(rowToEvent);
+    return { data, total: data.length, page: 1, pageSize: limit };
+  });
+
+  app.get<{ Params: { id: string } }>("/places/:id", async (req, reply) => {
+    const row = db
+      .select()
+      .from(place)
+      .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
+      .get();
+
+    if (!row) return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
+    return rowToPlace(row);
+  });
+
+  // The write routes are admin-only: they were open to anyone, so
+  // a curl could delete every place or publish an unreviewed event. Kept, not
+  // removed, as an escape hatch for manual fixes until the admin UI exists.
+  app.post<{ Body: CreatePlaceInput }>("/places", { preHandler: requireRole(ROLES.admin) }, async (req, reply) => {
+    const parsed = createPlaceSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
+    }
+
+    const { lat, lng, ...rest } = parsed.data;
+    const id = randomUUID();
+
+    await db.insert(place).values({ id, lat, lng, ...rest });
+
+    const row = db.select().from(place).where(eq(place.id, id)).get();
+    if (!row) throw new Error(`Place ${id} was not found after its insert`);
+    return reply.status(201).send(rowToPlace(row));
+  });
+
+  app.delete<{ Params: { id: string } }>(
+    "/places/:id",
+    { preHandler: requireRole(ROLES.admin) },
+    async (req, reply) => {
+      let result;
+      try {
+        result = await db.delete(place).where(eq(place.id, req.params.id));
+      } catch (err) {
+        // Still referenced by an event, a staged event, a favorite or a
+        // notification: a refusal, not a 500.
+        if (isForeignKeyViolation(err)) {
+          return reply.status(409).send({ code: "PLACE_IN_USE", message: "Place is still referenced" });
+        }
+        throw err;
+      }
+      if (result.changes === 0) {
+        return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
+      }
+      return reply.status(204).send();
+    },
+  );
+}

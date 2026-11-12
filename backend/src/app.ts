@@ -3,20 +3,19 @@ import cors from "@fastify/cors";
 import type BetterSqlite3 from "better-sqlite3";
 import { createDb, type DB } from "./db/index.js";
 import { errors } from "./plugins/errors.js";
-import { placeRoutes } from "./routes/places.js";
-import { adminOsmRoutes } from "./routes/admin-osm.js";
-import { adminIngestRoutes } from "./routes/admin-ingest.js";
-import { defaultIngestDeps, type IngestDeps } from "./ingest/pipeline.js";
-import { eventRoutes } from "./routes/events.js";
-import { whatsOnRoutes } from "./routes/whats-on.js";
-import { favoriteRoutes } from "./routes/favorites.js";
-import { archiveRoutes } from "./routes/archive.js";
-import { registerAuth, type Auth } from "./ward/auth.js";
-import { adoptWardSubjects } from "./ward/subjects.js";
+import { registerAuth, type Auth } from "./plugins/auth/index.js";
+import { adoptWardSubjects } from "./plugins/auth/subjects.js";
 import { WardUnavailableError, type WardClient } from "../vendor/ward/ward-auth.js";
-import { overpassFetcher, type SyncDeps } from "./lib/osm-sync.js";
 import type { Config } from "./config.js";
-import { createMailSweeper, type MailSweeper } from "./lib/notify-mail.js";
+import { archiveRoutes } from "./features/archive/index.js";
+import { eventRoutes } from "./features/events/index.js";
+import { favoriteRoutes } from "./features/favorites/index.js";
+import { adminIngestRoutes, defaultIngestDeps, type IngestDeps } from "./features/ingest/index.js";
+import { notificationRoutes } from "./features/notifications/index.js";
+import { adminOsmRoutes, overpassFetcher, type SyncDeps } from "./features/osm/index.js";
+import { placeRoutes } from "./features/places/index.js";
+import { createMailSweeper, type MailSweeper } from "./features/reminders/index.js";
+import { whatsOnRoutes } from "./features/whats-on/index.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -83,7 +82,7 @@ export async function buildApp(config: Config, opts: BuildAppOptions = {}): Prom
 
   /*
    * Accounts, before every route: the library's guard is a root `onRequest`
-   * hook and refuses whatever `ward/auth.ts` does not list as public. The
+   * hook and refuses whatever `plugins/auth/index.ts` does not list as public. The
    * admin routes add `requireRole("admin")` on top.
    */
   const auth = await registerAuth(app, { sqlite, wardClient: opts.ward, config });
@@ -128,6 +127,7 @@ export async function buildApp(config: Config, opts: BuildAppOptions = {}): Prom
   await app.register(eventRoutes, { prefix: "/api" });
   await app.register(whatsOnRoutes, { prefix: "/api" });
   await app.register(favoriteRoutes, { prefix: "/api" });
+  await app.register(notificationRoutes, { prefix: "/api" });
   await app.register(archiveRoutes, { prefix: "/api" });
 
   app.get("/health", async () => ({ status: "ok" }));

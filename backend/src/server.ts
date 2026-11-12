@@ -1,7 +1,7 @@
 import closeWithGrace from "close-with-grace";
 import { buildApp } from "./app.js";
 import { ConfigError, loadConfig, type Config } from "./config.js";
-import { startReminderSweep } from "./jobs/reminder-sweep.js";
+import { startReminderSweep } from "./features/reminders/index.js";
 
 /*
  * The process: settings, the app, shutdown, listen. Nothing else listens.
@@ -10,7 +10,7 @@ import { startReminderSweep } from "./jobs/reminder-sweep.js";
  * `npm run db:seed-users -w backend` creates users from the environment and
  * never resets a password or a role, so it is safe on every deploy, and
  * `db:set-role` promotes an existing user. Boot does move rows keyed by a Ward
- * subject onto linked local users (`ward/subjects.ts`), once.
+ * subject onto linked local users (`plugins/auth/subjects.ts`), once.
  */
 let config: Config;
 try {

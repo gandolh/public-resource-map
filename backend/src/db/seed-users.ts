@@ -1,6 +1,6 @@
 import { seedUsers } from "../../vendor/ward/ward-auth.js";
 import { loadSeedConfig } from "../config.js";
-import { ROLES } from "../ward/auth.js";
+import { ROLES } from "../plugins/auth/index.js";
 import { fromEnvOrPrompt, openAccounts } from "./accounts-cli.js";
 
 /**

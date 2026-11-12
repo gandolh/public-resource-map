@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import { event, favoriteEvent, favoritePlace, notification, notificationEvent, place, stagedEvent } from "./schema.js";
 import type { DB } from "./index.js";
 import { zonedParts, zonedTimeToInstant } from "../lib/time.js";
-import { notifyNewEvents } from "../lib/notify.js";
-import type { OsmPlaceInput } from "../lib/osm-sync.js";
+import { notifyNewEvents } from "../features/reminders/index.js";
+import type { OsmPlaceInput } from "../features/osm/index.js";
 import { SEED, osmKey, seedId } from "./seed-ids.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
