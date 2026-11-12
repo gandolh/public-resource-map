@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import cors from "@fastify/cors";
-import { serializerCompiler, validatorCompiler } from "@fastify/type-provider-zod";
+import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from "@fastify/type-provider-zod";
+import { z } from "zod";
 import type BetterSqlite3 from "better-sqlite3";
 import type { Config } from "./config.js";
 import { createDb, type DB } from "./db/index.js";
@@ -16,6 +17,9 @@ import { whatsOnRoutes } from "./features/whats-on/index.js";
 import { authPlugin, createAuth, WardUnavailableError, type WardClient } from "./plugins/auth/index.js";
 import { adoptWardSubjects } from "./plugins/auth/subjects.js";
 import { errors } from "./plugins/errors.js";
+
+/** `GET /health`: the container's health check and the deploy's. */
+const healthSchema = z.object({ status: z.literal("ok") });
 
 /**
  * What the features are handed, built here once and passed to each as its plugin options. Each
@@ -152,7 +156,9 @@ export async function buildApp(config: Config, opts: BuildAppOptions = {}): Prom
   await app.register(notificationRoutes, api);
   await app.register(archiveRoutes, api);
 
-  app.get("/health", async () => ({ status: "ok" }));
+  app
+    .withTypeProvider<ZodTypeProvider>()
+    .get("/health", { schema: { response: { 200: healthSchema } } }, async () => ({ status: "ok" as const }));
 
   return { app, context };
 }
