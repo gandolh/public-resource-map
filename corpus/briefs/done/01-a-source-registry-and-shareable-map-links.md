@@ -141,7 +141,7 @@ from feeding the public map.
 
 Built, checked, awaiting the deploy (`node cli.ts public-resource-map all`, after brief 05's
 own deploy steps). Commits a09966c, 0a51299, 67d503f, 459a38f, 8a1ed8a, cf0ecc3, 9c6c617,
-2d2441c, 5bc974a.
+2d2441c, 5bc974a, 79645a4.
 
 **What shipped**
 
