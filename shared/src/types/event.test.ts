@@ -28,10 +28,18 @@ describe("eventSchema", () => {
     currency: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",
+    credit: null,
   };
 
   it("accepts a well-formed event", () => {
     expect(eventSchema.safeParse(base).success).toBe(true);
+  });
+
+  it("credits a registry source, or nothing; never a source the registry lacks", () => {
+    expect(eventSchema.safeParse({ ...base, credit: "filarmonica-banatul" }).success).toBe(true);
+    expect(eventSchema.safeParse({ ...base, credit: "zile-si-nopti" }).success).toBe(false);
+    const { credit: _credit, ...uncredited } = base;
+    expect(eventSchema.safeParse(uncredited).success).toBe(false);
   });
 
   it("rejects a non-numeric price", () => {

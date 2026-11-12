@@ -34,6 +34,7 @@ describe("placeSchema", () => {
     openingHours: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",
+    credits: ["openstreetmap"],
   };
 
   it("accepts a fully-formed place with nullable fields as null", () => {
