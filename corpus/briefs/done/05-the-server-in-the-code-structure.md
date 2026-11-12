@@ -309,3 +309,109 @@ Follow `migrating-a-server.md`. One commit per step; after each, `npm run check`
 - [Brief 03](../done/03-the-house-style-harness.md) turned `n/no-process-env` on as a warning and removed the 58 redundant `await`s. This brief makes the rule an error and adds dependency-cruiser.
 - [Brief 04](../done/04-base-ui-by-the-conventions.md) touches `ui/` only. Both change `package-lock.json`, so run them one at a time.
 - The skills library should hear about three things before the other servers run its brief 16: the `.parse(request.` regex misses `safeParse(req.…)` and helper parsing (14 sites here), a server with no error handler leaks a thrown error's message, and the checkers assume `server/` and `web/` where this repo has `backend/` and `ui/` (with `ui/app/` as the source folder).
+
+## Outcome
+
+Built on 2026-11-12 on `main`, local commits `5983256` to `1cc6a83`, then this closeout. The steps, in order:
+
+1. Validation tests.
+2. zod 4.6.7.
+3. `config.ts` and `server.ts`.
+4. The error plugin and `ApiError`.
+5. Feature folders.
+6. `AppContext`.
+7. The provider's compilers and the guard in `preValidation`.
+8. Schemas, one commit per feature: health, favorites, notifications, archive, whats-on, events, places, osm, ingest.
+9. Strict.
+10. Corpus.
+11. A fix for a thrown 503, with three more tests.
+
+**check-structure.**
+
+| | Errors | Warnings |
+|---|---|---|
+| Before (strict) | 58: rule 1 once, rule 3 21 times, rule 6 36 times | 5 (rule 11) |
+| After (strict, in `check:conventions`) | 0 | 5 (rule 11: `pipeline.ts`, `sync.ts` and three UI files) |
+
+One exception in `scripts/conventions.json`: `config.ts` reads `NODE_ENV` (decision 4).
+
+**dependency-cruiser.** It passes over `backend/src/features`. It fails, exit 1, on a deliberate import of `features/events/mapper.js` from `features/places/`.
+
+**Acceptance greps.**
+- The `.parse(req` / `.safeParse(req` grep prints nothing.
+- `process.env` appears only in `config.ts`, and `n/no-process-env` is an error.
+- No `decorate(` and no `declare module "fastify"`.
+
+**The access matrix holds.** I captured 249 replies with `inject()` on the seeded database, with the clock pinned, before any change. Every route was called signed out, as a user and as an admin, and the error replies and the vendored `/auth/*` replies are in the capture too. I captured again after every step. Before against after: every status is the same, and the matrix (anonymous / user / admin per call) is identical. A plain user with a bad body on an admin route still gets 403: the guard moved from `preHandler` to `preValidation`, because Fastify validates between the two. A test pins this.
+
+**The JSON comparison.** 203 of 249 bodies are byte-identical. The other 46:
+
+- **34 hand-written 400s** keep their status and code. The message is now `<path>: <first issue>`, where it was zod's whole issue list as JSON.
+- **The admin pages show these messages** (`ui/app/routes/admin/sources.tsx`, `review.tsx`), so they now read as one line. The public UI never sends a malformed query. The UI parses no shared schema at runtime.
+- **1 code change:** `GET /api/admin/staged-events` with a bad query answers `INVALID_QUERY`, where it said `INVALID_BODY`.
+- **3 Fastify 4xx and 4 unknown routes** answer `{ code, message }`, where they answered Fastify's `{ statusCode, code, error, message }`. The status and message are the same, and a signed-out caller still gets 401 on an unknown route.
+- **4 staged-event 200s.** The rows drop `normalizedTitle`, `imageUrl`, `createdAt`, `updatedAt`, `externalKey` and `lastSeenAt`. These are leaks, kept dropped: neither the `StagedEventDto` type nor the UI reads them.
+- **The resolve route** (`POST …/:id/place`) also stops sending the raw `payload` JSON and `candidates` as a string. It now sends the same `StagedEventDto` as the list, which is what the UI's type already said; the UI only invalidates on it.
+- **zod 4's own wording** changes the `issues` text stored on newly quarantined staged rows.
+
+**New tests** (278 in all; 251 before):
+- the validation contexts;
+- a stripped field (a column added to `staged_event`);
+- the serialization 500 (an unknown stored category);
+- a thrown error's message never sent, and malformed JSON staying a 400 with Fastify's code;
+- a 503 kept with a fixed message;
+- the not-found body, signed in and signed out;
+- `.default()` round trips for `event.status` and `place.source`;
+- `config.ts`;
+- the iaBilet refusal with `NODE_ENV=production` through `loadConfig`;
+- refresh-all recording a refused source;
+- the inbox schemas.
+
+**Checks run.**
+- `npm run check` exit 0. It ran in full at the zod, config, error-plugin, feature-folder, context, strict and final commits; the type-provider and per-feature commits ran the backend typecheck, lint and tests.
+- `npm run build` writes `backend/dist/server.js`.
+- The UI client JS: 1,074,851 bytes (364,543 gzipped) on zod 3, and 1,109,291 (377,435) at the end.
+- `npx playwright test`: 38 of 38 at `--workers=1`. Port 3101 was held by another project's server, so it ran from a scratch copy of the config on 3111/5184, with `e2e/fixtures.ts`'s port changed for the run and restored afterwards. An earlier run at `--workers=2` failed two timing-bound tests that then passed alone.
+- The built server on a real socket, from a scratch folder with no `.env` and every setting pinned:
+  - `PUBLIC_ORIGIN` unset exits 1, printing `PUBLIC_ORIGIN is not set`;
+  - `/health` 200, `/api/places` 200;
+  - `POST /api/admin/osm/sync` signed out 401;
+  - `X-Forwarded-For` is honoured through `trustProxy`;
+  - SIGTERM exits 0 in 0.03 s, read from node's own PID.
+- `bash corpus/lint.sh` is clean.
+
+**Checks skipped.** The `docker build`, because local Docker gives an I/O error on builds: that is an owner check after the deploy. The per-step `npm start`, under the machine's load rule; the real-socket check stands in for it.
+
+**Deviations.**
+- **`playwright.config.ts`** starts `src/server.ts`; it named `src/index.ts`, which the brief's grep for `dist/index` missed. The ESLint `console` list names `server.ts`.
+- **`ApiError`** follows the code-structure skill: `ApiError(code, message)` with one `ERROR_STATUS` table in `lib/api-error.ts`, not `(status, code, message)`.
+- **The features take their own `Options` type** (`db`, `ingest`, `osm`, `notifyMail`) rather than `FastifyPluginAsyncZod<AppContext>`. Importing `AppContext` from `app.ts` would close a cycle that dependency-cruiser counts.
+- **`buildApp` returns `{ app, context }`,** so `server.ts` can start the reminder sweep without decorators. The harness exposes `accounts`, `identities` and `context`; the tests read those instead of `app.auth` and `app.notifyMail`, with the same assertions.
+- **The server-only response schemas live in their feature** (`features/ingest/schemas.ts`, inline elsewhere), typed against the shared DTOs, by decision 11. `healthSchema` is in `app.ts`, and `idParamsSchema` and `pageOf` are in `lib/`. Only `eventsQuerySchema` moved to `shared/`, with a test.
+- **`config.ts` loads no `.env`,** unlike the skeleton's `readEnvFile`: the dev scripts pass it to Node. The scripts read smaller sets (`loadDatabaseConfig`, `loadSeedConfig`, `loadOverpassUrl`), so `db:migrate` and the seeds need no `PUBLIC_ORIGIN`.
+- **notify-mail's `appUrl()` became `config.appUrl`;** its test moved to `config.test.ts` with the same expectations.
+- **The seed's refusal message** no longer names `NODE_ENV`: check-structure's rule 3 matches it inside strings.
+- **The two ingest refresh routes** lift the socket timeout for themselves (`onRequest`), because their run is unbounded (sources in turn, a 15 s fetch each, the geocoder at one request a second). `osm/sync` fits in 180 s. vps-deploy sets no Caddy upstream timeout, so there is no Caddy step.
+- **`trustProxy`** is the `AUTH_TRUSTED_PROXIES` list, which vps-deploy already sets to the Docker bridge range (`172.16.0.0/12`). The same list now also reaches `wardAuth` explicitly.
+- **Not declared:** a 401 or 403 on a guarded route (the library's `{ error }` body would turn it into a 500), and the 403 that `ADAPTER_NOT_ALLOWED` sends.
+- **A thrown 503** (Ward's `WardUnavailableError`) keeps its status, as `{ code: "UNAVAILABLE" }` with a fixed message; Fastify's default handler kept it too. Every other 5xx is the fixed 500.
+
+**Owner steps.**
+
+1. **Check the stored enums before the deploy.** One stored value outside a response enum turns a whole list into a 500 while `/health` stays green. In the running container:
+
+   ```sh
+   docker exec <prm-api container> node -e 'const d=new (require("better-sqlite3"))("/data/app.db",{readonly:true});for(const q of ["select distinct category from place","select distinct source from place","select distinct category from event","select distinct status from event","select distinct mechanism from event_source","select distinct last_status from event_source","select distinct status from staged_event","select distinct match_status from staged_event","select distinct kind from notification"])console.log(q,JSON.stringify(d.prepare(q).pluck().all()))'
+   ```
+
+   Each list must fall inside `shared/`'s enums.
+2. **Deploy.** From the vps-deploy checkout, run `node cli.ts public-resource-map all`.
+3. **Check the container.** It turns healthy (the `CMD` is now `backend/dist/server.js`), and `docker stop` ends at once. A whole-city `/prm-api/api/places?city=Timișoara&pageSize=1000` and `/prm-api/api/whats-on` answer 200.
+4. **Check `request.ip`.** Read `remoteAddress` in the container's request log once. It should be a client's address. If it is a `172.x` address, the proxy's network is outside `AUTH_TRUSTED_PROXIES`: widen that list in vps-deploy's `stacks/ward.ts` (`TRUSTED_PROXIES`) and run `node cli.ts public-resource-map server`.
+5. **Fix the local `.env`.** It needs `PUBLIC_ORIGIN`, or `npm run dev` exits 1.
+
+**For brief 01.**
+- The ingest code is in `features/ingest/` (`adapters.ts`, `pipeline.ts`).
+- A new `IngestError` code needs a line in `ERROR_STATUS`.
+- Admin guards go in `preValidation`.
+- The iaBilet rule reads `config.production`, through `defaultIngestDeps(config)`.

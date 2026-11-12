@@ -821,7 +821,7 @@ Five briefs written from measurements on a scratch copy, none built. They follow
 - 04, [Base UI by the conventions](briefs/done/04-base-ui-by-the-conventions.md): the audit, nine
   hand-built widgets, the stylesheet's layers (Leaflet's CSS included) and the Light / Dark / System
   switch with light first.
-- 05, [the server in the code structure](briefs/todo/05-the-server-in-the-code-structure.md): zod 4, one
+- 05, [the server in the code structure](briefs/done/05-the-server-in-the-code-structure.md): zod 4, one
   `config.ts`, feature folders, route schemas, an error plugin.
 - 06, [a redesign with Hallmark, on the estate board](briefs/todo/06-a-redesign-with-hallmark-on-the-estate-board.md).
 
@@ -875,3 +875,20 @@ deployed app lives under, so a shared link opened a page the estate doesn't serv
 from `placeUrl()` in `ui/app/lib/map.ts`, which resolves `places/<id>` against the origin plus
 Vite's `BASE_URL`; a unit test covers `/prm/` and `/`. Found by brief 04's builder; the todo is
 closed. Owner step: `node cli.ts public-resource-map deploy`.
+
+## [2026-11-12] done | Brief 05: the server in the house code structure
+
+The API follows the code-structure skill. zod is 4.6.7.
+
+- **The process.** `config.ts` is the one reader of `process.env`, and `PUBLIC_ORIGIN` is required. `NODE_ENV` is read once, as `config.production`, for the iaBilet rule. `server.ts` runs the process: close-with-grace, 180 s timeouts, and `trustProxy` from `AUTH_TRUSTED_PROXIES`. The Dockerfile's `CMD` is `backend/dist/server.js`.
+- **The layout.** The code is in `features/` (places, events, whats-on, archive, favorites, notifications, osm, ingest, reminders), each used through its index, with `plugins/errors.ts` and `plugins/auth/` beside them. No decorators: an `AppContext` goes to each feature as its options.
+- **Schemas.** Every route declares its schemas through `@fastify/type-provider-zod`, a response included, and the 14 hand parses are gone. The admin guard runs in `preValidation`.
+- **Checks.** `check-structure` is strict, from 58 errors to 0.
+- **Before and after.** I captured 249 replies before and after (signed out, user and admin). Every status and the access matrix are the same. The 46 bodies that changed:
+  - 34 hand-written 400s now say `<field>: <first issue>`;
+  - a bad staged-events query is `INVALID_QUERY`, where it was `INVALID_BODY`;
+  - unknown routes and malformed JSON answer `{ code, message }`;
+  - the staged-event replies drop `normalizedTitle`, `imageUrl`, `createdAt`, `updatedAt`, `externalKey` and `lastSeenAt`, all leaks, kept dropped;
+  - the resolve route returns the `StagedEventDto` (no raw `payload`).
+- **Results.** 278 unit tests, e2e 38 of 38. The details are in the brief's outcome note ([briefs/done/05-the-server-in-the-code-structure.md](briefs/done/05-the-server-in-the-code-structure.md)).
+- **Owner steps.** Check the stored enums, then `node cli.ts public-resource-map all`, then the container and `request.ip` checks.

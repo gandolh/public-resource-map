@@ -1,11 +1,13 @@
 ---
 summary: The current-state dashboard as of 2026-11-02, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 
 # Status
 
 _Last updated: 2026-11-02_
+
+**2026-11-12:** brief 05, [the server in the code structure](../briefs/done/05-the-server-in-the-code-structure.md), is built and awaits a deploy (`all`). The API reads its settings from `config.ts`, runs from `server.ts`, splits by feature, and declares a zod schema on every route, a response included, on zod 4.6.7. `check-structure` is strict. See [decisions-engineering.md](decisions-engineering.md).
 
 **2026-11-11 (later):** brief 04, [Base UI by the conventions](../briefs/done/04-base-ui-by-the-conventions.md), is built and awaits a deploy: the stylesheet is in layers, every Base UI part sits behind a wrapper, the place sheet is a Drawer, and the Light / Dark / System switch keys off `data-theme` and starts light. See [decisions-ui.md](decisions-ui.md).
 
