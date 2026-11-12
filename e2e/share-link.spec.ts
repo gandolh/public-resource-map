@@ -61,3 +61,17 @@ test("the map writes its state with replace, so Back leaves the map", async ({ p
   await expect(page.getByRole("button", { name: "Museums" })).toHaveAttribute("aria-pressed", "true");
   await expect(page).toHaveURL(shared);
 });
+
+test("a link's city wins over the visitor's stored city and location", async ({ page }) => {
+  // A visitor who last used Timișoara, standing in Timișoara (the suite's geolocation).
+  await page.goto("about-data");
+  await page.evaluate(() => localStorage.setItem("civicmap-city", JSON.stringify("timisoara")));
+  await page.goto(`?${view}`);
+  await expect(page.getByRole("button", { name: "Change city" }).first()).toHaveText(/București/);
+  await expect(page.getByPlaceholder("Search for a place").first()).toHaveValue("Muzeul");
+  await expect(page.getByRole("button", { name: "Museums" })).toHaveAttribute("aria-pressed", "true");
+  // Centring on me is offered, not forced: the link's city stays.
+  await page.waitForTimeout(1000);
+  await expect(page).toHaveURL(new RegExp(`/prm/\\?${view}$`));
+  await expect(page.getByRole("button", { name: "Change city" }).first()).toHaveText(/București/);
+});

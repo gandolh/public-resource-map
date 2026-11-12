@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, inArray, isNotNull, isNull, lt } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, lt, notInArray } from "drizzle-orm";
 import {
   rawEventSchema,
   type RawEvent,
@@ -328,6 +328,8 @@ async function isCrossSourceDuplicate(
         eq(stagedEvent.normalizedTitle, title),
         eq(eventSource.city, city.name),
         inArray(stagedEvent.status, ["new", "changed"]),
+        // A forbidden source's pending copy is never accepted, so it is no reason to drop this one.
+        publication.forbiddenRows.length > 0 ? notInArray(stagedEvent.sourceId, publication.forbiddenRows) : undefined,
       ),
     )
     .all();

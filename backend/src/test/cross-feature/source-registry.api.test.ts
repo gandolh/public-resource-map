@@ -74,6 +74,16 @@ describe("the source registry on the public API", () => {
           lat: 45.752,
           lng: 21.222,
         },
+        // A venue both iaBilet's and the Filarmonica's events point at.
+        {
+          id: "mixed-venue",
+          name: "Sala Capitol",
+          category: "other",
+          source: "event-venue",
+          city: TM,
+          lat: 45.753,
+          lng: 21.223,
+        },
       ])
       .run();
     t.db
@@ -108,6 +118,8 @@ describe("the source registry on the public API", () => {
     const published: [string, string, string][] = [
       ["concert", "library", "fb"],
       ["ia-at-library", "library", "ia"],
+      ["fb-at-capitol", "mixed-venue", "fb"],
+      ["ia-at-capitol", "mixed-venue", "ia"],
       ["ia-at-venue", "ia-venue", "ia"],
       ["play", "tntm-venue", "tntm"],
     ];
@@ -185,6 +197,14 @@ describe("the source registry on the public API", () => {
     expect((await get("/api/places/tntm-venue")).body.credits).toEqual(["teatrul-national-timisoara"]);
   });
 
+  it("keeps a venue a permitted source also uses, credited to that source alone", async () => {
+    const places = await placesById();
+    expect(places.get("mixed-venue")?.credits).toEqual(["filarmonica-banatul"]);
+    expect(places.get("mixed-venue")?.upcomingEventCount).toBe(1);
+    const programme = (await get("/api/places/mixed-venue/events")).body.data as { id: string }[];
+    expect(programme.map((e) => e.id)).toEqual(["fb-at-capitol"]);
+  });
+
   it("never publishes a forbidden source's row, nor a venue only it made", async () => {
     const places = await placesById();
     expect(places.has("ia-venue")).toBe(false);
@@ -197,7 +217,7 @@ describe("the source registry on the public API", () => {
     expect(listed.has("ia-at-library")).toBe(false);
     expect(listed.has("ia-at-venue")).toBe(false);
     const nearby = (await get("/api/events?lat=45.75&lng=21.22&radiusKm=5")).body.data as { id: string }[];
-    expect(nearby.map((e) => e.id).sort()).toEqual(["concert", "play", "seeded"]);
+    expect(nearby.map((e) => e.id).sort()).toEqual(["concert", "fb-at-capitol", "play", "seeded"]);
     const archive = (await get("/api/archive")).body.data as unknown[];
     expect(archive).toEqual([]);
     const save = await app.inject({ method: "POST", url: "/api/favorites/events/ia-at-library", headers: { cookie } });
@@ -217,7 +237,7 @@ describe("the source registry on the public API", () => {
     expect((await whatsOn()).get("play")).toBe("teatrul-national-timisoara");
     expect((await placesById()).get("tntm-venue")?.credits).toEqual(["teatrul-national-timisoara"]);
     // Nothing was deleted on the way.
-    expect(t.db.select().from(event).all()).toHaveLength(6);
+    expect(t.db.select().from(event).all()).toHaveLength(8);
   });
 
   it("sends no reminder for a held-back event", async () => {

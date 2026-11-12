@@ -202,6 +202,20 @@ describe("a source must be in the registry", () => {
   });
 });
 
+describe("a forbidden source in development", () => {
+  it("stages its rows, but its pending copy does not make a permitted source's listing a duplicate", async () => {
+    const forbidden = await addSource("restricted:x");
+    const permitted = await addSource("test:cpt");
+    feed = [listing()];
+    expect(await refresh(forbidden)).toMatchObject({ new: 1 });
+    expect(await refresh(permitted)).toMatchObject({ new: 1, duplicates: 0 });
+    const rows = await staged();
+    const ids = rows.filter((r: { sourceId: string }) => r.sourceId === permitted).map((r: { id: string }) => r.id);
+    const accepted = (await call("POST", "/api/admin/staged-events/accept", { ids })).body;
+    expect(accepted.accepted).toHaveLength(1);
+  });
+});
+
 describe("a refresh stages a diff and publishes nothing", () => {
   it("sorts listings into matched, ambiguous, geocoded, quarantined and duplicate", async () => {
     const id = await addSource();
