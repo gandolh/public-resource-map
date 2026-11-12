@@ -1,5 +1,6 @@
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import cors from "@fastify/cors";
+import { serializerCompiler, validatorCompiler } from "@fastify/type-provider-zod";
 import type BetterSqlite3 from "better-sqlite3";
 import type { Config } from "./config.js";
 import { createDb, type DB } from "./db/index.js";
@@ -77,6 +78,9 @@ export interface BuildAppOptions {
  */
 export async function buildApp(config: Config, opts: BuildAppOptions = {}): Promise<App> {
   const app = Fastify(opts.server);
+  // zod checks every request and encodes every reply, in every plugin registered below.
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
   // First: the error and not-found handlers, on the root, before anything that can throw.
   await app.register(errors);
 

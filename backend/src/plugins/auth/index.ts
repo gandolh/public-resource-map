@@ -149,7 +149,11 @@ const registerAuth: FastifyPluginAsync<AuthPluginOptions> = async (app, { auth, 
 
 export const authPlugin = fp(registerAuth, { name: "auth" });
 
-/** The admin guard, for a route's `preHandler`. */
+/**
+ * The admin guard. Routes put it in `preValidation`, not `preHandler`: Fastify checks a route's
+ * schemas between the two, so a signed-in user who isn't an admin gets 403 before any 400 that
+ * would describe the admin route's input to them.
+ */
 export { requireRole } from "../../../vendor/ward/ward-auth.js";
 export { subjectOf } from "./session.js";
 export { WardUnavailableError, type WardClient } from "../../../vendor/ward/ward-auth.js";

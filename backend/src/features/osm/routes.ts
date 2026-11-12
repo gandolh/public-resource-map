@@ -23,7 +23,7 @@ export interface Options {
 export async function adminOsmRoutes(app: FastifyInstance, { db, osm: deps }: Options) {
   app.post<{ Body: OsmSyncRequest }>(
     "/admin/osm/sync",
-    { preHandler: requireRole(ROLES.admin) },
+    { preValidation: requireRole(ROLES.admin) },
     async (req, reply) => {
       const parsed = osmSyncRequestSchema.safeParse(req.body);
       if (!parsed.success) {

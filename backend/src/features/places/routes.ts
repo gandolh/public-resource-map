@@ -151,7 +151,7 @@ export async function placeRoutes(app: FastifyInstance, { db }: Options) {
   // The write routes are admin-only: they were open to anyone, so
   // a curl could delete every place or publish an unreviewed event. Kept, not
   // removed, as an escape hatch for manual fixes until the admin UI exists.
-  app.post<{ Body: CreatePlaceInput }>("/places", { preHandler: requireRole(ROLES.admin) }, async (req, reply) => {
+  app.post<{ Body: CreatePlaceInput }>("/places", { preValidation: requireRole(ROLES.admin) }, async (req, reply) => {
     const parsed = createPlaceSchema.safeParse(req.body);
     if (!parsed.success) {
       return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
@@ -169,7 +169,7 @@ export async function placeRoutes(app: FastifyInstance, { db }: Options) {
 
   app.delete<{ Params: { id: string } }>(
     "/places/:id",
-    { preHandler: requireRole(ROLES.admin) },
+    { preValidation: requireRole(ROLES.admin) },
     async (req, reply) => {
       let result;
       try {

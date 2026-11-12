@@ -77,7 +77,7 @@ export async function eventRoutes(app: FastifyInstance, { db }: Options) {
 
   // Admin-only, like the place writes. Anonymous POSTs used to
   // publish straight to `live`, skipping the review gate.
-  app.post<{ Body: CreateEventInput }>("/events", { preHandler: requireRole(ROLES.admin) }, async (req, reply) => {
+  app.post<{ Body: CreateEventInput }>("/events", { preValidation: requireRole(ROLES.admin) }, async (req, reply) => {
     const parsed = createEventSchema.safeParse(req.body);
     if (!parsed.success) {
       return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
@@ -94,7 +94,7 @@ export async function eventRoutes(app: FastifyInstance, { db }: Options) {
 
   app.delete<{ Params: { id: string } }>(
     "/events/:id",
-    { preHandler: requireRole(ROLES.admin) },
+    { preValidation: requireRole(ROLES.admin) },
     async (req, reply) => {
       let result;
       try {

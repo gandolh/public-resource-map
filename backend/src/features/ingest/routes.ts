@@ -45,7 +45,7 @@ export interface Options {
 }
 
 export async function adminIngestRoutes(app: FastifyInstance, { db, ingest: deps, notifyMail }: Options) {
-  const guard = { preHandler: requireRole(ROLES.admin) };
+  const guard = { preValidation: requireRole(ROLES.admin) };
   /*
    * A refresh can outlast the server's 180 s `connectionTimeout`: sources run one after
    * another, each fetch may take 15 s, and the geocoder asks once a second. Its socket waits
