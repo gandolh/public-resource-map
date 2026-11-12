@@ -1,33 +1,30 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { event, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
-import { createEventSchema, nearbyQuerySchema, type CreateEventInput } from "@public-resource-map/shared";
+import { createEventSchema, eventSchema, eventsQuerySchema } from "@public-resource-map/shared";
 import { boundingBox } from "../../lib/geo.js";
 import { rowToEvent } from "./mapper.js";
 import { isForeignKeyViolation } from "../../lib/fk.js";
 import { requireRole, ROLES } from "../../plugins/auth/index.js";
-
-const eventsQuerySchema = nearbyQuerySchema.extend({
-  from: z.string().optional(),
-  to: z.string().optional(),
-});
+import { errorBodySchema } from "../../lib/api-error.js";
+import { pageOf } from "../../lib/page.js";
+import { idParamsSchema } from "../../lib/params.js";
 
 /** What this feature takes from the app's context. */
 export interface Options {
   db: DB;
 }
 
-export async function eventRoutes(app: FastifyInstance, { db }: Options) {
-  app.get<{ Querystring: Record<string, string> }>("/events", async (req, reply) => {
-    const query = eventsQuerySchema.safeParse(req.query);
-    if (!query.success) {
-      return reply.status(400).send({ code: "INVALID_QUERY", message: query.error.message });
-    }
-
-    const { lat, lng, radiusKm, category, from, to, page, pageSize } = query.data;
+export const eventRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+  const listSchema = {
+    querystring: eventsQuerySchema,
+    response: { 200: pageOf(eventSchema), 400: errorBodySchema },
+  };
+  app.get("/events", { schema: listSchema }, async (req) => {
+    const { lat, lng, radiusKm, category, from, to, page, pageSize } = req.query;
 
     const box = boundingBox(lat, lng, radiusKm);
 
@@ -62,7 +59,8 @@ export async function eventRoutes(app: FastifyInstance, { db }: Options) {
     };
   });
 
-  app.get<{ Params: { id: string } }>("/events/:id", async (req, reply) => {
+  const oneSchema = { params: idParamsSchema, response: { 200: eventSchema, 404: errorBodySchema } };
+  app.get("/events/:id", { schema: oneSchema }, async (req, reply) => {
     // An event at a retired place is hidden with it.
     const row = db
       .select({ event })
@@ -77,38 +75,34 @@ export async function eventRoutes(app: FastifyInstance, { db }: Options) {
 
   // Admin-only, like the place writes. Anonymous POSTs used to
   // publish straight to `live`, skipping the review gate.
-  app.post<{ Body: CreateEventInput }>("/events", { preValidation: requireRole(ROLES.admin) }, async (req, reply) => {
-    const parsed = createEventSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return reply.status(400).send({ code: "INVALID_BODY", message: parsed.error.message });
-    }
-
+  const createSchema = { body: createEventSchema, response: { 201: eventSchema, 400: errorBodySchema } };
+  app.post("/events", { preValidation: requireRole(ROLES.admin), schema: createSchema }, async (req, reply) => {
     const id = randomUUID();
 
-    await db.insert(event).values({ id, ...parsed.data });
+    await db.insert(event).values({ id, ...req.body });
 
     const row = db.select().from(event).where(eq(event.id, id)).get();
     if (!row) throw new Error(`Event ${id} was not found after its insert`);
     return reply.status(201).send(rowToEvent(row));
   });
 
-  app.delete<{ Params: { id: string } }>(
-    "/events/:id",
-    { preValidation: requireRole(ROLES.admin) },
-    async (req, reply) => {
-      let result;
-      try {
-        result = await db.delete(event).where(eq(event.id, req.params.id));
-      } catch (err) {
-        if (isForeignKeyViolation(err)) {
-          return reply.status(409).send({ code: "EVENT_IN_USE", message: "Event is still referenced" });
-        }
-        throw err;
+  const deleteSchema = {
+    params: idParamsSchema,
+    response: { 204: z.null(), 404: errorBodySchema, 409: errorBodySchema },
+  };
+  app.delete("/events/:id", { preValidation: requireRole(ROLES.admin), schema: deleteSchema }, async (req, reply) => {
+    let result;
+    try {
+      result = await db.delete(event).where(eq(event.id, req.params.id));
+    } catch (err) {
+      if (isForeignKeyViolation(err)) {
+        return reply.status(409).send({ code: "EVENT_IN_USE", message: "Event is still referenced" });
       }
-      if (result.changes === 0) {
-        return reply.status(404).send({ code: "NOT_FOUND", message: "Event not found" });
-      }
-      return reply.status(204).send();
-    },
-  );
-}
+      throw err;
+    }
+    if (result.changes === 0) {
+      return reply.status(404).send({ code: "NOT_FOUND", message: "Event not found" });
+    }
+    return reply.status(204).send(null);
+  });
+};

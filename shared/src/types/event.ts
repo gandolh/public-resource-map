@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { httpUrlSchema } from "./common.js";
+import { httpUrlSchema, nearbyQuerySchema } from "./common.js";
 
 export const eventCategories = [
   "concert",
@@ -57,3 +57,14 @@ export const createEventSchema = z.object({
 });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;
+
+/**
+ * Query for `GET /api/events`: events at places near a point, optionally between two start
+ * dates (compared as strings with the stored ISO instants).
+ */
+export const eventsQuerySchema = nearbyQuerySchema.extend({
+  from: z.string().optional(),
+  to: z.string().optional(),
+});
+
+export type EventsQuery = z.infer<typeof eventsQuerySchema>;

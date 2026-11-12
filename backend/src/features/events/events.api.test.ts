@@ -45,4 +45,16 @@ describe("events API (Fastify .inject() + temp SQLite)", () => {
     expect(body.data[0].title).toBe("Opening Night");
     expect(body.data[0].placeId).toBe(placeId);
   });
+
+  it("fills a create's defaulted status, and answers it through the event schema", async () => {
+    const { cookie } = await t.signIn("admin");
+    const res = await t.app.inject({
+      method: "POST",
+      url: "/api/events",
+      headers: { cookie },
+      payload: { placeId, title: "Matinee", category: "theater", startDate: "2026-08-02T11:00:00.000Z" },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(res.json()).toMatchObject({ title: "Matinee", status: "live", description: null, endDate: null });
+  });
 });

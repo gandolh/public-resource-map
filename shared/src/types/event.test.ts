@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEventSchema, eventCategorySchema, eventSchema, eventStatusSchema } from "./event.js";
+import { createEventSchema, eventCategorySchema, eventSchema, eventStatusSchema, eventsQuerySchema } from "./event.js";
 
 describe("eventCategorySchema / eventStatusSchema", () => {
   it("accepts known enum members and rejects unknown ones", () => {
@@ -62,5 +62,19 @@ describe("createEventSchema", () => {
 
   it("rejects an empty title", () => {
     expect(createEventSchema.safeParse({ ...valid, title: "" }).success).toBe(false);
+  });
+});
+
+describe("eventsQuerySchema", () => {
+  it("needs a point, fills the paging defaults and keeps the date bounds as given", () => {
+    expect(eventsQuerySchema.parse({ lat: "45.75", lng: "21.22", from: "2026-11-12" })).toEqual({
+      lat: 45.75,
+      lng: 21.22,
+      radiusKm: 5,
+      page: 1,
+      pageSize: 20,
+      from: "2026-11-12",
+    });
+    expect(eventsQuerySchema.safeParse({ lng: "21" }).success).toBe(false);
   });
 });
