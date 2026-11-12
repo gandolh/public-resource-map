@@ -5,3 +5,5 @@ export * from "./types/osm.js";
 export * from "./types/whats-on.js";
 export * from "./types/ingest.js";
 export * from "./types/notifications.js";
+export * from "./sources.js";
+export * from "./data-sources.js";

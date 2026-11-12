@@ -25,10 +25,18 @@ export default [
       "backend/src/db/seed-users.ts",
       "backend/src/db/set-role.ts",
       "backend/src/server.ts",
+      "scripts/generate-data-sources.ts",
     ],
     // The e2e project and the root's tool configs sit outside the workspaces' tsconfigs where the service
     // can't find one.
-    typed: { allowDefaultProject: ["playwright.config.ts", "vitest.config.ts", "vitest.workspace.ts"] },
+    typed: {
+      allowDefaultProject: [
+        "playwright.config.ts",
+        "vitest.config.ts",
+        "vitest.workspace.ts",
+        "scripts/generate-data-sources.ts",
+      ],
+    },
     ignores: ["docs/**", "ui/build/**", "ui/.react-router/**", "e2e/.data/**", "playwright-report/**"],
   }),
   {
