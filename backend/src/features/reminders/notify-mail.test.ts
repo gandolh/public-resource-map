@@ -7,6 +7,7 @@ import { runReminderSweep } from "./reminder-sweep.js";
 import { newEventsMail, oneLine, runMailSweep, type SendNotification } from "./notify-mail.js";
 import { WardConfigurationError, WardUnavailableError } from "../../../vendor/ward/ward-auth.js";
 import { createFakeWard } from "../../test/fake-ward.js";
+import { SOURCES } from "@public-resource-map/shared";
 
 /** Notification email through Ward, once per inbox row. */
 
@@ -63,7 +64,7 @@ function inbox() {
   );
   const tomorrow = eventAt("2026-08-02T16:00:00.000Z", "Recital");
   t.db.insert(favoriteEvent).values({ subject: "ana", eventId: tomorrow }).run();
-  runReminderSweep(now, t.db);
+  runReminderSweep(now, t.db, SOURCES);
 }
 
 describe("runMailSweep", () => {

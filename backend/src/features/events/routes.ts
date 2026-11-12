@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { z } from "zod";
 import { event, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
-import { createEventSchema, eventSchema, eventsQuerySchema } from "@public-resource-map/shared";
+import { createEventSchema, eventSchema, eventsQuerySchema, type SourceRegistry } from "@public-resource-map/shared";
 import { boundingBox } from "../../lib/geo.js";
 import { rowToEvent } from "./mapper.js";
 import { isForeignKeyViolation } from "../../lib/fk.js";
@@ -12,13 +12,15 @@ import { requireRole, ROLES } from "../../plugins/auth/index.js";
 import { errorBodySchema } from "../../lib/api-error.js";
 import { pageOf } from "../../lib/page.js";
 import { idParamsSchema } from "../../lib/params.js";
+import { eventCredits, eventPublished, placePublished, publicationOf } from "../sources/index.js";
 
 /** What this feature takes from the app's context. */
 export interface Options {
   db: DB;
+  sources: SourceRegistry;
 }
 
-export const eventRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+export const eventRoutes: FastifyPluginAsyncZod<Options> = async (app, { db, sources }) => {
   const listSchema = {
     querystring: eventsQuerySchema,
     response: { 200: pageOf(eventSchema), 400: errorBodySchema },
@@ -27,6 +29,7 @@ export const eventRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
     const { lat, lng, radiusKm, category, from, to, page, pageSize } = req.query;
 
     const box = boundingBox(lat, lng, radiusKm);
+    const publication = publicationOf(db, sources);
 
     // Events attach to a place; proximity is filtered via the place's coords.
     const conditions = [
@@ -35,6 +38,9 @@ export const eventRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
       sql`${place.lng} BETWEEN ${box.minLng} AND ${box.maxLng}`,
     ];
 
+    for (const shown of [eventPublished(db, publication), placePublished(db, publication)]) {
+      if (shown) conditions.push(shown);
+    }
     if (category) conditions.push(eq(event.category, category));
     if (from) conditions.push(sql`${event.startDate} >= ${from}`);
     if (to) conditions.push(sql`${event.startDate} <= ${to}`);
@@ -51,8 +57,13 @@ export const eventRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
         .where(where),
     ]);
 
+    const credits = eventCredits(
+      db,
+      publication,
+      rows.map((r) => r.event.id),
+    );
     return {
-      data: rows.map((r) => rowToEvent(r.event)),
+      data: rows.map((r) => rowToEvent(r.event, credits.get(r.event.id) ?? null)),
       total: countRows[0]?.count ?? 0,
       page,
       pageSize,
@@ -61,16 +72,24 @@ export const eventRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
 
   const oneSchema = { params: idParamsSchema, response: { 200: eventSchema, 404: errorBodySchema } };
   app.get("/events/:id", { schema: oneSchema }, async (req, reply) => {
-    // An event at a retired place is hidden with it.
+    // An event at a retired place is hidden with it, and so is one from a forbidden source.
+    const publication = publicationOf(db, sources);
     const row = db
       .select({ event })
       .from(event)
       .innerJoin(place, eq(place.id, event.placeId))
-      .where(and(eq(event.id, req.params.id), isNull(place.retiredAt)))
+      .where(
+        and(
+          eq(event.id, req.params.id),
+          isNull(place.retiredAt),
+          eventPublished(db, publication),
+          placePublished(db, publication),
+        ),
+      )
       .get();
 
     if (!row) return reply.status(404).send({ code: "NOT_FOUND", message: "Event not found" });
-    return rowToEvent(row.event);
+    return rowToEvent(row.event, eventCredits(db, publication, [row.event.id]).get(row.event.id) ?? null);
   });
 
   // Admin-only, like the place writes. Anonymous POSTs used to
@@ -83,7 +102,8 @@ export const eventRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
 
     const row = db.select().from(event).where(eq(event.id, id)).get();
     if (!row) throw new Error(`Event ${id} was not found after its insert`);
-    return reply.status(201).send(rowToEvent(row));
+    // Made by hand, so no source row published it: no credit.
+    return reply.status(201).send(rowToEvent(row, null));
   });
 
   const deleteSchema = {

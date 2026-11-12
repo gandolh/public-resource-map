@@ -1,12 +1,13 @@
-import type { Event } from "@public-resource-map/shared";
+import type { Event, SourceId } from "@public-resource-map/shared";
 import type { event } from "../../db/schema.js";
 
 /**
  * One row→`Event` mapping, shared by every surface that returns events (the
  * events route, a place's programme, the citywide what's-on). Kept in one file
- * so a new column can never appear on one surface and not the others.
+ * so a new column can never appear on one surface and not the others. Every caller names the
+ * event's credit (`eventCredits` in the sources feature).
  */
-export function rowToEvent(row: typeof event.$inferSelect): Event {
+export function rowToEvent(row: typeof event.$inferSelect, credit: SourceId | null): Event {
   return {
     id: row.id,
     placeId: row.placeId,
@@ -24,5 +25,6 @@ export function rowToEvent(row: typeof event.$inferSelect): Event {
     currency: row.currency,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    credit,
   };
 }

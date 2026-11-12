@@ -5,6 +5,7 @@ import {
   parseCsv,
   whatsOnItemSchema,
   type ArchiveQuery,
+  type SourceRegistry,
   type WhatsOnItem,
 } from "@public-resource-map/shared";
 import { event, favoriteEvent, favoritePlace, place } from "../../db/schema.js";
@@ -13,10 +14,12 @@ import { errorBodySchema } from "../../lib/api-error.js";
 import { pageOf } from "../../lib/page.js";
 import { subjectOf } from "../../plugins/auth/index.js";
 import { pastAt, rowToEvent } from "../events/index.js";
+import { eventCredits, eventPublished, placePublished, publicationOf, type Publication } from "../sources/index.js";
 
 /** What this feature takes from the app's context. */
 export interface Options {
   db: DB;
+  sources: SourceRegistry;
 }
 
 /** A page of past events, each with its place. */
@@ -31,10 +34,17 @@ const archiveSchema = {
  * links to its place. The citywide list is public; "mine" (events you saved,
  * and events at places you follow) is yours alone.
  */
-export const archiveRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+export const archiveRoutes: FastifyPluginAsyncZod<Options> = async (app, { db, sources }) => {
   const ended = sql`coalesce(${event.endDate}, ${event.startDate})`;
 
-  async function page(where: SQL, q: ArchiveQuery) {
+  async function page(conditions: SQL[], q: ArchiveQuery, publication: Publication) {
+    // A forbidden source's events are held back here too, "mine" included.
+    const where = sql.join(
+      [...conditions, eventPublished(db, publication), placePublished(db, publication)].filter(
+        (c): c is SQL => c !== undefined,
+      ),
+      sql` AND `,
+    );
     const offset = (q.page - 1) * q.pageSize;
     const [rows, count] = [
       db
@@ -53,8 +63,13 @@ export const archiveRoutes: FastifyPluginAsyncZod<Options> = async (app, { db })
         .where(where)
         .get(),
     ];
+    const credits = eventCredits(
+      db,
+      publication,
+      rows.map((r) => r.event.id),
+    );
     const data: WhatsOnItem[] = rows.map((r) => ({
-      event: rowToEvent(r.event),
+      event: rowToEvent(r.event, credits.get(r.event.id) ?? null),
       place: {
         id: r.place.id,
         name: r.place.name,
@@ -79,7 +94,7 @@ export const archiveRoutes: FastifyPluginAsyncZod<Options> = async (app, { db })
     // Public: a retired place's past events go with it.
     const conditions = [pastAt(new Date().toISOString()), isNull(place.retiredAt), ...categoryFilter(q)];
     if (q.city) conditions.push(eq(place.city, q.city));
-    return page(sql.join(conditions, sql` AND `), q);
+    return page(conditions, q, publicationOf(db, sources));
   });
 
   // Signed-in only: not on the public allowlist (`plugins/auth/index.ts`).
@@ -98,6 +113,6 @@ export const archiveRoutes: FastifyPluginAsyncZod<Options> = async (app, { db })
     const mine = or(inArray(event.id, saved), inArray(event.placeId, followed));
     if (!mine) throw new Error("or() of two conditions came back empty");
     const conditions = [pastAt(new Date().toISOString()), mine, ...categoryFilter(q)];
-    return page(sql.join(conditions, sql` AND `), q);
+    return page(conditions, q, publicationOf(db, sources));
   });
 };

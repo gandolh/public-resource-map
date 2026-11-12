@@ -40,7 +40,7 @@
       "rule": 3,
       "path": "backend/src/config.ts",
       "match": "reads NODE_ENV",
-      "reason": "config.ts reads NODE_ENV once, as config.production, for the legal posture: an adapter that has not cleared it (the iaBilet rule) must never run in production, and the image sets NODE_ENV=production, so the safeguard can't be lost to a deploy that forgets a purpose-named variable. The seed scripts' refusal to wipe a production database reads the same flag. Goes when the source registry's forbidden state replaces the iaBilet rule."
+      "reason": "config.ts reads NODE_ENV once, as config.production, for the legal posture: a source the registry marks forbidden (the iaBilet rule) may be refreshed in development, never in production, and the image sets NODE_ENV=production, so the safeguard can't be lost to a deploy that forgets a purpose-named variable. The seed scripts' refusal to wipe a production database reads the same flag."
     }
   ]
 }

@@ -1,6 +1,6 @@
 import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import { z } from "zod";
-import { and, asc, eq, inArray, isNull, sql, getTableColumns } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql, getTableColumns, type SQL } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { event, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
@@ -11,7 +11,7 @@ import {
   placesQuerySchema,
   eventSchema,
   placeSchema,
-  type Event,
+  type SourceRegistry,
 } from "@public-resource-map/shared";
 import { boundingBox } from "../../lib/geo.js";
 import { lensWindow } from "../../lib/time.js";
@@ -22,6 +22,7 @@ import { requireRole, ROLES } from "../../plugins/auth/index.js";
 import { errorBodySchema } from "../../lib/api-error.js";
 import { pageOf } from "../../lib/page.js";
 import { idParamsSchema } from "../../lib/params.js";
+import { eventCredits, eventPublished, placeCredits, placePublished, publicationOf } from "../sources/index.js";
 
 /**
  * Live events at a place that are on during the lens window (starting in it, or
@@ -34,17 +35,18 @@ import { idParamsSchema } from "../../lib/params.js";
  * silently resolves both sides to the subquery's own table and every count
  * comes back zero. The builder emits `"event"."place_id" = "place"."id"`.
  */
-function upcomingCountExpr(db: DB, from: string, to: string) {
+function upcomingCountExpr(db: DB, from: string, to: string, published: SQL | undefined) {
   const sub = db
     .select({ c: sql<number>`count(*)` })
     .from(event)
-    .where(and(eq(event.placeId, place.id), liveInWindow(from, to)));
+    .where(and(eq(event.placeId, place.id), liveInWindow(from, to), published));
   return sql<number>`(${sub})`;
 }
 
 /** What this feature takes from the app's context. */
 export interface Options {
   db: DB;
+  sources: SourceRegistry;
 }
 
 /**
@@ -52,7 +54,13 @@ export interface Options {
  * OSM data is ingested once (see `POST /api/admin/osm/sync`) and never fetched
  * from Overpass on user traffic. Renames the transitional `/api/resources`.
  */
-export const placeRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+export const placeRoutes: FastifyPluginAsyncZod<Options> = async (app, { db, sources }) => {
+  /** The places as the API answers them, each with its credits. */
+  const toPlaces = (rows: Parameters<typeof rowToPlace>[0][], publication = publicationOf(db, sources)) => {
+    const credits = placeCredits(db, publication, rows);
+    return rows.map((r) => rowToPlace(r, credits.get(r.id) ?? []));
+  };
+
   const listSchema = {
     querystring: placesQuerySchema,
     response: { 200: pageOf(placeSchema), 400: errorBodySchema },
@@ -61,10 +69,14 @@ export const placeRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
     const { city, lat, lng, radiusKm, category, lens, page, pageSize } = req.query;
 
     const { from, to } = lensWindow(lens);
-    const eventCount = upcomingCountExpr(db, from, to);
+    const publication = publicationOf(db, sources);
+    const eventCount = upcomingCountExpr(db, from, to, eventPublished(db, publication));
 
-    // A retired place (OSM no longer has it) is on no public surface.
+    // A retired place (OSM no longer has it) is on no public surface, and neither is a place
+    // whose source the registry forbids.
     const conditions = [isNull(place.retiredAt)];
+    const shown = placePublished(db, publication);
+    if (shown) conditions.push(shown);
     if (city) conditions.push(eq(place.city, city));
     if (lat !== undefined && lng !== undefined) {
       const box = boundingBox(lat, lng, radiusKm);
@@ -99,7 +111,7 @@ export const placeRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
     ]);
 
     return {
-      data: rows.map(rowToPlace),
+      data: toPlaces(rows, publication),
       total: countRows[0]?.count ?? 0,
       page,
       pageSize,
@@ -118,10 +130,11 @@ export const placeRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
     response: { 200: pageOf(eventSchema), 400: errorBodySchema, 404: errorBodySchema },
   };
   app.get("/places/:id/events", { schema: eventsSchema }, async (req, reply) => {
+    const publication = publicationOf(db, sources);
     const exists = db
       .select({ id: place.id })
       .from(place)
-      .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
+      .where(and(eq(place.id, req.params.id), isNull(place.retiredAt), placePublished(db, publication)))
       .get();
     if (!exists) {
       return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
@@ -133,24 +146,30 @@ export const placeRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
     const rows = await db
       .select()
       .from(event)
-      .where(and(eq(event.placeId, req.params.id), liveInWindow(from, to)))
+      .where(and(eq(event.placeId, req.params.id), liveInWindow(from, to), eventPublished(db, publication)))
       .orderBy(asc(event.startDate))
       .limit(limit);
 
-    const data: Event[] = rows.map(rowToEvent);
+    const credits = eventCredits(
+      db,
+      publication,
+      rows.map((r) => r.id),
+    );
+    const data = rows.map((r) => rowToEvent(r, credits.get(r.id) ?? null));
     return { data, total: data.length, page: 1, pageSize: limit };
   });
 
   const oneSchema = { params: idParamsSchema, response: { 200: placeSchema, 404: errorBodySchema } };
   app.get("/places/:id", { schema: oneSchema }, async (req, reply) => {
+    const publication = publicationOf(db, sources);
     const row = db
       .select()
       .from(place)
-      .where(and(eq(place.id, req.params.id), isNull(place.retiredAt)))
+      .where(and(eq(place.id, req.params.id), isNull(place.retiredAt), placePublished(db, publication)))
       .get();
 
     if (!row) return reply.status(404).send({ code: "NOT_FOUND", message: "Place not found" });
-    return rowToPlace(row);
+    return toPlaces([row], publication)[0];
   });
 
   // The write routes are admin-only: they were open to anyone, so
@@ -165,7 +184,7 @@ export const placeRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) =
 
     const row = db.select().from(place).where(eq(place.id, id)).get();
     if (!row) throw new Error(`Place ${id} was not found after its insert`);
-    return reply.status(201).send(rowToPlace(row));
+    return reply.status(201).send(toPlaces([row])[0]);
   });
 
   const deleteSchema = {

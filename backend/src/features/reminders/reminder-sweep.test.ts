@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildTestApp, type TestApp } from "../../test/harness.js";
 import { event, favoriteEvent, notification, place } from "../../db/schema.js";
 import { runReminderSweep } from "./reminder-sweep.js";
+import { SOURCES } from "@public-resource-map/shared";
 
 /** The day-before reminder, in Bucharest time, exactly once. */
 
@@ -37,9 +38,9 @@ describe("runReminderSweep(now)", () => {
 
   it("reminds about a favourited event starting the next Bucharest day, once", () => {
     const id = favouriteAt("2026-08-02T16:00:00.000Z");
-    expect(runReminderSweep(now, t.db)).toBe(1);
+    expect(runReminderSweep(now, t.db, SOURCES)).toBe(1);
     expect(reminders()).toMatchObject([{ subject: "s1", kind: "reminder", eventId: id, placeId }]);
-    expect(runReminderSweep(now, t.db)).toBe(0);
+    expect(runReminderSweep(now, t.db, SOURCES)).toBe(0);
     expect(reminders()).toHaveLength(1);
   });
 
@@ -50,7 +51,7 @@ describe("runReminderSweep(now)", () => {
     favouriteAt("2026-08-02T21:30:00.000Z");
     // Today, later: not tomorrow.
     favouriteAt("2026-08-01T15:00:00.000Z");
-    expect(runReminderSweep(now, t.db)).toBe(1);
+    expect(runReminderSweep(now, t.db, SOURCES)).toBe(1);
     expect(reminders()[0].eventId).toBeTruthy();
     expect(
       t.db
@@ -65,7 +66,7 @@ describe("runReminderSweep(now)", () => {
     const id = favouriteAt("2026-08-02T10:00:00.000Z", "a");
     t.db.insert(favoriteEvent).values({ subject: "b", eventId: id }).run();
     favouriteAt("2026-08-02T12:00:00.000Z", "a", "ended");
-    expect(runReminderSweep(now, t.db)).toBe(2);
+    expect(runReminderSweep(now, t.db, SOURCES)).toBe(2);
     expect(
       reminders()
         .map((r) => r.subject)

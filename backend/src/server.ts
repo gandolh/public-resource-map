@@ -53,6 +53,7 @@ await app.listen({ port: config.port, host: config.host });
 // the process open. Each run then kicks the notification mail.
 startReminderSweep(
   context.db,
+  context.sources,
   (msg) => app.log.info(msg),
   () => context.notifyMail.kick(),
 );

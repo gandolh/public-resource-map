@@ -1,15 +1,17 @@
 import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
-import type { FavoritesDto } from "@public-resource-map/shared";
+import type { FavoritesDto, SourceRegistry } from "@public-resource-map/shared";
 import { subjectOf } from "../../plugins/auth/index.js";
 import { event, favoriteEvent, favoritePlace, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
 import { errorBodySchema } from "../../lib/api-error.js";
+import { isEventHeldBack, placePublished, publicationOf } from "../sources/index.js";
 
 /** What this feature takes from the app's context. */
 export interface Options {
   db: DB;
+  sources: SourceRegistry;
 }
 
 /** `GET /api/favorites`: the ids a person follows and saved. */
@@ -34,7 +36,7 @@ const removeResponse = { 204: z.null() };
  * `plugins/auth/index.ts`. Adding and removing are idempotent, so a double tap or a
  * retried request leaves one row or none.
  */
-export const favoriteRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+export const favoriteRoutes: FastifyPluginAsyncZod<Options> = async (app, { db, sources }) => {
   const notFound = (what: string) => ({ code: "NOT_FOUND", message: `No such ${what}` });
 
   app.get("/favorites", { schema: { response: { 200: favoritesSchema } } }, async (req) => {
@@ -59,7 +61,13 @@ export const favoriteRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }
       const target = db
         .select({ id: place.id })
         .from(place)
-        .where(and(eq(place.id, req.params.placeId), isNull(place.retiredAt)))
+        .where(
+          and(
+            eq(place.id, req.params.placeId),
+            isNull(place.retiredAt),
+            placePublished(db, publicationOf(db, sources)),
+          ),
+        )
         .get();
       if (!target) return reply.status(404).send(notFound("place"));
       db.insert(favoritePlace)
@@ -86,7 +94,10 @@ export const favoriteRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }
     { schema: { params: eventParamsSchema, response: addResponse } },
     async (req, reply) => {
       const target = db.select({ id: event.id }).from(event).where(eq(event.id, req.params.eventId)).get();
-      if (!target) return reply.status(404).send(notFound("event"));
+      // An event the source registry holds back is not there to save.
+      if (!target || isEventHeldBack(db, publicationOf(db, sources), target.id)) {
+        return reply.status(404).send(notFound("event"));
+      }
       db.insert(favoriteEvent)
         .values({ subject: subjectOf(req), eventId: target.id })
         .onConflictDoNothing()

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { httpUrlSchema, nearbyQuerySchema } from "./common.js";
+import { sourceIdSchema } from "../sources.js";
 
 export const eventCategories = [
   "concert",
@@ -36,6 +37,11 @@ export const eventSchema = z.object({
   currency: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  /**
+   * The registry source (`sources.ts`) the event was ingested from, for its credit; null for an
+   * event no source row published (seeded, or made by hand).
+   */
+  credit: sourceIdSchema.nullable(),
 });
 
 export type Event = z.infer<typeof eventSchema>;

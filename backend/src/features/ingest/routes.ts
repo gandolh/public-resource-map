@@ -11,12 +11,13 @@ import {
   type EventSourceDto,
   type SourceHealth,
   type SourceMechanism,
+  type SourceRegistry,
 } from "@public-resource-map/shared";
 import { eventSource } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
 import type { MailSweeper } from "../reminders/index.js";
 import { resolveCity } from "../osm/index.js";
-import { adapterFor } from "./adapters.js";
+import { adapterFor, publisherOfRow } from "./adapters.js";
 import {
   acceptStaged,
   IngestError,
@@ -46,6 +47,8 @@ export interface Options {
   ingest: IngestDeps;
   /** Kicked after an accept that wrote inbox rows, so their mail goes out. */
   notifyMail: MailSweeper;
+  /** The source registry: a source row must be one of its publishers. */
+  sources: SourceRegistry;
 }
 
 /**
@@ -57,7 +60,10 @@ export interface Options {
  * second makes a cold refresh slow, which is acceptable for an admin pressing
  * a button and not for anything a visitor waits on.
  */
-export const adminIngestRoutes: FastifyPluginAsyncZod<Options> = async (app, { db, ingest: deps, notifyMail }) => {
+export const adminIngestRoutes: FastifyPluginAsyncZod<Options> = async (
+  app,
+  { db, ingest: deps, notifyMail, sources: registry },
+) => {
   const guard = requireRole(ROLES.admin);
   /*
    * A refresh can outlast the server's 180 s `connectionTimeout`: sources run one after
@@ -108,6 +114,12 @@ export const adminIngestRoutes: FastifyPluginAsyncZod<Options> = async (app, { d
       if (!adapterFor(input.adapterKey, deps.adapters)) {
         return reply.status(400).send({ code: "UNKNOWN_ADAPTER", message: `No adapter for ${input.adapterKey}` });
       }
+      if (!publisherOfRow({ adapterKey: input.adapterKey, url: input.url ?? null }, deps.adapters, registry)) {
+        return reply.status(400).send({
+          code: "UNKNOWN_SOURCE",
+          message: `${input.url ?? "A source with no URL"} is on no publisher the ${input.adapterKey} adapter reads: add it to the source registry first`,
+        });
+      }
       const city = resolveCity(input.city);
       if (!city) return reply.status(400).send({ code: "UNKNOWN_CITY", message: `Unknown city: ${input.city}` });
       const taken = db.select().from(eventSource).where(eq(eventSource.adapterKey, input.adapterKey)).get();
@@ -154,7 +166,7 @@ export const adminIngestRoutes: FastifyPluginAsyncZod<Options> = async (app, { d
       preValidation: guard,
       schema: { params: idParamsSchema, response: { 200: refreshSummarySchema, ...refused } },
     },
-    async (req) => refreshSource(db, req.params.id, deps),
+    async (req) => refreshSource(db, req.params.id, deps, registry),
   );
 
   // One after another, not in parallel: the geocoder's rate limit is shared,
@@ -167,7 +179,7 @@ export const adminIngestRoutes: FastifyPluginAsyncZod<Options> = async (app, { d
       const results = [];
       for (const source of sources) {
         try {
-          results.push(await refreshSource(db, source.id, deps));
+          results.push(await refreshSource(db, source.id, deps, registry));
         } catch (err) {
           if (!(err instanceof IngestError)) throw err;
           results.push({ sourceId: source.id, status: "error" as const, error: err.message });
@@ -196,7 +208,7 @@ export const adminIngestRoutes: FastifyPluginAsyncZod<Options> = async (app, { d
       schema: { body: stagedIdsSchema, response: { 200: acceptResultSchema, 400: errorBodySchema } },
     },
     async (req) => {
-      const result = acceptStaged(db, req.body.ids, deps.now());
+      const result = acceptStaged(db, req.body.ids, deps.now(), registry);
       // New inbox rows also go out as mail, after this response.
       if (result.notified > 0) notifyMail.kick();
       return result;

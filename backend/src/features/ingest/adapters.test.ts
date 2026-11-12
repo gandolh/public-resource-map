@@ -2,7 +2,15 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { loadConfig } from "../../config.js";
-import { adapterFor, builtInAdapters, icalAdapter, textFetcher } from "./adapters.js";
+import { SOURCES } from "@public-resource-map/shared";
+import {
+  adapterFor,
+  builtInAdapters,
+  icalAdapter,
+  publisherOfRow,
+  textFetcher,
+  type SourceAdapter,
+} from "./adapters.js";
 
 // The User-Agent the settings give by default.
 const fetchText = textFetcher(loadConfig({ PUBLIC_ORIGIN: "http://localhost:5173" }).ingestUserAgent);
@@ -66,5 +74,37 @@ describe("the iCal adapter over HTTP", () => {
   it("is chosen by the part of the key before the colon", () => {
     expect(adapterFor("ical:centrul-de-proiecte", builtInAdapters)).toBe(icalAdapter);
     expect(adapterFor("iabilet", builtInAdapters)).toBeNull();
+  });
+});
+
+describe("an adapter names the publishers it reads", () => {
+  const read = async () => [];
+
+  it("or it does not type-check", () => {
+    // @ts-expect-error -- no `sources`: an adapter cannot be registered without a source id
+    const unnamed: SourceAdapter = { mechanism: "ical", read };
+    // @ts-expect-error -- an empty list names nothing
+    const empty: SourceAdapter = { mechanism: "ical", sources: [], read };
+    // @ts-expect-error -- OpenStreetMap is in the registry, but it is no event publisher
+    const notAPublisher: SourceAdapter = { mechanism: "ical", sources: ["openstreetmap"], read };
+    // @ts-expect-error -- a name the registry does not have
+    const unknown: SourceAdapter = { mechanism: "ical", sources: ["zile-si-nopti"], read };
+    expect([unnamed, empty, notAPublisher, unknown]).toHaveLength(4);
+  });
+
+  it("and a source row is the named publisher its feed's host belongs to", () => {
+    const row = (url: string | null) => ({ adapterKey: "ical:any-slug", url });
+    expect(publisherOfRow(row("https://www.tntm.ro/?ical=1"), builtInAdapters, SOURCES)?.id).toBe(
+      "teatrul-national-timisoara",
+    );
+    expect(publisherOfRow(row("https://filarmonicabanatul.ro/evenimente/?ical=1"), builtInAdapters, SOURCES)?.id).toBe(
+      "filarmonica-banatul",
+    );
+    // In the registry, but the iCal adapter does not read it; and a host no entry has.
+    expect(publisherOfRow(row("https://www.iabilet.ro/x.ics"), builtInAdapters, SOURCES)).toBeUndefined();
+    expect(publisherOfRow(row("https://example.org/x.ics"), builtInAdapters, SOURCES)).toBeUndefined();
+    expect(
+      publisherOfRow({ adapterKey: "nope:x", url: "https://www.tntm.ro/" }, builtInAdapters, SOURCES),
+    ).toBeUndefined();
   });
 });

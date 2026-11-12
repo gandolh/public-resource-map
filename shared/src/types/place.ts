@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { coordinatesSchema, httpUrlSchema } from "./common.js";
+import { sourceIdSchema } from "../sources.js";
 
 export const placeCategories = [
   "park",
@@ -45,6 +46,12 @@ export const placeSchema = z.object({
    * absent when the caller did not ask for counts.
    */
   upcomingEventCount: z.number().int().nonnegative().optional(),
+  /**
+   * Who the place's data comes from, as registry ids (`sources.ts`), for its credit:
+   * OpenStreetMap for an OSM place, the publishers whose events made an event venue. Empty for a
+   * venue no ingested event points at.
+   */
+  credits: z.array(sourceIdSchema),
 });
 
 export type Place = z.infer<typeof placeSchema>;

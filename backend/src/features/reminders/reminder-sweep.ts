@@ -1,5 +1,7 @@
 import { and, eq, gte, lt } from "drizzle-orm";
+import type { SourceRegistry } from "@public-resource-map/shared";
 import type { DB } from "../../db/index.js";
+import { eventPublished, publicationOf } from "../sources/index.js";
 import { event, favoriteEvent, notification } from "../../db/schema.js";
 import { zonedParts, zonedTimeToInstant } from "../../lib/time.js";
 
@@ -10,11 +12,12 @@ import { zonedParts, zonedTimeToInstant } from "../../lib/time.js";
  * every favourited live event starting on the **next calendar day in
  * Bucharest**, not the next 24 hours and not the next UTC day. Idempotent via
  * the unique `(subject, event_id, kind)` index: a restart, a double run or a
- * catch-up run after downtime writes nothing twice.
+ * catch-up run after downtime writes nothing twice. An event the source registry holds back
+ * gets no reminder.
  *
  * Returns how many reminders it wrote.
  */
-export function runReminderSweep(now: Date, db: DB): number {
+export function runReminderSweep(now: Date, db: DB, sources: SourceRegistry): number {
   const today = zonedParts(now);
   // Day arithmetic on the calendar date, then back to instants: DST-safe,
   // because each midnight is resolved in Bucharest on its own day.
@@ -31,7 +34,14 @@ export function runReminderSweep(now: Date, db: DB): number {
     .select({ subject: favoriteEvent.subject, eventId: event.id, placeId: event.placeId })
     .from(favoriteEvent)
     .innerJoin(event, eq(event.id, favoriteEvent.eventId))
-    .where(and(eq(event.status, "live"), gte(event.startDate, from), lt(event.startDate, to)))
+    .where(
+      and(
+        eq(event.status, "live"),
+        gte(event.startDate, from),
+        lt(event.startDate, to),
+        eventPublished(db, publicationOf(db, sources)),
+      ),
+    )
     .all();
   if (due.length === 0) return 0;
 
@@ -55,11 +65,16 @@ export const SWEEP_HOUR = 9;
  * `notifyUser`, so only users with Ward linked get one; the inbox row is
  * everyone's. Returns a stop function.
  */
-export function startReminderSweep(db: DB, log: (msg: string) => void, afterRun: () => void = () => {}): () => void {
+export function startReminderSweep(
+  db: DB,
+  sources: SourceRegistry,
+  log: (msg: string) => void,
+  afterRun: () => void = () => {},
+): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const run = () => {
     try {
-      const n = runReminderSweep(new Date(), db);
+      const n = runReminderSweep(new Date(), db, sources);
       if (n > 0) log(`reminder sweep: ${n} reminder(s) written`);
     } catch (err) {
       log(`reminder sweep failed: ${err instanceof Error ? err.message : String(err)}`);

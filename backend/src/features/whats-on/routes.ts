@@ -4,13 +4,21 @@ import { event, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
 import { errorBodySchema } from "../../lib/api-error.js";
 import { pageOf } from "../../lib/page.js";
-import { parseCsv, whatsOnItemSchema, whatsOnQuerySchema, type WhatsOnItem } from "@public-resource-map/shared";
+import {
+  parseCsv,
+  whatsOnItemSchema,
+  whatsOnQuerySchema,
+  type SourceRegistry,
+  type WhatsOnItem,
+} from "@public-resource-map/shared";
 import { lensWindow } from "../../lib/time.js";
 import { liveInWindow, rowToEvent } from "../events/index.js";
+import { eventCredits, eventPublished, placePublished, publicationOf } from "../sources/index.js";
 
 /** What this feature takes from the app's context. */
 export interface Options {
   db: DB;
+  sources: SourceRegistry;
 }
 
 /**
@@ -22,7 +30,7 @@ export interface Options {
  * This replaces the old event-centric `/events` grid as a *user* surface; the
  * `/events` route stays as a plain CRUD/proximity endpoint.
  */
-export const whatsOnRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+export const whatsOnRoutes: FastifyPluginAsyncZod<Options> = async (app, { db, sources }) => {
   const schema = {
     querystring: whatsOnQuerySchema,
     response: { 200: pageOf(whatsOnItemSchema), 400: errorBodySchema },
@@ -32,7 +40,11 @@ export const whatsOnRoutes: FastifyPluginAsyncZod<Options> = async (app, { db })
     const { city, category, lens, page, pageSize } = req.query;
     const { from, to } = lensWindow(lens);
 
+    const publication = publicationOf(db, sources);
     const conditions = [liveInWindow(from, to), isNull(place.retiredAt)];
+    for (const shown of [eventPublished(db, publication), placePublished(db, publication)]) {
+      if (shown) conditions.push(shown);
+    }
     if (city) conditions.push(eq(place.city, city));
 
     const categories = parseCsv(category);
@@ -57,8 +69,13 @@ export const whatsOnRoutes: FastifyPluginAsyncZod<Options> = async (app, { db })
         .where(where),
     ]);
 
+    const credits = eventCredits(
+      db,
+      publication,
+      rows.map((r) => r.event.id),
+    );
     const data: WhatsOnItem[] = rows.map((r) => ({
-      event: rowToEvent(r.event),
+      event: rowToEvent(r.event, credits.get(r.event.id) ?? null),
       place: {
         id: r.place.id,
         name: r.place.name,

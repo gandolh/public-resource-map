@@ -1,11 +1,12 @@
 import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
-import { markReadSchema, type InboxDto, type NotificationDto } from "@public-resource-map/shared";
+import { markReadSchema, type InboxDto, type NotificationDto, type SourceRegistry } from "@public-resource-map/shared";
 import { subjectOf } from "../../plugins/auth/index.js";
 import { event, notification, notificationEvent, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
 import { errorBodySchema } from "../../lib/api-error.js";
+import { eventPublished, publicationOf } from "../sources/index.js";
 
 /** `GET /api/notifications`: the newest 50 items, and how many are unread. */
 const inboxSchema: z.ZodType<InboxDto> = z.object({
@@ -29,9 +30,10 @@ const inboxSchema: z.ZodType<InboxDto> = z.object({
 /** What this feature takes from the app's context. */
 export interface Options {
   db: DB;
+  sources: SourceRegistry;
 }
 
-export const notificationRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
+export const notificationRoutes: FastifyPluginAsyncZod<Options> = async (app, { db, sources }) => {
   app.get("/notifications", { schema: { response: { 200: inboxSchema } } }, async (req, reply) => {
     reply.header("cache-control", "no-store");
     const subject = subjectOf(req);
@@ -73,7 +75,8 @@ export const notificationRoutes: FastifyPluginAsyncZod<Options> = async (app, { 
       ? db
           .select({ id: event.id, title: event.title, startDate: event.startDate })
           .from(event)
-          .where(inArray(event.id, eventIds))
+          // An event the source registry holds back drops out of its item; the item stays.
+          .where(and(inArray(event.id, eventIds), eventPublished(db, publicationOf(db, sources))))
           .all()
       : [];
     const byId = new Map(events.map((e) => [e.id, e]));

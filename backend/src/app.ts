@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from "@fastify/type-provider-zod";
 import { z } from "zod";
 import type BetterSqlite3 from "better-sqlite3";
+import { SOURCES, type SourceRegistry } from "@public-resource-map/shared";
 import type { Config } from "./config.js";
 import { createDb, type DB } from "./db/index.js";
 import { archiveRoutes } from "./features/archive/index.js";
@@ -35,6 +36,8 @@ export interface AppContext {
   ingest: IngestDeps;
   /** The OSM sync's Overpass call. */
   osm: SyncDeps;
+  /** The source registry: which sources the public reads hold back, and the credits they carry. */
+  sources: SourceRegistry;
 }
 
 /** The app and the context it was built with: server.ts starts the reminder sweep from it. */
@@ -72,6 +75,8 @@ export interface BuildAppOptions {
   ingest?: Partial<IngestDeps>;
   /** Replace the OSM sync's Overpass call (and its timeout) in tests. */
   osm?: Partial<SyncDeps>;
+  /** Replace the source registry: a test flips a source to `forbidden` over the same database. */
+  sources?: SourceRegistry;
 }
 
 /**
@@ -143,6 +148,7 @@ export async function buildApp(config: Config, opts: BuildAppOptions = {}): Prom
     notifyMail,
     ingest: { ...defaultIngestDeps(config), ...opts.ingest },
     osm: { fetchOverpass: overpassFetcher(config.overpassUrl), ...opts.osm },
+    sources: opts.sources ?? SOURCES,
   };
 
   // The features, each encapsulated, all under `/api`.

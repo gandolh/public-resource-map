@@ -66,7 +66,7 @@ export interface TestApp {
  * existing rows.
  */
 export async function buildTestApp(
-  opts: Pick<BuildAppOptions, "ingest" | "osm" | "ward"> & {
+  opts: Pick<BuildAppOptions, "ingest" | "osm" | "ward" | "sources"> & {
     before?: (db: DB) => void;
     /** Settings to change from the test defaults (no Ward, served on `TEST_ORIGIN`). */
     config?: Partial<Config>;
@@ -84,6 +84,7 @@ export async function buildTestApp(
     ward: opts.ward ?? null,
     ingest: opts.ingest,
     osm: opts.osm,
+    sources: opts.sources,
   });
   await app.ready();
 

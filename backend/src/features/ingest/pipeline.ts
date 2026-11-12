@@ -8,6 +8,8 @@ import {
   type SourceHealth,
   type MatchStatus,
   type StagedStatus,
+  type SourceRegistry,
+  publisherForUrl,
 } from "@public-resource-map/shared";
 import type { Config } from "../../config.js";
 import { ApiError, type ErrorCode } from "../../lib/api-error.js";
@@ -16,7 +18,8 @@ import { event, eventSource, place, stagedEvent } from "../../db/schema.js";
 import { resolveCity, type CityConfig } from "../osm/index.js";
 import { zonedParts } from "../../lib/time.js";
 import { notifyNewEvents } from "../reminders/index.js";
-import { adapterFor, builtInAdapters, textFetcher, type AdapterRegistry } from "./adapters.js";
+import { adapterFor, builtInAdapters, publisherOfRow, textFetcher, type AdapterRegistry } from "./adapters.js";
+import { eventPublished, publicationOf, type Publication } from "../sources/index.js";
 import { geocodeAddress, nominatimProvider, type GeocodeProvider } from "./geocode.js";
 import { matchVenue, normalizeText, normalizeVenue, type MatchCandidate } from "./match.js";
 
@@ -33,7 +36,7 @@ export interface IngestDeps {
   geocoder: GeocodeProvider | null;
   fetchText: (url: string) => Promise<string>;
   now: () => Date;
-  /** Refuses adapters that have not cleared the legal posture (the iaBilet rule). */
+  /** Refuses a source the registry marks `forbidden` (the iaBilet rule): it may run in development only. */
   production: boolean;
 }
 
@@ -110,13 +113,25 @@ function listingFields(e: RawEvent, sourceName: string) {
 }
 
 /** Run one source's refresh and stage its diff. */
-export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps): Promise<RefreshSummary> {
+export async function refreshSource(
+  db: DB,
+  sourceId: string,
+  deps: IngestDeps,
+  registry: SourceRegistry,
+): Promise<RefreshSummary> {
   const source = db.select().from(eventSource).where(eq(eventSource.id, sourceId)).get();
   if (!source) throw new IngestError("SOURCE_NOT_FOUND", "No such source");
   if (!source.enabled) throw new IngestError("SOURCE_DISABLED", `${source.name} is disabled`);
   const adapter = adapterFor(source.adapterKey, deps.adapters);
   if (!adapter) throw new IngestError("UNKNOWN_ADAPTER", `No adapter for ${source.adapterKey}`);
-  if (deps.production && !adapter.productionAllowed) {
+  const publisher = publisherOfRow(source, deps.adapters, registry);
+  if (!publisher) {
+    throw new IngestError(
+      "SOURCE_NOT_REGISTERED",
+      `${source.name}'s feed is on no publisher the ${source.adapterKey} adapter reads: add it to the source registry`,
+    );
+  }
+  if (deps.production && publisher.reuse === "forbidden") {
     throw new IngestError("ADAPTER_NOT_ALLOWED", `${source.adapterKey} may not run in production`);
   }
   const city = source.city ? resolveCity(source.city) : null;
@@ -164,6 +179,8 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
       .where(and(eq(stagedEvent.sourceId, sourceId), eq(stagedEvent.externalKey, key)))
       .get();
 
+  // A live event the registry holds back is no reason to drop another source's copy.
+  const publication = publicationOf(db, registry);
   const seen = new Set<string>();
   for (const row of rows) {
     const parsed = row.problem ? null : rawEventSchema.safeParse(row.raw);
@@ -213,7 +230,7 @@ export async function refreshSource(db: DB, sourceId: string, deps: IngestDeps):
       continue;
     }
 
-    if (await isCrossSourceDuplicate(db, e, sourceId, city)) {
+    if (await isCrossSourceDuplicate(db, e, sourceId, city, publication)) {
       summary.duplicates++;
       continue;
     }
@@ -286,14 +303,20 @@ async function resolveVenue(
  * The same event already live, or already waiting, from another source:
  * normalized title, same Bucharest day, same city (decisions.md → dedup).
  */
-async function isCrossSourceDuplicate(db: DB, e: RawEvent, sourceId: string, city: CityConfig) {
+async function isCrossSourceDuplicate(
+  db: DB,
+  e: RawEvent,
+  sourceId: string,
+  city: CityConfig,
+  publication: Publication,
+) {
   const title = normalizeText(e.title);
   const day = bucharestDay(e.startDate);
   const live = db
     .select({ startDate: event.startDate })
     .from(event)
     .innerJoin(place, eq(place.id, event.placeId))
-    .where(and(eq(event.normalizedTitle, title), eq(place.city, city.name)))
+    .where(and(eq(event.normalizedTitle, title), eq(place.city, city.name), eventPublished(db, publication)))
     .all();
   if (live.some((r) => bucharestDay(r.startDate) === day)) return true;
   const staged = db
@@ -421,10 +444,11 @@ export interface AcceptResult {
 /**
  * Accept staged rows: each becomes (or updates) a live event, in its own
  * transaction. A row with no place yet is skipped with a reason: an event
- * always has a place (resolve it first, or drop a manual pin). Newly published
- * events then notify the people who favourited their place.
+ * always has a place (resolve it first, or drop a manual pin). A row from a
+ * source the registry forbids is skipped too: it would be held back anyway.
+ * Newly published events then notify the people who favourited their place.
  */
-export function acceptStaged(db: DB, ids: string[], now: Date): AcceptResult {
+export function acceptStaged(db: DB, ids: string[], now: Date, registry: SourceRegistry): AcceptResult {
   const result: AcceptResult = { accepted: [], skipped: [], notified: 0 };
   const at = now.toISOString();
   // New and live only: a re-accepted change or a cancellation is not news.
@@ -437,6 +461,9 @@ export function acceptStaged(db: DB, ids: string[], now: Date): AcceptResult {
         return void result.skipped.push({ id, reason: `is ${row.status}` });
       }
       const source = tx.select().from(eventSource).where(eq(eventSource.id, row.sourceId)).get();
+      if (publisherForUrl(source?.url ?? null, registry)?.reuse === "forbidden") {
+        return void result.skipped.push({ id, reason: "its source is forbidden by the source registry" });
+      }
       const cityName = source?.city ? (resolveCity(source.city)?.name ?? source.city) : null;
 
       let placeId = row.placeId;

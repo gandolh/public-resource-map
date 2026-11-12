@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { buildTestApp, TEST_ORIGIN, type TestApp } from "../../test/harness.js";
 import { loadConfig } from "../../config.js";
-import { event, place } from "../../db/schema.js";
+import { event, eventSource, place } from "../../db/schema.js";
+import { SOURCES, type SourceRegistry } from "@public-resource-map/shared";
 import type { AdapterRow, SourceAdapter } from "./adapters.js";
 import type { GeocodeProvider } from "./geocode.js";
 
@@ -19,9 +20,14 @@ let failNext: Error | null;
 let clock: Date;
 let geocodes: string[];
 
+/** The real registry, with one publisher moved to the tests' feed host. */
+const registry: SourceRegistry = SOURCES.map((s) =>
+  s.id === "filarmonica-banatul" ? { ...s, host: "example.ro" } : s,
+);
+
 const fakeAdapter: SourceAdapter = {
   mechanism: "ical",
-  productionAllowed: true,
+  sources: ["filarmonica-banatul"],
   read: async () => {
     if (failNext) {
       const err = failNext;
@@ -31,7 +37,8 @@ const fakeAdapter: SourceAdapter = {
     return structuredClone(feed);
   },
 };
-const restrictedAdapter: SourceAdapter = { ...fakeAdapter, productionAllowed: false };
+/** Reads iaBilet, which the registry forbids: development only. */
+const restrictedAdapter: SourceAdapter = { ...fakeAdapter, sources: ["iabilet"] };
 
 /** Club Daos geocodes inside Timișoara; anything else is a miss. */
 const geocoder: GeocodeProvider = async (query) => {
@@ -60,6 +67,7 @@ async function build(production = false) {
       now: () => clock,
       production,
     },
+    sources: registry,
   });
   for (const name of [
     "Casa de Cultură a Municipiului Timișoara",
@@ -85,7 +93,7 @@ async function addSource(adapterKey = "test:cpt", city = "timisoara") {
     name: `Source ${adapterKey}`,
     adapterKey,
     mechanism: "ical",
-    url: "https://example.ro/feed.ics",
+    url: adapterKey.startsWith("restricted:") ? "https://www.iabilet.ro/feed.ics" : "https://example.ro/feed.ics",
     city,
   });
   expect(res.status).toBe(201);
@@ -147,6 +155,7 @@ describe("sources", () => {
           name: "x",
           adapterKey: "test:cpt",
           mechanism: "ical",
+          url: "https://example.ro/other.ics",
           city: "timisoara",
         })
       ).status,
@@ -154,6 +163,42 @@ describe("sources", () => {
     const list = (await call("GET", "/api/admin/sources")).body.data;
     expect(list).toHaveLength(1);
     expect(list[0]).toMatchObject({ adapterKey: "test:cpt", city: TM, enabled: true, lastStatus: null });
+  });
+});
+
+describe("a source must be in the registry", () => {
+  const add = (adapterKey: string, url?: string) =>
+    call("POST", "/api/admin/sources", { name: "x", adapterKey, mechanism: "ical", url, city: "timisoara" });
+
+  it("refuses a feed on a host no registry publisher has, or no feed at all", async () => {
+    for (const url of ["https://unknown.example/feed.ics", undefined]) {
+      const res = await add("test:x", url);
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe("UNKNOWN_SOURCE");
+    }
+  });
+
+  it("refuses a registered publisher its adapter does not name", async () => {
+    const res = await add("test:iabilet", "https://www.iabilet.ro/feed.ics");
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("UNKNOWN_SOURCE");
+  });
+
+  it("refuses to refresh a stored row whose feed no registry publisher covers", async () => {
+    t.db
+      .insert(eventSource)
+      .values({
+        id: "old",
+        name: "Old feed",
+        adapterKey: "test:old",
+        mechanism: "ical",
+        url: "https://gone.example/f.ics",
+        city: TM,
+      })
+      .run();
+    const res = await call("POST", "/api/admin/sources/old/refresh");
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe("SOURCE_NOT_REGISTERED");
   });
 });
 
@@ -367,6 +412,7 @@ describe("source health", () => {
     t = await buildTestApp({
       config: loadConfig({ PUBLIC_ORIGIN: TEST_ORIGIN, NODE_ENV: "production" }),
       ingest: { adapters: { test: fakeAdapter, restricted: restrictedAdapter }, geocoder, now: () => clock },
+      sources: registry,
     });
     const id = await addSource("restricted:x");
     const res = await call("POST", `/api/admin/sources/${id}/refresh`);

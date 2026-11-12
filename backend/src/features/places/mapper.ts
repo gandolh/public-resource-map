@@ -1,8 +1,14 @@
-import type { Place } from "@public-resource-map/shared";
+import type { Place, SourceId } from "@public-resource-map/shared";
 import type { place } from "../../db/schema.js";
 
-/** A place row as the API answers it, with its upcoming-event count when the query asked for one. */
-export function rowToPlace(row: typeof place.$inferSelect & { upcomingEventCount?: number }): Place {
+/**
+ * A place row as the API answers it, with its upcoming-event count when the query asked for one,
+ * and its credits (`placeCredits` in the sources feature).
+ */
+export function rowToPlace(
+  row: typeof place.$inferSelect & { upcomingEventCount?: number },
+  credits: SourceId[],
+): Place {
   return {
     id: row.id,
     name: row.name,
@@ -21,5 +27,6 @@ export function rowToPlace(row: typeof place.$inferSelect & { upcomingEventCount
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     ...(row.upcomingEventCount === undefined ? {} : { upcomingEventCount: row.upcomingEventCount }),
+    credits,
   };
 }

@@ -30,8 +30,8 @@ export interface Config {
   /** `DATABASE_PATH`, absolute (a relative value is from the working directory). */
   databasePath: string;
   /**
-   * `NODE_ENV=production`. Read for one reason: the legal posture keeps adapters that have not
-   * cleared it (the iaBilet rule) off a production server, and the image sets `NODE_ENV`, so
+   * `NODE_ENV=production`. Read for one reason: the legal posture keeps a source the registry
+   * marks `forbidden` (the iaBilet rule) off a production server, and the image sets `NODE_ENV`, so
    * the safeguard can't be forgotten by a deploy that leaves out a purpose-named variable.
    */
   production: boolean;
