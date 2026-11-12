@@ -1,10 +1,29 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import { desc, eq, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
-import { archiveQuerySchema, parseCsv, type ArchiveQuery, type WhatsOnItem } from "@public-resource-map/shared";
+import {
+  archiveQuerySchema,
+  parseCsv,
+  whatsOnItemSchema,
+  type ArchiveQuery,
+  type WhatsOnItem,
+} from "@public-resource-map/shared";
 import { event, favoriteEvent, favoritePlace, place } from "../../db/schema.js";
 import type { DB } from "../../db/index.js";
+import { errorBodySchema } from "../../lib/api-error.js";
+import { pageOf } from "../../lib/page.js";
 import { subjectOf } from "../../plugins/auth/index.js";
 import { pastAt, rowToEvent } from "../events/index.js";
+
+/** What this feature takes from the app's context. */
+export interface Options {
+  db: DB;
+}
+
+/** A page of past events, each with its place. */
+const archiveSchema = {
+  querystring: archiveQuerySchema,
+  response: { 200: pageOf(whatsOnItemSchema), 400: errorBodySchema },
+};
 
 /**
  * The archive: events that happened, newest first. Past events are
@@ -12,12 +31,7 @@ import { pastAt, rowToEvent } from "../events/index.js";
  * links to its place. The citywide list is public; "mine" (events you saved,
  * and events at places you follow) is yours alone.
  */
-/** What this feature takes from the app's context. */
-export interface Options {
-  db: DB;
-}
-
-export async function archiveRoutes(app: FastifyInstance, { db }: Options) {
+export const archiveRoutes: FastifyPluginAsyncZod<Options> = async (app, { db }) => {
   const ended = sql`coalesce(${event.endDate}, ${event.startDate})`;
 
   async function page(where: SQL, q: ArchiveQuery) {
@@ -55,23 +69,13 @@ export async function archiveRoutes(app: FastifyInstance, { db }: Options) {
     return { data, total: count?.n ?? 0, page: q.page, pageSize: q.pageSize };
   }
 
-  const parse = (query: unknown, reply: FastifyReply) => {
-    const parsed = archiveQuerySchema.safeParse(query);
-    if (!parsed.success) {
-      void reply.status(400).send({ code: "INVALID_QUERY", message: parsed.error.message });
-      return null;
-    }
-    return parsed.data;
-  };
-
   const categoryFilter = (q: ArchiveQuery): SQL[] => {
     const categories = parseCsv(q.category);
     return categories.length ? [inArray(event.category, categories)] : [];
   };
 
-  app.get("/archive", async (req, reply) => {
-    const q = parse(req.query, reply);
-    if (!q) return reply;
+  app.get("/archive", { schema: archiveSchema }, async (req) => {
+    const q = req.query;
     // Public: a retired place's past events go with it.
     const conditions = [pastAt(new Date().toISOString()), isNull(place.retiredAt), ...categoryFilter(q)];
     if (q.city) conditions.push(eq(place.city, q.city));
@@ -79,9 +83,8 @@ export async function archiveRoutes(app: FastifyInstance, { db }: Options) {
   });
 
   // Signed-in only: not on the public allowlist (`plugins/auth/index.ts`).
-  app.get("/archive/mine", async (req, reply) => {
-    const q = parse(req.query, reply);
-    if (!q) return reply;
+  app.get("/archive/mine", { schema: archiveSchema }, async (req) => {
+    const q = req.query;
     const subject = subjectOf(req);
     // What you saved, and what happened at places you follow.
     const saved = db
@@ -97,4 +100,4 @@ export async function archiveRoutes(app: FastifyInstance, { db }: Options) {
     const conditions = [pastAt(new Date().toISOString()), mine, ...categoryFilter(q)];
     return page(sql.join(conditions, sql` AND `), q);
   });
-}
+};

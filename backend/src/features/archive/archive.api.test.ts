@@ -81,3 +81,11 @@ describe("GET /api/archive/mine", () => {
     expect(titles(only.json())).toEqual(["in bucharest"]);
   });
 });
+
+describe("the archive's query schema", () => {
+  it("refuses a page below 1 with INVALID_QUERY, naming the field", async () => {
+    const res = await t.app.inject({ method: "GET", url: "/api/archive?page=0" });
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toEqual({ code: "INVALID_QUERY", message: expect.stringContaining("page") as string });
+  });
+});
