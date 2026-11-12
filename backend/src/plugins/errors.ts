@@ -33,8 +33,9 @@ function statusOf(error: unknown): number | undefined {
  * - A 4xx that Fastify or a plugin raised (bad JSON, a body too large, an unsupported media type)
  *   keeps its status, its code and its message, which Fastify wrote for clients.
  * - A reply that doesn't match its response schema is a bug, never the client's fault: a 500.
- * - Anything else is a 500 with a fixed message, logged with the request. A thrown message never
- *   reaches the client: Fastify's default handler sent it, a 500's included.
+ * - Anything else is a 5xx with a fixed message, logged with the request: the 503 an error such as
+ *   Ward's `WardUnavailableError` carries keeps its status, everything else is a 500. A thrown
+ *   message never reaches the client: Fastify's default handler sent it, a 500's included.
  */
 const errorHandling: FastifyPluginAsync = async (app) => {
   app.setErrorHandler((error: unknown, request, reply) => {
@@ -67,6 +68,12 @@ const errorHandling: FastifyPluginAsync = async (app) => {
       );
     } else {
       request.log.error({ err: error }, `${request.method} ${request.url}: unhandled error`);
+    }
+    if (status === 503) {
+      return reply.status(503).send({
+        code: "UNAVAILABLE",
+        message: "A service prm relies on is not answering. Try again later.",
+      } satisfies ErrorBody);
     }
     return reply
       .status(500)

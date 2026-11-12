@@ -390,3 +390,22 @@ describe("the staged rows go through their schema", () => {
     }
   });
 });
+
+describe("refresh-all", () => {
+  it("records a source the pipeline refuses as an error and runs the rest", async () => {
+    await t.close();
+    await build(true);
+    const ok = await addSource("test:cpt");
+    const refused = await addSource("restricted:x");
+    feed = [listing()];
+    const res = await call("POST", "/api/admin/sources/refresh-all");
+    expect(res.status).toBe(200);
+    const byId = new Map((res.body.data as { sourceId: string }[]).map((r) => [r.sourceId, r]));
+    expect(byId.get(ok)).toMatchObject({ status: "ok", fetched: 1 });
+    expect(byId.get(refused)).toEqual({
+      sourceId: refused,
+      status: "error",
+      error: "restricted:x may not run in production",
+    });
+  });
+});

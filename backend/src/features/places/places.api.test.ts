@@ -109,3 +109,22 @@ describe("the places replies go through their schema", () => {
     }
   });
 });
+
+describe("a created place's defaults", () => {
+  it("fills source with event-venue and answers it through the place schema", async () => {
+    const t = await buildTestApp();
+    try {
+      const { cookie } = await t.signIn("admin");
+      const res = await t.app.inject({
+        method: "POST",
+        url: "/api/places",
+        headers: { cookie },
+        payload: { name: "New Hall", category: "theater", city: "Timișoara", lat: 45.75, lng: 21.22 },
+      });
+      expect(res.statusCode).toBe(201);
+      expect(res.json()).toMatchObject({ name: "New Hall", source: "event-venue", isManualPin: false });
+    } finally {
+      await t.close();
+    }
+  });
+});

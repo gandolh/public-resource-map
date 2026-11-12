@@ -1,4 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import Fastify from "fastify";
+import { WardUnavailableError } from "./auth/index.js";
+import { errors } from "./errors.js";
 import { buildTestApp, type TestApp } from "../test/harness.js";
 
 describe("the error and not-found handlers", () => {
@@ -43,5 +46,22 @@ describe("the error and not-found handlers", () => {
   it("still refuses a signed-out caller on an unknown route, as on any route not listed as public", async () => {
     const res = await t.app.inject({ method: "GET", url: "/api/nothing" });
     expect(res.statusCode).toBe(401);
+  });
+});
+
+describe("a 5xx that carries its status", () => {
+  it("keeps a 503 (Ward unreachable) with a fixed message, never the thrown one", async () => {
+    const app = Fastify();
+    await app.register(errors);
+    app.get("/down", async () => {
+      throw new WardUnavailableError("session-status answered 502 from ward.internal");
+    });
+    const res = await app.inject({ method: "GET", url: "/down" });
+    await app.close();
+    expect(res.statusCode).toBe(503);
+    expect(res.json()).toEqual({
+      code: "UNAVAILABLE",
+      message: "A service prm relies on is not answering. Try again later.",
+    });
   });
 });
