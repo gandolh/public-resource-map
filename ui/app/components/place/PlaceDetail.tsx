@@ -3,7 +3,7 @@ import { Check, Clock, Globe, Link2, MapPin, Navigation, Phone } from "lucide-re
 import type { Event, Place } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
 import { categoryNameKey } from "~/lib/categories";
-import { directionsUrl } from "~/lib/map";
+import { directionsUrl, placeUrl } from "~/lib/map";
 import { Button } from "~/components/ui/Button";
 import { FavoriteStar } from "~/components/FavoriteStar";
 import { Popover, PopoverDescription, PopoverTitle } from "~/components/ui/Popover";
@@ -43,7 +43,7 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
   const [copied, setCopied] = useState(false);
   // The clipboard can be blocked; the link is then shown, selected, to copy by hand.
   const [manual, setManual] = useState(false);
-  const url = `${window.location.origin}/places/${place.id}`;
+  const url = placeUrl(place.id);
 
   const copyLink = async () => {
     try {

@@ -47,6 +47,19 @@ export function directionsUrl({ lat, lng }: Coordinates): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 }
 
+/**
+ * The shareable link to a place's own page. It keeps the app's base path
+ * (`/prm/` when deployed, `/` in dev): a link built from the origin alone
+ * points at a page the estate doesn't serve. Vite's `BASE_URL` always ends in `/`.
+ */
+export function placeUrl(
+  id: string | number,
+  origin: string = window.location.origin,
+  base: string = import.meta.env.BASE_URL,
+): string {
+  return new URL(`places/${id}`, `${origin}${base}`).href;
+}
+
 /** Reactively tracks whether <html> is drawn in the dark theme (`data-theme`). */
 export function useIsDarkMode(): boolean {
   const [dark, setDark] = useState(false);

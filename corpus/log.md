@@ -867,3 +867,11 @@ Dark, System with light first, `data-theme` on `<html>`, a boot script in the he
 `theme-color` meta that follows it. `check-base-ui` is strict and reports 0; the
 better-tailwindcss correctness rules and class order are errors. Details in
 [decisions-ui.md](wiki/decisions-ui.md) and the brief's outcome note.
+
+## [2026-11-12] fix | The copied place link keeps the /prm/ base path
+
+The place sheet's "Copy link" built `origin/places/<id>`, which drops the `/prm/` base the
+deployed app lives under, so a shared link opened a page the estate doesn't serve. It now comes
+from `placeUrl()` in `ui/app/lib/map.ts`, which resolves `places/<id>` against the origin plus
+Vite's `BASE_URL`; a unit test covers `/prm/` and `/`. Found by brief 04's builder; the todo is
+closed. Owner step: `node cli.ts public-resource-map deploy`.
