@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { adapterFor, builtInAdapters, fetchText, icalAdapter } from "./adapters.js";
+import { loadConfig } from "../config.js";
+import { adapterFor, builtInAdapters, icalAdapter, textFetcher } from "./adapters.js";
+
+// The User-Agent the settings give by default.
+const fetchText = textFetcher(loadConfig({ PUBLIC_ORIGIN: "http://localhost:5173" }).ingestUserAgent);
 
 /** The real fetch path: a local server stands in for a publisher's feed. */
 

@@ -1,4 +1,5 @@
 import { seedUsers } from "../../vendor/ward/ward-auth.js";
+import { loadSeedConfig } from "../config.js";
 import { ROLES } from "../ward/auth.js";
 import { fromEnvOrPrompt, openAccounts } from "./accounts-cli.js";
 
@@ -16,9 +17,10 @@ import { fromEnvOrPrompt, openAccounts } from "./accounts-cli.js";
  * the first admin, and for test users.
  */
 
-const username = await fromEnvOrPrompt("SEED_USERNAME", "Username");
-const password = await fromEnvOrPrompt("SEED_PASSWORD", "Password", { secret: true });
-const role = process.env.SEED_ROLE?.trim() || ROLES.user;
+const settings = loadSeedConfig();
+const username = await fromEnvOrPrompt(settings.seedUsername, "Username");
+const password = await fromEnvOrPrompt(settings.seedPassword, "Password", { secret: true });
+const role = settings.seedRole ?? ROLES.user;
 
 if (!username || !password) {
   console.error("Set SEED_USERNAME and SEED_PASSWORD, or run this on a terminal to be asked.");
@@ -29,7 +31,7 @@ if (role !== ROLES.user && role !== ROLES.admin) {
   process.exit(1);
 }
 
-const { accounts, close } = openAccounts();
+const { accounts, close } = openAccounts(settings.databasePath);
 try {
   const result = await seedUsers(accounts, [{ username, password, role }]);
   console.log(

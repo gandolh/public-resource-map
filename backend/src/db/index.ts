@@ -1,13 +1,6 @@
 import Database from "better-sqlite3";
 import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import path from "path";
-import { fileURLToPath } from "url";
 import * as schema from "./schema.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// DATABASE_PATH lets a deploy keep the sqlite file outside the rsynced source
-// tree (so redeploys never wipe it); falls back to the in-repo default.
-const defaultDbPath = process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
 
 /**
  * Create a Drizzle DB bound to a fresh better-sqlite3 connection.
@@ -18,7 +11,8 @@ const defaultDbPath = process.env.DATABASE_PATH ?? path.resolve(__dirname, "../.
  */
 export type DB = BetterSQLite3Database<typeof schema>;
 
-export function createDb(dbPath: string = defaultDbPath): {
+/** `dbPath` is `config.databasePath`, or `:memory:` in a test. */
+export function createDb(dbPath: string): {
   db: DB;
   sqlite: Database.Database;
 } {

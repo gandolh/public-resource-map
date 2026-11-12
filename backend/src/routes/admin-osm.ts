@@ -19,7 +19,7 @@ import { ROLES } from "../ward/auth.js";
  * `deps` lets a test stub Overpass. A second sync of a city already syncing is
  * a 409, and an Overpass that does not answer in time a 504.
  */
-export function adminOsmRoutes(deps: SyncDeps = {}) {
+export function adminOsmRoutes(deps: SyncDeps) {
   return async function (app: FastifyInstance) {
     const db = app.db;
 

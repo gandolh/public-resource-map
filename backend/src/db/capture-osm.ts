@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CITIES, buildOverpassQuery, elementsToPlaces, fetchOverpass, type OsmPlaceInput } from "../lib/osm-sync.js";
+import { loadOverpassUrl } from "../config.js";
+import { CITIES, buildOverpassQuery, elementsToPlaces, overpassFetcher, type OsmPlaceInput } from "../lib/osm-sync.js";
 
 /**
  * Refresh the frozen OSM fixture that `db:seed` loads. This is the
@@ -17,6 +18,7 @@ import { CITIES, buildOverpassQuery, elementsToPlaces, fetchOverpass, type OsmPl
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const out = path.resolve(__dirname, "fixtures/osm-places.json");
+const fetchOverpass = overpassFetcher(loadOverpassUrl());
 
 export interface OsmFixture {
   capturedAt: string;

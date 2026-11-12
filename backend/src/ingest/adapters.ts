@@ -47,16 +47,17 @@ export function adapterFor(adapterKey: string, registry: AdapterRegistry): Sourc
   return registry[adapterKey.split(":")[0]] ?? null;
 }
 
-/** Identifies us to every source we read, as Nominatim's policy also requires. */
-export function userAgent(): string {
-  return process.env.INGEST_USER_AGENT?.trim() || "CivicMap-prm/0.1 (admin-triggered event ingestion)";
-}
-
-export async function fetchText(url: string): Promise<string> {
-  const res = await fetch(url, {
-    headers: { "user-agent": userAgent(), accept: "text/calendar, text/plain;q=0.9, */*;q=0.1" },
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!res.ok) throw new Error(`${url} answered ${res.status}`);
-  return res.text();
-}
+/**
+ * Reads a source's text, naming us with `userAgent` (`config.ingestUserAgent`) to every
+ * source we read, as Nominatim's policy also requires.
+ */
+export const textFetcher =
+  (userAgent: string) =>
+  async (url: string): Promise<string> => {
+    const res = await fetch(url, {
+      headers: { "user-agent": userAgent, accept: "text/calendar, text/plain;q=0.9, */*;q=0.1" },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) throw new Error(`${url} answered ${res.status}`);
+    return res.text();
+  };

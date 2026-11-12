@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { buildTestApp, type TestApp } from "../test/harness.js";
+import { buildTestApp, TEST_ORIGIN, type TestApp } from "../test/harness.js";
+import { loadConfig } from "../config.js";
 import { event, place } from "../db/schema.js";
 import type { AdapterRow, SourceAdapter } from "../ingest/adapters.js";
 import type { GeocodeProvider } from "../ingest/geocode.js";
@@ -354,6 +355,19 @@ describe("source health", () => {
   it("refuses an adapter that has not cleared the legal posture, in production only", async () => {
     await t.close();
     await build(true);
+    const id = await addSource("restricted:x");
+    const res = await call("POST", `/api/admin/sources/${id}/refresh`);
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe("ADAPTER_NOT_ALLOWED");
+  });
+
+  it("takes production from the settings: NODE_ENV=production still refuses it", async () => {
+    await t.close();
+    // The ingest dependencies from the settings, not the test's `production` flag.
+    t = await buildTestApp({
+      config: loadConfig({ PUBLIC_ORIGIN: TEST_ORIGIN, NODE_ENV: "production" }),
+      ingest: { adapters: { test: fakeAdapter, restricted: restrictedAdapter }, geocoder, now: () => clock },
+    });
     const id = await addSource("restricted:x");
     const res = await call("POST", `/api/admin/sources/${id}/refresh`);
     expect(res.status).toBe(403);

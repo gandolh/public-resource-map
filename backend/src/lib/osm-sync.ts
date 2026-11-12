@@ -111,23 +111,24 @@ export interface OverpassResponse {
 /** `signal` aborts the request; a fetcher must honour it. */
 export type OverpassFetcher = (query: string, signal?: AbortSignal) => Promise<OverpassResponse>;
 
-const OVERPASS_URL = process.env.OVERPASS_URL ?? "https://overpass-api.de/api/interpreter";
-
-export const fetchOverpass: OverpassFetcher = async (query, signal = AbortSignal.timeout(OVERPASS_HTTP_TIMEOUT_MS)) => {
-  const res = await fetch(OVERPASS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "public-resource-map/0.1 (POC; OSM ODbL ingestion)",
-    },
-    body: `data=${encodeURIComponent(query)}`,
-    signal,
-  });
-  if (!res.ok) {
-    throw new Error(`Overpass request failed (${res.status})`);
-  }
-  return (await res.json()) as OverpassResponse;
-};
+/** An `OverpassFetcher` asking `url` (`config.overpassUrl`). */
+export const overpassFetcher =
+  (url: string): OverpassFetcher =>
+  async (query, signal = AbortSignal.timeout(OVERPASS_HTTP_TIMEOUT_MS)) => {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "public-resource-map/0.1 (POC; OSM ODbL ingestion)",
+      },
+      body: `data=${encodeURIComponent(query)}`,
+      signal,
+    });
+    if (!res.ok) {
+      throw new Error(`Overpass request failed (${res.status})`);
+    }
+    return (await res.json()) as OverpassResponse;
+  };
 
 // ---------------------------------------------------------------------------
 // Geometry — polygons/ways/relations land at their centroid.
@@ -418,7 +419,8 @@ async function reviewEventsAt(db: DB, placeIds: string[], now: string): Promise<
 // Orchestrator — build query → fetch (stubbable) → normalize → upsert → retire.
 // ---------------------------------------------------------------------------
 export interface SyncDeps {
-  fetchOverpass?: OverpassFetcher;
+  /** `overpassFetcher(config.overpassUrl)`; tests pass a stub. */
+  fetchOverpass: OverpassFetcher;
   /** Overrides `OVERPASS_HTTP_TIMEOUT_MS`; tests use a few milliseconds. */
   timeoutMs?: number;
 }
@@ -450,7 +452,7 @@ export class SyncInProgressError extends Error {
  */
 const syncing = new Set<string>();
 
-export async function syncOsmForCity(db: DB, city: CityConfig, deps: SyncDeps = {}): Promise<OsmSyncResult> {
+export async function syncOsmForCity(db: DB, city: CityConfig, deps: SyncDeps): Promise<OsmSyncResult> {
   if (syncing.has(city.key)) throw new SyncInProgressError(city.name);
   syncing.add(city.key);
   try {
@@ -461,7 +463,7 @@ export async function syncOsmForCity(db: DB, city: CityConfig, deps: SyncDeps = 
 }
 
 async function runSync(db: DB, city: CityConfig, deps: SyncDeps): Promise<OsmSyncResult> {
-  const fetcher = deps.fetchOverpass ?? fetchOverpass;
+  const fetcher = deps.fetchOverpass;
   const timeoutMs = deps.timeoutMs ?? OVERPASS_HTTP_TIMEOUT_MS;
   const signal = AbortSignal.timeout(timeoutMs);
   const query = buildOverpassQuery(city);

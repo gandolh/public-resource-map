@@ -1,9 +1,9 @@
 import path from "node:path";
 import fs from "node:fs";
 import readline from "node:readline";
-import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
 import { createAccounts, createSqliteStore, type Accounts } from "../../vendor/ward/ward-auth.js";
+import { loadDatabaseConfig } from "../config.js";
 import { storeHandle } from "../ward/auth.js";
 
 /**
@@ -13,12 +13,11 @@ import { storeHandle } from "../ward/auth.js";
  * prompt, never from a file in the repository.
  */
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export const dbPath = process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
-
-/** The accounts over the app's database. The library creates its tables on open. */
-export function openAccounts(file: string = dbPath): { accounts: Accounts; close: () => void } {
+/** The accounts over the app's database (`config.databasePath`). The library creates its tables on open. */
+export function openAccounts(file: string = loadDatabaseConfig().databasePath): {
+  accounts: Accounts;
+  close: () => void;
+} {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const sqlite = new Database(file);
   sqlite.pragma("journal_mode = WAL");
@@ -28,15 +27,14 @@ export function openAccounts(file: string = dbPath): { accounts: Accounts; close
 }
 
 /**
- * `process.env[name]`, or the answer to a prompt when there is a terminal to
- * ask on. `secret` keeps the answer off the screen. `undefined` when neither.
+ * `value` (a setting from `loadSeedConfig()`), or the answer to a prompt when there is a
+ * terminal to ask on. `secret` keeps the answer off the screen. `undefined` when neither.
  */
 export async function fromEnvOrPrompt(
-  name: string,
+  value: string | undefined,
   question: string,
   { secret = false }: { secret?: boolean } = {},
 ): Promise<string | undefined> {
-  const value = process.env[name]?.trim();
   if (value) return value;
   if (!process.stdin.isTTY) return undefined;
 

@@ -8,12 +8,13 @@ import {
   type SourceHealth,
   type StagedStatus,
 } from "@public-resource-map/shared";
+import type { Config } from "../config.js";
 import type { DB } from "../db/index.js";
 import { event, eventSource, place, stagedEvent } from "../db/schema.js";
 import { resolveCity, type CityConfig } from "../lib/osm-sync.js";
 import { zonedParts } from "../lib/time.js";
 import { notifyNewEvents } from "../lib/notify.js";
-import { adapterFor, builtInAdapters, fetchText, type AdapterRegistry } from "./adapters.js";
+import { adapterFor, builtInAdapters, textFetcher, type AdapterRegistry } from "./adapters.js";
 import { geocodeAddress, nominatimProvider, type GeocodeProvider } from "./geocode.js";
 import { matchVenue, normalizeText, normalizeVenue } from "./match.js";
 
@@ -34,13 +35,16 @@ export interface IngestDeps {
   production: boolean;
 }
 
-export function defaultIngestDeps(): IngestDeps {
+/** The real sources, geocoder and clock, from the settings. */
+export function defaultIngestDeps(
+  config: Pick<Config, "ingestUserAgent" | "nominatimUserAgent" | "production">,
+): IngestDeps {
   return {
     adapters: builtInAdapters,
-    geocoder: nominatimProvider({ userAgent: process.env.NOMINATIM_USER_AGENT }),
-    fetchText,
+    geocoder: nominatimProvider({ userAgent: config.nominatimUserAgent }),
+    fetchText: textFetcher(config.ingestUserAgent),
     now: () => new Date(),
-    production: process.env.NODE_ENV === "production",
+    production: config.production,
   };
 }
 

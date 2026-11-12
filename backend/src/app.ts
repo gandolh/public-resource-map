@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import cors from "@fastify/cors";
 import type BetterSqlite3 from "better-sqlite3";
 import { createDb, type DB } from "./db/index.js";
@@ -13,7 +13,8 @@ import { archiveRoutes } from "./routes/archive.js";
 import { registerAuth, type Auth } from "./ward/auth.js";
 import { adoptWardSubjects } from "./ward/subjects.js";
 import { WardUnavailableError, type WardClient } from "../vendor/ward/ward-auth.js";
-import type { SyncDeps } from "./lib/osm-sync.js";
+import { overpassFetcher, type SyncDeps } from "./lib/osm-sync.js";
+import type { Config } from "./config.js";
 import { createMailSweeper, type MailSweeper } from "./lib/notify-mail.js";
 
 declare module "fastify" {
@@ -26,22 +27,27 @@ declare module "fastify" {
   }
 }
 
+/** Fastify's options that belong to the process. server.ts sets them; a test leaves them out. */
+type ServerOptions = Pick<
+  FastifyServerOptions,
+  "logger" | "trustProxy" | "connectionTimeout" | "requestTimeout" | "keepAliveTimeout"
+>;
+
 export interface BuildAppOptions {
   /**
    * Inject a DB (e.g. a temp/in-memory one for tests), with the better-sqlite3
-   * handle under it, where the accounts live. Defaults to the prod file DB.
+   * handle under it, where the accounts live; its owner closes it. Left out,
+   * the app opens `config.databasePath` and closes it when it closes.
    */
   db?: { db: DB; sqlite: BetterSqlite3.Database };
-  logger?: boolean;
+  server?: ServerOptions;
   /**
    * Inject a Ward client (a real one over a fake `fetch`), or `null` for none.
-   * Left out, it is built from `WARD_OIDC_*`, and there is none without
+   * Left out, it is built from `config.ward`, and there is none without
    * `WARD_OIDC_ISSUER`. Sessions are real either way: a test signs in through
    * the library, and the real guard decides.
    */
   ward?: WardClient | null;
-  /** `PUBLIC_ORIGIN`, for tests. */
-  publicOrigin?: string;
   /**
    * Replace parts of event ingestion: a test injects adapters, a
    * fake geocoder and a fixed clock, so nothing reaches a real source or
@@ -49,22 +55,22 @@ export interface BuildAppOptions {
    */
   ingest?: Partial<IngestDeps>;
   /** Replace the OSM sync's Overpass call (and its timeout) in tests. */
-  osm?: SyncDeps;
+  osm?: Partial<SyncDeps>;
 }
 
 /**
- * Build a Fastify app instance. The prod entrypoint (index.ts) calls this with
- * `logger: true` and the default DB; tests call it with an injected temp DB and
- * drive it via `app.inject()` — no network listen required.
+ * Build a Fastify app instance, never listening. server.ts calls this with the
+ * process's options (the logger, the timeouts, `trustProxy`); tests call it
+ * with an injected temp DB and drive it via `app.inject()`.
  */
-export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInstance> {
-  const app = Fastify({ logger: opts.logger ?? false });
+export async function buildApp(config: Config, opts: BuildAppOptions = {}): Promise<FastifyInstance> {
+  const app = Fastify(opts.server);
 
-  const { db, sqlite } = opts.db ?? createDb();
+  const { db, sqlite } = opts.db ?? createDb(config.databasePath);
   app.decorate("db", db);
 
   await app.register(cors, {
-    origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+    origin: config.corsOrigin,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     // The UI calls the API on its own origin (`/prm-api`, in development
     // through the dev server's proxy), so this matters only to a caller on
@@ -77,11 +83,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
    * hook and refuses whatever `ward/auth.ts` does not list as public. The
    * admin routes add `requireRole("admin")` on top.
    */
-  const auth = await registerAuth(app, {
-    sqlite,
-    wardClient: opts.ward,
-    publicOrigin: opts.publicOrigin,
-  });
+  const auth = await registerAuth(app, { sqlite, wardClient: opts.ward, config });
   app.decorate("auth", auth);
 
   // Rows keyed by a Ward subject from before prm had users get a linked user
@@ -106,13 +108,20 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
         ? auth.identities.notifyUser(ward, userId, message)
         : Promise.reject(new WardUnavailableError("Ward is not configured")),
     app.log,
+    config.appUrl,
   );
   app.decorate("notifyMail", mail);
-  app.addHook("onClose", () => mail.idle());
+  // One hook, in order: the mail in flight, then the database, if the app opened it.
+  app.addHook("onClose", async () => {
+    await mail.idle();
+    if (!opts.db) sqlite.close();
+  });
 
   await app.register(placeRoutes, { prefix: "/api" });
-  await app.register(adminOsmRoutes(opts.osm), { prefix: "/api" });
-  await app.register(adminIngestRoutes({ ...defaultIngestDeps(), ...opts.ingest }), { prefix: "/api" });
+  await app.register(adminOsmRoutes({ fetchOverpass: overpassFetcher(config.overpassUrl), ...opts.osm }), {
+    prefix: "/api",
+  });
+  await app.register(adminIngestRoutes({ ...defaultIngestDeps(config), ...opts.ingest }), { prefix: "/api" });
   await app.register(eventRoutes, { prefix: "/api" });
   await app.register(whatsOnRoutes, { prefix: "/api" });
   await app.register(favoriteRoutes, { prefix: "/api" });

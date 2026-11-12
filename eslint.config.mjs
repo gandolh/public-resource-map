@@ -24,7 +24,7 @@ export default [
       "backend/src/db/seed.ts",
       "backend/src/db/seed-users.ts",
       "backend/src/db/set-role.ts",
-      "backend/src/index.ts",
+      "backend/src/server.ts",
     ],
     // The e2e project and the root's tool configs sit outside the workspaces' tsconfigs where the service
     // can't find one.
@@ -42,14 +42,6 @@ export default [
         { ignore: ["has-selection", "sheet-peek", "sheet-full", "map-fallback"] },
       ],
     },
-  },
-  {
-    // A warning for now (2026-11-11): these files still read the environment themselves. When the server
-    // takes its settings from config.ts, this block goes and the rule is an error again.
-    name: "prm/process-env-warns",
-    files: ["backend/src/**/*.ts"],
-    ignores: ["backend/src/**/*.test.ts"],
-    rules: { "n/no-process-env": "warn" },
   },
   {
     // Off for now (2026-11-11): without noUncheckedIndexedAccess this rule flags every `!` on an indexed

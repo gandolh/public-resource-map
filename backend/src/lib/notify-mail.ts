@@ -49,18 +49,6 @@ export const MAIL_BATCH = 500;
 /** Events listed in one new-events mail; the rest are counted. */
 const MAX_LISTED = 20;
 
-/**
- * Where links in a mail point: `APP_URL`, or else prm under its own public
- * origin (`PUBLIC_ORIGIN`, `/prm/` by default).
- */
-export function appUrl(env: NodeJS.ProcessEnv = process.env): string {
-  const explicit = env.APP_URL?.trim();
-  if (explicit) return explicit.replace(/\/+$/, "");
-  const origin = (env.PUBLIC_ORIGIN ?? "http://localhost:5173").trim().replace(/\/+$/, "");
-  const base = (env.PRM_BASE ?? "/prm/").trim().replace(/\/+$/, "");
-  return `${origin}${base}`;
-}
-
 const dayFmt = new Intl.DateTimeFormat("ro-RO", {
   timeZone: APP_TZ,
   weekday: "long",
@@ -186,7 +174,7 @@ export async function runMailSweep(
   send: SendNotification,
   now: Date,
   log: MailLog,
-  base: string = appUrl(),
+  base: string,
 ): Promise<MailSweepResult> {
   const result: MailSweepResult = { sent: 0, refused: 0, unlinked: 0, skipped: 0, deferred: false };
   const rows: Row[] = db
@@ -257,6 +245,8 @@ export function createMailSweeper(
   db: DB,
   send: SendNotification,
   log: MailLog,
+  /** Where links point: `config.appUrl`. */
+  base: string,
   clock: () => Date = () => new Date(),
 ): MailSweeper {
   let running: Promise<void> | null = null;
@@ -266,7 +256,7 @@ export function createMailSweeper(
     do {
       again = false;
       try {
-        const r = await runMailSweep(db, send, clock(), log);
+        const r = await runMailSweep(db, send, clock(), log, base);
         if (r.sent || r.refused || r.unlinked || r.skipped) {
           log.info(
             `notification mail: ${r.sent} sent, ${r.refused} refused by Ward, ${r.unlinked} to users without Ward, ${r.skipped} out of date`,

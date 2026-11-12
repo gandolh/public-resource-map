@@ -45,7 +45,7 @@ export default defineConfig({
       command:
         `rm -f "${db}" "${db}-wal" "${db}-shm" && mkdir -p "$(dirname "${db}")"` +
         " && npx tsx src/db/migrate.ts && npx tsx src/db/seed.ts && npx tsx src/db/seed-users.ts" +
-        " && npx tsx src/index.ts",
+        " && npx tsx src/server.ts",
       cwd: "backend",
       url: `http://127.0.0.1:${API_PORT}/api/places?pageSize=1`,
       reuseExistingServer: false,

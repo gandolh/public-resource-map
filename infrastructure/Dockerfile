@@ -73,4 +73,4 @@ VOLUME /data
 EXPOSE 8790
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
   CMD wget -qO- "http://127.0.0.1:${PORT}/health" || exit 1
-CMD ["node", "backend/dist/index.js"]
+CMD ["node", "backend/dist/server.js"]

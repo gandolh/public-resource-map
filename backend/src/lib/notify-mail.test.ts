@@ -4,7 +4,7 @@ import { buildTestApp, type TestApp } from "../test/harness.js";
 import { event, eventSource, favoriteEvent, favoritePlace, notification, place, stagedEvent } from "../db/schema.js";
 import { notifyNewEvents } from "./notify.js";
 import { runReminderSweep } from "../jobs/reminder-sweep.js";
-import { appUrl, newEventsMail, oneLine, runMailSweep, type SendNotification } from "./notify-mail.js";
+import { newEventsMail, oneLine, runMailSweep, type SendNotification } from "./notify-mail.js";
 import { WardConfigurationError, WardUnavailableError } from "../../vendor/ward/ward-auth.js";
 import { createFakeWard } from "../test/fake-ward.js";
 
@@ -176,11 +176,6 @@ describe("the mail's text", () => {
   it("keeps a subject to one line of at most 200 characters", () => {
     expect(oneLine("a\r\nb\tc")).toBe("a b c");
     expect(oneLine("x".repeat(300))).toHaveLength(200);
-  });
-
-  it("links into prm under its public origin unless APP_URL says otherwise", () => {
-    expect(appUrl({ PUBLIC_ORIGIN: "https://example.com/" })).toBe("https://example.com/prm");
-    expect(appUrl({ APP_URL: "http://localhost:5173/prm/" })).toBe("http://localhost:5173/prm");
   });
 });
 

@@ -6,12 +6,12 @@ import {
   createWardClient,
   createWardIdentities,
   wardAuth,
-  wardClientOptionsFromEnv,
   type Accounts,
   type SqliteHandle,
   type WardClient,
   type WardIdentities,
 } from "../../vendor/ward/ward-auth.js";
+import type { Config } from "../config.js";
 
 /**
  * prm's accounts (since 2026-10-13; decisions.md → Accounts).
@@ -60,13 +60,17 @@ export interface AuthOptions {
   /** The better-sqlite3 handle under Drizzle: the library's tables live beside prm's. */
   sqlite: BetterSqlite3.Database;
   /**
-   * The Ward client. `undefined` builds one from the environment (none when
+   * The Ward client. `undefined` builds one from `config.ward` (none when
    * `WARD_OIDC_ISSUER` is unset); `null` means no Ward, whatever the
-   * environment says. Tests inject one with a fake `fetch`.
+   * settings say. Tests inject one with a fake `fetch`.
    */
   wardClient?: WardClient | null;
-  /** `PUBLIC_ORIGIN`; tests pass their own. */
-  publicOrigin?: string;
+  /**
+   * The settings sign-in needs. `publicOrigin` is required: a wrong value is a total sign-in
+   * outage with a confusing face (every browser POST refused as `cross_site`, the cookie
+   * without `Secure`), so a missing one stops the boot in `config.ts`.
+   */
+  config: Pick<Config, "publicOrigin" | "appBase" | "ward" | "trustedProxies">;
 }
 
 export interface Auth {
@@ -87,27 +91,6 @@ export function storeHandle(sqlite: BetterSqlite3.Database): SqliteHandle {
 }
 
 /**
- * `PUBLIC_ORIGIN`: required in production. A wrong value is a total sign-in
- * outage with a confusing face (every browser POST refused as `cross_site`,
- * the cookie without `Secure`), so a missing one stops the boot instead of
- * falling back to the development origin.
- */
-function publicOrigin(env: NodeJS.ProcessEnv = process.env): string {
-  const value = env.PUBLIC_ORIGIN?.trim();
-  if (value) return value;
-  if (env.NODE_ENV === "production") {
-    throw new Error("PUBLIC_ORIGIN is not set: prm's sign-in needs its public origin (see .env.example).");
-  }
-  return "http://localhost:5173";
-}
-
-/** The app's base path, `/prm/` by default, as the UI is built with it. */
-function appBase(env: NodeJS.ProcessEnv = process.env): string {
-  const base = (env.PRM_BASE ?? "/prm/").trim();
-  return base.endsWith("/") ? base : `${base}/`;
-}
-
-/**
  * Build the accounts and register the plugin. Call it **before any route**:
  * the guard is a hook on the root instance, and Fastify copies hooks into a
  * child only when the child is created.
@@ -119,18 +102,21 @@ export async function registerAuth(app: FastifyInstance, options: AuthOptions): 
   let wardClient: WardClient | undefined;
   if (options.wardClient === undefined) {
     // Checks the key at boot; never contacts Ward, so prm starts while Ward is down.
-    const fromEnv = wardClientOptionsFromEnv();
-    wardClient = fromEnv === undefined ? undefined : await createWardClient(fromEnv);
+    const { ward } = options.config;
+    wardClient = ward === undefined ? undefined : await createWardClient(ward);
   } else {
     wardClient = options.wardClient ?? undefined;
   }
 
-  const base = appBase();
+  const base = options.config.appBase;
   await app.register(wardAuth, {
     accounts,
     cookieName: "prm_session",
     cookiePath: API_PREFIX,
-    publicOrigin: options.publicOrigin ?? publicOrigin(),
+    publicOrigin: options.config.publicOrigin,
+    // The same list Fastify's `trustProxy` gets: the proxy's network, so the login lockout
+    // counts each client rather than the proxy.
+    trustedProxies: options.config.trustedProxies,
     publicRoutes: [...PUBLIC_ROUTES],
     registration: { role: ROLES.user },
     ...(wardClient && {

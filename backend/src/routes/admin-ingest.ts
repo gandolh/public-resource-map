@@ -1,4 +1,5 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import { Socket } from "node:net";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { eq } from "drizzle-orm";
 import {
   createSourceSchema,
@@ -37,6 +38,17 @@ export function adminIngestRoutes(deps: IngestDeps) {
   return async function routes(app: FastifyInstance) {
     const db = app.db;
     const guard = { preHandler: requireRole(ROLES.admin) };
+    /*
+     * A refresh can outlast the server's 180 s `connectionTimeout`: sources run one after
+     * another, each fetch may take 15 s, and the geocoder asks once a second. Its socket waits
+     * as long as it takes. (`inject()` has no socket.)
+     */
+    const slow = {
+      ...guard,
+      onRequest: async (req: FastifyRequest) => {
+        if (req.raw.socket instanceof Socket) req.raw.socket.setTimeout(0);
+      },
+    };
 
     const fail = (reply: FastifyReply, err: unknown) => {
       if (err instanceof IngestError) {
@@ -101,7 +113,7 @@ export function adminIngestRoutes(deps: IngestDeps) {
       return toDto(row);
     });
 
-    app.post<{ Params: { id: string } }>("/admin/sources/:id/refresh", guard, async (req, reply) => {
+    app.post<{ Params: { id: string } }>("/admin/sources/:id/refresh", slow, async (req, reply) => {
       try {
         return await refreshSource(db, req.params.id, deps);
       } catch (err) {
@@ -111,7 +123,7 @@ export function adminIngestRoutes(deps: IngestDeps) {
 
     // One after another, not in parallel: the geocoder's rate limit is shared,
     // and a failing source must not stop the rest.
-    app.post("/admin/sources/refresh-all", guard, async () => {
+    app.post("/admin/sources/refresh-all", slow, async () => {
       const sources = db.select().from(eventSource).where(eq(eventSource.enabled, true)).all();
       const results = [];
       for (const source of sources) {

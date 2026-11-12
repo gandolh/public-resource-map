@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { createDb, type DB } from "../db/index.js";
 import { buildApp, type BuildAppOptions } from "../app.js";
+import { loadConfig, type Config } from "../config.js";
 
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
@@ -52,17 +53,22 @@ export interface TestApp {
  * existing rows.
  */
 export async function buildTestApp(
-  opts: Pick<BuildAppOptions, "ingest" | "osm" | "ward"> & { before?: (db: DB) => void } = {},
+  opts: Pick<BuildAppOptions, "ingest" | "osm" | "ward"> & {
+    before?: (db: DB) => void;
+    /** Settings to change from the test defaults (no Ward, served on `TEST_ORIGIN`). */
+    config?: Partial<Config>;
+  } = {},
 ): Promise<TestApp> {
   const { db, sqlite } = createDb(":memory:");
   migrate(db, { migrationsFolder });
   opts.before?.(db);
 
-  const app = await buildApp({
+  // Settings from a fixed environment, never the process's: a test never reaches a real
+  // Overpass, Nominatim or Ward, whatever the shell running it has set.
+  const config: Config = { ...loadConfig({ PUBLIC_ORIGIN: TEST_ORIGIN }), ...opts.config };
+  const app = await buildApp(config, {
     db: { db, sqlite },
-    logger: false,
     ward: opts.ward ?? null,
-    publicOrigin: TEST_ORIGIN,
     ingest: opts.ingest,
     osm: opts.osm,
   });

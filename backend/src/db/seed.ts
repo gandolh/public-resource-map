@@ -1,6 +1,5 @@
-import path from "node:path";
 import fs from "node:fs";
-import { fileURLToPath } from "node:url";
+import { loadSeedConfig } from "../config.js";
 import { createDb } from "./index.js";
 import { fixture, seedDatabase } from "./seed-data.js";
 import { createAccounts, createSqliteStore } from "../../vendor/ward/ward-auth.js";
@@ -12,13 +11,13 @@ import { ROLES, storeHandle } from "../ward/auth.js";
  * SEED_DEMO_PASSWORD) to give that local user favourites and a notification;
  * the user is created if it does not exist. No credential lives in this repo.
  */
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = process.env.DATABASE_PATH ?? path.resolve(__dirname, "../../data/app.db");
+const settings = loadSeedConfig();
+const dbPath = settings.databasePath;
 
 // Seeding resets every place, event, favourite and notification. It is for
 // dev and e2e databases, never a live one.
-if (process.env.NODE_ENV === "production") {
-  console.error("Refusing to seed with NODE_ENV=production: seeding wipes places and events.");
+if (settings.production) {
+  console.error("Refusing to seed a production server (its settings say production): seeding wipes places and events.");
   process.exit(1);
 }
 if (!fs.existsSync(dbPath)) {
@@ -29,12 +28,12 @@ if (!fs.existsSync(dbPath)) {
 const { db, sqlite } = createDb(dbPath);
 console.log("Seeding Timișoara + București (resets places, events, favourites, notifications)...");
 try {
-  const demoName = process.env.SEED_DEMO_USERNAME?.trim();
+  const demoName = settings.demoUsername;
   let demoSubject: string | undefined;
   if (demoName) {
     const accounts = createAccounts({ store: createSqliteStore(storeHandle(sqlite)) });
     const existing = await accounts.findUserByUsername(demoName);
-    const password = process.env.SEED_DEMO_PASSWORD;
+    const password = settings.demoPassword;
     if (!existing && !password) throw new Error("SEED_DEMO_USERNAME is new: set SEED_DEMO_PASSWORD too");
     demoSubject = (existing ?? (await accounts.createUser({ username: demoName, password, role: ROLES.user }))).id;
   }
