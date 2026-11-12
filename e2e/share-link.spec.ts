@@ -42,6 +42,10 @@ test("the map writes its state with replace, so Back leaves the map", async ({ p
   await page.getByRole("button", { name: "Museums" }).click();
   await expect(page).toHaveURL(/\/prm\/\?city=timisoara&q=Muzeul&f=museum$/);
 
+  // The "Map" link, on the map, is a router navigation to the bare path: the view comes back.
+  await page.getByRole("link", { name: "Map" }).first().click();
+  await expect(page).toHaveURL(/\/prm\/\?city=timisoara&q=Muzeul&f=museum$/);
+
   // A drag puts the camera in the URL, also without a new history entry.
   const map = page.locator(".leaflet-container");
   const box = await map.boundingBox();

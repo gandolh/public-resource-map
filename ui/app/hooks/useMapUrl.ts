@@ -57,7 +57,9 @@ export function useMapUrl() {
     // held the place's first render back. The router's `location` (it runs again on each of its
     // navigations, which may drop the query) is a trigger here, never the source.
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${next}${window.location.hash}`);
-  }, [loaded, city, search, categories, lens, camera, location.pathname, location.search]);
+    // `key` too: a router navigation to the same path and query (the "Map" link on the map) still
+    // rewrites the address bar, and must be followed by a write.
+  }, [loaded, city, search, categories, lens, camera, location.pathname, location.search, location.key]);
 
   return { loaded, camera, setCamera };
 }
