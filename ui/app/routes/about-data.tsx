@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import type { MetaFunction } from "react-router";
 import { ArrowUpRight } from "lucide-react";
-import { useI18n } from "~/lib/i18n";
-import { usingCarto } from "~/lib/map";
+import { SOURCES, sourceById, type SourceEntry } from "@public-resource-map/shared";
+import { useI18n, type Lang } from "~/lib/i18n";
+import { TILE_SOURCE, usingCarto } from "~/lib/map";
 
 export const meta: MetaFunction = () => [
   { title: "Despre date — CivicMap" },
@@ -41,13 +42,34 @@ function Out({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
+/** A source's credit from the registry, linked; with its licence when that has a page of its own. */
+function Credit({ source, lang }: { source: SourceEntry | undefined; lang: Lang }) {
+  if (!source) return null;
+  const { url, name } = source.licence;
+  return (
+    <p>
+      <Out href={source.attributionUrl}>{source.attribution[lang]}</Out>
+      {url && url !== source.attributionUrl && (
+        <>
+          {" · "}
+          <Out href={url}>{name}</Out>
+        </>
+      )}
+    </p>
+  );
+}
+
+/** The event publishers the app may show, from the registry: a forbidden one is not on the map. */
+const PUBLISHERS = SOURCES.filter((s) => s.kind === "event-publisher" && s.reuse !== "forbidden");
+
 /**
  * "About the data": the licences the map runs under and the
  * posture the app takes towards its sources, stated where a resident, a
- * publisher or the OSM Foundation can find it.
+ * publisher or the OSM Foundation can find it. The credits come from the source registry
+ * (`shared/src/sources.ts`); the prose is the dictionary's.
  */
 export default function AboutDataRoute() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
@@ -59,24 +81,28 @@ export default function AboutDataRoute() {
 
         <Section title={t("about.placesTitle")}>
           <p>{t("about.places")}</p>
-          <p>
-            <Out href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</Out>
-            {" · "}
-            <Out href="https://opendatacommons.org/licenses/odbl/">ODbL 1.0</Out>
-          </p>
+          <Credit source={sourceById("openstreetmap")} lang={lang} />
         </Section>
 
         <Section title={t("about.mapTitle")}>
           <p>{usingCarto ? t("about.mapCarto") : t("about.mapOsm")}</p>
-          {usingCarto && (
-            <p>
-              <Out href="https://carto.com/attributions">© CARTO</Out>
-            </p>
-          )}
+          {/* The OSM tiles' credit is the places' credit, already above. */}
+          {usingCarto && <Credit source={sourceById(TILE_SOURCE)} lang={lang} />}
         </Section>
 
         <Section title={t("about.eventsTitle")}>
           <p>{t("about.events")}</p>
+          {PUBLISHERS.length > 0 && (
+            <p>
+              {t("about.publishers")}{" "}
+              {PUBLISHERS.map((s, i) => (
+                <span key={s.id}>
+                  {i > 0 && " · "}
+                  <Out href={s.attributionUrl}>{s.attribution[lang]}</Out>
+                </span>
+              ))}
+            </p>
+          )}
           <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-control text-fg">
             {t("about.eventsSample")}
           </p>

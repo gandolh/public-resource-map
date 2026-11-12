@@ -12,10 +12,10 @@ import { sourceName } from "~/components/place/EventList";
  * shows the time; under a month heading (the archive), the date.
  */
 export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when?: "time" | "date" }) {
-  const { t, time, dayMonth } = useI18n();
+  const { t, time, dayMonth, lang } = useI18n();
   const { event, place } = item;
   const running = when === "time" && isRunning(event.startDate, event.endDate);
-  const source = sourceName(event);
+  const source = sourceName(event, lang);
   // A place OSM no longer has appears only in "my past events":
   // the row names it and says so, and links nowhere.
   const unlisted = place.listed === false;

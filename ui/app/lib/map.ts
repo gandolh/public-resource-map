@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import type { Coordinates } from "@public-resource-map/shared";
+import { SOURCES, sourceById, type Coordinates, type SourceId } from "@public-resource-map/shared";
+import type { Lang } from "./i18n";
 
 /**
  * Basemap.
@@ -28,19 +29,46 @@ export const DARK_TILES = usingCarto
   ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${cartoSuffix}`
   : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
-// "© OpenStreetMap contributors" is the wording the OSM Foundation's
-// attribution guidelines ask for.
-const OSM_ATTR =
-  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> ' +
-  '(<a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noreferrer">ODbL</a>)';
+/** The registry source of the basemap in use. */
+export const TILE_SOURCE: SourceId = usingCarto ? "carto" : "osm-tiles";
+
+const escapeHtml = (text: string) =>
+  text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+
+const anchor = (href: string, text: string) =>
+  `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${escapeHtml(text)}</a>`;
 
 /**
- * Attribution is a licence obligation, not a courtesy, and it has to name the
- * tiles actually being served — so it changes with the provider.
+ * One source's credit as Leaflet's attribution control takes it (HTML), from the registry: its
+ * credit text, linked, and its licence when that has a page of its own. "© OpenStreetMap
+ * contributors" is the wording the OSM Foundation's attribution guidelines ask for.
  */
-export const MAP_ATTRIBUTION = usingCarto
-  ? `${OSM_ATTR} · &copy; <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">CARTO</a>`
-  : OSM_ATTR;
+export function creditHtml(id: SourceId, lang: Lang): string {
+  const source = sourceById(id);
+  if (!source) return "";
+  const credit = anchor(source.attributionUrl, source.attribution[lang]);
+  const { url, name } = source.licence;
+  return url && url !== source.attributionUrl ? `${credit} (${anchor(url, name)})` : credit;
+}
+
+/**
+ * The map's credits, each once: OpenStreetMap, the tiles actually being served (attribution is a
+ * licence obligation, so it changes with the provider), then `extra`, the publishers whose places
+ * are on screen.
+ */
+export function mapCredits(lang: Lang, extra: readonly SourceId[] = []): string[] {
+  const ids: SourceId[] = ["openstreetmap", TILE_SOURCE, ...extra];
+  return [...new Set(ids.map((id) => creditHtml(id, lang)))].filter(Boolean);
+}
+
+/** The event publishers credited by these places, in registry order: their venues are on the map. */
+export function publishersOf(places: readonly { credits: readonly SourceId[] }[]): SourceId[] {
+  const credited = new Set(places.flatMap((p) => p.credits));
+  return SOURCES.filter((s) => s.kind === "event-publisher" && credited.has(s.id)).map((s) => s.id);
+}
+
+/** The credit for a map that shows no ingested places (the review page's preview). */
+export const MAP_ATTRIBUTION = mapCredits("ro").join(" · ");
 
 /** Directions to a coordinate. Coordinates, not the name — a name can be ambiguous. */
 export function directionsUrl({ lat, lng }: Coordinates): string {

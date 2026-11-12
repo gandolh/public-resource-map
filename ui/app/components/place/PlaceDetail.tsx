@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Check, Clock, Globe, Link2, MapPin, Navigation, Phone } from "lucide-react";
-import type { Event, Place } from "@public-resource-map/shared";
+import { sourceById, type Event, type Place, type SourceId } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
 import { categoryNameKey } from "~/lib/categories";
 import { directionsUrl, placeUrl } from "~/lib/map";
@@ -22,6 +22,27 @@ function MetaRow({ icon, label, children }: { icon: React.ReactNode; label: stri
       </div>
     </div>
   );
+}
+
+/** Each credited source, from the registry, linked to its own credit page. */
+function Credits({ ids }: { ids: readonly SourceId[] }) {
+  const { lang } = useI18n();
+  return ids.flatMap((id, i) => {
+    const source = sourceById(id);
+    if (!source) return [];
+    return [
+      i > 0 && " · ",
+      <a
+        key={id}
+        href={source.attributionUrl}
+        target="_blank"
+        rel="noreferrer noopener"
+        className="hover:text-accent hover:underline"
+      >
+        {source.attribution[lang]}
+      </a>,
+    ];
+  });
 }
 
 interface PlaceDetailProps {
@@ -143,7 +164,21 @@ export function PlaceDetail({ place, events, eventsLoading, variant = "panel" }:
             </MetaRow>
           )}
           <MetaRow icon={<MapPin size={14} strokeWidth={2} />} label={t("place.source")}>
-            {place.source === "osm" ? t("place.sourceOsm") : t("place.sourceVenue")}
+            {place.source === "osm" && place.credits.length > 0 ? (
+              <Credits ids={place.credits} />
+            ) : place.source === "osm" ? (
+              t("place.sourceOsm")
+            ) : (
+              <>
+                {t("place.sourceVenue")}
+                {place.credits.length > 0 && (
+                  <>
+                    {": "}
+                    <Credits ids={place.credits} />
+                  </>
+                )}
+              </>
+            )}
             {place.osmType && place.osmId && (
               <span className="font-mono text-caption text-fg-faint">
                 {" "}

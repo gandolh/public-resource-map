@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowUpRight, CalendarOff } from "lucide-react";
-import type { Event } from "@public-resource-map/shared";
-import { useI18n } from "~/lib/i18n";
+import { sourceById, type Event } from "@public-resource-map/shared";
+import { useI18n, type Lang } from "~/lib/i18n";
 import { groupByDay, isRunning } from "~/lib/dates";
 import { catVar, eventCategoryColor, eventCategoryKey } from "~/lib/categories";
 import { Button } from "~/components/ui/Button";
@@ -11,8 +11,13 @@ import { EventRowSkeleton } from "~/components/ui/Skeleton";
 
 const INITIAL = 5;
 
-/** The publisher's name, or failing that the listing's host. */
-export function sourceName(event: Pick<Event, "sourcePlatform" | "sourceUrl">): string | null {
+/**
+ * The publisher's credit from the source registry, or failing that the name the listing came
+ * with, or its host.
+ */
+export function sourceName(event: Pick<Event, "credit" | "sourcePlatform" | "sourceUrl">, lang: Lang): string | null {
+  const credited = event.credit ? sourceById(event.credit)?.attribution[lang] : undefined;
+  if (credited) return credited;
   if (event.sourcePlatform) return event.sourcePlatform;
   if (!event.sourceUrl) return null;
   try {
@@ -28,8 +33,8 @@ export function sourceName(event: Pick<Event, "sourcePlatform" | "sourceUrl">): 
  * visible.
  */
 function SourceCredit({ event }: { event: Event }) {
-  const { t } = useI18n();
-  const name = sourceName(event);
+  const { t, lang } = useI18n();
+  const name = sourceName(event, lang);
   if (!name) return null;
   return (
     <p className="mt-1 text-caption text-fg-faint">

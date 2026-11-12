@@ -10,6 +10,7 @@ import { AreaDraw } from "~/components/map/AreaDraw";
 import { FilterBar } from "~/components/map/FilterBar";
 import { PlaceMarkers } from "~/components/map/PlaceMarkers";
 import { UserLocationMarker } from "~/components/map/UserLocationMarker";
+import { SourceCredits } from "~/components/map/SourceCredits";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { Button } from "~/components/ui/Button";
 import { Chip } from "~/components/ui/Chip";
@@ -17,7 +18,7 @@ import { useAppStore } from "~/stores/appStore";
 import { usePlaces } from "~/hooks/usePlaces";
 import { useUserLocation } from "~/hooks/useUserLocation";
 import { useI18n } from "~/lib/i18n";
-import { DARK_TILES, LIGHT_TILES, MAP_ATTRIBUTION, usingCarto, useIsDarkMode } from "~/lib/map";
+import { DARK_TILES, LIGHT_TILES, mapCredits, publishersOf, usingCarto, useIsDarkMode } from "~/lib/map";
 import { normalizeText } from "~/lib/utils";
 import { inArea } from "~/lib/area";
 import { categoryColor, categoryLabelKey } from "~/lib/categories";
@@ -226,7 +227,7 @@ function MapControls() {
 }
 
 export default function MapRoute() {
-  const { t, tn } = useI18n();
+  const { t, tn, lang } = useI18n();
   const navigate = useNavigate();
   const dark = useIsDarkMode();
 
@@ -270,6 +271,8 @@ export default function MapRoute() {
       ),
     [data, search, area],
   );
+
+  const credit = useMemo(() => mapCredits(lang, publishersOf(places)).join(" · "), [lang, places]);
 
   const withEvents = useMemo(() => places.filter((p) => (p.upcomingEventCount ?? 0) > 0).length, [places]);
 
@@ -320,11 +323,12 @@ export default function MapRoute() {
           // container, so anything reactive has to live on the wrapper below.
           className={cn("h-full w-full", !usingCarto && "map-fallback")}
         >
-          <TileLayer url={dark ? DARK_TILES : LIGHT_TILES} attribution={MAP_ATTRIBUTION} />
+          <TileLayer url={dark ? DARK_TILES : LIGHT_TILES} />
           {/* Bottom-left, not Leaflet's default bottom-right: the right edge is
               where the place panel docks, and attribution is a licence
               obligation that may not be parked under a panel. */}
           <AttributionControl position="bottomleft" prefix={false} ref={setAttribution} />
+          <SourceCredits control={attribution} credit={credit} />
           <AboutDataLink control={attribution} />
           <AttributionToggle control={attribution} />
           <MapBridge

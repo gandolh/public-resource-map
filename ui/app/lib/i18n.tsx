@@ -317,6 +317,7 @@ const ro: Dict = {
   "about.eventsTitle": "Evenimentele",
   "about.events":
     "Evenimentele vin doar de la publicatori publici primari: calendare municipale sau finanțate public și locurile însele. Fiecare e verificat de un om înainte să apară, își numește sursa și duce la anunțul original.",
+  "about.publishers": "Publicatori de acum:",
   "about.eventsSample":
     "Deocamdată, importul de evenimente e încă în lucru: evenimentele afișate acum sunt exemple create pentru testarea aplicației, nu anunțuri reale.",
   "about.notTitle": "Ce nu facem",
@@ -689,6 +690,7 @@ const en: Dict = {
   "about.eventsTitle": "Events",
   "about.events":
     "Events come only from public primary publishers: municipal or publicly funded calendars and the venues themselves. Each is checked by a person before it appears, names its source and links to the original listing.",
+  "about.publishers": "Publishers so far:",
   "about.eventsSample":
     "For now the event import is still being built: the events shown are samples made to test the app, not real listings.",
   "about.notTitle": "What we don't do",
