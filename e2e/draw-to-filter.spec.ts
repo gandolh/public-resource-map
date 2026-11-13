@@ -50,7 +50,10 @@ test("a freehand loop narrows the map to the places inside it", async ({ page })
 
 test("a polygon carries over to what's on, and a city change clears it with a notice", async ({ page }) => {
   await page.goto("whats-on");
-  const totalText = await page.getByText(/^\d+ events?$/).first().textContent();
+  const totalText = await page
+    .getByText(/^\d+ events?$/)
+    .first()
+    .textContent();
   const total = Number(totalText?.match(/\d+/)?.[0]);
 
   await page.getByRole("link", { name: "Map" }).first().click();
@@ -73,7 +76,14 @@ test("a polygon carries over to what's on, and a city change clears it with a no
 
   await page.getByRole("link", { name: "What's on" }).first().click();
   await expect(page.getByRole("button", { name: "Remove the drawn area" })).toBeVisible();
-  const shown = Number((await page.getByText(/^\d+ events?$/).first().textContent())?.match(/\d+/)?.[0]);
+  const shown = Number(
+    (
+      await page
+        .getByText(/^\d+ events?$/)
+        .first()
+        .textContent()
+    )?.match(/\d+/)?.[0],
+  );
   expect(shown).toBeLessThanOrEqual(total);
 
   await page.getByRole("button", { name: "Change city" }).click();
