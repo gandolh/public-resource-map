@@ -52,10 +52,10 @@ export function BottomSheet({
     >
       <BaseDrawer.Portal>
         {/* The viewport covers the screen, so it lets every press through to the map; only the popup takes them. */}
-        <BaseDrawer.Viewport className="pointer-events-none fixed inset-0 z-sheet flex items-end justify-center">
+        <BaseDrawer.Viewport className="pointer-events-none fixed inset-0 z-sheet flex items-end justify-center pb-(--tabbar)">
           <BaseDrawer.Popup
             className={cn(
-              "pointer-events-auto relative flex min-h-0 w-full flex-col rounded-t-xl border-t border-line bg-surface shadow-e3 outline-none",
+              "pointer-events-auto relative flex min-h-0 w-full flex-col rounded-t-xl border-t border-line-strong bg-surface shadow-e3 outline-none",
               "touch-none [padding-bottom:max(0px,calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
               "[transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
               "transition-[transform] duration-(--dur-3) ease-out-fast data-swiping:duration-0",
@@ -68,9 +68,6 @@ export function BottomSheet({
             <BaseDrawer.Title render={<p />} className="sr-only">
               {title}
             </BaseDrawer.Title>
-            <div className="shrink-0 cursor-grab pt-2.5 pb-1 select-none active:cursor-grabbing" aria-hidden="true">
-              <div className="mx-auto h-1 w-9 rounded-full bg-line-strong" />
-            </div>
             {children}
           </BaseDrawer.Popup>
         </BaseDrawer.Viewport>

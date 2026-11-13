@@ -3,7 +3,7 @@ import { ArrowUpRight, CalendarOff } from "lucide-react";
 import { sourceById, type Event } from "@public-resource-map/shared";
 import { useI18n, type Lang } from "~/lib/i18n";
 import { groupByDay, isRunning } from "~/lib/dates";
-import { catVar, eventCategoryColor, eventCategoryKey } from "~/lib/categories";
+import { HuedIcon, eventCategoryKey, eventPlaceCategory } from "~/lib/categories";
 import { Button } from "~/components/ui/Button";
 import { FavoriteStar } from "~/components/FavoriteStar";
 import { StateBlock } from "~/components/ui/StateBlock";
@@ -27,85 +27,79 @@ export function sourceName(event: Pick<Event, "credit" | "sourcePlatform" | "sou
   }
 }
 
-/**
- * Who published this event, linked to their original listing when there is
- * one: courtesy to the source, and the link-out posture made
- * visible.
- */
-function SourceCredit({ event }: { event: Event }) {
-  const { t, lang } = useI18n();
-  const name = sourceName(event, lang);
-  if (!name) return null;
-  return (
-    <p className="mt-1 text-caption text-fg-faint">
-      {t("event.source")}{" "}
-      {event.sourceUrl ? (
-        <a
-          href={event.sourceUrl}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="font-medium text-fg-muted underline decoration-line-strong underline-offset-2 hover:text-fg"
-        >
-          {name}
-        </a>
-      ) : (
-        name
-      )}
-    </p>
-  );
-}
-
+/** One event at a place: its date tile, title, time, category, who published it and where its tickets are. */
 function EventRow({ event }: { event: Event }) {
-  const { t, time, dayMonth } = useI18n();
-  const [day, month] = dayMonth(event.startDate).replace(".", "").split(" ");
-  const color = eventCategoryColor(event.category);
+  const { t, time, dayMonth, lang } = useI18n();
+  // A running event sits under "Today", so its tile shows today's date; "until" says when it ends.
+  const running = isRunning(event.startDate, event.endDate);
+  // "13 Nov" in Romanian, "Nov 13" in English: the number is the day, the other word the month.
+  const parts = dayMonth(running ? new Date().toISOString() : event.startDate)
+    .replace(".", "")
+    .split(" ");
+  const day = parts.find((part) => /^\d+$/.test(part)) ?? "";
+  const month = parts.find((part) => part !== day) ?? "";
+  const name = sourceName(event, lang);
 
   return (
     <li className="flex gap-3 border-t border-line py-3 first:border-t-0">
-      <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-surface-2">
-        <span className="text-lead leading-none font-semibold tracking-[-0.02em] tnum">{day}</span>
-        <span className="mt-0.5 text-nano leading-none font-medium tracking-[0.06em] text-fg-faint uppercase">
-          {month}
-        </span>
+      <div className="flex h-[52px] w-11 shrink-0 flex-col items-center justify-center rounded-lg border border-line-strong bg-surface-2">
+        <span className="text-field leading-[22px] font-semibold tnum">{day}</span>
+        <span className="text-meta leading-3.5 text-fg-muted">{month}</span>
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-control leading-snug font-semibold tracking-[-0.005em] text-fg">{event.title}</p>
-          <FavoriteStar kind="event" id={event.id} name={event.title} size="sm" />
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-meta text-fg-muted">
-          <span className="tnum">
-            {isRunning(event.startDate, event.endDate) && event.endDate
-              ? t("event.until", { date: dayMonth(event.endDate) })
-              : time(event.startDate)}
+          <p className="text-field leading-[22px] font-semibold text-fg md:text-body md:leading-5">{event.title}</p>
+          <span className="-mt-2 -mr-1.5 shrink-0">
+            <FavoriteStar kind="event" id={event.id} name={event.title} size="sm" />
           </span>
-          <span aria-hidden="true" className="text-fg-faint">
-            ·
+        </div>
+        <p className="flex flex-wrap items-center gap-x-3 text-ui text-fg-muted">
+          <span className="font-medium text-fg tnum">
+            {running && event.endDate ? t("event.until", { date: dayMonth(event.endDate) }) : time(event.startDate)}
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-(--cat)" style={catVar(color)} />
+            <HuedIcon category={eventPlaceCategory(event.category)} />
             {t(eventCategoryKey(event.category))}
           </span>
+        </p>
+
+        <div className="flex items-center justify-between gap-2 text-meta text-fg-faint">
+          <p>
+            {name && (
+              <>
+                {t("event.source")}{" "}
+                {event.sourceUrl ? (
+                  <a
+                    href={event.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="font-medium text-fg-muted underline decoration-line-strong underline-offset-2 hover:text-fg"
+                  >
+                    {name}
+                  </a>
+                ) : (
+                  name
+                )}
+              </>
+            )}
+          </p>
+          {/* A ticket link exists only when the publisher provided one. We never
+              manufacture one, so "no ticket link" is stated rather than implied. */}
+          {event.buyUrl ? (
+            <a
+              href={event.buyUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex min-h-6 shrink-0 items-center gap-1 text-ui font-medium text-accent hover:underline"
+            >
+              {t("event.tickets")}
+              <ArrowUpRight size={13} strokeWidth={2.5} />
+            </a>
+          ) : (
+            <span className="shrink-0">{t("event.noTicketLink")}</span>
+          )}
         </div>
-
-        <SourceCredit event={event} />
-
-        {/* A ticket link exists only when the publisher provided one. We never
-            manufacture one, so "no ticket link" is stated rather than implied. */}
-        {event.buyUrl ? (
-          <a
-            href={event.buyUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="mt-1.5 inline-flex items-center gap-1 rounded-xs text-meta font-semibold text-accent hover:underline"
-          >
-            {t("event.tickets")}
-            <ArrowUpRight size={13} strokeWidth={2.5} />
-          </a>
-        ) : (
-          <p className="mt-1.5 text-caption text-fg-faint">{t("event.noTicketLink")}</p>
-        )}
       </div>
     </li>
   );
@@ -125,7 +119,7 @@ export function EventList({ events, loading, emptyTitle, emptyBody }: EventListP
 
   if (loading) {
     return (
-      <div className="px-4">
+      <div>
         <EventRowSkeleton />
         <EventRowSkeleton />
       </div>
@@ -140,10 +134,10 @@ export function EventList({ events, loading, emptyTitle, emptyBody }: EventListP
   const groups = groupByDay(shown, (e) => ({ start: e.startDate, end: e.endDate }));
 
   return (
-    <div className="px-4 pb-1">
+    <div>
       {groups.map(({ group, items }) => (
         <section key={group} className="mb-1 last:mb-0">
-          <h4 className="pt-3 pb-1 label-cap">{t(`group.${group}`)}</h4>
+          <h4 className="mt-3 mb-1 text-meta font-medium text-fg-faint">{t(`group.${group}`)}</h4>
           <ul>
             {items.map((event) => (
               <EventRow key={event.id} event={event} />

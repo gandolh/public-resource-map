@@ -82,7 +82,10 @@ test.describe("on a phone", () => {
       if (!box) throw new Error("the sheet is not on screen");
       return Math.round(box.y);
     };
-    await expect.poll(top).toBe(Math.round(844 * 0.54));
+    // The sheet rests at the height of its head, actions and first fact, above the tab bar,
+    // (a long name wraps and takes more; the next test measures a one-line name).
+    await expect.poll(top).toBeGreaterThan(500);
+    await expect(page.getByRole("link", { name: "What's on" })).toBeInViewport();
 
     // The map pans.
     const pane = page.locator(".leaflet-map-pane");
@@ -98,11 +101,12 @@ test.describe("on a phone", () => {
     // The path, not the URL: the pan itself rewrites the query (the camera).
     const path = () => new URL(page.url()).pathname;
     const here = path();
+    await page.waitForTimeout(800);
     const pins = page.locator(".cm-pin");
     const count = await pins.count();
     for (let i = 0; i < count && path() === here; i++) {
       const box = await pins.nth(i).boundingBox();
-      if (box && box.y > 170 && box.y + box.height < 380) {
+      if (box && box.x > 0 && box.x < 320 && box.y > 190 && box.y + box.height < 500) {
         await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
         await page.waitForTimeout(300);
       }
@@ -111,23 +115,68 @@ test.describe("on a phone", () => {
     await expect(page.getByRole("dialog").filter({ has: page.getByRole("heading") })).toBeVisible();
     await page.goto(`places/${place.id}`);
     await expect(sheet).toBeVisible();
-    await expect.poll(top).toBe(Math.round(844 * 0.54));
+    await page.waitForTimeout(800);
+    const rest = await top();
+
+    // The grab bar is a button: it expands the sheet and folds it back.
+    await page.getByRole("button", { name: "Expand the place details" }).click();
+    await expect.poll(top).toBeLessThan(rest - 200);
+    await page.getByRole("button", { name: "Collapse" }).click();
+    await expect.poll(top).toBe(rest);
 
     // A swipe up reaches the full height, a swipe down the peek, and another closes it.
     const drag = async (to: number) => {
-      const y = (await top()) + 12;
-      await page.mouse.move(195, y);
+      const y = (await top()) + 6;
+      // Beside the grab bar, which is a button and takes a press, not a drag.
+      await page.mouse.move(60, y);
       await page.mouse.down();
-      await page.mouse.move(195, y + to, { steps: 10 });
+      await page.mouse.move(60, y + to, { steps: 10 });
       await page.mouse.up();
     };
     await drag(-250);
-    await expect.poll(top).toBe(Math.round(844 * 0.18));
+    await expect.poll(top).toBeLessThan(rest - 200);
     await drag(260);
-    await expect.poll(top).toBe(Math.round(844 * 0.54));
+    await expect.poll(top).toBe(rest);
     await drag(260);
     await expect(page).toHaveURL(/\/prm\/(\?[^/]*)?$/);
   });
+});
+
+test.describe("the sheet's rest height", () => {
+  // A one-line name: the map keeps at least 380px at 390 x 844, and the first fact is whole,
+  // with the tab bar on screen, at 390 x 844 and at 360 x 800.
+  for (const [width, height] of [
+    [390, 844],
+    [360, 800],
+  ] as const) {
+    test(`at ${width} x ${height}`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto(`places/${SEED.places.buArtMuseum}?city=bucuresti`);
+      const sheet = page.getByRole("dialog", { name: /Muzeul Național de Artă/ });
+      await expect(sheet).toBeVisible();
+      const tabs = page.getByRole("link", { name: "What's on" });
+      await expect(tabs).toBeInViewport();
+      const fact = page.locator("dl > div").first();
+      await expect(fact).toBeVisible();
+      await expect
+        .poll(async () => {
+          const [s, f, t] = await Promise.all([sheet.boundingBox(), fact.boundingBox(), tabs.boundingBox()]);
+          if (!s || !f || !t) return false;
+          return f.y + f.height <= t.y + 1 && s.y > 0;
+        })
+        .toBe(true);
+      if (width === 390) {
+        const band = await page.locator("header").first().boundingBox();
+        const box = await sheet.boundingBox();
+        if (!band || !box) throw new Error("no layout");
+        const bandBottom = await page.evaluate(() => {
+          const el = document.querySelector("main > div > div");
+          return el ? el.getBoundingClientRect().bottom : 0;
+        });
+        expect(box.y - bandBottom).toBeGreaterThanOrEqual(380);
+      }
+    });
+  }
 });
 
 test.describe("Copy link", () => {

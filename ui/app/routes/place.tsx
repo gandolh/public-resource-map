@@ -12,10 +12,8 @@ import { cityByName } from "~/lib/cities";
 import { useI18n } from "~/lib/i18n";
 import { useIsMobile } from "~/hooks/useIsMobile";
 
-/** Panel width plus its margins — how far the map must shift to clear it. */
-const PANEL_OFFSET_X = 200;
-/** Roughly half the peeked sheet, so the pin sits in the visible upper half. */
-const SHEET_OFFSET_Y = 150;
+/** A fallback for half the resting sheet, so the pin sits in the visible upper half. */
+const SHEET_OFFSET_Y = 120;
 
 /**
  * The place surface, rendered *over* the live map rather than as a separate
@@ -67,8 +65,8 @@ export default function PlaceRoute() {
     };
   }, [placeName]);
 
-  // Pan so the selected pin clears the panel (desktop) or the sheet (mobile),
-  // rather than sitting underneath the thing describing it.
+  // Pan so the selected pin clears the sheet on a phone. On a desktop the map's
+  // box already ends where the column begins, so the pin goes to its centre.
   const known = place ?? places.find((p) => p.id === id);
   const lat = known?.coordinates.lat;
   const lng = known?.coordinates.lng;
@@ -78,7 +76,7 @@ export default function PlaceRoute() {
     if (!map || lat === undefined || lng === undefined) return;
     const zoom = Math.max(map.getZoom(), 16);
     const point = map.project([lat, lng], zoom);
-    const shifted = isMobile ? point.add([0, SHEET_OFFSET_Y]) : point.add([PANEL_OFFSET_X, 0]);
+    const shifted = isMobile ? point.add([0, SHEET_OFFSET_Y]) : point;
     map.flyTo(map.unproject(shifted, zoom), zoom, { duration: 0.55 });
   }, [lat, lng, isMobile, getMap]);
 
@@ -90,7 +88,7 @@ export default function PlaceRoute() {
 
   if (isError) {
     return (
-      <div className="pointer-events-auto absolute top-1/2 right-3 left-3 z-sheet mx-auto w-[min(92%,360px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3 md:top-3 md:left-auto md:w-[384px] md:translate-y-0">
+      <div className="pointer-events-auto absolute top-1/2 right-3 left-3 z-sheet mx-auto w-[min(92%,360px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3 md:top-3 md:right-auto md:left-3 md:w-[400px] md:translate-y-0">
         <StateBlock
           tone="danger"
           icon={<AlertTriangle size={18} strokeWidth={2} />}
@@ -114,7 +112,7 @@ export default function PlaceRoute() {
   if (isPending || !place) {
     return (
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-sheet h-[46dvh] animate-pulse rounded-t-xl border-t border-line bg-surface md:inset-x-auto md:top-3 md:right-3 md:bottom-3 md:h-auto md:w-[384px] md:rounded-xl md:border"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-sheet h-[46dvh] animate-pulse rounded-t-xl border-t border-line bg-surface md:inset-x-auto md:top-3 md:bottom-3 md:left-3 md:h-auto md:w-[400px] md:rounded-xl md:border"
         aria-label={t("state.loading")}
         role="status"
       />
