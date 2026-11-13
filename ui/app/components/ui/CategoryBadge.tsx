@@ -23,7 +23,7 @@ export function CategoryBadge({
         // filter anything, and the pill shape is reserved for controls that do.
         "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2.5 md:h-7",
         "text-meta font-semibold text-fg",
-        "border-[color-mix(in_srgb,var(--cat)_40%,var(--surface))] bg-surface",
+        "hue-edge bg-surface",
         className,
       )}
       style={catVar(color)}

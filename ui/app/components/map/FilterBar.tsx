@@ -16,7 +16,7 @@ import { cn } from "~/lib/utils";
 const PRIMARY: PlaceCategory[] = ["park", "library", "museum", "townhall", "education", "clinic"];
 const SECONDARY = placeCategories.filter((c) => !PRIMARY.includes(c));
 
-export function useLensOptions() {
+function useLensOptions() {
   const { t } = useI18n();
   return [
     { value: "today" as EventLens, label: t("lens.today") },

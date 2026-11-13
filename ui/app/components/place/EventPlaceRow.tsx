@@ -11,7 +11,7 @@ import { sourceName } from "~/components/place/EventList";
  * date-grouped list (what's on, the archive). Under a day heading the row
  * shows the time; under a month heading (the archive), the date.
  */
-export function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when?: "time" | "date" }) {
+function EventPlaceRow({ item, when = "time" }: { item: WhatsOnItem; when?: "time" | "date" }) {
   const { t, time, dayMonth, lang } = useI18n();
   const { event, place } = item;
   const running = when === "time" && isRunning(event.startDate, event.endDate);

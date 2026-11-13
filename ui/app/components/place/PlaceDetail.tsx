@@ -99,7 +99,7 @@ export function PlaceDetail({ place, events, eventsLoading, closeButton, firstFa
     <div className="flex h-full flex-col">
       <header
         style={catVar(categoryColor(place.category))}
-        className="relative flex-none border-b border-line-strong bg-[color-mix(in_srgb,var(--cat)_var(--head-mix),var(--surface))] px-4 pt-3 pb-2.5 md:pb-4"
+        className="relative flex-none border-b border-line-strong px-4 pt-3 pb-2.5 head-tint md:pb-4"
       >
         <div className="flex min-h-11 items-center justify-between gap-2 md:mb-3 md:min-h-9">
           <CategoryBadge category={place.category} label={t(categoryNameKey(place.category))} />

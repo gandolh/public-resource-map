@@ -3,6 +3,9 @@ import { test, expect } from "./fixtures";
 
 /** Light, Dark and System, kept on the device, light on a first visit (base-ui rule 14). */
 
+// The suite can run in a forced theme (fixtures.ts); this spec tests the choosing, so it runs unforced.
+test.skip(Boolean(process.env.PRM_E2E_THEME), "the suite runs in a forced theme");
+
 const html = (page: Page) => page.locator("html");
 
 async function choose(page: Page, name: "Light" | "Dark" | "System") {

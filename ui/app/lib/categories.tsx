@@ -143,10 +143,6 @@ export function HuedIcon({ category, size = 14 }: { category: PlaceCategory; siz
   );
 }
 
-export function eventCategoryColor(category: EventCategory): string {
-  return categoryColor(EVENT_TO_PLACE_HUE[category] ?? "other");
-}
-
 export function eventCategoryKey(category: EventCategory): string {
   return `ev.${category}`;
 }

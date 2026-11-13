@@ -330,6 +330,16 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* The head of a place's card, tinted with the place's hue (`--cat`, set by the card). */
+@utility head-tint {
+  background: color-mix(in srgb, var(--cat) var(--head-mix), var(--surface));
+}
+
+/* A 40% hue edge on a plain surface: the category badge. */
+@utility hue-edge {
+  border-color: color-mix(in srgb, var(--cat) 40%, var(--surface));
+}
+
 /* Small labels (section headers, menu titles): sentence case in the body face. */
 @utility label-cap {
   font-size: 12px;

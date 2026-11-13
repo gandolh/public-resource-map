@@ -57,6 +57,11 @@ export const test = base.extend({
     await page.addInitScript(() => {
       window.localStorage.setItem("civicmap-lang", JSON.stringify("en"));
     });
+    // PRM_E2E_THEME=dark|system runs the whole suite in that theme (the theme spec tests the choice itself).
+    const theme = process.env.PRM_E2E_THEME;
+    if (theme) {
+      await page.addInitScript((value) => window.localStorage.setItem("vite-ui-theme", JSON.stringify(value)), theme);
+    }
     await use(page);
   },
 });
