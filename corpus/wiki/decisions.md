@@ -193,7 +193,7 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 ## Owner decisions, 2026-10-06 (open questions, one at a time)
 
 - **Ward is asked only on routes that need a user** (Ward-only-where-needed, built 2026-10-07). Revises the root `preHandler` in [decisions-identity.md](decisions-identity.md).
-- **First sources: Filarmonica Banatul and Teatrul Național Timișoara, with descriptions.** Terms read 2026-10-06: both are public institutions with no terms-of-use page and nothing like iaBilet's art. 28.3; robots.txt allows the feeds; TNTM's footer says "Toate drepturile rezervate". The owner accepted republishing descriptions with the source link shown. Added by the owner after the iCal shortcode fix.
+- **First sources: Filarmonica Banatul and Teatrul Național Timișoara, with descriptions.** Terms read 2026-10-06: both are public institutions with no terms-of-use page and nothing like iaBilet's art. 28.3; robots.txt allows the feeds; TNTM's footer says "Toate drepturile rezervate". The owner accepted republishing descriptions with the source link shown. Added by the owner after the iCal shortcode fix. **Revisited 2026-11-13 (owner):** neither has granted permission, so both are `permission-pending` in the registry; they stay published and credited.
 - **No "tickets now available" trigger.** Two triggers are enough.
 - **The audit's watch list is promoted** (the watch-list hardening and OSM retirement, both 2026-10-07).
 

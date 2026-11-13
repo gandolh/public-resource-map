@@ -926,3 +926,8 @@ The API follows the code-structure skill. zod is 4.6.7.
   all`; check `/prm/admin/sources` hosts; open a shared place link and a `/map?…&place=` link.
   Details in [briefs/done/01-a-source-registry-and-shareable-map-links.md](briefs/done/01-a-source-registry-and-shareable-map-links.md).
 
+
+## [2026-11-13] decision | Filarmonica Banatul and TNTM are permission-pending
+
+- **The owner's answer** to brief 01's board question 1: neither publisher has granted permission (TNTM's footer reserves all rights), so both registry entries move from `permitted` to `permission-pending`. Nothing changes on the map: a `permission-pending` source is published and credited, and only `forbidden` is held back. `DATA_SOURCES.md` is regenerated and gains a carve-out for each. The 2026-10-06 decision carries the revisit ([wiki/decisions.md](wiki/decisions.md)).
+- **Still open:** the About page's "the events shown are samples" note (question 2). Only the owner can say whether the live site shows the feeds' real events.
