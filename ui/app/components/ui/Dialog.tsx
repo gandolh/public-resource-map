@@ -9,6 +9,8 @@ const FOCUSABLE =
 const PLACEMENT = {
   /** A panel docked to the right edge, full height: the admin review panel. */
   right: "fixed top-0 right-0 h-dvh w-[min(100vw,480px)] border-l",
+  /** A sheet rising from the bottom edge, full width: the phone's Categories. */
+  bottom: "fixed inset-x-0 bottom-0 max-h-[88dvh] rounded-t-xl border-t pb-[env(safe-area-inset-bottom)]",
   /** A card in the middle of the screen. */
   center:
     "fixed top-1/2 left-1/2 max-h-[85dvh] w-[min(calc(100vw-2rem),560px)] -translate-x-1/2 -translate-y-1/2 rounded-xl border",
@@ -92,7 +94,7 @@ export function Dialog({
             </div>
             <BaseDialog.Close
               aria-label={closeLabel}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-fg-muted hover:bg-surface-2"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-line-strong text-fg-muted hover:bg-surface-2 md:h-8 md:w-8 md:border-0"
             >
               <X size={16} />
             </BaseDialog.Close>

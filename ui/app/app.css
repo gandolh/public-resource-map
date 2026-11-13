@@ -358,14 +358,13 @@
      inside it, and all app chrome (400+) sits cleanly above the whole map. */
   .leaflet-container { z-index: 0; }
 
-  /* On a phone the bottom tab bar owns the last 56px, so map controls that would
-     sit at the very bottom are lifted clear of it. */
+  /* The controls keep 12px from the map's edge. On a phone with a sheet up, the
+     attribution rides above whatever height the sheet rests at (`--sheet-h`, set
+     by the sheet), so the tiles are never left unattributed. */
+  .leaflet-left .leaflet-control { margin-left: 12px; }
+  .leaflet-bottom .leaflet-control { margin-bottom: 12px; }
   @media (max-width: 899px) {
-    .leaflet-bottom { bottom: 58px; }
-    /* A sheet over the map must not leave the tiles unattributed, so the
-       attribution rides above whichever snap the sheet is resting at. */
-    .sheet-peek .leaflet-bottom { bottom: calc(46dvh + 10px); }
-    .sheet-full .leaflet-bottom { bottom: calc(82dvh + 10px); }
+    .leaflet-bottom { bottom: var(--sheet-h, 0px); }
   }
 
   /* Standard OSM tiles are saturated and busy — filtered toward the quiet,
@@ -378,19 +377,25 @@
     filter: invert(1) hue-rotate(180deg) saturate(0.28) brightness(0.9) contrast(0.92);
   }
 
-  /* The default attribution is a white pill with 11px serif-ish text; ours has to
-     stay legible (it is a licence obligation) without shouting. */
+  /* The attribution is a licence obligation: a readable pill, bottom left, clear of the controls. */
   .leaflet-control-attribution {
-    background: color-mix(in srgb, var(--surface) 88%, transparent);
-    color: var(--fg-faint);
+    display: flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 12px;
+    background: var(--surface);
+    color: var(--fg-muted);
     font-family: var(--font-sans);
-    font-size: 10px;
-    line-height: 1.5;
-    padding: 2px 8px;
-    border-top-left-radius: var(--radius-sm);
-    backdrop-filter: blur(6px);
+    font-size: 12px;
+    line-height: 16px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    box-shadow: var(--sh-1);
+    white-space: nowrap;
   }
-  .leaflet-control-attribution a { color: var(--fg-muted); }
+  .leaflet-control-attribution a { color: var(--fg); }
+  .leaflet-control-attribution a[data-about-data] { font-weight: 500; }
+  .leaflet-control-attribution [aria-hidden="true"] { margin: 0 8px; color: var(--line-strong); }
 
   .leaflet-bar {
     border: 1px solid var(--line);
@@ -500,14 +505,14 @@
   .has-selection .cm-pin:hover .cmp,
   .has-selection .cm-cluster:hover .cmc { opacity: 1; }
 
-  /* The phone's folded attribution: a small "i" that opens it. */
+  /* The phone's folded attribution: a pill that opens it. */
   .cm-attr-toggle {
-    display: grid; place-items: center;
-    width: 24px; height: 24px; margin: 0 0 4px 6px;
-    border: 1px solid var(--line); border-radius: 999px;
-    background: var(--surface); color: var(--fg-muted);
-    font: italic 700 13px/1 Georgia, serif;
-    box-shadow: var(--shadow-e1);
+    display: flex; align-items: center; gap: 8px;
+    height: 44px; padding: 0 14px;
+    border: 1px solid var(--line-strong); border-radius: 999px;
+    background: var(--surface); color: var(--fg);
+    font: 500 13px/18px var(--font-sans);
+    box-shadow: var(--sh-1);
   }
   .cm-attr-toggle[aria-expanded="true"] { color: var(--accent); border-color: var(--accent-line); }
 

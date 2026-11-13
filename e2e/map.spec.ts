@@ -12,7 +12,7 @@ const label = (page: import("@playwright/test").Page) =>
 test("opens on Timișoara with its places on the map", async ({ page }) => {
   await page.goto("");
   await expect(page.getByRole("button", { name: "Change city" })).toHaveText(/Timișoara/);
-  await expect(label(page)).toHaveText(/\d+ places? · \d+ with events/);
+  await expect(label(page)).toHaveText(/\d+ places?\s*\d+ with events/);
   expect(await count(label(page).textContent())).toBeGreaterThan(0);
   // Pins or clusters: at city zoom, nearby places collapse into counts.
   await expect(page.locator(".cm-pin, .cm-cluster").first()).toBeVisible();

@@ -123,8 +123,13 @@ function AttributionToggle({ control }: { control: Control.Attribution | null })
     if (!panel || !isMobile) return;
     const button = L.DomUtil.create("button", "cm-attr-toggle");
     button.type = "button";
-    button.textContent = "i";
-    button.setAttribute("aria-label", t("map.attribution"));
+    button.innerHTML =
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/>' +
+      '<path d="M12 11v5.5M12 7.6v.01"/></svg>';
+    const label = document.createElement("span");
+    label.textContent = t("map.attribution");
+    button.append(label);
     L.DomEvent.disableClickPropagation(button);
     let open = false;
     const apply = () => {
@@ -155,60 +160,61 @@ function MapBridge({ onReady }: { onReady: (map: LeafletMap) => void }) {
   return null;
 }
 
+/** Keeps Leaflet's size right when the box around it changes: the band leaving, the column docking. */
+function MapResize() {
+  const map = useMap();
+  useEffect(() => {
+    const box = map.getContainer();
+    const observer = new ResizeObserver(() => map.invalidateSize({ pan: false }));
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [map]);
+  return null;
+}
+
 function MapControls() {
   const { t } = useI18n();
   const map = useMap();
   const { coords, loading, request } = useUserLocation();
-  const selectedId = useAppStore((s) => s.selectedId);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (coords) map.flyTo([coords.lat, coords.lng], Math.max(map.getZoom(), 15), { duration: 0.6 });
   }, [coords, map]);
 
   const btn =
-    "grid h-9 w-9 place-items-center bg-surface text-fg transition-colors hover:bg-surface-2 disabled:opacity-50";
+    "grid h-11 w-11 place-items-center bg-surface text-fg transition-colors hover:bg-surface-2 active:bg-surface-3 disabled:opacity-50 md:h-10 md:w-10";
+  const group = "overflow-hidden rounded-xl border border-line-strong shadow-e2";
 
   return (
     <div
       className={cn(
-        "pointer-events-auto absolute z-chrome flex flex-col gap-2",
-        "transition-[right,bottom] duration-200 ease-out-fast",
-        // Zoom and locate are familiar affordances; another surface opening
-        // must move them, never delete them.
-        selectedId && !isMobile ? "right-[calc(384px+1.5rem)]" : "right-3",
-        isMobile ? "bottom-[70px]" : "bottom-3",
-        // On a phone the sheet owns the lower screen; the stack stands down
-        // rather than fighting it, and returns when the sheet closes.
-        isMobile && selectedId && "hidden",
+        "pointer-events-auto absolute right-3 z-chrome flex flex-col gap-2",
+        // Above the sheet's rest height on a phone (set while a sheet is up), clear of the corner otherwise.
+        "bottom-[calc(var(--sheet-h,0px)+0.75rem)] md:bottom-3",
       )}
     >
-      <div className="overflow-hidden rounded-lg border border-line shadow-e2">
+      <div className={group}>
         <button
           type="button"
           aria-label={t("map.zoomIn")}
           onClick={() => map.zoomIn()}
           className={`${btn} border-b border-line`}
         >
-          <Plus size={16} strokeWidth={2.2} />
+          <Plus size={18} strokeWidth={2.2} />
         </button>
         <button type="button" aria-label={t("map.zoomOut")} onClick={() => map.zoomOut()} className={btn}>
-          <Minus size={16} strokeWidth={2.2} />
+          <Minus size={18} strokeWidth={2.2} />
         </button>
       </div>
-      <button
-        type="button"
-        aria-label={t("map.recenter")}
-        onClick={request}
-        disabled={loading}
-        className={`${btn} rounded-lg border border-line shadow-e2`}
-      >
-        {loading ? (
-          <Loader2 size={16} strokeWidth={2.2} className="animate-spin text-fg-muted" />
-        ) : (
-          <Crosshair size={16} strokeWidth={2.2} />
-        )}
-      </button>
+      <div className={group}>
+        <button type="button" aria-label={t("map.recenter")} onClick={request} disabled={loading} className={btn}>
+          {loading ? (
+            <Loader2 size={18} strokeWidth={2.2} className="animate-spin text-fg-muted" />
+          ) : (
+            <Crosshair size={18} strokeWidth={2.2} />
+          )}
+        </button>
+      </div>
     </div>
   );
 }
@@ -281,12 +287,10 @@ export default function MapRoute() {
         ? t("state.widenSearch", { places: tn("count.places", withoutSearch) })
         : null;
 
-  const resultLabel = isPending
-    ? t("state.loading")
-    : `${tn(placesKey, places.length)} · ${tn("count.withEvents", withEvents)}`;
-  // The phone has no room for the full sentence, but it may not hide the count
-  // the desktop shows — so it gets the short form, always visible.
-  const compactLabel = isPending ? t("state.loading") : tn(placesKey, places.length);
+  const counts = {
+    places: isPending ? null : tn(placesKey, places.length),
+    events: isPending ? null : tn("count.withEvents", withEvents),
+  };
 
   const context: MapOutletContext = { places, getMap: () => mapRef.current };
   const noResults = !isPending && !isError && places.length === 0;
@@ -294,7 +298,7 @@ export default function MapRoute() {
   return (
     <div
       className={cn(
-        "absolute inset-0",
+        "flex h-full flex-col",
         // Others fade while one place is open, so the selection reads at a
         // glance. The timing lens removes places; this only dims.
         selectedId && "has-selection",
@@ -302,6 +306,16 @@ export default function MapRoute() {
         sheetSnap === "full" && "sheet-full",
       )}
     >
+      <FilterBar counts={counts} placeCount={isPending ? null : places.length} />
+
+      <div className="relative min-h-0 flex-1 overflow-hidden bg-bg">
+      {/* The map: the whole stage, or what is right of the place column when a place is open on a desktop. */}
+      <div
+        className={cn(
+          "absolute inset-y-0 right-0 left-0 transition-[left] duration-(--dur-3) ease-out-fast",
+          selectedId && "md:left-[424px] md:border-l md:border-line-strong",
+        )}
+      >
       {mounted && loaded && (
         <MapContainer
           center={loaded.camera ? [loaded.camera.lat, loaded.camera.lng] : [city.center.lat, city.center.lng]}
@@ -320,6 +334,7 @@ export default function MapRoute() {
           <SourceCredits control={attribution} credit={credit} />
           <AboutDataLink control={attribution} />
           <AttributionToggle control={attribution} />
+          <MapResize />
           <MapBridge
             onReady={(m) => {
               mapRef.current = m;
@@ -350,8 +365,6 @@ export default function MapRoute() {
           <AreaDraw />
         </MapContainer>
       )}
-
-      <FilterBar resultLabel={resultLabel} compactLabel={compactLabel} placeCount={isPending ? null : places.length} />
 
       {isError && (
         <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-draw mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
@@ -403,8 +416,10 @@ export default function MapRoute() {
           {t("map.locationDenied")}
         </p>
       )}
+      </div>
 
       <Outlet context={context} />
+      </div>
     </div>
   );
 }
