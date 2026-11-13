@@ -243,10 +243,10 @@ function CategoriesSheet({
       bodyClassName="px-4 py-3"
       footer={
         <>
-          <Button variant="secondary" size="lg" className="flex-1" onClick={clearFilters}>
+          <Button variant="secondary" size="lg" className="flex-1 text-body" onClick={clearFilters}>
             {t("filters.clear")}
           </Button>
-          <Button variant="primary" size="lg" className="flex-1" onClick={() => onOpenChange(false)}>
+          <Button variant="primary" size="lg" className="flex-1 text-body" onClick={() => onOpenChange(false)}>
             {t("area.done")}
           </Button>
         </>

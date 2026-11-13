@@ -112,7 +112,7 @@ export function PlaceDetail({ place, events, eventsLoading, closeButton, firstFa
           <Button
             variant="primary"
             size="lg"
-            className="flex-1 md:h-10 md:px-3.5 md:text-body"
+            className="flex-1 text-body md:h-10 md:px-3.5"
             onClick={() => window.open(directionsUrl(place.coordinates), "_blank", "noopener,noreferrer")}
           >
             <Navigation size={15} strokeWidth={2.2} />
@@ -129,7 +129,7 @@ export function PlaceDetail({ place, events, eventsLoading, closeButton, firstFa
               <Button
                 variant="secondary"
                 size="lg"
-                className="md:h-10 md:px-3.5 md:text-body"
+                className="text-body md:h-10 md:px-3.5"
                 onClick={() => void copyLink()}
                 aria-live="polite"
               >

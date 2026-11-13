@@ -1,3 +1,4 @@
+import { writeFileSync } from "node:fs";
 import path from "node:path";
 import type { Page } from "@playwright/test";
 import { test, expect, signIn, SEED } from "./fixtures";
@@ -34,7 +35,17 @@ for (const theme of ["light", "dark"] as const) {
 
       const shot = async (page: Page, screen: string) => {
         await settle(page);
-        await page.screenshot({ path: path.join(dir!, `${screen}-${theme}-${size.name}.png`) });
+        const file = path.join(dir!, `${screen}-${theme}-${size.name}`);
+        await page.screenshot({ path: `${file}.png` });
+        // Where the live map shows (above a sheet), so a comparison with a comp can leave it out.
+        const mask = await page.evaluate(() => {
+          const map = document.querySelector(".leaflet-container")?.getBoundingClientRect();
+          if (!map) return null;
+          const sheet = document.querySelector('[role="dialog"]')?.getBoundingClientRect();
+          const bottom = Math.min(map.bottom, sheet && sheet.top > 100 ? sheet.top : map.bottom);
+          return [Math.max(0, map.left), Math.max(0, map.top), map.width, bottom - map.top];
+        });
+        writeFileSync(`${file}.json`, JSON.stringify({ mask }));
       };
 
       test("map", async ({ page }) => {

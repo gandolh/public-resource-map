@@ -11,7 +11,7 @@ import { cn } from "~/lib/utils";
  */
 
 export const inputClass =
-  "h-10 w-full rounded-lg border border-outline bg-surface px-3 text-body text-fg outline-none transition-colors placeholder:text-fg-faint focus:border-accent";
+  "h-10 w-full rounded-lg border border-outline bg-surface px-3 text-body text-fg transition-colors placeholder:text-fg-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 export function Field({
   label,
