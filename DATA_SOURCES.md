@@ -11,8 +11,8 @@ this file is generated from it, and a test fails when the two disagree.
 | Nominatim (`nominatim`) | geocoder | nominatim.openstreetmap.org | Coordinates for an event venue no OpenStreetMap place matched | Asked during an admin refresh, cached for good | [ODbL 1.0](https://opendatacommons.org/licenses/odbl/) | Permitted | [© OpenStreetMap contributors](https://www.openstreetmap.org/copyright) | 2026-06-28 |
 | OpenStreetMap tiles (`osm-tiles`) | tiles | tile.openstreetmap.org | The basemap when no CARTO key is set | Fetched by the visitor's browser | [ODbL 1.0](https://opendatacommons.org/licenses/odbl/) | Permission pending | [© OpenStreetMap contributors](https://www.openstreetmap.org/copyright) | never |
 | CARTO basemaps (`carto`) | tiles | basemaps.cartocdn.com | The basemap (Positron and Dark Matter) when a CARTO key is set | Fetched by the visitor's browser | [CARTO basemap terms](https://carto.com/attributions) | Permission pending | [© CARTO](https://carto.com/attributions) | never |
-| Filarmonica Banatul (`filarmonica-banatul`) | event-publisher | filarmonicabanatul.ro | Concerts in Timișoara, from its public iCal feed | Read when an admin refreshes it; a person accepts each event | None stated | Permitted | [Filarmonica Banatul](https://filarmonicabanatul.ro/evenimente/) | 2026-10-06 |
-| Teatrul Național Timișoara (`teatrul-national-timisoara`) | event-publisher | tntm.ro | Performances in Timișoara, from its public iCal feed | Read when an admin refreshes it; a person accepts each event | All rights reserved (site footer) | Permitted | [Teatrul Național Timișoara](https://www.tntm.ro/) | 2026-10-06 |
+| Filarmonica Banatul (`filarmonica-banatul`) | event-publisher | filarmonicabanatul.ro | Concerts in Timișoara, from its public iCal feed | Read when an admin refreshes it; a person accepts each event | None stated | Permission pending | [Filarmonica Banatul](https://filarmonicabanatul.ro/evenimente/) | 2026-10-06 |
+| Teatrul Național Timișoara (`teatrul-national-timisoara`) | event-publisher | tntm.ro | Performances in Timișoara, from its public iCal feed | Read when an admin refreshes it; a person accepts each event | All rights reserved (site footer) | Permission pending | [Teatrul Național Timișoara](https://www.tntm.ro/) | 2026-10-06 |
 | iaBilet (`iabilet`) | event-publisher | iabilet.ro | Nothing in production; a proof-of-concept integration only | Read when an admin refreshes it; a person accepts each event | [iaBilet terms of use](https://www.iabilet.ro/terms/ro/) | **Forbidden** | [iaBilet](https://www.iabilet.ro/) | 2026-06-28 |
 
 ## Where the credit is shown
@@ -41,6 +41,18 @@ and nothing is deleted.
 - **Reuse:** `permission-pending`. Nobody has recorded a check of its terms. The app uses it and credits it. A fork must read the terms itself before going public, then set `reuse` to `permitted` or `forbidden` and record the date.
 - **Terms:** Served only with an API key since 2026-09-04; no reading of CARTO's terms is recorded.
 - **Checked:** never. Research: [corpus/wiki/decisions-ui.md](corpus/wiki/decisions-ui.md).
+
+### Filarmonica Banatul (`filarmonica-banatul`)
+
+- **Reuse:** `permission-pending`. Its permission is not settled. The app uses it and credits it. A fork must read the terms itself before going public, then set `reuse` to `permitted` or `forbidden` and record the date.
+- **Terms:** A public institution with no terms-of-use page and nothing forbidding reuse; robots.txt allows the feed. The owner accepted republishing listings and descriptions with the source link shown (2026-10-06). It has not granted permission, so it stays permission-pending (owner, 2026-11-13).
+- **Checked:** 2026-10-06. Research: [corpus/wiki/history/2026-10-04-source-shortlist.md](corpus/wiki/history/2026-10-04-source-shortlist.md).
+
+### Teatrul Național Timișoara (`teatrul-national-timisoara`)
+
+- **Reuse:** `permission-pending`. Its permission is not settled. The app uses it and credits it. A fork must read the terms itself before going public, then set `reuse` to `permitted` or `forbidden` and record the date.
+- **Terms:** A public institution with no terms-of-use page and nothing forbidding reuse; the footer says “Toate drepturile rezervate”, and robots.txt allows the feed. The owner accepted republishing listings and descriptions with the source link shown (2026-10-06). It has not granted permission, so it stays permission-pending (owner, 2026-11-13).
+- **Checked:** 2026-10-06. Research: [corpus/wiki/history/2026-10-04-source-shortlist.md](corpus/wiki/history/2026-10-04-source-shortlist.md).
 
 ### iaBilet (`iabilet`)
 

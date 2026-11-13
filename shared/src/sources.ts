@@ -131,9 +131,9 @@ export const SOURCES = [
     usedFor: "Concerts in Timișoara, from its public iCal feed",
     delivery: "ingested",
     licence: { name: "None stated", url: null },
-    reuse: "permitted",
+    reuse: "permission-pending",
     terms:
-      "A public institution with no terms-of-use page and nothing forbidding reuse; robots.txt allows the feed. The owner accepted republishing listings and descriptions with the source link shown (2026-10-06).",
+      "A public institution with no terms-of-use page and nothing forbidding reuse; robots.txt allows the feed. The owner accepted republishing listings and descriptions with the source link shown (2026-10-06). It has not granted permission, so it stays permission-pending (owner, 2026-11-13).",
     attribution: { ro: "Filarmonica Banatul", en: "Filarmonica Banatul" },
     attributionUrl: "https://filarmonicabanatul.ro/evenimente/",
     termsCheckedOn: "2026-10-06",
@@ -147,9 +147,9 @@ export const SOURCES = [
     usedFor: "Performances in Timișoara, from its public iCal feed",
     delivery: "ingested",
     licence: { name: "All rights reserved (site footer)", url: null },
-    reuse: "permitted",
+    reuse: "permission-pending",
     terms:
-      "A public institution with no terms-of-use page and nothing forbidding reuse; the footer says “Toate drepturile rezervate”, and robots.txt allows the feed. The owner accepted republishing listings and descriptions with the source link shown (2026-10-06).",
+      "A public institution with no terms-of-use page and nothing forbidding reuse; the footer says “Toate drepturile rezervate”, and robots.txt allows the feed. The owner accepted republishing listings and descriptions with the source link shown (2026-10-06). It has not granted permission, so it stays permission-pending (owner, 2026-11-13).",
     attribution: { ro: "Teatrul Național Timișoara", en: "Teatrul Național Timișoara" },
     attributionUrl: "https://www.tntm.ro/",
     termsCheckedOn: "2026-10-06",
