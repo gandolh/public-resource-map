@@ -7,8 +7,12 @@ test("signed out, the archive opens on the city tab, and My past events asks to 
   await expect(page.getByRole("heading", { level: 1, name: "Archive" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "All of Timișoara" })).toHaveAttribute("aria-selected", "true");
   // Either a list or the empty state: the seed's past events depend on the hour.
+  // The count can show twice (the heading's band and the list), so the first match is enough.
   await expect(
-    page.getByText(/^\d+ events?$/).or(page.getByText("No past events recorded in Timișoara yet")),
+    page
+      .getByText(/^\d+ events?$/)
+      .or(page.getByText("No past events recorded in Timișoara yet"))
+      .first(),
   ).toBeVisible();
 
   await page.getByRole("tab", { name: "My past events" }).click();
