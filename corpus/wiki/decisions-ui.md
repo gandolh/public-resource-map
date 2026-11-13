@@ -1,6 +1,6 @@
 ---
-summary: Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, the basemap constraint, and (2026-11-11) the theme switch and the Base UI conventions, and (2026-11-12) the map state in the URL.
-updated: 2026-11-12
+summary: Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, the basemap constraint, and (2026-11-11) the theme switch and the Base UI conventions, (2026-11-12) the map state in the URL, and (2026-11-13) the docked-desk redesign.
+updated: 2026-11-13
 ---
 
 # Decisions — visual direction and interface
@@ -11,9 +11,9 @@ Split out of [decisions.md](decisions.md) on 2026-10-04, when that page passed ~
 
 The 2026-06-29 "Warmer Editorial-Civic" system (steel-blue Material tokens, Fraunces + Inter, amber accent) is **retired**. It was never built, and the UI it was written for is gone.
 
-- **The direction is the category convention, executed at full fidelity.** Four visual directions were designed and shown as running coded mockups (a land-registry sheet, a transit diagram, an orienteering overprint, and the standard). The user chose **the standard, deliberately**, as the permanent standing exit — floating search, pill filter chips, teardrop pins, a docked side panel on desktop, a draggable bottom sheet on mobile. This is a commitment, not a fallback: **future work does not "rescue" it with a novel visual world.**
+- **The direction is the category convention, executed at full fidelity.** Four visual directions were designed and shown as running coded mockups (a land-registry sheet, a transit diagram, an orienteering overprint, and the standard). The user chose **the standard, deliberately**, as the permanent standing exit — floating search, pill filter chips, teardrop pins, a docked side panel on desktop, a draggable bottom sheet on mobile. This is a commitment, not a fallback: **future work does not "rescue" it with a novel visual world.** _Changed on 2026-11-13: see [The docked desk](#the-docked-desk-2026-11-13); only the search moves._
 - **The craft bar is Citymapper and Linear.** Precise and dense over soft and generous: tight type, crisp 1px borders in preference to diffuse shadows, restrained colour with one accent, tabular numerals wherever digits align, motion at 150–220ms ease-out with no bounce or spring. "Looks like every other map app" is an accepted trade. "Looks less finished than Citymapper" is not.
-- **Typeface: Archivo** (variable, Google Fonts), one family for everything. Chosen over Geist/Inter — both are on the overused-face list, and Archivo is a signage grotesque with a large x-height that holds at 12px and real Romanian diacritics rather than fallback glyphs. **No webfont monospace:** monospace is reserved for genuine identifiers (an OSM way id, a stack trace), and the small tracked-uppercase utility labels use the UI face.
+- **Typeface: Archivo** (variable, Google Fonts), one family for everything. Chosen over Geist/Inter — both are on the overused-face list, and Archivo is a signage grotesque with a large x-height that holds at 12px and real Romanian diacritics rather than fallback glyphs. **No webfont monospace:** monospace is reserved for genuine identifiers (an OSM way id, a stack trace), and the small tracked-uppercase utility labels use the UI face. _2026-11-13: Archivo is self-hosted from `@fontsource-variable/archivo` 5.3.0, no Google Fonts request; labels are sentence case in the body face (ui/DESIGN.md rule 7)._
 - **Colour: restrained.** Cool-biased neutrals plus **one** blue accent (`#2a5bef` light / `#6d9bff` dark). Eleven `PlaceCategory` hues are *information*, and **`EventCategory` reuses the same eleven** rather than adding eight more — two taxonomies, one palette, and the two enums never appear on the same mark.
 - **Elevation by role:** a 1px border is the default separator; `--sh-1` for resting chrome, `--sh-2` for floating overlays, `--sh-3` for the panel and sheet, and a separate tight `--sh-pin`. A chip, a panel and a pin must not share a shadow.
 - **Radii cap at 12px**; pills are reserved for filter chips and badges, so the pill shape keeps meaning "this narrows what you see".
@@ -67,3 +67,14 @@ Deliberately steered away from the "generic AI" aesthetic (research-driven). The
 - **Elevation: role-differentiated** — a card, button, badge, and map pin must NOT share one shadow value.
 - **Map pins: icon-led + event-aware + zoom-aware** (per-category SVG icon primary, color secondary; event-presence accent ring; dot↔teardrop by zoom; unmistakable selected state). Clusters styled to the system, not default Leaflet.
 - **Basemap: CARTO Voyager (light) / DarkMatter (dark)** — warmer than Positron, still clean. Self-hosted brand-tinted style = future, not POC.
+
+## The docked desk (2026-11-13)
+
+The owner approved the redesign "The docked desk" on the estate redesign board, with every question as proposed. It reopens three recorded layouts; each old line is kept here as history.
+
+- **The direction (changed).** Old: "floating search, pill filter chips, teardrop pins, a docked side panel on desktop, a draggable bottom sheet on mobile", a permanent exit that future work must not rescue with a novel visual world. Now: only the search leaves its floating card, for a docked band above the map holding search, lens, chips, count and Draw an area, in two rows at 1280 and 1024. Chips, pins, the docked panel and the sheet stay, and no new visual world is added.
+- **Desktop layout (changed).** Old (ui/DESIGN.md): "Search + filter card top-left (352px), timing lens bottom-centre, place panel docked right (384px, inset 12px)". Now: the place column docks left, 400px, inset 12; the map's box ends where it does; the controls sit bottom-right, the attribution bottom-left in a readable pill; the column's entrance slides from the left (`translateX(-10px)`).
+- **Phone layout (changed).** Old: "a two-snap draggable sheet (peek 0.46 / full 0.82 of the viewport), and a bottom tab bar that hides while the sheet is up". Now: the tab bar stays under the sheet; the rest height is sized from the content (head, actions, first fact), the full snap stays at 82%; the grab bar is a button; the lens is one compact `Anytime` chip opening a menu of three radio items (not a Select: the lens is kept on the device, so the base-ui skill's rule 16 makes it a radio choice) with the count beside it; a 44px +/- pair sits above Centre on me; the phone layout runs up to 899px.
+- **Labels (changed).** Old: small labels are tracked uppercase (`.label-cap`). Now: sentence case, 12px, in the body face.
+- **Tiles.** The basemap is judged on the filtered OpenStreetMap fallback, as the e2e runs it; the CARTO path is untouched.
+- **Kept.** One accent, a 1px border as the default separator, tight radii, cool-biased neutrals, the eleven hues, the category glyph in its hue on every chip.
