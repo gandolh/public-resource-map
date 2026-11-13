@@ -1,5 +1,13 @@
 # Log
 
+## [2026-11-13] decision | The owner approved the redesign direction "The docked desk" on the estate redesign board
+
+The owner approved CivicMap's redesign direction "The docked desk" (the navigation of the docked-band
+direction with the map height and the tinted place head of the runner-up), with every question on the
+board standing as proposed: the search leaves its floating card for a docked band, the place panel docks
+left, the phone keeps its tab bar under the sheet, and the build is judged on the filtered
+OpenStreetMap basemap. Brief 06 builds it.
+
 ## [2026-10-13] done | Local accounts, a local register page and "Sign in with Ward" (Ward's brief 24)
 
 prm owns its users again, through Ward's shared library 0.2.0, vendored into
