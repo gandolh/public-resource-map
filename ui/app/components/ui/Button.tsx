@@ -16,18 +16,18 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * three equally-weighted choices.
  */
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-fg-on-accent hover:bg-accent-hover active:bg-accent-hover shadow-e1",
-  secondary: "bg-surface text-fg border border-line hover:bg-surface-2 hover:border-line-strong",
+  primary: "border border-accent bg-accent font-semibold text-fg-on-accent hover:border-accent-hover hover:bg-accent-hover active:bg-accent-hover",
+  secondary: "border border-outline bg-surface text-fg hover:bg-surface-2 active:bg-surface-3",
   ghost: "text-fg-muted hover:bg-surface-2 hover:text-fg",
   danger: "bg-danger text-fg-on-danger hover:opacity-90",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3 text-ui rounded-md gap-1.5",
-  md: "h-9 px-3.5 text-control rounded-lg gap-2",
-  lg: "h-11 px-5 text-lead rounded-lg gap-2",
-  icon: "h-9 w-9 rounded-lg",
-  "icon-sm": "h-8 w-8 rounded-md",
+  sm: "h-8 px-3 text-ui rounded-lg gap-2",
+  md: "h-10 px-3.5 text-body rounded-lg gap-2",
+  lg: "h-12 px-5 text-field rounded-lg gap-2",
+  icon: "h-10 w-10 rounded-lg",
+  "icon-sm": "h-8 w-8 rounded-lg",
 };
 
 export function Button({ variant = "secondary", size = "md", className, type = "button", ...props }: ButtonProps) {

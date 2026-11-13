@@ -20,10 +20,10 @@ export function CityPicker() {
         <button
           type="button"
           aria-label={t("city.change")}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 text-control font-medium text-fg transition-colors hover:border-line-strong hover:bg-surface-2"
+          className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-2 text-body font-medium whitespace-nowrap text-fg transition-colors hover:bg-surface-2 min-[380px]:gap-2 min-[380px]:px-2.5 md:h-9 md:px-3"
         >
           {city.name}
-          <ChevronDown size={14} strokeWidth={2.2} className="text-fg-faint" />
+          <ChevronDown size={14} strokeWidth={2.2} className="text-fg-muted" />
         </button>
       }
     >

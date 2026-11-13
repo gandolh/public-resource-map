@@ -21,14 +21,16 @@ export function CategoryBadge({
       className={cn(
         // Deliberately not a pill: this states what a place IS, it does not
         // filter anything, and the pill shape is reserved for controls that do.
-        "inline-flex items-center gap-1.5 rounded-md border px-2 py-1",
-        "text-caption font-semibold tracking-[0.01em]",
-        "border-(color:--cat)/34 bg-(--cat)/10 text-(color:--cat)",
+        "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2.5 md:h-7",
+        "text-meta font-semibold text-fg",
+        "border-[color-mix(in_srgb,var(--cat)_40%,var(--surface))] bg-surface",
         className,
       )}
       style={catVar(color)}
     >
-      <CategoryIcon category={category} size={13} strokeWidth={2.2} />
+      <span className="inline-flex text-(--cat)">
+        <CategoryIcon category={category} size={14} strokeWidth={2.2} />
+      </span>
       {label}
     </span>
   );

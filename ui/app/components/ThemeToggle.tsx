@@ -22,7 +22,7 @@ export function ThemeToggle() {
         <button
           type="button"
           aria-label={t("theme.toggle")}
-          className="grid h-8 w-8 place-items-center rounded-lg text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+          className="grid h-11 w-11 place-items-center rounded-lg md:h-9 md:w-9 text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
         >
           <Current size={16} strokeWidth={2} />
         </button>

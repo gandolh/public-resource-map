@@ -4,7 +4,7 @@ import { useI18n } from "~/lib/i18n";
 import { groupByDay } from "~/lib/dates";
 import { inArea } from "~/lib/area";
 import { usingCarto } from "~/lib/map";
-import { categoryColor, categoryLabelKey } from "~/lib/categories";
+import { HuedIcon, categoryLabelKey } from "~/lib/categories";
 import { useAppStore } from "~/stores/appStore";
 import { useWhatsOn } from "~/hooks/usePlaces";
 import { Segmented } from "~/components/ui/Segmented";
@@ -70,7 +70,7 @@ export default function WhatsOnRoute() {
                 <Chip
                   key={category}
                   active={categories.includes(category)}
-                  dotColor={categoryColor(category)}
+                  icon={<HuedIcon category={category} />}
                   onClick={() => toggleCategory(category)}
                 >
                   {t(categoryLabelKey(category))}

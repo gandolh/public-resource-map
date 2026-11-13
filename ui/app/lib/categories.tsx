@@ -129,6 +129,20 @@ const EVENT_TO_PLACE_HUE: Record<EventCategory, PlaceCategory> = {
   other: "other",
 };
 
+/** The place category whose glyph and hue an event category borrows. */
+export function eventPlaceCategory(category: EventCategory): PlaceCategory {
+  return EVENT_TO_PLACE_HUE[category] ?? "other";
+}
+
+/** A category's glyph in its own hue, for chips and event lines. */
+export function HuedIcon({ category, size = 14 }: { category: PlaceCategory; size?: number }) {
+  return (
+    <span className="inline-flex shrink-0 text-(--cat)" style={catVar(categoryColor(category))}>
+      <CategoryIcon category={category} size={size} strokeWidth={2.2} />
+    </span>
+  );
+}
+
 export function eventCategoryColor(category: EventCategory): string {
   return categoryColor(EVENT_TO_PLACE_HUE[category] ?? "other");
 }

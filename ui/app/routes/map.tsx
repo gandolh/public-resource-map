@@ -24,7 +24,7 @@ import { useI18n } from "~/lib/i18n";
 import { DARK_TILES, LIGHT_TILES, mapCredits, publishersOf, usingCarto, useIsDarkMode } from "~/lib/map";
 import { normalizeText } from "~/lib/utils";
 import { inArea } from "~/lib/area";
-import { categoryColor, categoryLabelKey } from "~/lib/categories";
+import { categoryLabelKey } from "~/lib/categories";
 import { nearestCity } from "~/lib/cities";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { cn } from "~/lib/utils";
@@ -60,8 +60,8 @@ function ActiveFilterChips() {
   const area = useAppStore((s) => s.area);
   const clearArea = useAppStore((s) => s.clearArea);
 
-  const chip = (key: string, label: string, onRemove: () => void, dot?: string) => (
-    <Chip key={key} active dotColor={dot} onClick={onRemove} aria-label={t("filters.remove", { filter: label })}>
+  const chip = (key: string, label: string, onRemove: () => void) => (
+    <Chip key={key} active onClick={onRemove} aria-label={t("filters.remove", { filter: label })}>
       {label}
       <X size={13} strokeWidth={2.4} aria-hidden="true" />
     </Chip>
@@ -71,7 +71,7 @@ function ActiveFilterChips() {
     <div className="flex flex-wrap justify-center gap-1.5">
       {search.trim() && chip("search", `“${search.trim()}”`, () => setSearch(""))}
       {lens !== "all" && chip("lens", t(`lens.${lens}`), () => setLens("all"))}
-      {categories.map((c) => chip(c, t(categoryLabelKey(c)), () => toggleCategory(c), categoryColor(c)))}
+      {categories.map((c) => chip(c, t(categoryLabelKey(c)), () => toggleCategory(c)))}
       {area && chip("area", t("area.chip"), clearArea)}
     </div>
   );

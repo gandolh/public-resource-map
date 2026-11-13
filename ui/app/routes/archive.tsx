@@ -3,7 +3,7 @@ import { Link, type MetaFunction } from "react-router";
 import { AlertTriangle, Archive, Loader2 } from "lucide-react";
 import { eventCategories, type WhatsOnItem } from "@public-resource-map/shared";
 import { APP_TZ, useI18n } from "~/lib/i18n";
-import { eventCategoryColor, eventCategoryKey } from "~/lib/categories";
+import { HuedIcon, eventCategoryKey, eventPlaceCategory } from "~/lib/categories";
 import { browserPath, loginPath } from "~/lib/authApi";
 import { useAppStore } from "~/stores/appStore";
 import { useAuthStore } from "~/stores/authStore";
@@ -94,7 +94,7 @@ export default function ArchiveRoute() {
                     <Chip
                       key={c}
                       active={categories.includes(c)}
-                      dotColor={eventCategoryColor(c)}
+                      icon={<HuedIcon category={eventPlaceCategory(c)} />}
                       onClick={() => toggle(c)}
                     >
                       {t(eventCategoryKey(c))}

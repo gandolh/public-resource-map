@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Outlet } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Navbar } from "./Navbar";
+import { Navbar, TabBar } from "./Navbar";
 import { NoticeToast } from "./shell/NoticeToast";
 import { ThemeProvider } from "./ThemeProvider";
 import { ToastHost } from "./ui/toast";
@@ -32,6 +32,7 @@ export default function Layout() {
           <Outlet />
           <NoticeToast />
         </main>
+        <TabBar />
       </div>
     </AppProviders>
   );

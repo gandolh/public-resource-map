@@ -13,13 +13,12 @@ export function SearchInput({ value, onChange, placeholder, clearLabel, classNam
   return (
     <div
       className={cn(
-        "flex h-10 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 shadow-e2",
-        "focus-within:border-accent-line focus-within:ring-2 focus-within:ring-accent/15",
-        "transition-[border-color,box-shadow] duration-(--dur-1)",
+        "flex h-11 items-center gap-2 rounded-xl border border-outline bg-surface px-3 md:h-10 md:rounded-lg",
+        "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent",
         className,
       )}
     >
-      <Search size={16} strokeWidth={2} className="shrink-0 text-fg-faint" aria-hidden="true" />
+      <Search size={16} strokeWidth={2} className="shrink-0 text-fg-muted" aria-hidden="true" />
       <input
         type="search"
         value={value}
@@ -27,7 +26,7 @@ export function SearchInput({ value, onChange, placeholder, clearLabel, classNam
         placeholder={placeholder}
         aria-label={placeholder}
         className={cn(
-          "min-w-0 flex-1 bg-transparent text-body text-fg outline-none",
+          "h-full min-w-0 flex-1 bg-transparent text-field text-fg outline-none md:text-body",
           "placeholder:text-fg-faint",
           "[&::-webkit-search-cancel-button]:appearance-none",
         )}
@@ -37,7 +36,7 @@ export function SearchInput({ value, onChange, placeholder, clearLabel, classNam
           type="button"
           onClick={() => onChange("")}
           aria-label={clearLabel}
-          className="-mr-1 grid h-6 w-6 shrink-0 place-items-center rounded-xs text-fg-faint transition-colors hover:bg-surface-2 hover:text-fg"
+          className="-mr-1 grid h-8 w-8 shrink-0 place-items-center rounded-md text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
         >
           <X size={14} strokeWidth={2.5} />
         </button>

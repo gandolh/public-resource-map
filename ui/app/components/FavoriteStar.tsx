@@ -35,8 +35,8 @@ export function FavoriteStar({
   const label = t(`fav.${kind}.${on ? "remove" : "add"}`, { name });
   const box =
     size === "sm"
-      ? "h-8 w-8 rounded-md"
-      : "h-10 w-10 rounded-lg border border-line bg-surface hover:border-line-strong hover:bg-surface-2";
+      ? "h-11 w-11 rounded-lg md:h-9 md:w-9"
+      : "h-12 w-12 rounded-lg border border-outline bg-surface hover:bg-surface-2 md:h-10 md:w-10";
   const iconSize = size === "sm" ? 15 : 17;
   const look = cn(
     "grid shrink-0 place-items-center transition-colors",

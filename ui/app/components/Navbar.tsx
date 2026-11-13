@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Bell } from "./shell/Bell";
 import { usePendingFavorite } from "~/hooks/useFavorites";
 import { Link, useLocation, useNavigate } from "react-router";
-import { CalendarDays, Map as MapIcon, User } from "lucide-react";
+import { Archive, CalendarDays, Info, Map as MapIcon, User } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { BrandMark } from "./shell/BrandMark";
 import { CityPicker } from "./shell/CityPicker";
@@ -18,14 +18,15 @@ import { cn } from "~/lib/utils";
 
 function TopLink({ to, children }: { to: string; children: React.ReactNode }) {
   const { pathname } = useLocation();
-  const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
+  const active = to === "/" ? pathname === "/" || pathname.startsWith("/places/") : pathname.startsWith(to);
   return (
     <Link
       to={to}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "rounded-md px-2.5 py-1.5 text-control font-medium transition-colors duration-(--dur-1)",
-        active ? "bg-surface-2 text-fg" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
+        "relative flex h-13 items-center px-3 text-body font-medium transition-colors duration-(--dur-1)",
+        "after:absolute after:inset-x-3 after:-bottom-px after:h-0.5 after:rounded-xs after:bg-accent after:content-['']",
+        active ? "text-fg" : "text-fg-muted after:hidden hover:text-fg",
       )}
     >
       {children}
@@ -66,9 +67,9 @@ function ProfileMenu() {
         <button
           type="button"
           aria-label={t("nav.account")}
-          className="grid h-8 w-8 place-items-center rounded-lg transition-colors hover:bg-surface-2"
+          className="grid h-11 w-11 place-items-center rounded-lg border border-line bg-surface-2 text-fg-muted transition-colors hover:bg-surface-3 hover:text-fg md:h-9 md:w-9"
         >
-          <Avatar fallback={authed ? fallback : undefined} />
+          {authed ? <Avatar fallback={fallback} className="border-0 bg-transparent" /> : <User size={17} strokeWidth={2} />}
         </button>
       }
     >
@@ -99,40 +100,40 @@ function ProfileMenu() {
   );
 }
 
-/**
- * The phone tab bar's account entry. It points at settings when signed in and
- * at login otherwise, so the tab always does the thing the person expects
- * from it.
- */
-function AccountTab() {
-  const { t } = useI18n();
-  const status = useAuthStore((s) => s.status);
-  const here = useReturnHere();
-  const to = status === "authenticated" ? "/settings" : loginPath(here);
-
-  return (
-    <Link to={to} className="flex flex-1 flex-col items-center gap-0.5 py-2 text-note text-fg-muted">
-      <User className="h-5 w-5" aria-hidden />
-      {t("nav.account")}
-    </Link>
-  );
-}
-
 function BottomTab({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) {
   const { pathname } = useLocation();
-  const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
+  const active = to === "/" ? pathname === "/" || pathname.startsWith("/places/") : pathname.startsWith(to);
   return (
     <Link
       to={to}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex flex-1 flex-col items-center gap-1 px-1 py-2 transition-colors",
-        active ? "text-accent" : "text-fg-muted",
+        "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-meta transition-colors",
+        active ? "font-semibold text-accent" : "font-medium text-fg-muted hover:text-fg",
       )}
     >
-      <Icon size={19} strokeWidth={active ? 2.4 : 2} />
-      <span className="max-w-full truncate text-tag leading-none font-medium">{label}</span>
+      <Icon size={20} strokeWidth={active ? 2.3 : 2} aria-hidden="true" />
+      <span className="max-w-full truncate px-1">{label}</span>
     </Link>
+  );
+}
+
+/**
+ * The phone's navigation: four labelled tabs, under the sheet and never hidden
+ * by it. In the page's flow, so the page above it ends where it begins.
+ */
+export function TabBar() {
+  const { t } = useI18n();
+  return (
+    <nav
+      aria-label={t("nav.menu")}
+      className="z-nav flex h-(--tabbar) shrink-0 border-t border-line-strong bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+    >
+      <BottomTab to="/" icon={MapIcon} label={t("nav.map")} />
+      <BottomTab to="/whats-on" icon={CalendarDays} label={t("nav.whatsOn")} />
+      <BottomTab to="/archive" icon={Archive} label={t("nav.archive")} />
+      <BottomTab to="/about-data" icon={Info} label={t("nav.aboutData")} />
+    </nav>
   );
 }
 
@@ -141,7 +142,6 @@ export function Navbar() {
   const status = useAuthStore((s) => s.status);
   const bootstrap = useAuthStore((s) => s.bootstrap);
   const hydrateCity = useAppStore((s) => s.hydrateCity);
-  const selectedId = useAppStore((s) => s.selectedId);
 
   useEffect(() => {
     if (status === "idle") void bootstrap();
@@ -155,43 +155,28 @@ export function Navbar() {
   usePendingFavorite();
 
   return (
-    <>
-      <header className="relative z-nav flex h-13 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-3 md:px-4">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Link to="/" className="flex items-center gap-2 rounded-md pr-1 text-lead font-semibold tracking-[-0.02em]">
-            <BrandMark />
-            <span className="hidden sm:inline">{t("brand")}</span>
-          </Link>
-          <span aria-hidden="true" className="hidden h-4 w-px bg-line sm:block" />
-          <CityPicker />
-          <nav className="ml-1 hidden items-center gap-0.5 md:flex">
-            <TopLink to="/">{t("nav.map")}</TopLink>
-            <TopLink to="/whats-on">{t("nav.whatsOn")}</TopLink>
-            <TopLink to="/archive">{t("nav.archive")}</TopLink>
-            <TopLink to="/about-data">{t("nav.aboutData")}</TopLink>
-          </nav>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-1.5">
-          <LangToggle />
-          <ThemeToggle />
-          <Bell />
-          <ProfileMenu />
-        </div>
-      </header>
-
-      {/* The map is the hero on a phone, so the tab bar gets out of the way the
-          moment a place sheet is open. */}
-      <nav
-        className={cn(
-          "fixed inset-x-0 bottom-0 z-panel flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden",
-          selectedId && "hidden",
-        )}
+    <header className="relative z-nav flex h-13 shrink-0 items-center gap-1.5 border-b border-line bg-surface px-2 min-[380px]:gap-2 md:px-4">
+      <Link
+        to="/"
+        className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-md text-field font-semibold tracking-[-0.01em] max-[339px]:hidden md:mr-2 md:h-auto"
       >
-        <BottomTab to="/" icon={MapIcon} label={t("nav.map")} />
-        <BottomTab to="/whats-on" icon={CalendarDays} label={t("nav.whatsOn")} />
-        <AccountTab />
+        <BrandMark size={28} />
+        <span className="hidden md:inline">{t("brand")}</span>
+      </Link>
+      <CityPicker />
+      <nav className="ml-2 hidden md:flex">
+        <TopLink to="/">{t("nav.map")}</TopLink>
+        <TopLink to="/whats-on">{t("nav.whatsOn")}</TopLink>
+        <TopLink to="/archive">{t("nav.archive")}</TopLink>
+        <TopLink to="/about-data">{t("nav.aboutData")}</TopLink>
       </nav>
-    </>
+
+      <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2">
+        <LangToggle />
+        <ThemeToggle />
+        <Bell />
+        <ProfileMenu />
+      </div>
+    </header>
   );
 }

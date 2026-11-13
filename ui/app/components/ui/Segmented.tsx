@@ -44,8 +44,8 @@ export function Segmented<T extends string>({
       className={cn(
         // `w-fit` so it hugs its options inside a stretching flex column
         // instead of spanning the container.
-        "inline-flex w-fit items-center gap-0.5 border border-line bg-surface p-0.5",
-        compact ? "h-8 rounded-lg" : "rounded-full shadow-e1",
+        "inline-flex w-fit items-center gap-0.5 border border-line-strong bg-surface-2",
+        compact ? "rounded-lg p-px md:p-0.5" : "rounded-[10px] p-[3px]",
         className,
       )}
     >
@@ -57,15 +57,16 @@ export function Segmented<T extends string>({
             "cursor-pointer font-medium select-none",
             "transition-[background-color,color] duration-(--dur-1) ease-out-fast",
             compact
-              ? "h-7 rounded-md px-2 text-caption font-semibold tracking-[0.04em] uppercase"
-              : cn("rounded-full", size === "sm" ? "h-7 px-3 text-detail" : "h-8 px-3.5 text-ui"),
+              ? "h-11 min-w-11 rounded-md px-2 text-meta font-semibold uppercase md:h-[30px] md:min-w-9"
+              : cn("rounded-[7px]", size === "sm" ? "h-9 px-3 text-ui" : "h-11 px-3.5 text-body md:h-8"),
             "inline-flex items-center justify-center",
             // The accent, not --fg: the category chips right beside this one
             // fill with the accent when selected, and one surface may not
             // speak two selection languages.
             "data-checked:bg-accent data-checked:text-fg-on-accent",
-            "data-unchecked:hover:bg-surface-2 data-unchecked:hover:text-fg",
-            compact ? "data-unchecked:text-fg-faint" : "data-unchecked:text-fg-muted",
+            !compact && "data-checked:shadow-e1",
+            "data-unchecked:hover:bg-surface-3 data-unchecked:hover:text-fg",
+            "data-unchecked:text-fg-muted",
           )}
         >
           {option.label}

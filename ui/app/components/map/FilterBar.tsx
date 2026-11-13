@@ -2,7 +2,7 @@ import { useState } from "react";
 import { LassoSelect, SlidersHorizontal, X } from "lucide-react";
 import { placeCategories, type EventLens, type PlaceCategory } from "@public-resource-map/shared";
 import { useI18n } from "~/lib/i18n";
-import { categoryColor, categoryLabelKey } from "~/lib/categories";
+import { HuedIcon, categoryLabelKey } from "~/lib/categories";
 import { useAppStore } from "~/stores/appStore";
 import { Chip } from "~/components/ui/Chip";
 import { Segmented } from "~/components/ui/Segmented";
@@ -41,7 +41,7 @@ function CategoryChips({ compact }: { compact?: boolean }) {
         <Chip
           key={category}
           active={categories.includes(category)}
-          dotColor={categoryColor(category)}
+          icon={<HuedIcon category={category} />}
           onClick={() => toggleCategory(category)}
         >
           {t(categoryLabelKey(category))}
@@ -63,7 +63,7 @@ function CategoryChips({ compact }: { compact?: boolean }) {
           <Chip
             key={category}
             active={categories.includes(category)}
-            dotColor={categoryColor(category)}
+            icon={<HuedIcon category={category} />}
             onClick={() => toggleCategory(category)}
           >
             {t(categoryLabelKey(category))}
