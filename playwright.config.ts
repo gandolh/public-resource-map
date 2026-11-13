@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 
 /**
  * The automated e2e suite. `npm run test:e2e` boots its own backend
- * and UI on ports of their own, against a throwaway database that is migrated
+ * and UI (a production build, previewed) on ports of their own, against a throwaway database that is migrated
  * and seeded on every run, so it never touches dev data or a running dev
  * server. The manual visual-audit hub stays in `playwright/` (gitignored).
  */
@@ -69,10 +69,16 @@ export default defineConfig({
       },
     },
     {
-      command: `npm run dev -w ui -- --port ${UI_PORT} --strictPort`,
+      // A production build behind `vite preview`, not `vite dev`: the dev
+      // server transforms a route's modules on its first request, and under
+      // load that cold first visit ran past the specs' timeouts. A build has
+      // nothing left to transform. Preview reuses the dev proxy, so
+      // /prm-api still reaches the test backend.
+      command: `npm run build && npx vite preview --outDir build/client --port ${UI_PORT} --strictPort`,
+      cwd: "ui",
       url: `http://localhost:${UI_PORT}${BASE}`,
       reuseExistingServer: false,
-      timeout: 120_000,
+      timeout: 240_000,
       env: {
         PORT: String(API_PORT), // where the dev proxy sends /prm-api
         PRM_BASE: BASE,
