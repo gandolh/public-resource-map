@@ -99,7 +99,9 @@ export function GroupedEventCard({
     <div className="overflow-hidden rounded-xl border border-line-strong bg-surface shadow-e2">
       {groups.map((g, i) => (
         <section key={g.key}>
-          <h2 className={`m-0 flex items-baseline justify-between border-b border-line-strong bg-surface-2 px-3 py-2 md:px-4 ${i > 0 ? "border-t" : ""}`}>
+          <h2
+            className={`m-0 flex items-baseline justify-between border-b border-line-strong bg-surface-2 px-3 py-2 md:px-4 ${i > 0 ? "border-t" : ""}`}
+          >
             <span className="text-ui font-semibold">{g.label}</span>
             <span className="text-meta font-normal text-fg-muted tnum">{tn("count.events", g.items.length)}</span>
           </h2>

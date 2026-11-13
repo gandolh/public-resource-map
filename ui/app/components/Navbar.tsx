@@ -69,7 +69,11 @@ function ProfileMenu() {
           aria-label={t("nav.account")}
           className="grid h-11 w-11 place-items-center rounded-lg border border-line bg-surface-2 text-fg-muted transition-colors hover:bg-surface-3 hover:text-fg md:h-9 md:w-9"
         >
-          {authed ? <Avatar fallback={fallback} className="border-0 bg-transparent" /> : <User size={17} strokeWidth={2} />}
+          {authed ? (
+            <Avatar fallback={fallback} className="border-0 bg-transparent" />
+          ) : (
+            <User size={17} strokeWidth={2} />
+          )}
         </button>
       }
     >
@@ -141,6 +145,7 @@ export function Navbar() {
   const { t } = useI18n();
   const status = useAuthStore((s) => s.status);
   const bootstrap = useAuthStore((s) => s.bootstrap);
+  const authed = status === "authenticated";
   const hydrateCity = useAppStore((s) => s.hydrateCity);
 
   useEffect(() => {
@@ -158,7 +163,11 @@ export function Navbar() {
     <header className="relative z-nav flex h-13 shrink-0 items-center gap-1.5 border-b border-line bg-surface px-2 min-[380px]:gap-2 md:px-4">
       <Link
         to="/"
-        className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-md text-field font-semibold tracking-[-0.01em] max-[339px]:hidden md:mr-2 md:h-auto"
+        className={cn(
+          "flex h-11 shrink-0 items-center justify-center gap-2 rounded-md text-field font-semibold tracking-[-0.01em] max-[339px]:hidden md:mr-2 md:h-auto",
+          // Signed in, the bell takes the mark's place on a phone; the Map tab leads home.
+          authed && "max-[419px]:hidden",
+        )}
       >
         <BrandMark size={28} />
         <span className="hidden md:inline">{t("brand")}</span>

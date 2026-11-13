@@ -9,11 +9,7 @@ import { Segmented } from "~/components/ui/Segmented";
 import { SearchInput } from "~/components/ui/SearchInput";
 import { Button } from "~/components/ui/Button";
 import { Dialog } from "~/components/ui/Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-} from "~/components/ui/DropdownMenu";
+import { DropdownMenu, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "~/components/ui/DropdownMenu";
 import { cn } from "~/lib/utils";
 
 /** The categories a Romanian city actually has a lot of, first. */
@@ -165,7 +161,7 @@ function Tools({ counts, drawable, className }: { counts: BandCounts; drawable: 
   const { t } = useI18n();
   return (
     <div className={cn("ml-auto items-center gap-4", className)}>
-      <p className="tnum flex items-center gap-4 text-meta whitespace-nowrap text-fg-muted">
+      <p className="flex items-center gap-4 text-meta whitespace-nowrap text-fg-muted tnum">
         {counts.places === null ? (
           <span>{t("state.loading")}</span>
         ) : (
@@ -217,7 +213,15 @@ function LensChip() {
 }
 
 /** The phone's Categories sheet: every category, Draw an area, Clear filters and Done. */
-function CategoriesSheet({ open, onOpenChange, count }: { open: boolean; onOpenChange: (o: boolean) => void; count: number }) {
+function CategoriesSheet({
+  open,
+  onOpenChange,
+  count,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  count: number;
+}) {
   const { t } = useI18n();
   const clearFilters = useAppStore((s) => s.clearFilters);
   return (
@@ -230,7 +234,7 @@ function CategoriesSheet({ open, onOpenChange, count }: { open: boolean; onOpenC
         <span className="flex items-center gap-2">
           {t("filters.title")}
           {count > 0 && (
-            <span className="tnum min-w-5 rounded-full bg-accent px-1.5 text-center text-meta font-semibold text-fg-on-accent">
+            <span className="min-w-5 rounded-full bg-accent px-1.5 text-center text-meta font-semibold text-fg-on-accent tnum">
               {count}
             </span>
           )}
@@ -343,7 +347,7 @@ export function FilterBar({
               <SlidersHorizontal size={16} strokeWidth={2} aria-hidden="true" className="text-fg-muted" />
               {t("filters.title")}
               {hiddenFilters > 0 && (
-                <span className="tnum min-w-5 rounded-full bg-accent px-1.5 text-center text-meta font-semibold text-fg-on-accent">
+                <span className="min-w-5 rounded-full bg-accent px-1.5 text-center text-meta font-semibold text-fg-on-accent tnum">
                   {hiddenFilters}
                 </span>
               )}
@@ -351,10 +355,10 @@ export function FilterBar({
           </div>
         )}
         {!onMap && <div className="px-3">{lensControl}</div>}
-        <div className="scroll-fade-x flex items-center gap-2 overflow-x-auto pr-7 pl-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex [scrollbar-width:none] items-center gap-2 overflow-x-auto scroll-fade-x pr-7 pl-3 [&::-webkit-scrollbar]:hidden">
           {onMap && <LensChip />}
           {onMap && (
-            <p className="tnum flex shrink-0 flex-col text-meta whitespace-nowrap text-fg-muted">
+            <p className="flex shrink-0 flex-col text-meta whitespace-nowrap text-fg-muted tnum">
               {counts.places === null ? (
                 <span>{t("state.loading")}</span>
               ) : (
@@ -370,7 +374,10 @@ export function FilterBar({
       </div>
 
       {onMap && (
-        <LensBanner placeCount={placeCount} className="mx-3 text-meta md:absolute md:top-full md:left-1/2 md:mx-0 md:mt-3 md:-translate-x-1/2" />
+        <LensBanner
+          placeCount={placeCount}
+          className="mx-3 text-meta md:absolute md:top-full md:left-1/2 md:mx-0 md:mt-3 md:-translate-x-1/2"
+        />
       )}
       {onMap && <CategoriesSheet open={sheet} onOpenChange={setSheet} count={hiddenFilters} />}
     </div>

@@ -111,7 +111,7 @@ export default function ReviewRoute() {
     <div className="mx-auto w-full max-w-[1100px] px-6 py-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-headline font-semibold tracking-[-0.02em]">{t("admin.review")}</h1>
+          <h1 className="text-hero font-semibold tracking-[-0.015em]">{t("admin.review")}</h1>
           <p className="mt-1 text-control text-fg-muted">{t("admin.reviewLead")}</p>
         </div>
       </header>
@@ -199,7 +199,7 @@ export default function ReviewRoute() {
 
           <table className="mt-1 w-full border-separate border-spacing-0 text-left text-ui">
             <thead>
-              <tr className="text-caption tracking-[0.04em] text-fg-muted uppercase">
+              <tr className="text-meta font-medium text-fg-muted">
                 <th scope="col" className="w-9 border-b border-line py-2 pl-2">
                   <Checkbox
                     checked={allVisibleSelected}
@@ -466,7 +466,7 @@ function Drawer({
 
           {!quarantined && (
             <section aria-labelledby="where" className="space-y-2">
-              <h3 id="where" className="text-meta font-semibold tracking-[0.04em] text-fg-muted uppercase">
+              <h3 id="where" className="text-meta font-semibold text-fg-muted">
                 {t("admin.where")}
               </h3>
               <div className="h-[220px] overflow-hidden rounded-lg border border-line">

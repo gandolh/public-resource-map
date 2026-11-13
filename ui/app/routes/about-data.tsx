@@ -74,9 +74,7 @@ export default function AboutDataRoute() {
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
       <article className="mx-auto w-full max-w-[680px] px-4 py-6 md:px-6 md:py-10">
-        <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em] md:text-hero">
-          {t("about.title")}
-        </h1>
+        <h1 className="text-hero font-semibold tracking-[-0.015em]">{t("about.title")}</h1>
         <p className="mt-2 text-lead leading-relaxed text-fg-muted">{t("about.lead")}</p>
 
         <Section title={t("about.placesTitle")}>

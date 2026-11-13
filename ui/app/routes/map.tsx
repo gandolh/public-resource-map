@@ -309,116 +309,116 @@ export default function MapRoute() {
       <FilterBar counts={counts} placeCount={isPending ? null : places.length} />
 
       <div className="relative min-h-0 flex-1 overflow-hidden bg-bg">
-      {/* The map: the whole stage, or what is right of the place column when a place is open on a desktop. */}
-      <div
-        className={cn(
-          "absolute inset-y-0 right-0 left-0 transition-[left] duration-(--dur-3) ease-out-fast",
-          selectedId && "md:left-[424px] md:border-l md:border-line-strong",
-        )}
-      >
-      {mounted && loaded && (
-        <MapContainer
-          center={loaded.camera ? [loaded.camera.lat, loaded.camera.lng] : [city.center.lat, city.center.lng]}
-          zoom={loaded.camera?.zoom ?? city.zoom}
-          zoomControl={false}
-          attributionControl={false}
-          // react-leaflet only applies `className` when it creates the
-          // container, so anything reactive has to live on the wrapper below.
-          className={cn("h-full w-full", !usingCarto && "map-fallback")}
+        {/* The map: the whole stage, or what is right of the place column when a place is open on a desktop. */}
+        <div
+          className={cn(
+            "absolute inset-y-0 right-0 left-0 transition-[left] duration-(--dur-3) ease-out-fast",
+            selectedId && "md:left-[424px] md:border-l md:border-line-strong",
+          )}
         >
-          <TileLayer url={dark ? DARK_TILES : LIGHT_TILES} />
-          {/* Bottom-left, not Leaflet's default bottom-right: the right edge is
+          {mounted && loaded && (
+            <MapContainer
+              center={loaded.camera ? [loaded.camera.lat, loaded.camera.lng] : [city.center.lat, city.center.lng]}
+              zoom={loaded.camera?.zoom ?? city.zoom}
+              zoomControl={false}
+              attributionControl={false}
+              // react-leaflet only applies `className` when it creates the
+              // container, so anything reactive has to live on the wrapper below.
+              className={cn("h-full w-full", !usingCarto && "map-fallback")}
+            >
+              <TileLayer url={dark ? DARK_TILES : LIGHT_TILES} />
+              {/* Bottom-left, not Leaflet's default bottom-right: the right edge is
               where the place panel docks, and attribution is a licence
               obligation that may not be parked under a panel. */}
-          <AttributionControl position="bottomleft" prefix={false} ref={setAttribution} />
-          <SourceCredits control={attribution} credit={credit} />
-          <AboutDataLink control={attribution} />
-          <AttributionToggle control={attribution} />
-          <MapResize />
-          <MapBridge
-            onReady={(m) => {
-              mapRef.current = m;
-            }}
-          />
-          <CityRecenter
-            lat={city.center.lat}
-            lng={city.center.lng}
-            zoom={city.zoom}
-            keepFirst={loaded.camera !== undefined}
-            onRecenter={() => setCamera(null)}
-          />
-          <CameraTracker onMove={setCamera} />
-          {coords && <UserLocationMarker coords={coords} />}
-          <PlaceMarkers
-            places={places}
-            selectedId={selectedId}
-            onSelect={(place) => {
-              // The view's query goes along, so the place's URL still shares the same view.
-              void navigate({ pathname: `/places/${place.id}`, search: window.location.search });
-            }}
-            clusterLabel={(n) => t("map.cluster", { n })}
-            pinLabel={(p) =>
-              p.upcomingEventCount ? `${p.name} · ${tn("count.events", p.upcomingEventCount)}` : p.name
-            }
-          />
-          <MapControls />
-          <AreaDraw />
-        </MapContainer>
-      )}
+              <AttributionControl position="bottomleft" prefix={false} ref={setAttribution} />
+              <SourceCredits control={attribution} credit={credit} />
+              <AboutDataLink control={attribution} />
+              <AttributionToggle control={attribution} />
+              <MapResize />
+              <MapBridge
+                onReady={(m) => {
+                  mapRef.current = m;
+                }}
+              />
+              <CityRecenter
+                lat={city.center.lat}
+                lng={city.center.lng}
+                zoom={city.zoom}
+                keepFirst={loaded.camera !== undefined}
+                onRecenter={() => setCamera(null)}
+              />
+              <CameraTracker onMove={setCamera} />
+              {coords && <UserLocationMarker coords={coords} />}
+              <PlaceMarkers
+                places={places}
+                selectedId={selectedId}
+                onSelect={(place) => {
+                  // The view's query goes along, so the place's URL still shares the same view.
+                  void navigate({ pathname: `/places/${place.id}`, search: window.location.search });
+                }}
+                clusterLabel={(n) => t("map.cluster", { n })}
+                pinLabel={(p) =>
+                  p.upcomingEventCount ? `${p.name} · ${tn("count.events", p.upcomingEventCount)}` : p.name
+                }
+              />
+              <MapControls />
+              <AreaDraw />
+            </MapContainer>
+          )}
 
-      {isError && (
-        <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-draw mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
-          <StateBlock
-            tone="danger"
-            icon={<AlertTriangle size={18} strokeWidth={2} />}
-            title={t("state.error")}
-            body={t("state.errorBody")}
-            action={
-              <Button variant="secondary" size="sm" onClick={() => void refetch()}>
-                {t("state.retry")}
-              </Button>
-            }
-          />
-        </div>
-      )}
+          {isError && (
+            <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-draw mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
+              <StateBlock
+                tone="danger"
+                icon={<AlertTriangle size={18} strokeWidth={2} />}
+                title={t("state.error")}
+                body={t("state.errorBody")}
+                action={
+                  <Button variant="secondary" size="sm" onClick={() => void refetch()}>
+                    {t("state.retry")}
+                  </Button>
+                }
+              />
+            </div>
+          )}
 
-      {/* Zero results is a guided recovery, never a blank map: it names what is
+          {/* Zero results is a guided recovery, never a blank map: it names what is
           filtering things out, offers each filter back as a removable chip, and
           says what dropping the area or the search would show. */}
-      {noResults && (
-        <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-draw mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
-          <StateBlock
-            icon={<SearchX size={18} strokeWidth={2} />}
-            title={
-              search.trim()
-                ? t("search.noMatch", { q: search.trim() })
-                : lens !== "all"
-                  ? t("state.zeroLens", { lens: t(`lens.${lens}`).toLowerCase(), city: city.name })
-                  : area
-                    ? t("area.zeroTitle")
-                    : t("state.zeroTitle")
-            }
-            body={widenHint ?? t("state.zeroBody")}
-            action={
-              <div className="flex flex-col items-center gap-3">
-                <ActiveFilterChips />
-                <Button variant="secondary" size="sm" onClick={clearFilters}>
-                  {t("filters.clear")}
-                </Button>
-              </div>
-            }
-          />
+          {noResults && (
+            <div className="pointer-events-auto absolute inset-x-0 top-1/2 z-draw mx-auto w-[min(92%,380px)] -translate-y-1/2 rounded-xl border border-line bg-surface shadow-e3">
+              <StateBlock
+                icon={<SearchX size={18} strokeWidth={2} />}
+                title={
+                  search.trim()
+                    ? t("search.noMatch", { q: search.trim() })
+                    : lens !== "all"
+                      ? t("state.zeroLens", { lens: t(`lens.${lens}`).toLowerCase(), city: city.name })
+                      : area
+                        ? t("area.zeroTitle")
+                        : t("state.zeroTitle")
+                }
+                body={widenHint ?? t("state.zeroBody")}
+                action={
+                  <div className="flex flex-col items-center gap-3">
+                    <ActiveFilterChips />
+                    <Button variant="secondary" size="sm" onClick={clearFilters}>
+                      {t("filters.clear")}
+                    </Button>
+                  </div>
+                }
+              />
+            </div>
+          )}
+
+          {locError && (
+            <p className="pointer-events-none absolute inset-x-0 bottom-20 z-chrome mx-auto w-fit rounded-full border border-line bg-surface px-3 py-1.5 text-meta text-fg-muted shadow-e1 md:bottom-16">
+              {t("map.locationDenied")}
+            </p>
+          )}
         </div>
-      )}
 
-      {locError && (
-        <p className="pointer-events-none absolute inset-x-0 bottom-20 z-chrome mx-auto w-fit rounded-full border border-line bg-surface px-3 py-1.5 text-meta text-fg-muted shadow-e1 md:bottom-16">
-          {t("map.locationDenied")}
-        </p>
-      )}
-      </div>
-
-      <Outlet context={context} />
+        <Outlet context={context} />
       </div>
     </div>
   );

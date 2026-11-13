@@ -35,9 +35,7 @@ export function Chip({ active = false, icon, count, className, children, ...prop
       {active && icon ? <Check size={14} strokeWidth={2.6} aria-hidden="true" className="shrink-0" /> : icon}
       {children}
       {count !== undefined && (
-        <span className={cn("ml-0.5 text-meta tnum", active ? "text-fg-on-accent/75" : "text-fg-faint")}>
-          {count}
-        </span>
+        <span className={cn("ml-0.5 text-meta tnum", active ? "text-fg-on-accent/75" : "text-fg-faint")}>{count}</span>
       )}
     </Toggle>
   );

@@ -73,9 +73,7 @@ export default function SettingsRoute() {
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
       <article className="mx-auto w-full max-w-[560px] px-4 py-6 md:px-6 md:py-10">
-        <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em] md:text-hero">
-          {t("settings.title")}
-        </h1>
+        <h1 className="text-hero font-semibold tracking-[-0.015em]">{t("settings.title")}</h1>
         <p className="mt-2 text-reading text-fg-muted">{t("settings.signedInAs", { name: user.username })}</p>
 
         {user.hasPassword ? <ChangePassword /> : <FirstPassword wardEnabled={ward.enabled} />}

@@ -8,7 +8,7 @@ import { browserPath, loginPath } from "~/lib/authApi";
 import { useAppStore } from "~/stores/appStore";
 import { useAuthStore } from "~/stores/authStore";
 import { useCityArchive, useMyArchive } from "~/hooks/useArchive";
-import { EventPlaceRow } from "~/components/place/EventPlaceRow";
+import { GroupedEventCard } from "~/components/place/EventPlaceRow";
 import { Button } from "~/components/ui/Button";
 import { Chip } from "~/components/ui/Chip";
 import { Skeleton } from "~/components/ui/Skeleton";
@@ -68,11 +68,9 @@ export default function ArchiveRoute() {
 
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
-      <div className="mx-auto w-full max-w-[720px] px-4 py-6 md:px-6 md:py-8">
+      <div className="mx-auto w-full max-w-[880px] px-4 py-6 md:px-6 md:py-8">
         <header>
-          <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em] md:text-hero">
-            {t("archive.title")}
-          </h1>
+          <h1 className="text-hero font-semibold tracking-[-0.015em]">{t("archive.title")}</h1>
           <p className="mt-1.5 text-body text-fg-muted">{t("archive.subtitle")}</p>
         </header>
 
@@ -159,16 +157,9 @@ export default function ArchiveRoute() {
             {items.length > 0 && (
               <>
                 <p className="mt-4 text-detail text-fg-muted tnum">{tn("count.events", total)}</p>
-                {groups.map((g) => (
-                  <section key={g.key} className="mt-5 first:mt-3">
-                    <h2 className="pb-1 label-cap">{g.label}</h2>
-                    <ul>
-                      {g.items.map((item) => (
-                        <EventPlaceRow key={item.event.id} item={item} when="date" />
-                      ))}
-                    </ul>
-                  </section>
-                ))}
+                <div className="mt-3">
+                  <GroupedEventCard groups={groups} when="date" />
+                </div>
                 {q.hasNextPage && (
                   <div className="mt-6 flex justify-center">
                     <Button

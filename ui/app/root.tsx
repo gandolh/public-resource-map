@@ -21,10 +21,11 @@ const DIRECTION_CONTRACT = `<!--
   near them, and learns what is on at one of them — or that nothing is, said
   plainly, because sparse is the honest default here.
 
-  FIRST VIEWPORT: Full-bleed map. Search and category chips float top left,
-  the timing lens sits bottom centre, the place panel docks right on desktop
-  and becomes a draggable bottom sheet on mobile. The map is never smaller
-  than the chrome, and the selected pin is panned clear of the panel.
+  FIRST VIEWPORT: A docked band above the map holds the search, the timing
+  lens, the category chips, the count and Draw an area. The map fills the
+  rest; the place column docks on its left on desktop, and on a phone a sheet
+  sized to its content rests above a four-tab bar. The map's box ends where
+  the column begins, so the selected pin is never covered.
 
   FORM: The standing exit, taken deliberately over the dealt roll.
   Craft bar: Citymapper and Linear.
@@ -82,19 +83,17 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-fg">
       <div className="w-full max-w-md">
-        <p className="text-note font-semibold tracking-[0.14em] text-fg-faint uppercase">
-          {notFound ? "404" : "Eroare"}
-        </p>
-        <h1 className="mt-2 text-headline leading-tight font-semibold tracking-[-0.02em]">{title}</h1>
+        <p className="text-ui font-semibold text-fg-muted">{notFound ? "404" : "Eroare"}</p>
+        <h1 className="mt-2 text-hero font-semibold tracking-[-0.015em]">{title}</h1>
         <p className="mt-2 text-fg-muted">{detail}</p>
         <Link
           to="/"
-          className="mt-6 inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-medium text-fg-on-accent transition-colors hover:bg-accent-hover"
+          className="mt-6 inline-flex h-10 items-center rounded-lg border border-accent bg-accent px-4 text-body font-semibold text-fg-on-accent transition-colors hover:bg-accent-hover"
         >
           Înapoi la hartă
         </Link>
         {stack && (
-          <pre className="mt-6 max-h-64 overflow-auto rounded-lg border border-line bg-surface-2 p-3 font-mono text-note text-fg-muted">
+          <pre className="mt-6 max-h-64 overflow-auto rounded-lg border border-line bg-surface-2 p-3 font-mono text-meta text-fg-muted">
             <code>{stack}</code>
           </pre>
         )}

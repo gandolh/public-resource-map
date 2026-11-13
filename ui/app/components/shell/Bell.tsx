@@ -30,7 +30,7 @@ export function Bell() {
         <button
           type="button"
           aria-label={unread > 0 ? t("bell.labelUnread", { n: unread }) : t("bell.label")}
-          className="relative grid h-11 w-11 place-items-center rounded-lg md:h-9 md:w-9 text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+          className="relative grid h-11 w-11 place-items-center rounded-lg text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg md:h-9 md:w-9"
         >
           <BellIcon size={18} strokeWidth={2} />
           {unread > 0 && (

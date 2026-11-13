@@ -97,142 +97,151 @@ export function PlaceDetail({ place, events, eventsLoading, closeButton, firstFa
 
   return (
     <div className="flex h-full flex-col">
-        <header
-          style={catVar(categoryColor(place.category))}
-          className="relative flex-none border-b border-line-strong bg-[color-mix(in_srgb,var(--cat)_var(--head-mix),var(--surface))] px-4 pt-3 pb-2.5 md:pb-4"
-        >
-          <div className="flex min-h-11 items-center justify-between gap-2 md:mb-3 md:min-h-9">
-            <CategoryBadge category={place.category} label={t(categoryNameKey(place.category))} />
-            {closeButton}
-          </div>
-          <h2 className="text-place font-semibold tracking-[-0.015em] text-balance">{place.name}</h2>
-          {place.address && <p className="mt-1 text-body text-fg-muted md:text-ui">{place.address}</p>}
+      <header
+        style={catVar(categoryColor(place.category))}
+        className="relative flex-none border-b border-line-strong bg-[color-mix(in_srgb,var(--cat)_var(--head-mix),var(--surface))] px-4 pt-3 pb-2.5 md:pb-4"
+      >
+        <div className="flex min-h-11 items-center justify-between gap-2 md:mb-3 md:min-h-9">
+          <CategoryBadge category={place.category} label={t(categoryNameKey(place.category))} />
+          {closeButton}
+        </div>
+        <h2 className="text-place font-semibold tracking-[-0.015em] text-balance">{place.name}</h2>
+        {place.address && <p className="mt-1 text-body text-fg-muted md:text-ui">{place.address}</p>}
 
-          <div className="mt-2 flex gap-2 md:mt-4">
-            <Button
-              variant="primary"
-              size="lg"
-              className="flex-1 md:h-10 md:px-3.5 md:text-body"
-              onClick={() => window.open(directionsUrl(place.coordinates), "_blank", "noopener,noreferrer")}
-            >
-              <Navigation size={15} strokeWidth={2.2} />
-              {t("place.directions")}
-            </Button>
-            <Popover
-              open={manual}
-              // The trigger copies the link; only a failed copy opens the panel, so a press never opens it by itself.
-              onOpenChange={(open) => {
-                if (!open) setManual(false);
-              }}
-              className="w-[300px] p-3.5 text-ui"
-              trigger={
-                <Button variant="secondary" size="lg" className="md:h-10 md:px-3.5 md:text-body" onClick={() => void copyLink()} aria-live="polite">
-                  {copied ? (
-                    <>
-                      <Check size={15} strokeWidth={2.4} className="text-ok" />
-                      {t("place.shared")}
-                    </>
-                  ) : (
-                    <>
-                      <Link2 size={15} strokeWidth={2.2} />
-                      {t("place.share")}
-                    </>
-                  )}
-                </Button>
-              }
-            >
-              <PopoverTitle>{t("place.shareManual")}</PopoverTitle>
-              <PopoverDescription className="mt-1">{t("place.shareManualBody")}</PopoverDescription>
-              <input
-                readOnly
-                value={url}
-                aria-label={t("place.share")}
-                onFocus={(event) => event.currentTarget.select()}
-                className="mt-2.5 h-10 w-full rounded-lg border border-outline bg-surface px-3 text-body"
-              />
-            </Popover>
-            <FavoriteStar kind="place" id={place.id} name={place.name} />
-          </div>
-        </header>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-surface">
-          <dl className="m-0 py-1">
-            {place.openingHours && (
-              <MetaRow rowRef={firstFactRef} icon={<Clock size={14} strokeWidth={2} />} label={t("place.hours")}>
-                {place.openingHours}
-              </MetaRow>
-            )}
-            {place.phone && (
-              <MetaRow
-                rowRef={place.openingHours ? undefined : firstFactRef}
-                icon={<Phone size={14} strokeWidth={2} />}
-                label={t("place.phone")}
+        <div className="mt-2 flex gap-2 md:mt-4">
+          <Button
+            variant="primary"
+            size="lg"
+            className="flex-1 md:h-10 md:px-3.5 md:text-body"
+            onClick={() => window.open(directionsUrl(place.coordinates), "_blank", "noopener,noreferrer")}
+          >
+            <Navigation size={15} strokeWidth={2.2} />
+            {t("place.directions")}
+          </Button>
+          <Popover
+            open={manual}
+            // The trigger copies the link; only a failed copy opens the panel, so a press never opens it by itself.
+            onOpenChange={(open) => {
+              if (!open) setManual(false);
+            }}
+            className="w-[300px] p-3.5 text-ui"
+            trigger={
+              <Button
+                variant="secondary"
+                size="lg"
+                className="md:h-10 md:px-3.5 md:text-body"
+                onClick={() => void copyLink()}
+                aria-live="polite"
               >
-                <a href={`tel:${place.phone}`} className="inline-flex min-h-11 items-center hover:text-accent hover:underline md:min-h-0">
-                  {place.phone}
-                </a>
-              </MetaRow>
-            )}
-            {place.website && (
-              <MetaRow
-                rowRef={place.openingHours || place.phone ? undefined : firstFactRef}
-                icon={<Globe size={14} strokeWidth={2} />}
-                label={t("place.website")}
-              >
-                <a
-                  href={place.website}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-flex min-h-11 items-center text-accent hover:underline md:min-h-0"
-                >
-                  {place.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                </a>
-              </MetaRow>
-            )}
+                {copied ? (
+                  <>
+                    <Check size={15} strokeWidth={2.4} className="text-ok" />
+                    {t("place.shared")}
+                  </>
+                ) : (
+                  <>
+                    <Link2 size={15} strokeWidth={2.2} />
+                    {t("place.share")}
+                  </>
+                )}
+              </Button>
+            }
+          >
+            <PopoverTitle>{t("place.shareManual")}</PopoverTitle>
+            <PopoverDescription className="mt-1">{t("place.shareManualBody")}</PopoverDescription>
+            <input
+              readOnly
+              value={url}
+              aria-label={t("place.share")}
+              onFocus={(event) => event.currentTarget.select()}
+              className="mt-2.5 h-10 w-full rounded-lg border border-outline bg-surface px-3 text-body"
+            />
+          </Popover>
+          <FavoriteStar kind="place" id={place.id} name={place.name} />
+        </div>
+      </header>
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-surface">
+        <dl className="m-0 py-1">
+          {place.openingHours && (
+            <MetaRow rowRef={firstFactRef} icon={<Clock size={14} strokeWidth={2} />} label={t("place.hours")}>
+              {place.openingHours}
+            </MetaRow>
+          )}
+          {place.phone && (
             <MetaRow
-              rowRef={place.openingHours || place.phone || place.website ? undefined : firstFactRef}
-              icon={<MapPin size={14} strokeWidth={2} />}
-              label={t("place.source")}
+              rowRef={place.openingHours ? undefined : firstFactRef}
+              icon={<Phone size={14} strokeWidth={2} />}
+              label={t("place.phone")}
             >
-              <span className="flex flex-wrap items-baseline gap-x-1.5">
-                <span className="text-meta">
-                  {place.source === "osm" && place.credits.length > 0 ? (
-                    <Credits ids={place.credits} />
-                  ) : place.source === "osm" ? (
-                    t("place.sourceOsm")
-                  ) : (
-                    <>
-                      {t("place.sourceVenue")}
-                      {place.credits.length > 0 && (
-                        <>
-                          {": "}
-                          <Credits ids={place.credits} />
-                        </>
-                      )}
-                    </>
-                  )}
-                </span>
-                {place.osmType && place.osmId && (
-                  <span className="font-mono text-meta text-fg-muted">
-                    {place.osmType}/{place.osmId}
-                  </span>
+              <a
+                href={`tel:${place.phone}`}
+                className="inline-flex min-h-11 items-center hover:text-accent hover:underline md:min-h-0"
+              >
+                {place.phone}
+              </a>
+            </MetaRow>
+          )}
+          {place.website && (
+            <MetaRow
+              rowRef={place.openingHours || place.phone ? undefined : firstFactRef}
+              icon={<Globe size={14} strokeWidth={2} />}
+              label={t("place.website")}
+            >
+              <a
+                href={place.website}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex min-h-11 items-center text-accent hover:underline md:min-h-0"
+              >
+                {place.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+              </a>
+            </MetaRow>
+          )}
+          <MetaRow
+            rowRef={place.openingHours || place.phone || place.website ? undefined : firstFactRef}
+            icon={<MapPin size={14} strokeWidth={2} />}
+            label={t("place.source")}
+          >
+            <span className="flex flex-wrap items-baseline gap-x-1.5">
+              <span className="text-meta">
+                {place.source === "osm" && place.credits.length > 0 ? (
+                  <Credits ids={place.credits} />
+                ) : place.source === "osm" ? (
+                  t("place.sourceOsm")
+                ) : (
+                  <>
+                    {t("place.sourceVenue")}
+                    {place.credits.length > 0 && (
+                      <>
+                        {": "}
+                        <Credits ids={place.credits} />
+                      </>
+                    )}
+                  </>
                 )}
               </span>
-            </MetaRow>
-          </dl>
+              {place.osmType && place.osmId && (
+                <span className="font-mono text-meta text-fg-muted">
+                  {place.osmType}/{place.osmId}
+                </span>
+              )}
+            </span>
+          </MetaRow>
+        </dl>
 
-          <section className="border-t border-line-strong bg-surface px-4 pt-3 pb-5">
-            <div className="flex items-baseline justify-between">
-              <h3 className="text-body font-semibold">{t("place.whatsOnHere")}</h3>
-              {count > 0 && <span className="text-meta text-fg-muted tnum">{tn("count.events", count)}</span>}
-            </div>
-            <EventList
-              events={events}
-              loading={eventsLoading}
-              emptyTitle={t("place.noEvents")}
-              emptyBody={t("place.noEventsBody")}
-            />
-          </section>
-        </div>
+        <section className="border-t border-line-strong bg-surface px-4 pt-3 pb-5">
+          <div className="flex items-baseline justify-between">
+            <h3 className="text-body font-semibold">{t("place.whatsOnHere")}</h3>
+            {count > 0 && <span className="text-meta text-fg-muted tnum">{tn("count.events", count)}</span>}
+          </div>
+          <EventList
+            events={events}
+            loading={eventsLoading}
+            emptyTitle={t("place.noEvents")}
+            emptyBody={t("place.noEventsBody")}
+          />
+        </section>
+      </div>
     </div>
   );
 }

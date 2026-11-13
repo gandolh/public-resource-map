@@ -53,7 +53,7 @@ export default function SourcesRoute() {
     <div className="mx-auto w-full max-w-[1100px] px-6 py-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-headline font-semibold tracking-[-0.02em]">{t("admin.sources")}</h1>
+          <h1 className="text-hero font-semibold tracking-[-0.015em]">{t("admin.sources")}</h1>
           <p className="mt-1 text-control text-fg-muted">{t("admin.sourcesLead")}</p>
         </div>
         <Button
@@ -107,7 +107,7 @@ export default function SourcesRoute() {
       {data && data.length > 0 && (
         <table className="mt-5 w-full border-separate border-spacing-0 text-left text-ui">
           <thead>
-            <tr className="text-caption tracking-[0.04em] text-fg-muted uppercase">
+            <tr className="text-meta font-medium text-fg-muted">
               <th scope="col" className="border-b border-line py-2">
                 {t("admin.col.source")}
               </th>

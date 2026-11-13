@@ -11,7 +11,7 @@ import { cn } from "~/lib/utils";
  */
 
 export const inputClass =
-  "h-10 w-full rounded-lg border border-line bg-surface px-3 text-body text-fg outline-none transition-colors placeholder:text-fg-faint focus:border-accent";
+  "h-10 w-full rounded-lg border border-outline bg-surface px-3 text-body text-fg outline-none transition-colors placeholder:text-fg-faint focus:border-accent";
 
 export function Field({
   label,
@@ -59,7 +59,7 @@ export function AuthPage({ title, lead, children }: { title: string; lead?: stri
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-8">
       <div className="mx-auto w-full max-w-[400px] px-4 py-8 md:py-14">
-        <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em]">{title}</h1>
+        <h1 className="text-hero font-semibold tracking-[-0.015em]">{title}</h1>
         {lead && <p className="mt-2 text-reading leading-relaxed text-fg-muted">{lead}</p>}
         <div className="mt-6">{children}</div>
       </div>
