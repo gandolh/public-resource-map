@@ -292,27 +292,36 @@ export function FilterBar({
 
   return (
     <div className="relative z-chrome flex shrink-0 flex-col gap-2 border-b border-line bg-surface py-2 shadow-e1 md:px-4">
-      {/* Desktop: row one */}
-      <div className="hidden h-10 items-center gap-4 md:flex">
-        {onMap && (
-          <div className="w-[360px] shrink-0">
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder={t("search.placeholder")}
-              clearLabel={t("search.clear")}
-            />
+      {onMap ? (
+        <>
+          {/* Desktop: row one */}
+          <div className="hidden h-10 items-center gap-4 md:flex">
+            <div className="w-[360px] shrink-0">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder={t("search.placeholder")}
+                clearLabel={t("search.clear")}
+              />
+            </div>
+            {lensControl}
+            <Tools counts={counts} drawable className="hidden max-[1239px]:flex" />
           </div>
-        )}
-        {lensControl}
-        <Tools counts={counts} drawable={onMap} className="hidden max-[1239px]:flex" />
-      </div>
 
-      {/* Desktop: row two */}
-      <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 md:flex">
-        <CategoryChips layout="wrap" />
-        <Tools counts={counts} drawable={onMap} className="flex max-[1239px]:hidden" />
-      </div>
+          {/* Desktop: row two */}
+          <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 md:flex">
+            <CategoryChips layout="wrap" />
+            <Tools counts={counts} drawable className="flex max-[1239px]:hidden" />
+          </div>
+        </>
+      ) : (
+        /* What's on: the same band in one row, the lens first. */
+        <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 md:flex">
+          {lensControl}
+          <CategoryChips layout="wrap" />
+          <Tools counts={counts} drawable={false} className="flex" />
+        </div>
+      )}
 
       {/* Phone */}
       <div className="flex flex-col gap-2 md:hidden">

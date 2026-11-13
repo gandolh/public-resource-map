@@ -4,17 +4,14 @@ import { useI18n } from "~/lib/i18n";
 import { groupByDay } from "~/lib/dates";
 import { inArea } from "~/lib/area";
 import { usingCarto } from "~/lib/map";
-import { HuedIcon, categoryLabelKey } from "~/lib/categories";
 import { useAppStore } from "~/stores/appStore";
 import { useWhatsOn } from "~/hooks/usePlaces";
-import { Segmented } from "~/components/ui/Segmented";
 import { Chip } from "~/components/ui/Chip";
 import { Button } from "~/components/ui/Button";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { Skeleton } from "~/components/ui/Skeleton";
-import { useLensOptions } from "~/components/map/FilterBar";
-import { EventPlaceRow } from "~/components/place/EventPlaceRow";
-import { placeCategories } from "@public-resource-map/shared";
+import { FilterBar } from "~/components/map/FilterBar";
+import { GroupedEventCard } from "~/components/place/EventPlaceRow";
 
 export const meta: MetaFunction = () => [
   { title: "Ce se întâmplă — CivicMap" },
@@ -30,11 +27,7 @@ export default function WhatsOnRoute() {
   const { t, tn } = useI18n();
   const city = useAppStore((s) => s.city);
   const categories = useAppStore((s) => s.categories);
-  const toggleCategory = useAppStore((s) => s.toggleCategory);
-  const clearCategories = useAppStore((s) => s.clearCategories);
   const lens = useAppStore((s) => s.lens);
-  const setLens = useAppStore((s) => s.setLens);
-  const lensOptions = useLensOptions();
   const area = useAppStore((s) => s.area);
   const clearArea = useAppStore((s) => s.clearArea);
 
@@ -50,52 +43,33 @@ export default function WhatsOnRoute() {
   const groups = groupByDay(items, (i) => ({ start: i.event.startDate, end: i.event.endDate }));
 
   return (
-    <div className="h-full overflow-y-auto pb-20 md:pb-8">
-      <div className="mx-auto w-full max-w-[720px] px-4 py-6 md:px-6 md:py-8">
-        <header>
-          <h1 className="text-display leading-[1.15] font-semibold tracking-[-0.025em] text-balance md:text-hero">
-            {t("whatsOn.title", { city: city.name })}
-          </h1>
-          <p className="mt-1.5 text-body text-fg-muted">{t("whatsOn.subtitle")}</p>
-        </header>
+    <div className="flex h-full flex-col">
+      <FilterBar
+        variant="whats-on"
+        counts={{ places: isPending || isError ? null : tn("count.events", total), events: null }}
+        placeCount={null}
+      />
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-[880px] px-3 pt-5 pb-6 md:px-4 md:pt-7 md:pb-10">
+          <header className="mb-4">
+            <h1 className="text-hero font-semibold tracking-[-0.015em] text-balance">
+              {t("whatsOn.title", { city: city.name })}
+            </h1>
+            <p className="mt-1 text-body text-fg-muted">{t("whatsOn.subtitle")}</p>
+          </header>
 
-        <div className="mt-5 flex flex-col gap-3">
-          <Segmented value={lens} options={lensOptions} onChange={setLens} label={t("lens.label")} />
-          <div className="-mx-4 [scrollbar-width:none] overflow-x-auto scroll-fade-x px-4 [&::-webkit-scrollbar]:hidden">
-            <div className="flex gap-1.5">
-              <Chip active={categories.length === 0} onClick={clearCategories}>
-                {t("filters.all")}
-              </Chip>
-              {placeCategories.map((category) => (
-                <Chip
-                  key={category}
-                  active={categories.includes(category)}
-                  icon={<HuedIcon category={category} />}
-                  onClick={() => toggleCategory(category)}
-                >
-                  {t(categoryLabelKey(category))}
-                </Chip>
-              ))}
-            </div>
-          </div>
           {area && (
-            <Chip active onClick={clearArea} aria-label={t("area.remove")} className="w-fit">
+            <Chip active onClick={clearArea} aria-label={t("area.remove")} className="mb-4 w-fit">
               {t("area.chip")}
               <X size={13} strokeWidth={2.4} aria-hidden="true" />
             </Chip>
           )}
-        </div>
 
-        {!isPending && !isError && items.length > 0 && (
-          <p className="mt-4 text-detail text-fg-muted tnum">{tn("count.events", total)}</p>
-        )}
-
-        <div className="mt-2">
           {isPending && (
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 rounded-xl border border-line-strong bg-surface p-4 shadow-e2">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-4">
-                  <Skeleton className="h-4 w-10 shrink-0" />
+                <div key={i} className="flex gap-3">
+                  <Skeleton className="h-[52px] w-11 shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-2/3" />
                     <Skeleton className="h-3 w-1/2" />
@@ -127,7 +101,7 @@ export default function WhatsOnRoute() {
               action={
                 <Link
                   to="/"
-                  className="inline-flex h-9 items-center rounded-lg border border-line bg-surface px-3.5 text-control font-medium transition-colors hover:bg-surface-2"
+                  className="inline-flex h-10 items-center rounded-lg border border-outline bg-surface px-3.5 text-body font-medium transition-colors hover:bg-surface-2"
                 >
                   {t("place.backToMap")}
                 </Link>
@@ -135,27 +109,22 @@ export default function WhatsOnRoute() {
             />
           )}
 
-          {groups.map(({ group, items: rows }) => (
-            <section key={group} className="mt-5 first:mt-3">
-              <h2 className="pb-1 label-cap">{t(`group.${group}`)}</h2>
-              <ul>
-                {rows.map((item) => (
-                  <EventPlaceRow key={item.event.id} item={item} />
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
+          {groups.length > 0 && (
+            <GroupedEventCard
+              groups={groups.map(({ group, items: rows }) => ({ key: group, label: t(`group.${group}`), items: rows }))}
+            />
+          )}
 
-        <p className="mt-10 border-t border-line pt-4 text-caption leading-relaxed text-fg-faint">
-          <Link to="/archive" className="underline underline-offset-2 hover:text-fg">
-            {t("archive.link")}
-          </Link>{" "}
-          · {t("place.sourceOsm")} (ODbL){usingCarto && " · CARTO"} ·{" "}
-          <Link to="/about-data" className="underline underline-offset-2 hover:text-fg">
-            {t("nav.aboutData")}
-          </Link>
-        </p>
+          <p className="mt-10 border-t border-line pt-4 text-meta text-fg-muted">
+            <Link to="/archive" className="underline underline-offset-2 hover:text-fg">
+              {t("archive.link")}
+            </Link>{" "}
+            · {t("place.sourceOsm")} (ODbL){usingCarto && " · CARTO"} ·{" "}
+            <Link to="/about-data" className="underline underline-offset-2 hover:text-fg">
+              {t("nav.aboutData")}
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
