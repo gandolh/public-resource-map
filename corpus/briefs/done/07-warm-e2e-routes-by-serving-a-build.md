@@ -33,3 +33,7 @@ A build has no on-demand transform, so serving `vite preview` of a production bu
 - `npm run check` exits 0.
 - The full Playwright suite with `--workers=2`, run twice in a row, shows the cold deep links (`place.spec` share-link alias, `signed-in` archive) passing both times. Failures left over, if any, are named and are not cold-load timeouts.
 - `bash corpus/lint.sh` exits 0.
+
+## Outcome (2026-11-13)
+
+`playwright.config.ts` now runs `npm run build` and `vite preview` for the UI. Two full runs with `--workers=2`: the share-link alias and the signed-in archive specs passed both times. Left failing, none of them cold-load timeouts: `archive.spec` line 5 (a strict-mode locator match, 2 elements; it fails the same way on the dev server before this change) and the date-dependent bell spec (`signed-in.spec` line 11, known). Run 1 also failed the phone sheet spec (`place.spec` line 75, a position poll under load) once; it passed in run 2. The suite's other specs are unchanged. Test-only change: nothing to deploy.

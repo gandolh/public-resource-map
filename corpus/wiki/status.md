@@ -80,7 +80,7 @@ Still open:
 | Archived events page | **done 2026-10-03** — /archive: citywide + mine (saved events and followed places), month-grouped, category chips, paged; "past" computed beside the live window. No prune yet |
 | Draw-to-filter | **done 2026-10-03** — freehand + polygon, hand-rolled on Leaflet (Geoman's freehand is Pro-only); map + what's-on, cleared on city change |
 | Admin shell & review UI | **done 2026-10-03** — /admin (own shell, code-split, gated): confidence-ordered review queue with bulk accept/reject and a drawer (map, candidates, manual pin); sources with health, refresh, add-source, OSM sync. Browser-walked against local Ward |
-| Playwright e2e harness | **done 2026-10-03** — `npm run test:e2e`: own ports, fresh seeded DB per run, 9 public-surface specs (found a draw-mode pin bug); signed-in specs run against a fake Ward since 2026-10-04 (26 specs) |
+| Playwright e2e harness | **done 2026-10-03** — `npm run test:e2e`: own ports, fresh seeded DB per run, the UI served as a production build under `vite preview` since 2026-11-13 (the dev server timed out on cold deep links), 9 public-surface specs (found a draw-mode pin bug); signed-in specs run against a fake Ward since 2026-10-04 (26 specs) |
 | i18n | **done — RO default + EN switch, `Intl.PluralRules`/`DateTimeFormat`, no framework** |
 | Deployment | **deployed 2026-10-07** by vps-deploy, Ward first; the live database has no places (2026-10-09) |
 

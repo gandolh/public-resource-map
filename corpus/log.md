@@ -1,5 +1,9 @@
 # Log
 
+## [2026-11-13] done | Brief 07: the e2e suite serves a build
+
+The Playwright suite now serves the UI as a production build under `vite preview`, so a cold deep link no longer waits on Vite's first transform of a route. Test-only; nothing to deploy. Two full runs passed the share-link alias and the signed-in archive specs; the archive spec's locator clash and the date-dependent bell spec still fail, as before. See [the brief](briefs/done/07-warm-e2e-routes-by-serving-a-build.md).
+
 ## [2026-11-13] done | Brief 06: the redesign "The docked desk" built
 
 CivicMap's UI was rebuilt from the approved estate-board comps: new tokens in both themes, Archivo from `@fontsource-variable/archivo`, a docked band above the map, the place column on the left with a hue-tinted head, a phone sheet sized to its content over a four-tab bar, What's on in a raised card of day groups, and the undrawn screens restyled. Three recorded layouts and the label rule were reopened and are dated in [decisions-ui.md](wiki/decisions-ui.md); `ui/DESIGN.md` is rewritten from what shipped. Judged on the filtered OpenStreetMap basemap. Checks and the departures are in [the brief's outcome](briefs/done/06-a-redesign-with-hallmark-on-the-estate-board.md). Awaits a deploy (`deploy`, static web only).
