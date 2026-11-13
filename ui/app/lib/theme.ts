@@ -10,7 +10,7 @@ export const THEME_KEY = "vite-ui-theme";
  * The browser bar's colour per theme: the page background (`--bg` in app.css), so the bar
  * follows the switch. A test keeps these equal to the stylesheet's.
  */
-export const THEME_COLORS: Record<ResolvedTheme, string> = { light: "#f7f9fb", dark: "#0b0d11" };
+export const THEME_COLORS: Record<ResolvedTheme, string> = { light: "#e8ecf1", dark: "#090b0f" };
 
 export function isTheme(value: unknown): value is Theme {
   return value === "light" || value === "dark" || value === "system";

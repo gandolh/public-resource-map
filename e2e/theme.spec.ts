@@ -33,7 +33,7 @@ test.describe("with the operating system in dark mode", () => {
     await expect.poll(() => html(page).evaluate((el) => getComputedStyle(el).colorScheme)).toBe("dark");
     // The map follows: without a CARTO key the standard tiles are filtered, inverted in dark.
     await expect.poll(() => tileFilter(page)).not.toBe(light);
-    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#0b0d11");
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#090b0f");
 
     await page.reload();
     await expect(html(page)).toHaveAttribute("data-theme", "dark");

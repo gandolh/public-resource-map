@@ -5,6 +5,7 @@
 
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css" layer(vendor);
+@import "@fontsource-variable/archivo/wght.css" layer(vendor);
 
 /* `dark:` follows the theme switch (base-ui rule 14), set as `data-theme` on <html>, never the system alone. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -27,25 +28,27 @@
 
 :root {
   /* Surfaces — cool-biased neutrals, not pure grey */
-  --bg:            #f7f9fb;
+  --bg:            #e8ecf1;
   --surface:       #fcfdfe;
-  --surface-2:     #f1f4f8;
-  --surface-3:     #e6ebf2;
-  --line:          #e3e6ec;
-  --line-strong:   #ccd2dc;
+  --surface-2:     #f0f3f7;
+  --surface-3:     #e1e6ed;
+  --line:          #d8dee6;
+  --line-strong:   #c3cad5;
+  /* The edge of a control that must be seen (search, Copy link, the star, Draw an area, the grab bar). */
+  --outline:       #7f8896;
 
   /* Text */
-  --fg:            #0d1117;
-  --fg-muted:      #59636f;
-  --fg-faint:      #697281;
-  --fg-on-accent:  #ffffff;
+  --fg:            #131922;
+  --fg-muted:      #545e6b;
+  --fg-faint:      #5f6977;
+  --fg-on-accent:  #fbfcff;
   --fg-on-danger:  #ffffff;
 
   /* The one accent */
   --accent:        #2a5bef;
   --accent-hover:  #1f4bd8;
-  --accent-weak:   #eef2fe;
-  --accent-line:   #c7d5fb;
+  --accent-weak:   #e9effe;
+  --accent-line:   #c3d2fb;
 
   /* Semantic — separate from the accent, never used as decoration */
   --ok:            #0b7d55;
@@ -57,8 +60,8 @@
   /* Map chrome */
   --map-scrim:     rgba(13, 17, 23, 0.06);
   --scrim:         rgba(0, 0, 0, 0.30);
-  --pin-stroke:    #ffffff;
-  --pin-ico:       #ffffff;
+  --pin-stroke:    #fbfcff;
+  --pin-ico:       #fbfcff;
 
   /* Category hues. Each is dark enough in light mode to carry a white icon at
      32px and to clear 4.5:1 as text on `--surface`. */
@@ -75,10 +78,13 @@
   --cat-other:            #566072;
 
   /* Elevation, by role. A chip, a panel and a pin must not share a shadow. */
-  --sh-1: 0 1px 2px rgba(13, 17, 23, 0.07);
-  --sh-2: 0 4px 12px -2px rgba(13, 17, 23, 0.10), 0 2px 4px -2px rgba(13, 17, 23, 0.06);
-  --sh-3: 0 16px 40px -8px rgba(13, 17, 23, 0.20), 0 4px 12px -4px rgba(13, 17, 23, 0.10);
+  --sh-1: 0 1px 2px rgba(19, 25, 34, 0.08), 0 2px 6px rgba(19, 25, 34, 0.06);
+  --sh-2: 0 1px 2px rgba(19, 25, 34, 0.08), 0 4px 14px rgba(19, 25, 34, 0.1);
+  --sh-3: 0 2px 4px rgba(19, 25, 34, 0.08), 0 12px 32px rgba(19, 25, 34, 0.16);
   --sh-pin: 0 2px 4px rgba(13, 17, 23, 0.30);
+
+  /* How much of a place's hue tints the head of its card. */
+  --head-mix: 7%;
 
   /* Motion — fast and confident. No bounce, no spring. */
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -88,23 +94,24 @@
 }
 
 :root[data-theme="dark"] {
-  --bg:            #0b0d11;
-  --surface:       #14171d;
-  --surface-2:     #1a1e25;
-  --surface-3:     #222731;
-  --line:          #262b34;
-  --line-strong:   #363d49;
+  --bg:            #090b0f;
+  --surface:       #1c212b;
+  --surface-2:     #252b36;
+  --surface-3:     #2e3541;
+  --line:          #2f3642;
+  --line-strong:   #3f4856;
+  --outline:       #7a8596;
 
-  --fg:            #eef1f5;
-  --fg-muted:      #99a2b0;
-  --fg-faint:      #8d96a5;
-  --fg-on-accent:  #0b0d11;
-  --fg-on-danger:  #0b0d11;
+  --fg:            #edf0f4;
+  --fg-muted:      #a1aab7;
+  --fg-faint:      #8e98a6;
+  --fg-on-accent:  #0c0f14;
+  --fg-on-danger:  #0c0f14;
 
   --accent:        #6d9bff;
   --accent-hover:  #85adff;
-  --accent-weak:   #16203a;
-  --accent-line:   #2c3f6b;
+  --accent-weak:   #1d2b4d;
+  --accent-line:   #2f4474;
 
   --ok:            #34d399;
   --ok-weak:       #0e2a22;
@@ -114,9 +121,9 @@
 
   --map-scrim:     rgba(0, 0, 0, 0.32);
   --scrim:         rgba(0, 0, 0, 0.30);
-  --pin-stroke:    #14171d;
+  --pin-stroke:    #0c0f14;
   /* Dark-mode fills are light, so the glyph flips to dark to keep contrast. */
-  --pin-ico:       #0b0d11;
+  --pin-ico:       #0c0f14;
 
   /* Lifted so they hold against a dark basemap and carry white text. */
   --cat-park:             #34c77b;
@@ -132,10 +139,12 @@
   --cat-other:            #93a0b4;
 
   /* In dark, depth comes from surface tone; shadow only stops things floating. */
-  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --sh-2: 0 4px 12px -2px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-  --sh-3: 0 16px 40px -8px rgba(0, 0, 0, 0.7), 0 4px 12px -4px rgba(0, 0, 0, 0.5);
+  --sh-1: 0 1px 2px rgba(2, 4, 8, 0.5), 0 2px 6px rgba(2, 4, 8, 0.35);
+  --sh-2: 0 1px 2px rgba(2, 4, 8, 0.5), 0 4px 14px rgba(2, 4, 8, 0.45);
+  --sh-3: 0 2px 4px rgba(2, 4, 8, 0.5), 0 12px 32px rgba(2, 4, 8, 0.6);
   --sh-pin: 0 2px 5px rgba(0, 0, 0, 0.6);
+
+  --head-mix: 12%;
 }
 
 @theme inline {
@@ -145,6 +154,7 @@
   --color-surface-3:   var(--surface-3);
   --color-line:        var(--line);
   --color-line-strong: var(--line-strong);
+  --color-outline:     var(--outline);
 
   --color-fg:          var(--fg);
   --color-fg-muted:    var(--fg-muted);
@@ -188,32 +198,46 @@
 
   /* Archivo: a signage grotesque with a large x-height that holds up at 12px,
      and real Romanian diacritics (ă â î ș ț) rather than fallback glyphs. */
-  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   /* No webfont mono. Monospace here means an actual identifier — an OSM way id,
      a stack trace — not a costume for "this bit is technical". */
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --ease-out-fast: var(--ease);
 
-  /* The type scale, named by role. Same pixel values the app has always used,
-     and no line height: a size here sets the size alone. */
-  --text-nano: 9.5px;
-  --text-micro: 10px;
-  --text-tag: 10.5px;
-  --text-note: 11px;
-  --text-caption: 11.5px;
+  /* The type scale: six sizes (12, 13, 14, 16, 22, 28), each with its line
+     height. The older role names stay for the screens the board never drew, and
+     fold onto the nearest of the six, so the whole app speaks one ladder. A name
+     without a line height sets the size alone. */
   --text-meta: 12px;
-  --text-detail: 12.5px;
+  --text-meta--line-height: 16px;
   --text-ui: 13px;
-  --text-control: 13.5px;
+  --text-ui--line-height: 18px;
   --text-body: 14px;
-  --text-reading: 14.5px;
-  --text-lead: 15px;
-  --text-title: 17px;
-  --text-heading: 19px;
-  --text-headline: 24px;
-  --text-display: 26px;
-  --text-hero: 30px;
+  --text-body--line-height: 20px;
+  --text-field: 16px;
+  --text-field--line-height: 24px;
+  --text-place: 22px;
+  --text-place--line-height: 28px;
+  --text-hero: 28px;
+  --text-hero--line-height: 34px;
+
+  --text-nano: 12px;
+  --text-micro: 12px;
+  --text-tag: 12px;
+  --text-note: 12px;
+  --text-caption: 12px;
+  --text-detail: 13px;
+  --text-control: 14px;
+  --text-reading: 14px;
+  --text-lead: 16px;
+  --text-title: 16px;
+  --text-heading: 22px;
+  --text-headline: 22px;
+  --text-display: 28px;
+
+  /* The phone layout runs up to 899px. */
+  --breakpoint-md: 900px;
 
   /* The z scale. The map is one stacking context at 0 (see the Leaflet rules);
      app chrome sits from 400 up, and a popup opens above a dialog. */
@@ -226,12 +250,12 @@
   --z-index-dialog: 901;
   --z-index-popup: 1000;
 
-  /* Opacity and a short slide: the desktop place panel arriving. */
+  /* Opacity and a short slide: the desktop place column arriving from the left. */
   --animate-panel-in: panel-in var(--dur-3) var(--ease) both;
   @keyframes panel-in {
     from {
       opacity: 0;
-      transform: translateX(10px);
+      transform: translateX(-10px);
     }
     to {
       opacity: 1;
@@ -258,8 +282,8 @@
     background: var(--bg);
     color: var(--fg);
     font-family: var(--font-sans);
-    font-size: 14.5px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 20px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -303,15 +327,12 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Small utility labels — section headers, menu titles. Tracked uppercase in the
-   UI face, which is what makes them read as labels without borrowing a
-   monospace to signal "technical". */
+/* Small labels (section headers, menu titles): sentence case in the body face. */
 @utility label-cap {
-  font-size: 10.5px;
+  font-size: 12px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--fg-faint);
+  color: var(--fg-muted);
 }
 
 /* --- Leaflet, re-skinned ------------------------------------------------- */
@@ -336,7 +357,7 @@
 
   /* On a phone the bottom tab bar owns the last 56px, so map controls that would
      sit at the very bottom are lifted clear of it. */
-  @media (max-width: 767px) {
+  @media (max-width: 899px) {
     .leaflet-bottom { bottom: 58px; }
     /* A sheet over the map must not leave the tiles unattributed, so the
        attribution rides above whichever snap the sheet is resting at. */

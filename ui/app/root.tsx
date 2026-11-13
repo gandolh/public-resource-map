@@ -34,15 +34,6 @@ const DIRECTION_CONTRACT = `<!--
   its provenance.
 -->`;
 
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&display=swap",
-  },
-];
-
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ro">

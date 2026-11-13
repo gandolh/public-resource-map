@@ -15,6 +15,8 @@ const twMerge = extendTailwindMerge({
     theme: {
       text: [
         "nano",
+        "field",
+        "place",
         "micro",
         "tag",
         "note",

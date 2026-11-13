@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
  * Matches the `md` breakpoint the layout uses. A media query rather than a
  * width check so it tracks orientation changes without a resize listener.
  */
-export function useIsMobile(query = "(max-width: 767px)"): boolean {
+export function useIsMobile(query = "(max-width: 899px)"): boolean {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {
