@@ -78,3 +78,32 @@ Answered 2026-11-10: Q39 (Hallmark, with taste-skill 2.5's useful parts; approva
 - Brief 04 owns the layers, the wrappers and the theme switch; this brief changes the tokens and layout on top. The switch must survive in both themes, and the map's tiles must still follow it (CARTO when keyed, the filtered OpenStreetMap fallback otherwise).
 - [Brief 01](../done/01-a-source-registry-and-shareable-map-links.md) puts a source credit on the map and the About page. The redesign keeps that credit legible and in place.
 - Brief 03's formatter and lint run on every redesign commit.
+
+## Outcome
+
+Built 2026-11-13 as "The docked desk", approved on the estate redesign board (steps 1 to 4 were done there). Ten commits, from the approval entry in [log.md](../../log.md) to `ui/DESIGN.md`. Judged on the filtered OpenStreetMap basemap (no CARTO key assumed; the CARTO path is untouched). Deploy: `node cli.ts public-resource-map deploy`.
+
+**What shipped.** The tokens in `ui/app/app.css`, both themes, with `--outline`, `--head-mix`, `text-field`, `text-place` and the line heights (the board's `map-*` tokens are not added: the fallback's tile filter uses no colours); the six sizes 12, 13, 14, 16, 22, 28 (older size names fold onto the nearest); Archivo from `@fontsource-variable/archivo` 5.3.0, the Google Fonts links removed; the phone layout up to 899px (`--breakpoint-md`). Screens: the shell and a four-tab bar in the page's flow; the docked band; the map's controls and attribution pill; the left place column with a tinted head and a label-column facts list; the content-sized sheet with a grab-bar button; What's on in a raised card of day groups; the Categories sheet.
+
+**Contrast** (`node scripts/check-contrast.mjs`, 101 pairs per theme over `app.css`, including all 11 hues on the tinted head): text minimum 4.69 light and 4.87 dark; icons, glyphs, control edges and the focus ring minimum 3.02 light and 3.37 dark.
+
+**Rulings measured** (specs `e2e/place.spec.ts`): at 390 x 844 the sheet at rest leaves at least 380px of map; the first fact is whole with the tab bar on screen at 390 x 844 and 360 x 800.
+
+**Checks.** typecheck, ESLint, Prettier, dependency-cruiser, check-base-ui, check-structure and 316 Vitest tests pass. `npx playwright test` passes in light (78), dark and system (75 each; the theme spec skips in a forced theme and runs in the light run). New specs: `e2e/floor.spec.ts` (a 2px focus ring on every tab stop, no running animation under reduced motion, no overflow at 390, on 11 screens) and `e2e/shots.spec.ts` (screenshots when `SHOTS_DIR` is set). Not run clean: knip, which fails before this work on 27 backend and older exports; and the signed-in bell spec, which fails on the pre-redesign UI too (the seeded notification count is date-dependent).
+
+**Specs changed to the approved layout** (intent kept): `map.spec` (the count is two spans now), `place.spec` (the sheet's rest height and swipe by the new snaps, the grab-bar button, pins above the sheet), `draw-to-filter.spec` (the first events count is the band's, group strips carry their own), `theme.spec` (dark `theme-color` `#090b0f`; skipped in a forced theme). `fixtures.ts` forces a theme with `PRM_E2E_THEME`.
+
+**New accessible names** (both languages in `lib/i18n.tsx`): `filters.titleCount` "Categories, {n} active" / "Categorii, {n} active"; `filters.moreLabel` "{n} more categories" / "Încă {n} categorii"; `lens.chip` "When: {lens}" / "Când: {lens}"; `place.expand` "Expand the place details" / "Extinde detaliile locului"; `place.collapse` "Collapse" / "Restrânge". The Categories sheet reuses `area.done` for Done and `admin.close` for its X.
+
+**Departures from the brief and the sheet.**
+- The compact lens chip opens a menu of three radio items, not a Select: the lens is kept on the device, so the base-ui skill's rule 16 makes it a radio choice.
+- The place column's `head` and the badge edge are CSS utilities (`head-tint`, `hue-edge` in `app.css`): check-base-ui rule 6 bans arbitrary colours in classes.
+- The browser clock was not frozen at 12 Nov: the seed dates events from the run day, and the lens is applied on the server, so a frozen clock would only move the groups. Compared by structure.
+- A signed-in phone top bar drops the brand mark under 420px, so the bell and the account icon fit; the Map tab leads home.
+- The grab bar sits in a drag strip across the top of the sheet; a drag that starts on the button itself is a press.
+
+**Differences from the comps** (`test` render of each twin against the build, the map region left out): map 1280 4.4 to 4.6%, map 390 11.3 to 11.8%, place 1280 6.7 to 6.8%, place 390 11.6 to 11.8%, What's on 1280 5.5%, What's on 390 15.7 to 16.1%, Categories 390 30 to 35%. What is left: the live tiles and pin sizes (not drawn into the app, by the sheet), the app's category glyphs and strings (`Sport`, the app's lasso and moon icons), pin and cluster shading, the theme icon, the date groups (the seed's dates move: today and tomorrow for the comps' Today and This weekend), the Categories sheet's scrim and its larger header and footer buttons, and Today's "Tickets" row alignment. No invented facts or numbers: every figure and name comes from the data or the copy files.
+
+**Undrawn screens restyled** with the tokens and the direction's patterns, no new layout: Archive (mine and city), About the data, Log in, Register, Settings, the admin review queue and sources, the open menus (account, city, theme, the phone lens), Error and 404, the sheet at full snap, the city-zoom cluster view and the zero, loading and error states.
+
+**Ambiguous cases.** A place with no hours, phone or website puts the Source row first, and the sheet's rest height measures it. An event with no ticket link keeps the existing "No ticket link" statement at the right end of the Source line.

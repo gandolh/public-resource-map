@@ -1,11 +1,13 @@
 ---
-summary: The current-state dashboard as of 2026-11-02, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
-updated: 2026-11-12
+summary: The current-state dashboard as of 2026-11-13, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
+updated: 2026-11-13
 ---
 
 # Status
 
-_Last updated: 2026-11-02_
+_Last updated: 2026-11-13_
+
+**2026-11-13:** brief 06, [the redesign "The docked desk"](../briefs/done/06-a-redesign-with-hallmark-on-the-estate-board.md), is built and awaits a deploy (`deploy`): new tokens, a docked band, the place column on the left, a content-sized phone sheet over a tab bar, and every screen restyled. See [decisions-ui.md](decisions-ui.md).
 
 **2026-11-12 (later):** brief 01, [a source registry and map links that can be shared](../briefs/done/01-a-source-registry-and-shareable-map-links.md), is built and awaits a deploy (`all`, after brief 05's). `shared/src/sources.ts` lists every source with its licence and reuse status, `DATA_SOURCES.md` is generated from it, the public API holds back a `forbidden` source's rows and credits the rest, and the map's state is in its URL. See [decisions.md](decisions.md) (the Legal posture revisit) and [open-questions.md](open-questions.md) (the tiles' terms).
 

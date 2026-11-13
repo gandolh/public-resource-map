@@ -1,5 +1,9 @@
 # Log
 
+## [2026-11-13] done | Brief 06: the redesign "The docked desk" built
+
+CivicMap's UI was rebuilt from the approved estate-board comps: new tokens in both themes, Archivo from `@fontsource-variable/archivo`, a docked band above the map, the place column on the left with a hue-tinted head, a phone sheet sized to its content over a four-tab bar, What's on in a raised card of day groups, and the undrawn screens restyled. Three recorded layouts and the label rule were reopened and are dated in [decisions-ui.md](wiki/decisions-ui.md); `ui/DESIGN.md` is rewritten from what shipped. Judged on the filtered OpenStreetMap basemap. Checks and the departures are in [the brief's outcome](briefs/done/06-a-redesign-with-hallmark-on-the-estate-board.md). Awaits a deploy (`deploy`, static web only).
+
 ## [2026-11-13] decision | The owner approved the redesign direction "The docked desk" on the estate redesign board
 
 The owner approved CivicMap's redesign direction "The docked desk" (the navigation of the docked-band
@@ -831,7 +835,7 @@ Five briefs written from measurements on a scratch copy, none built. They follow
   switch with light first.
 - 05, [the server in the code structure](briefs/done/05-the-server-in-the-code-structure.md): zod 4, one
   `config.ts`, feature folders, route schemas, an error plugin.
-- 06, [a redesign with Hallmark, on the estate board](briefs/todo/06-a-redesign-with-hallmark-on-the-estate-board.md).
+- 06, [a redesign with Hallmark, on the estate board](briefs/done/06-a-redesign-with-hallmark-on-the-estate-board.md).
 
 Owner answer of 2026-11-10 for brief 01: the source registry does not gate publishing. A source whose
 permission is pending is shown and credited, and taken off if the site objects; only a `forbidden` source

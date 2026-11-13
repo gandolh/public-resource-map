@@ -34,13 +34,13 @@ between the markers. Read the summary first and open at most two or three pages 
 - [wiki/architecture.md](wiki/architecture.md) — How the code is put together: the ui → shared ← backend workspaces, the UI file map, backend routes and services, and what lives in shared.
 - [wiki/decisions-engineering.md](wiki/decisions-engineering.md) — Locked stack (npm workspaces, React Router 8, pinned versions…) and code conventions — check before changing tooling or style.
 - [wiki/decisions-identity.md](wiki/decisions-identity.md) — Identity decisions: prm's own accounts with "Sign in with Ward" as a linked second way in (2026-10-13), and the superseded designs before it (prm-only auth, then Ward-only identity).
-- [wiki/decisions-ui.md](wiki/decisions-ui.md) — Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, the basemap constraint, and (2026-11-11) the theme switch and the Base UI conventions, and (2026-11-12) the map state in the URL.
+- [wiki/decisions-ui.md](wiki/decisions-ui.md) — Visual direction and interface decisions: the 2026-09-04 design system that replaced CivicMap Material, interface language, the basemap constraint, and (2026-11-11) the theme switch and the Base UI conventions, (2026-11-12) the map state in the URL, and (2026-11-13) the docked-desk redesign.
 - [wiki/decisions.md](wiki/decisions.md) — Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's dated answers since 2026-10-04 — check before relitigating anything; identity, UI and stack live in split-out pages.
 - [wiki/design.md](wiki/design.md) — A pointer to the built design system (ui/DESIGN.md) and product truth (ui/PRODUCT.md), with the record of the four directions considered and why the standard one won.
 - [wiki/glossary.md](wiki/glossary.md) — Project vocabulary, one definition per term — place, OSM, Overpass, staged event, reconcile and the rest; read it before using a domain word.
 - [wiki/open-questions.md](wiki/open-questions.md) — Two open items from the source registry (2026-11-12) — the basemap tiles' terms were never read, and per-layer modules wait for a second layer; the 2026-11-04 drops and the iaBilet rule stay settled.
 - [wiki/overview.md](wiki/overview.md) — What prm is (a place-centric map of public resources and their events in Timișoara and București, a proof of concept), its major components, external dependencies and repo layout.
-- [wiki/status.md](wiki/status.md) — The current-state dashboard as of 2026-11-02, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
+- [wiki/status.md](wiki/status.md) — The current-state dashboard as of 2026-11-13, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
 
 <!-- END CATALOG -->
 
