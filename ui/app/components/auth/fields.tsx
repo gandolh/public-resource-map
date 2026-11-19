@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import type { AuthError } from "../../../vendor/ward/ward-auth-react.js";
 import { authErrorKey } from "~/lib/authApi";
@@ -13,11 +13,7 @@ import { cn } from "~/lib/utils";
 export const inputClass =
   "h-10 w-full rounded-lg border border-outline bg-surface px-3 text-body text-fg transition-colors placeholder:text-fg-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
-export function Field({
-  label,
-  hint,
-  ...input
-}: { label: string; hint?: string } & InputHTMLAttributes<HTMLInputElement>) {
+export function Field({ label, hint, ...input }: { label: string; hint?: string } & ComponentProps<"input">) {
   return (
     <label className="block text-ui font-medium text-fg">
       {label}

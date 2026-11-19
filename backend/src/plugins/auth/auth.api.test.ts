@@ -81,6 +81,19 @@ describe("local registration", () => {
     expect(res.json()).toEqual({ error: "username_taken" });
   });
 
+  it("refuses a name that only looks like a taken one", async () => {
+    t = await buildTestApp();
+    await post("/auth/register", { username: "alice", password: "a long enough password" });
+    for (const lookAlike of ["AIice", "аlice"]) {
+      const res = await post("/auth/register", { username: lookAlike, password: "another long password" });
+      expect(res.statusCode, lookAlike).toBe(409);
+      expect(res.json()).toEqual({ error: "username_taken" });
+    }
+    await post("/auth/register", { username: "bob", password: "a long enough password" });
+    const zero = await post("/auth/register", { username: "b0b", password: "another long password" });
+    expect(zero.statusCode).toBe(409);
+  });
+
   it("refuses a request another origin's page sent", async () => {
     t = await buildTestApp();
     const res = await t.app.inject({
@@ -91,6 +104,46 @@ describe("local registration", () => {
     });
     expect(res.statusCode).toBe(403);
     expect(res.json()).toEqual({ error: "cross_site" });
+  });
+});
+
+describe("changing the username", () => {
+  it("renames the signed-in user, keeps their rows, and they sign in under the new name", async () => {
+    t = await buildTestApp();
+    const reg = await post("/auth/register", { username: "dan", password: "a long enough password" });
+    const cookie = sessionCookie(reg);
+    const id = reg.json().user.id as string;
+
+    const res = await post("/auth/username", { username: "daniel" }, cookie);
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ user: { id, username: "daniel" } });
+    // The same session still works: a rename is not a credential change.
+    expect((await get("/api/favorites", cookie)).statusCode).toBe(200);
+
+    expect((await post("/auth/login", { username: "dan", password: "a long enough password" })).statusCode).toBe(401);
+    const again = await post("/auth/login", { username: "daniel", password: "a long enough password" });
+    expect(again.statusCode).toBe(200);
+    expect(again.json()).toMatchObject({ user: { id, username: "daniel" } });
+  });
+
+  it("refuses a taken name and a look-alike with username_taken, and a bad one with invalid_username", async () => {
+    t = await buildTestApp();
+    await post("/auth/register", { username: "alice", password: "a long enough password" });
+    const cookie = sessionCookie(await post("/auth/register", { username: "dan", password: "a long enough password" }));
+
+    for (const name of ["alice", "ALICE", "AIice"]) {
+      const res = await post("/auth/username", { username: name }, cookie);
+      expect(res.statusCode, name).toBe(409);
+      expect(res.json(), name).toEqual({ error: "username_taken" });
+    }
+    const blank = await post("/auth/username", { username: "   " }, cookie);
+    expect(blank.statusCode).toBe(400);
+    expect(blank.json()).toEqual({ error: "invalid_username" });
+  });
+
+  it("is signed-in only", async () => {
+    t = await buildTestApp();
+    expect((await post("/auth/username", { username: "someone" })).statusCode).toBe(401);
   });
 });
 
@@ -210,11 +263,74 @@ describe("Sign in with Ward", () => {
     expect((await get("/api/favorites", local)).statusCode).toBe(200);
   });
 
-  it("settings can link from a local session (link answers a Ward URL)", async () => {
+  const PASSWORD = "a long enough password";
+
+  /** A signed-in local user with a password, as the settings page has them. */
+  async function passwordUser(username: string): Promise<{ id: string; cookie: string }> {
+    const user = await t.accounts.createUser({ username, password: PASSWORD, role: "user" });
+    const { token } = await t.accounts.startSession(user.id);
+    return { id: user.id, cookie: `prm_session=${token}` };
+  }
+
+  it("settings can link from a local session once the password is typed (link answers a Ward URL)", async () => {
     await withWard();
-    const { cookie } = await t.signIn("user");
-    const res = await post("/auth/ward/link", {}, cookie);
+    const { cookie } = await passwordUser("ana");
+    const res = await post("/auth/ward/link", { currentPassword: PASSWORD }, cookie);
     expect(res.statusCode).toBe(200);
     expect(res.json().url).toContain(`${WARD_ISSUER}/auth`);
+  });
+
+  it("link and unlink refuse a request without the password, or with a wrong one", async () => {
+    await withWard();
+    const { id, cookie } = await passwordUser("ana");
+    await t.identities.link(id, "ward-ana");
+
+    // A linked user's link call answers `already_linked` before it reads a body, so unlink is the one checked.
+    const none = await post("/auth/ward/unlink", {}, cookie);
+    expect(none.statusCode).toBe(400);
+    expect(none.json()).toEqual({ error: "invalid_request" });
+    const wrongUnlink = await post("/auth/ward/unlink", { currentPassword: "not the password" }, cookie);
+    expect(wrongUnlink.statusCode).toBe(401);
+    expect(wrongUnlink.json()).toEqual({ error: "invalid_credentials" });
+    expect(await t.identities.subjectOf(id)).toBe("ward-ana");
+
+    const unlinkedUser = await passwordUser("dan");
+    const noBody = await post("/auth/ward/link", {}, unlinkedUser.cookie);
+    expect(noBody.statusCode).toBe(400);
+    expect(noBody.json()).toEqual({ error: "invalid_request" });
+    const wrong = await post("/auth/ward/link", { currentPassword: "not the password" }, unlinkedUser.cookie);
+    expect(wrong.statusCode).toBe(401);
+    expect(wrong.json()).toEqual({ error: "invalid_credentials" });
+  });
+
+  it("unlink with the right password drops the link, and the user still signs in with their password", async () => {
+    await withWard();
+    const { id, cookie } = await passwordUser("ana");
+    await t.identities.link(id, "ward-ana");
+
+    const res = await post("/auth/ward/unlink", { currentPassword: PASSWORD }, cookie);
+    expect(res.statusCode).toBe(200);
+    expect(await t.identities.subjectOf(id)).toBeUndefined();
+    expect((await post("/auth/login", { username: "ana", password: PASSWORD })).statusCode).toBe(200);
+  });
+
+  it("a Ward-only user is told to set a password first, whatever is sent", async () => {
+    await withWard();
+    const user = await t.identities.createLinkedUser({ subject: "ward-eve", username: "eve", role: "user" });
+    const { token } = await t.accounts.startSession(user.id, { origin: "ward", wardSid: "sid-eve" });
+    ward.liveSessions.add("sid-eve");
+    const res = await post("/auth/ward/unlink", { currentPassword: PASSWORD }, `prm_session=${token}`);
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toEqual({ error: "no_local_password" });
+  });
+
+  it("link and unlink are signed-in only, and 404 with Ward off", async () => {
+    await withWard();
+    expect((await post("/auth/ward/link", { currentPassword: PASSWORD })).statusCode).toBe(401);
+    expect((await post("/auth/ward/unlink", { currentPassword: PASSWORD })).statusCode).toBe(401);
+    await t.close();
+    t = await buildTestApp();
+    const { cookie } = await passwordUser("ana");
+    expect((await post("/auth/ward/link", { currentPassword: PASSWORD }, cookie)).statusCode).toBe(404);
   });
 });

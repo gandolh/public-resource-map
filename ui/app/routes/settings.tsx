@@ -1,4 +1,4 @@
-import type { FormEvent, ReactNode } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate, type MetaFunction } from "react-router";
 import { Loader2, UserRound } from "lucide-react";
 import {
@@ -6,11 +6,12 @@ import {
   useLogout,
   useSession,
   useSetLocalPassword,
-  useWardLink,
   useWardSignOut,
-  useWardUnlink,
 } from "../../vendor/ward/ward-auth-react.js";
+import { ChangeUsername } from "~/components/auth/ChangeUsername";
 import { AuthErrorNotice, Field, Notice } from "~/components/auth/fields";
+import { SettingsSection } from "~/components/auth/SettingsSection";
+import { WardLink } from "~/components/auth/WardLink";
 import { Button } from "~/components/ui/Button";
 import { StateBlock } from "~/components/ui/StateBlock";
 import { browserPath, loginPath } from "~/lib/authApi";
@@ -20,18 +21,8 @@ export const meta: MetaFunction = () => [{ title: "Setări cont — CivicMap" }]
 
 const MIN_PASSWORD = 8;
 
-function Section({ title, lead, children }: { title: string; lead?: string; children?: ReactNode }) {
-  return (
-    <section className="mt-8 border-t border-line pt-6 first:mt-6 first:border-t-0 first:pt-0">
-      <h2 className="text-title leading-snug font-semibold tracking-[-0.015em] text-fg">{title}</h2>
-      {lead && <p className="mt-1.5 text-body leading-relaxed text-fg-muted">{lead}</p>}
-      {children && <div className="mt-4 space-y-3">{children}</div>}
-    </section>
-  );
-}
-
 /**
- * Account settings (since 2026-10-13): the password, the Ward link,
+ * Account settings (since 2026-10-13): the username, the password, the Ward link,
  * what mail this account can get, and signing out. A user created by a Ward
  * sign-in sets a first local password here, so they can still get in while
  * Ward is down; linking and unlinking Ward happen here and only here, never by
@@ -76,9 +67,10 @@ export default function SettingsRoute() {
         <h1 className="text-hero font-semibold tracking-[-0.015em]">{t("settings.title")}</h1>
         <p className="mt-2 text-reading text-fg-muted">{t("settings.signedInAs", { name: user.username })}</p>
 
+        <ChangeUsername username={user.username} />
         {user.hasPassword ? <ChangePassword /> : <FirstPassword wardEnabled={ward.enabled} />}
         <WardLink enabled={ward.enabled} linked={ward.linked} hasPassword={user.hasPassword} />
-        <Section
+        <SettingsSection
           title={t("settings.mailTitle")}
           lead={t(ward.linked ? "settings.mailLinked" : "settings.mailLocalOnly")}
         />
@@ -102,7 +94,7 @@ function ChangePassword() {
   };
 
   return (
-    <Section title={t("settings.passwordTitle")} lead={t("settings.passwordLead")}>
+    <SettingsSection title={t("settings.passwordTitle")} lead={t("settings.passwordLead")}>
       <form onSubmit={submit} className="space-y-4">
         <Field
           label={t("settings.currentPassword")}
@@ -126,7 +118,7 @@ function ChangePassword() {
           {t("settings.changePassword")}
         </Button>
       </form>
-    </Section>
+    </SettingsSection>
   );
 }
 
@@ -142,7 +134,7 @@ function FirstPassword({ wardEnabled }: { wardEnabled: boolean }) {
   };
 
   return (
-    <Section title={t("settings.passwordTitle")} lead={t("settings.noPasswordLead")}>
+    <SettingsSection title={t("settings.passwordTitle")} lead={t("settings.noPasswordLead")}>
       {local.reauthenticated && !local.done && <Notice tone="ok">{t("settings.reauthenticated")}</Notice>}
       <form onSubmit={submit} className="space-y-4">
         <Field
@@ -167,35 +159,7 @@ function FirstPassword({ wardEnabled }: { wardEnabled: boolean }) {
           )}
         </div>
       </form>
-    </Section>
-  );
-}
-
-function WardLink({ enabled, linked, hasPassword }: { enabled: boolean; linked: boolean; hasPassword: boolean }) {
-  const { t } = useI18n();
-  const link = useWardLink();
-  const unlink = useWardUnlink();
-
-  if (!enabled) return <Section title={t("settings.wardTitle")} lead={t("settings.wardOff")} />;
-
-  return (
-    <Section title={t("settings.wardTitle")} lead={t(linked ? "settings.wardLinkedLead" : "settings.wardUnlinkedLead")}>
-      {link.linked && <Notice tone="ok">{t("settings.linked")}</Notice>}
-      {unlink.done && <Notice tone="ok">{t("settings.unlinked")}</Notice>}
-      <AuthErrorNotice error={link.error ?? unlink.error} />
-      {linked ? (
-        <>
-          {!hasPassword && <Notice tone="neutral">{t("settings.unlinkNeedsPassword")}</Notice>}
-          <Button variant="secondary" disabled={unlink.pending || !hasPassword} onClick={() => void unlink.unlink()}>
-            {t("settings.unlink")}
-          </Button>
-        </>
-      ) : (
-        <Button variant="secondary" disabled={link.pending} onClick={() => void link.link()}>
-          {t("settings.link")}
-        </Button>
-      )}
-    </Section>
+    </SettingsSection>
   );
 }
 
@@ -206,7 +170,7 @@ function SignOut({ fromWard }: { fromWard: boolean }) {
   const outOfWard = useWardSignOut();
 
   return (
-    <Section title={t("settings.signOutTitle")}>
+    <SettingsSection title={t("settings.signOutTitle")}>
       <AuthErrorNotice error={out.error ?? outOfWard.error} />
       <div className="flex flex-wrap gap-2">
         <Button
@@ -227,6 +191,6 @@ function SignOut({ fromWard }: { fromWard: boolean }) {
           </Button>
         )}
       </div>
-    </Section>
+    </SettingsSection>
   );
 }
