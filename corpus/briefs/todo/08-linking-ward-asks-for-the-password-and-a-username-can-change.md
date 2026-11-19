@@ -50,3 +50,30 @@ What the update changes here:
 - [ ] Both vendored copies at the new version; the tests above pass; `npm run check` exit 0; `bash corpus/lint.sh` OK.
 - [ ] The outcome note lists each CHANGELOG entry this app crossed and what it needed, and the username check's finding.
 - [ ] End move `ready_for_deploy` with the app's deploy step (server and web both change).
+
+## Outcome (2026-11-19)
+
+Built in commit `acdaeba`. Both vendored copies (`backend/vendor/ward`, `ui/vendor/ward`) went from 0.3.1 to ward-auth 1.1.0 (six files each, checked against the staged copy's `SHA256SUMS`).
+
+**CHANGELOG entries crossed, and what each needed**
+
+- 0.4.0, rename route on by default: kept on (no `allowRename: false`). Nothing in prm is keyed by the username: favourites, notifications and reminders hold the user id, and `subjects.ts` only uses names as placeholders. The Change username form is new (`ui/app/components/auth/ChangeUsername.tsx`). The demo seed finds its user by name, so renaming that user and reseeding makes a second one; the library's note says the same.
+- 0.5.0, `usernameFor`: nothing needed; prm keeps the default.
+- 0.6.0, migration 4 and disabling a user: nothing needed; the migration ran by itself and prm never calls `disableUser`.
+- 0.6.1, exports: nothing.
+- 0.7.0, `returnTo` after a refused sign-in: nothing needed; the login page keeps its own `next` handling.
+- 0.7.1, 0.7.2: no change for apps.
+- 1.0.0, password on link and unlink: a field beside each button (`ui/app/components/auth/WardLink.tsx`), the tests send `{ currentPassword }`. A Ward-only user keeps the "set a password first" notice and no field.
+- 1.1.0, look-alike usernames, migration 5: nothing by hand.
+
+**The username check's finding.** `/register` and the rename answer `409 username_taken` for `AIice` beside `alice`, a Cyrillic `аlice` and `b0b` beside `bob`; the register page already shows that code. Side effect worth knowing: the dev seed's `demo` reads as `derno` (rn for m), so a person named `dern0` or similar would be refused beside it.
+
+**Start log.** On a fresh dev seed the server's start log has no username-key line (the library warns only when users share a key); `auth_migrations` shows version 5 `username_skeleton` applied and `demo` keyed `derno`. A throwaway copy with two hand-inserted users `alice` and `AIice` logged: `ward-auth: 2 users have usernames that read the same (ids u-a, u-b). They stay as they are, and no new user or rename can take that name. If they are not one person, rename one of them.` Run it against production's database copy before the deploy to see whether any real pair exists.
+
+**Tests.** Server (`auth.api.test.ts`): link and unlink without the password (400), wrong (401), right (200 and the user still signs in locally), Ward-only unlink (409), signed-out (401), Ward off (404); a rename works and signs in under the new name; taken, case-different and look-alike names answer `username_taken`; a look-alike on `/register`. UI (`WardLink.test.tsx`, jsdom): the call carries the typed password, a wrong one shows its message with focus back on the field, `too_many_attempts` shows the wait, a Ward-only user gets no field. `npm run check` exit 0 (328 tests).
+
+**Shots** (settings at 1280 light and 390 dark, link and unlink, refusals showing, Ward and session routes stubbed): read, no clipping or horizontal overflow, focus on the password field after a refusal.
+
+**Departures.** The password field's own message for a wrong password reads "That isn't your password." (the library's `invalid_credentials` text names a username, which isn't typed here). `Field` now takes every `input` prop (a ref), `Section` moved to `SettingsSection.tsx`.
+
+**Owner step.** Deploy server and web together: from the vps-deploy checkout, `node cli.ts public-resource-map all`. Migration 5 runs on the first boot and cannot be stepped back from without the earlier database.
