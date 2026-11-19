@@ -1,6 +1,6 @@
 ---
 summary: Identity decisions: prm's own accounts with "Sign in with Ward" as a linked second way in (2026-10-13), and the superseded designs before it (prm-only auth, then Ward-only identity).
-updated: 2026-11-12
+updated: 2026-11-19
 ---
 
 # Decisions — identity
@@ -90,7 +90,9 @@ built here on 2026-10-13. Each app keeps its own accounts and login page;
 
 - **Accounts are prm's again**, from Ward's shared library, vendored as a
   built copy in `backend/vendor/ward` and `ui/vendor/ward` (never edited;
-  upgraded by vendoring a newer build). Its tables (`auth_users`,
+  upgraded by vendoring a newer build; ward-auth 1.1.0 since 2026-11-19, from 0.3.1: link and
+  unlink ask for the account's password, look-alike usernames are refused, and a username can be
+  changed in settings). Its tables (`auth_users`,
   `auth_sessions`, `auth_ward_links`) live in prm's SQLite beside prm's own.
   Scrypt passwords, opaque server-side sessions in the `prm_session` cookie
   (`HttpOnly`, `SameSite=Lax`, `Path=/prm-api`). Local sign-in never calls

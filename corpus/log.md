@@ -1,5 +1,9 @@
 # Log
 
+## [2026-11-19] done | Brief 08: linking Ward asks for the password, and a username can change
+
+ward-auth went from 0.3.1 to 1.1.0 in both vendored copies. Ward link and unlink take the account's password, look-alike usernames are refused on register and rename, and settings has a Change username form. Follow-up the same day, from the audit: a Ward-only user now sees a failed Ward re-authentication, a same-name rename says "That's already your username.", the login page falls back to the library's `returnTo` after a refused Ward sign-in, and four tests were tightened to check what their titles claim. Awaits a deploy (`all`). See [the brief](briefs/done/08-linking-ward-asks-for-the-password-and-a-username-can-change.md).
+
 ## [2026-11-13] done | Brief 07: the e2e suite serves a build
 
 The Playwright suite now serves the UI as a production build under `vite preview`, so a cold deep link no longer waits on Vite's first transform of a route. Test-only; nothing to deploy. Two full runs passed the share-link alias and the signed-in archive specs; the archive spec's locator clash and the date-dependent bell spec still fail, as before. See [the brief](briefs/done/07-warm-e2e-routes-by-serving-a-build.md).

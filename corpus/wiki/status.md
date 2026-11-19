@@ -1,11 +1,13 @@
 ---
 summary: The current-state dashboard as of 2026-11-13, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
-updated: 2026-11-13
+updated: 2026-11-19
 ---
 
 # Status
 
-_Last updated: 2026-11-13_
+_Last updated: 2026-11-19_
+
+**2026-11-19:** brief 08, [linking Ward asks for the password, and a username can change](../briefs/done/08-linking-ward-asks-for-the-password-and-a-username-can-change.md), is built and awaits a deploy (`all`): ward-auth 1.1.0 in both vendored copies, Ward link and unlink ask for the password, look-alike usernames are refused, and settings has a Change username form. A follow-up the same day showed a refused Ward re-authentication to Ward-only users, said so when the same name is sent, and kept the place a refused Ward sign-in was heading for.
 
 **2026-11-13:** brief 06, [the redesign "The docked desk"](../briefs/done/06-a-redesign-with-hallmark-on-the-estate-board.md), is built and awaits a deploy (`deploy`): new tokens, a docked band, the place column on the left, a content-sized phone sheet over a tab bar, and every screen restyled. See [decisions-ui.md](decisions-ui.md).
 
