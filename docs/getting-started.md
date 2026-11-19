@@ -4,7 +4,7 @@ The full local setup. The [main README](../README.md) has the short version.
 
 ## Prerequisites
 
-- Node 24 and npm. Tested with Node 24.14.1.
+- Node 24 and npm. Last checked with Node 24.22.1 on 2026-11-16.
 - The public map needs nothing else. SQLite runs inside the API process, and the seed works offline.
 - Signing in, favourites, notifications and the admin work on prm's own local accounts, so they need nothing else. "Sign in with Ward" is optional and needs the local Ward container from the sibling `wzd_auth` repo, in `wzd_auth/infrastructure/local/`. Its README covers starting it.
 
@@ -21,7 +21,7 @@ cp .env.example .env
 
 | Variable | Default in `.env.example` | Purpose |
 |---|---|---|
-| `PUBLIC_ORIGIN` | `http://localhost:5173` | The origin the browser loads prm from, no path. The session cookie's `Secure` flag and the same-origin check on sign-in posts depend on it. |
+| `PUBLIC_ORIGIN` | `http://localhost:5173` | Required: the API does not start without it. The origin the browser loads prm from, no path. The session cookie's `Secure` flag and the same-origin check on sign-in posts depend on it. |
 | `WARD_OIDC_ISSUER` | unset (commented out) | Optional. Ward's issuer, `http://localhost:8792/ward-api/oidc` locally. Unset, prm runs on local accounts only. |
 | `WARD_OIDC_CLIENT_ID`, `WARD_OIDC_CLIENT_KEY` | unset | prm's client id (`prm`) and its private key at Ward. The key is a secret. Ward's `seed.mjs` writes both. |
 | `WARD_OIDC_REDIRECT_URI` | unset | The callback as the browser reaches it, `http://localhost:5173/prm-api/auth/ward/callback`. |
@@ -60,6 +60,15 @@ This starts the API on port 3001 under `tsx watch` and the UI on port 5173 under
 
 If another app already holds port 3001, the API exits with `EADDRINUSE`. Pick another port for both processes, for example `PORT=3011 npm run dev`; the UI's proxy follows `PORT`.
 
+To move the app off 5173 as well, start the two halves yourself, each in its own terminal, and point `PUBLIC_ORIGIN` at the new origin (sign-in checks it):
+
+```bash
+PORT=3011 PUBLIC_ORIGIN=http://localhost:5180 npm run dev -w backend
+PORT=3011 npm run dev -w ui -- --port 5180 --strictPort
+```
+
+Then open <http://localhost:5180/prm/>. A variable set in the shell wins over the same one in `.env`.
+
 ## 4. Sign in and use the admin
 
 Sign in with a local account:
@@ -74,13 +83,16 @@ The admin is at <http://localhost:5173/prm/admin> and needs the `admin` role. It
 ## 5. Test
 
 ```bash
+npm run check        # typecheck, lint, format check, conventions, then the Vitest suite
 npm test             # Vitest: unit tests and Fastify .inject() API tests
-npm run typecheck    # all three workspaces
+npm run typecheck    # shared, backend, ui and the e2e specs
 npm run build        # shared, backend and ui
 npm run test:e2e     # Playwright, see below
 ```
 
-`npm run test:e2e` starts its own API on port 3101, a stand-in Ward on 3102 and the UI on 5174, against a fresh database it migrates and seeds on every run. It never touches your dev database; `playwright.config.ts` has the details. It needs Playwright's Chromium installed. `npm run test:watch` is the TDD loop and `npm run test:cov` adds coverage.
+`npm run test:e2e` starts its own API on port 3101 and a production build of the UI under `vite preview` on 5174, against a fresh database it migrates and seeds on every run, with a demo user and an admin whose password is made up per run. It never touches your dev database and needs no Ward; `playwright.config.ts` has the details. It needs Playwright's Chromium installed. `npm run test:watch` is the TDD loop and `npm run test:cov` adds coverage.
+
+`npm run sources` regenerates `DATA_SOURCES.md` from the registry in `shared/src/sources.ts`; a test fails when the two disagree.
 
 ## 6. Build the docs site
 

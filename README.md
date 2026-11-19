@@ -6,18 +6,18 @@ A map of the parks, libraries, clinics, museums, town halls and other public pla
   <img src="docs/images/hero.webp" width="100%" alt="CivicMap on a laptop: a street map of central Timișoara covered in coloured category pins, with the panel for Muzeul de Artă open on the right showing its hours, phone, website and upcoming events grouped under Today, This weekend and Later">
 </p>
 
-**Status:** Proof of concept, deployed at `/prm/` since 2026-10-07. On 2026-10-09 the live database had no places loaded yet, so the pictures here come from a local copy running the seed data. The places are real OpenStreetMap data; every event is synthetic until the first real event feeds are added.
+**Status:** Proof of concept, deployed at `/prm/` since 2026-10-07. The redesign of 2026-11-13 and the rest of the work since 2026-11-10 are built and wait for a deploy. The places are real OpenStreetMap data; every event is synthetic until the first real event feeds are added. When last checked, on 2026-10-09, the live database had no places loaded, so the pictures here come from a local copy running the seed data.
 
 ## What it does
 
 - Puts each city's public places on one map, from OpenStreetMap, with pins clustered so the whole city stays readable.
 - Opens a place to show what is on there, grouped Today, Tomorrow, This weekend and Later. A ticket link appears only when the publisher gave one.
 - Lists everything coming up in the city on a What's on page, and past events on an Archive page.
-- Filters by category, by timing and by an area you draw on the map. The same filters drive the map and the list.
-- Lets a signed-in user follow places and save events, then sends an in-app and email notice when a followed place gets a new event, and a reminder the day before a saved one.
+- Filters by category, by timing and by an area you draw on the map. The same filters drive the map and the list, and the map keeps them in its URL, so a copied link opens the same view.
+- Lets a signed-in user follow places and save events, with an in-app notice when a followed place gets a new event and a reminder the day before a saved one. Accounts linked to Ward get the same notices by email.
 - Holds events from public calendar feeds in an admin review queue until a person accepts them.
 
-Most event apps are a feed of listings with a map added on, and a listing disappears once it is over. Here the place is what you look at, so the map is still useful in a week when nothing is on. Events come only from the venues' and the city's own published calendars, never from a ticket seller's site. It covers two cities and does not sell or book anything.
+Most event apps are a feed of listings with a map added on, and a listing disappears once it is over. Here the place is what you look at, so the map is still useful in a week when nothing is on. Events come only from the venues' and the city's own published calendars, never from a ticket seller's site, and every source is credited on the map and the About page from one registry ([DATA_SOURCES.md](DATA_SOURCES.md)). It covers two cities and does not sell or book anything.
 
 ## Screenshots
 
@@ -29,15 +29,17 @@ In the GIF: pick the Museums chip, zoom in, drag the map, then click a pin to op
 
 | A place on a phone, in Romanian, the default language | The city map in the dark theme |
 |---|---|
-| <img src="docs/images/place-phone.webp" width="300" alt="Phone screen in Romanian: the map around Teatrul Național Timișoara with its pin selected, and a bottom sheet showing the theatre's category, address, directions and website"> | <img src="docs/images/map-phone-dark.webp" width="300" alt="Phone screen in the dark theme: numbered cluster pins over a dark street map of Timișoara, with search, timing filter and bottom navigation"> |
+| <img src="docs/images/place-phone.webp" width="300" alt="Phone screen in Romanian: the sheet for Teatrul Național Timișoara pulled up to full height, with its category, address, Directions, Copy link and favourite buttons, its website and OpenStreetMap source, and two upcoming plays under În weekend and Mai târziu, above the bottom tab bar"> | <img src="docs/images/map-phone-dark.webp" width="300" alt="Phone screen in the dark theme: numbered cluster pins over a dark street map of Timișoara, with search, timing filter and bottom navigation"> |
 
 | What's on: everything coming up in the city, by day |
 |---|
-| ![The What's on page for Timișoara in English: timing and category filters, then events under Today, Tomorrow and This weekend, each with its time, category, place and source](docs/images/whats-on.webp) |
+| ![The What's on page for Timișoara in English: a band with the timing switch, category chips and the event count, then one card of events under Today, This weekend and Later, each with its date, time, category, place and source, and a Tickets link where the source gave one](docs/images/whats-on.webp) |
+
+The phone sheet and What's on show the current design. The hero, the GIF and the dark map were taken on 2026-10-09, before the redesign moved the search and filters into a band above the map and the place panel to the left; they wait for a retake ([docs/images/shots.md](docs/images/shots.md)).
 
 ## How it works
 
-Three npm workspaces. `shared` holds the Zod schemas and types that both sides compile against. `backend` is a Fastify API on SQLite through Drizzle ORM; it serves places and events, runs the OpenStreetMap sync and the event pipeline, and sends the daily reminders. `ui` is a React single-page app built on React Router, Leaflet and TanStack Query, served under `/prm/`. Sign-in belongs to Ward, the shared sign-in service the owner's apps use; prm checks Ward's tokens and grants and stores no passwords or email addresses.
+Three npm workspaces. `shared` holds the Zod schemas and types that both sides compile against, and the registry of data sources. `backend` is a Fastify API on SQLite through Drizzle ORM, split by feature; it serves places and events, runs the OpenStreetMap sync and the event pipeline, and sends the daily reminders. `ui` is a React single-page app built on React Router, Leaflet and TanStack Query, served under `/prm/`. Accounts are prm's own: a username and password, and no email address. "Sign in with Ward", the shared sign-in service the owner's apps use, is an optional second way in.
 
 Places and events reach the map by different routes:
 
@@ -51,7 +53,7 @@ More on the docs site: [architecture](corpus/wiki/architecture.md), [ingestion](
 
 ## Run it locally
 
-Requires Node 24; tested with 24.14. The public map needs nothing else, and signing in, favourites and notifications run on prm's own local accounts. "Sign in with Ward" is optional and needs a local Ward, which [docs/getting-started.md](docs/getting-started.md) covers.
+Requires Node 24. The public map needs nothing else, and signing in, favourites and notifications run on prm's own local accounts. "Sign in with Ward" is optional and needs a local Ward, which [docs/getting-started.md](docs/getting-started.md) covers.
 
 ```bash
 npm install
@@ -61,16 +63,16 @@ npm run db:migrate -w backend && npm run db:seed -w backend   # offline: both ci
 npm run dev                                                   # API on :3001, app on :5173
 ```
 
-Then open <http://localhost:5173/prm/>. Env vars, sign-in, the admin, tests and the docs site: [docs/getting-started.md](docs/getting-started.md).
+Then open <http://localhost:5173/prm/>. Env vars, other ports, sign-in, the admin, tests and the docs site: [docs/getting-started.md](docs/getting-started.md).
 
 ## Project layout
 
 | Path | What lives there |
 |---|---|
-| `shared/` | Zod schemas and the TypeScript types the app and API share |
-| `backend/` | Fastify API, database schema and migrations, OSM sync, event pipeline, seed |
+| `shared/` | Zod schemas, the TypeScript types the app and API share, and the source registry |
+| `backend/` | Fastify API by feature, database schema and migrations, OSM sync, event pipeline, seed |
 | `ui/` | The React app, plus [PRODUCT.md](ui/PRODUCT.md) on who it is for and [DESIGN.md](ui/DESIGN.md) with the design system |
-| `e2e/` | Playwright tests, with a stand-in Ward |
+| `e2e/` | Playwright tests, run against a production build and a fresh seeded database |
 | `docs/` | The Docusaurus docs site, and the images in this README |
 | `corpus/` | The project wiki: decisions, status and the briefs that built it |
 | `infrastructure/` | Dockerfile and Compose file the deploy builds the API from |
