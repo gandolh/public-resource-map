@@ -24,6 +24,7 @@ afterEach(() => {
   root = null;
   host = null;
   calls.length = 0;
+  localStorage.clear();
   vi.unstubAllGlobals();
 });
 
@@ -76,7 +77,11 @@ describe("WardLink", () => {
     });
   });
 
-  it("a wrong password shows its message beside the field and focus stays there", async () => {
+  it.each([
+    ["ro", "Parola nu e cea bună."],
+    ["en", "That isn't your password."],
+  ])("a wrong password shows its message (%s) beside the field and focus stays there", async (lang, message) => {
+    localStorage.setItem("civicmap-lang", lang);
     stubServer(401, { error: "invalid_credentials" });
     await show({ linked: true });
     const input = await submitWith("not the password");
@@ -84,7 +89,7 @@ describe("WardLink", () => {
       url: expect.stringContaining("/ward/unlink"),
       body: { currentPassword: "not the password" },
     });
-    expect(host?.querySelector('[role="alert"]')?.textContent).toMatch(/password|parola/i);
+    expect(host?.querySelector('[role="alert"]')?.textContent).toBe(message);
     expect(document.activeElement).toBe(input);
   });
 
@@ -99,5 +104,6 @@ describe("WardLink", () => {
     await show({ linked: true, hasPassword: false });
     expect(host?.querySelector('input[type="password"]')).toBeNull();
     expect(host?.querySelector("button")?.disabled).toBe(true);
+    expect(host?.textContent).toContain("Pune întâi o parolă CivicMap, altfel după dezlegare n-ai mai putea intra.");
   });
 });

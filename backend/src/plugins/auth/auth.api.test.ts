@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { buildTestApp, TEST_ORIGIN, type TestApp } from "../../test/harness.js";
 import { createFakeWard, WARD_ISSUER, type FakeWard } from "../../test/fake-ward.js";
+import { place } from "../../db/schema.js";
 
 /**
  * Since 2026-10-13, prm's own accounts through the shared library.
@@ -113,12 +114,21 @@ describe("changing the username", () => {
     const reg = await post("/auth/register", { username: "dan", password: "a long enough password" });
     const cookie = sessionCookie(reg);
     const id = reg.json().user.id as string;
+    const museum = t.db
+      .insert(place)
+      .values({ name: "Muzeul de Artă", category: "museum", city: "Timișoara", lat: 45.75, lng: 21.22 })
+      .returning({ id: place.id })
+      .get().id;
+    const fav = await t.app.inject({ method: "POST", url: `/api/favorites/places/${museum}`, headers: { cookie } });
+    expect(fav.statusCode).toBe(204);
 
     const res = await post("/auth/username", { username: "daniel" }, cookie);
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({ user: { id, username: "daniel" } });
-    // The same session still works: a rename is not a credential change.
-    expect((await get("/api/favorites", cookie)).statusCode).toBe(200);
+    // The same session still works: a rename is not a credential change, and the favourite is still theirs.
+    const kept = await get("/api/favorites", cookie);
+    expect(kept.statusCode).toBe(200);
+    expect(kept.json()).toEqual({ places: [museum], events: [] });
 
     expect((await post("/auth/login", { username: "dan", password: "a long enough password" })).statusCode).toBe(401);
     const again = await post("/auth/login", { username: "daniel", password: "a long enough password" });
@@ -332,5 +342,6 @@ describe("Sign in with Ward", () => {
     t = await buildTestApp();
     const { cookie } = await passwordUser("ana");
     expect((await post("/auth/ward/link", { currentPassword: PASSWORD }, cookie)).statusCode).toBe(404);
+    expect((await post("/auth/ward/unlink", { currentPassword: PASSWORD }, cookie)).statusCode).toBe(404);
   });
 });
