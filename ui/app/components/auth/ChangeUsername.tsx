@@ -1,4 +1,4 @@
-import { useRef, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useRenameUser } from "../../../vendor/ward/ward-auth-react.js";
 import { Button } from "~/components/ui/Button";
 import { useI18n } from "~/lib/i18n";
@@ -14,10 +14,12 @@ export function ChangeUsername({ username }: { username: string }) {
   const { t } = useI18n();
   const { renameUser, pending, error, done } = useRenameUser();
   const field = useRef<HTMLInputElement>(null);
+  const [same, setSame] = useState(false);
 
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const next = (field.current?.value ?? "").trim();
+    setSame(next === username);
     if (next === username) return;
     void renameUser(next).then((ok) => {
       if (!ok) field.current?.focus();
@@ -40,7 +42,8 @@ export function ChangeUsername({ username }: { username: string }) {
           required
         />
         <AuthErrorNotice error={error} />
-        {done && !error && <Notice tone="ok">{t("settings.usernameChanged")}</Notice>}
+        {same && <Notice tone="neutral">{t("settings.usernameSame")}</Notice>}
+        {done && !error && !same && <Notice tone="ok">{t("settings.usernameChanged")}</Notice>}
         <Button type="submit" variant="secondary" disabled={pending}>
           {t("settings.usernameSave")}
         </Button>

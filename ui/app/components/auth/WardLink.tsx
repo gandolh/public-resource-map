@@ -48,6 +48,7 @@ export function WardLink({
       {unlink.done && <Notice tone="ok">{t("settings.unlinked")}</Notice>}
       {linked && !hasPassword ? (
         <>
+          <AuthErrorNotice error={error} />
           <Notice tone="neutral">{t("settings.unlinkNeedsPassword")}</Notice>
           <Button variant="secondary" disabled>
             {t("settings.unlink")}

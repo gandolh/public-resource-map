@@ -18,10 +18,11 @@ export default function LoginRoute() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const next = safeNext(params.get("next"));
   const session = useSession();
   const { login, pending, error } = useLogin();
   const ward = useWardSignIn();
+  // A refused Ward sign-in lands here with no `next`, only the place it was started for.
+  const next = safeNext(params.get("next") ?? ward.returnTo);
 
   // Signed in (here, or already): go where the person was heading.
   useEffect(() => {
