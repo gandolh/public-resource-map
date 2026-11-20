@@ -935,3 +935,7 @@ The API follows the code-structure skill. zod is 4.6.7.
 
 - **The owner's answer** to brief 01's board question 1: neither publisher has granted permission (TNTM's footer reserves all rights), so both registry entries move from `permitted` to `permission-pending`. Nothing changes on the map: a `permission-pending` source is published and credited, and only `forbidden` is held back. `DATA_SOURCES.md` is regenerated and gains a carve-out for each. The 2026-10-06 decision carries the revisit ([wiki/decisions.md](wiki/decisions.md)).
 - **Still open:** the About page's "the events shown are samples" note (question 2). Only the owner can say whether the live site shows the feeds' real events.
+
+## [2026-11-20] maintenance | The redesign's board page copied into the repo
+
+The estate redesign board is a private canvas, so `design/estate-redesign/` now holds a copy of this app's page on it and the build behind it: the directions, the judges' and the controller's rulings, the critique, the token hand-off, the board's notes, the owner's decisions, the proposed screens (as HTML with renders, or as the board's own artboard sources), and today's shots from before the redesign. It is the design record of brief 06, which built it; its README says what each file is. Prettier and the Docker build skip the folder.

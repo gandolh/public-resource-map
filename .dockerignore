@@ -4,6 +4,7 @@ node_modules
 ui/build
 .git
 corpus
+design
 *.md
 .env
 infrastructure/.env

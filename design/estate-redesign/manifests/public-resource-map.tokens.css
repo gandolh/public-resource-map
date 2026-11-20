@@ -1,0 +1,143 @@
+/*
+ * CivicMap, direction B "The docked desk": the token set in the app's own names.
+ * Drop-in for ui/app/app.css: replace the colour and shadow lines in the two raw
+ * blocks (:root and :root[data-theme="dark"]) with the ones below, keep the
+ * motion, --map-scrim, --scrim, --fg-on-danger and --sh-pin lines as they are,
+ * and add the @theme inline block at the end to the file's existing one.
+ * The file's own mechanism is kept: raw names per theme, then role aliases.
+ */
+:root {
+  /* Surfaces, lines, text, accent, status */
+  --bg:                #e8ecf1;
+  --surface:           #fcfdfe;
+  --surface-2:         #f0f3f7;
+  --surface-3:         #e1e6ed;
+  --line:              #d8dee6;
+  --line-strong:       #c3cad5;
+  --outline:           #7f8896; /* NEW: control edges that must be seen (search, Copy link, star, Draw an area, grab bar) */
+  --fg:                #131922;
+  --fg-muted:          #545e6b;
+  --fg-faint:          #5f6977;
+  --fg-on-accent:      #fbfcff;
+  --accent:            #2a5bef;
+  --accent-hover:      #1f4bd8;
+  --accent-weak:       #e9effe;
+  --accent-line:       #c3d2fb;
+  --ok:                #0b7d55;
+  --danger:            #c62f2f;
+  --danger-weak:       #fdeced;
+
+  /* NEW: the street plan stand-in and the pin parts (the real map draws CARTO tiles; these style the fallback and the drawn comps) */
+  --map-land:          #eef0f2; /* NEW */
+  --map-block:         #e5e8ec; /* NEW */
+  --map-road:          #fbfcfd; /* NEW */
+  --map-park:          #dcebdc; /* NEW */
+  --map-trail:         #fbfcfd; /* NEW */
+  --map-water:         #cfe0ee; /* NEW */
+  --map-label:         #56606c; /* NEW */
+  --pin-stroke:        #fbfcff;
+  --pin-ico:           #fbfcff;
+
+  /* Category hues: unchanged from today */
+  --cat-park:          #157f4a;
+  --cat-library:       #9c5c00;
+  --cat-clinic:        #c4342a;
+  --cat-museum:        #6d3fb0;
+  --cat-townhall:      #0f6e8e;
+  --cat-community_center: #b03a86;
+  --cat-education:     #3a37a8;
+  --cat-theater:       #c2410c;
+  --cat-sports:        #4d7c0f;
+  --cat-cultural_center: #0f766e;
+  --cat-other:         #566072;
+
+  /* Elevation by role: e1 the band, e2 controls on the map, e3 the place column and the sheet */
+  --sh-1:             0 1px 2px rgba(19,25,34,.08), 0 2px 6px rgba(19,25,34,.06);
+  --sh-2:             0 1px 2px rgba(19,25,34,.08), 0 4px 14px rgba(19,25,34,.10);
+  --sh-3:             0 2px 4px rgba(19,25,34,.08), 0 12px 32px rgba(19,25,34,.16);
+
+  /* NEW: how much of the place's hue tints the head of the place card */
+  --head-mix:         7%;
+}
+
+:root[data-theme="dark"] {
+  /* Surfaces, lines, text, accent, status */
+  --bg:                #090b0f;
+  --surface:           #1c212b;
+  --surface-2:         #252b36;
+  --surface-3:         #2e3541;
+  --line:              #2f3642;
+  --line-strong:       #3f4856;
+  --outline:           #7a8596; /* NEW: control edges that must be seen (search, Copy link, star, Draw an area, grab bar) */
+  --fg:                #edf0f4;
+  --fg-muted:          #a1aab7;
+  --fg-faint:          #8e98a6;
+  --fg-on-accent:      #0c0f14;
+  --accent:            #6d9bff;
+  --accent-hover:      #85adff;
+  --accent-weak:       #1d2b4d;
+  --accent-line:       #2f4474;
+  --ok:                #34d399;
+  --danger:            #fb7185;
+  --danger-weak:       #2c1218;
+
+  /* NEW: the street plan stand-in and the pin parts (the real map draws CARTO tiles; these style the fallback and the drawn comps) */
+  --map-land:          #15181d; /* NEW */
+  --map-block:         #1a1e24; /* NEW */
+  --map-road:          #262b33; /* NEW */
+  --map-park:          #17251d; /* NEW */
+  --map-trail:         #2a3a30; /* NEW */
+  --map-water:         #13202d; /* NEW */
+  --map-label:         #8e98a6; /* NEW */
+  --pin-stroke:        #0c0f14;
+  --pin-ico:           #0c0f14;
+
+  /* Category hues: unchanged from today */
+  --cat-park:          #34c77b;
+  --cat-library:       #e3a223;
+  --cat-clinic:        #f2695f;
+  --cat-museum:        #b083f0;
+  --cat-townhall:      #35b0d8;
+  --cat-community_center: #ee72bd;
+  --cat-education:     #8b88f5;
+  --cat-theater:       #f0863f;
+  --cat-sports:        #9bcc3c;
+  --cat-cultural_center: #2bbfad;
+  --cat-other:         #93a0b4;
+
+  /* Elevation by role: e1 the band, e2 controls on the map, e3 the place column and the sheet */
+  --sh-1:             0 1px 2px rgba(2,4,8,.5), 0 2px 6px rgba(2,4,8,.35);
+  --sh-2:             0 1px 2px rgba(2,4,8,.5), 0 4px 14px rgba(2,4,8,.45);
+  --sh-3:             0 2px 4px rgba(2,4,8,.5), 0 12px 32px rgba(2,4,8,.6);
+
+  /* NEW: how much of the place's hue tints the head of the place card */
+  --head-mix:         12%;
+}
+
+/* Add to the existing @theme inline block (the aliases that already exist keep their lines). */
+@theme inline {
+  --color-outline:    var(--outline);
+  --color-map-land:   var(--map-land);
+  --color-map-block:  var(--map-block);
+  --color-map-road:   var(--map-road);
+  --color-map-park:   var(--map-park);
+  --color-map-trail:  var(--map-trail);
+  --color-map-water:  var(--map-water);
+  --color-map-label:  var(--map-label);
+  --color-pin-stroke: var(--pin-stroke);
+  --color-pin-ico:    var(--pin-ico);
+
+  /* Type: the six sizes the design uses, with their line heights. The other --text-* names stay for screens this board did not draw. */
+  --text-meta: 12px;
+  --text-meta--line-height: 16px;
+  --text-ui: 13px;
+  --text-ui--line-height: 18px;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-field: 16px; /* NEW: phone inputs and the phone's event titles */
+  --text-field--line-height: 24px;
+  --text-place: 22px; /* NEW: the place title in the column and the sheet, 600, -0.015em */
+  --text-place--line-height: 28px;
+  --text-hero: 28px; /* was 30: page titles, 600, -0.015em */
+  --text-hero--line-height: 34px;
+}
