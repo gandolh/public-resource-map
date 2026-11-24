@@ -28,24 +28,43 @@ What the code does today (`backend/src/features/reminders/reminder-sweep.ts`):
 [decisions.md](../../wiki/decisions.md) locks the sweep in-process, "not OS cron" (Favorites & notifications, and
 the deploy section). That holds: the box's timer only sends a request; the sweep still runs inside the API.
 
-## Decisions
+The words are day-specific. The inbox bell says `"bell.reminder": "Mâine: {title}, la {place}"`
+(`ui/app/lib/i18n.tsx:230`, shown by `ui/app/components/shell/Bell.tsx`). The mail already says "Azi" instead
+when a retried mail goes out on the event's own day (`reminderMail` in `notify-mail.ts:105-108`, through
+`sameBucharestDay`).
+
+## Owner decision (ask before building)
+
+The day-before reminder is a locked call (decisions.md, Favorites & notifications). Widening the window changes
+it, so it is the owner's: **may a reminder the API missed while asleep go out on the event's own day, worded
+"Azi"?** Ask it on the ticket (`--question`) when you start, unless the ticket already carries the answer.
+
+- **Yes** (the controller's recommendation: a late reminder beats none, and the mail already words it so): build
+  the Decisions below.
+- **No:** build only the decisions.md note (the API may sleep; the 09:00 wake), leave the window as it is, and say
+  in the outcome that a missed wake loses that day's reminders.
+
+## Decisions (if the owner says yes)
 
 - The window of every run is from **now** to the end of the next Bucharest day. An event that missed its
   day-before reminder gets one on its own day if it hasn't started; one that has started gets none. The unique
-  index keeps it to one reminder per person and event. A late reminder beats none.
-- Nothing else changes: the 09:00 schedule, the start-up run, the mail kick.
+  index keeps it to one reminder per person and event.
+- The bell says "Azi" for a reminder whose event is on the day it is shown, as the mail does: a second key beside
+  `bell.reminder`, picked by comparing the event's Bucharest day with today's.
+- Nothing else changes: the 09:00 schedule, the start-up run, the mail kick, the mail's wording.
 - decisions.md gets a dated revisit note under Favorites & notifications: the API may sleep (owner, 2026-11-24);
-  vps-deploy wakes it at 09:00 Bucharest; the sweep stays in-process; the window now starts at the run's time.
+  vps-deploy wakes it at 09:00 Bucharest; the sweep stays in-process; a missed reminder goes out on the day.
 
 ## Files you OWN
 
 - `backend/src/features/reminders/reminder-sweep.ts` and `reminder-sweep.test.ts`
+- `ui/app/lib/i18n.tsx` (the new key) and `ui/app/components/shell/Bell.tsx` (picking it), with a test
 - `corpus/wiki/decisions.md` (the revisit note), and the closeout: the outcome note, `corpus/log.md`,
   `corpus/wiki/status.md`
 
 ## Files you must NOT touch
 
-- `notify-mail.ts` and the mail retry rules.
+- `notify-mail.ts` and the mail retry rules: the mail already words a same-day reminder.
 - The database schema and migrations.
 - vps-deploy: read only. The `sleep` setting and the wake timer are its changes.
 
@@ -54,19 +73,22 @@ the deploy section). That holds: the box's timer only sends a request; the sweep
 1. **Confirm the premise.** Read `startReminderSweep` and `runReminderSweep` and check the two facts in Context
    (run at start; window is tomorrow only). Grep `backend/src` for `setInterval`, `setTimeout` and `cron`. If
    either fact is wrong, or another timer would be cut by a stop, stop and hand back with what you found.
-2. Change the window's start to `now`, keeping the end at the end of the next Bucharest day.
-3. Tests, with fixed `now` values: a run at 10:00 on day D reminds about a favourited event at 18:00 on D and one
+2. The owner's answer (above). On "no", skip to step 6.
+3. Change the window's start to `now`, keeping the end at the end of the next Bucharest day.
+4. Tests, with fixed `now` values: a run at 10:00 on day D reminds about a favourited event at 18:00 on D and one
    at 12:00 on D+1; it writes nothing for an event that started at 08:00 on D; a second run at 10:05 writes
    nothing; the existing Bucharest-midnight and DST cases still pass.
-4. The decisions.md note.
+5. The bell's "Azi" wording, with a test for both days.
+6. The decisions.md note.
 
 ## Acceptance
 
 - [ ] Step 1's findings are in the outcome.
+- [ ] The owner's answer is in the outcome.
 - [ ] The tests above pass; `npm run check` exits 0; `bash corpus/lint.sh` passes.
 - [ ] End move `ready_for_deploy`.
 
 ## Owner steps
 
-- `node cli.ts public-resource-map server` from vps-deploy. The sleep itself ships later with vps-deploy's change,
-  after this deploy.
+- `node cli.ts public-resource-map all` from vps-deploy (the bell is in the web app, the sweep in the server; on
+  "no", `server` alone). The sleep itself ships later with vps-deploy's change, after this deploy.
