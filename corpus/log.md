@@ -943,3 +943,12 @@ The API follows the code-structure skill. zod is 4.6.7.
 ## [2026-11-20] maintenance | The redesign's board page copied into the repo
 
 The estate redesign board is a private canvas, so `design/estate-redesign/` now holds a copy of this app's page on it and the build behind it: the directions, the judges' and the controller's rulings, the critique, the token hand-off, the board's notes, the owner's decisions, the proposed screens (as HTML with renders, or as the board's own artboard sources), and today's shots from before the redesign. It is the design record of brief 06, which built it; its README says what each file is. Prettier and the Docker build skip the folder.
+
+## [2026-11-24] todo | Briefs 10 and 11 from the infra review of 2026-11-24
+
+Filed from the estate's infra review. Brief 10: the image's `deps` stage installs only `shared` and `backend`
+(about 439 MB less build cache per cold build on the box) and every base is pinned to `node:24.22.1-alpine`.
+Brief 11: the owner agreed on 2026-11-24 that the API may sleep; the reminder sweep already runs at start, so the
+brief widens each run's window to start at the run's time, which sends a reminder a sleep missed, and records
+the revisit in decisions.md. Both ship with `node cli.ts public-resource-map server`; the sleep and the 09:00
+wake are vps-deploy's.
