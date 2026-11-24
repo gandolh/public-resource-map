@@ -1,6 +1,6 @@
 ---
 summary: Locked product, legal, ingestion, data, map/UI, testing and deployment choices, plus the owner's dated answers since 2026-10-04 — check before relitigating anything; identity, UI and stack live in split-out pages.
-updated: 2026-11-12
+updated: 2026-11-24
 ---
 
 # Decisions
@@ -157,6 +157,7 @@ The current 3-surface UI (`/map` resource markers · standalone `/events` grid �
 - **Two triggers create inbox items:**
   1. **New-events trigger** — fires **synchronously at the admin-accept step**: when an admin accepts new events at a place, create inbox items for users who `favorite_place`d it. (Not at scrape time — unaccepted events don't notify.)
   2. **Day-before reminder** — a **once-a-day scheduled sweep running IN-PROCESS inside the Fastify API service** (not a separate pm2 process, not OS cron; distinct from the rejected *ingestion* cron — this one only reads accepted events + writes inbox rows, nothing legally/data sensitive). Semantics: **daily sweep at a fixed local time (e.g. 09:00 Europe/Bucharest)** selects `favorite_event`s whose start is the **next calendar day in Bucharest time**, inserts reminder inbox rows. **Idempotent** via a unique constraint on `(subject, eventId, kind='reminder')` so restarts/double-runs never duplicate. Timezone comparison is **Europe/Bucharest**, not UTC (events are ISO 8601 strings).
+  - **Revisited 2026-11-24 (owner): the API may sleep.** vps-deploy stops it after 15 minutes with no request and wakes it with one request at 09:00 Bucharest, so the sweep stays in-process and on time (it also runs at every start). The day-before window stays strict: a reminder missed while asleep (a wake that failed) is dropped, not sent on the day ("No, drop them"). A refresh is one long request, and Sablier renews a session only on a new request, so a refresh longer than the session would be cut: vps-deploy's sleep setting for this app has to allow for it.
 
 ## Testing (locked 2026-06-28)
 
