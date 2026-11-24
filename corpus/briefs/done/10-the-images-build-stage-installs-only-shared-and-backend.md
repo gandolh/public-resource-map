@@ -72,3 +72,21 @@ the controller.
 ## Owner steps
 
 - `node cli.ts public-resource-map server` from vps-deploy. The deploy builds the image on the box.
+
+## Outcome
+
+Built 2026-11-24 by the controller (58a4174). Ready for deploy: `node cli.ts public-resource-map server`.
+
+- **Step 1**, in a `git archive` export: the full `npm ci` leaves 745 MB of `node_modules`; the scoped install
+  leaves 307 MB (438 MB less), and the shared then backend builds pass. Nothing else was needed.
+- **Step 2**: `deps` runs the scoped install with a comment saying why; the three `FROM` lines are
+  `node:24.22.1-alpine`.
+- **Step 3**, both built on the laptop the same hour: the `deps` stage image 922 MB before, 837 MB after; the
+  final image 229 MB before, 230 MB after. `docker history` differs only in three layer sizes by about 10 kB to
+  1 MB (the pinned Node patch). The `deps` image shrinks less than `node_modules` because its base, the
+  toolchain layer and npm's cache sit under both.
+- **Step 4**, on a scratch data folder: the migration (the image's `backend/dist/db/migrate.js`, as
+  `prm-migrate` runs it) printed "Migrations applied successfully" on an empty folder; then the API, with
+  `PUBLIC_ORIGIN` set (it refuses to start without one), turned healthy and `/health` answered
+  `{"status":"ok"}`; Node is v24.22.1. Test images and the container were removed.
+- `npm run check` exits 0; `bash corpus/lint.sh` passes.

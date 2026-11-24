@@ -954,3 +954,10 @@ the revisit in decisions.md. Both ship with `node cli.ts public-resource-map ser
 wake are vps-deploy's.
 
 ## [2026-11-24] done | Brief 11: owner said No (missed reminders are dropped); only the decisions note that the API may sleep, woken at 09:00 by vps-deploy; a long admin refresh vs the 15-minute session flagged for vps-deploy 39
+
+## [2026-11-24] brief | 10 The image's build stage installs only shared and the backend, on a pinned base
+
+Built. `deps` runs the install scoped to shared and the backend (745 → 307 MB of `node_modules`; the `deps`
+stage image 922 → 837 MB), and every stage is on `node:24.22.1-alpine`. The final image is 230 MB (229 before);
+on scratch data the migration and the API's health check pass. Ready for deploy:
+`node cli.ts public-resource-map server`. See [briefs/done/10-the-images-build-stage-installs-only-shared-and-backend.md](briefs/done/10-the-images-build-stage-installs-only-shared-and-backend.md).
