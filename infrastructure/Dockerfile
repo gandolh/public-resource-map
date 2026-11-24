@@ -16,7 +16,11 @@
 # Runs as root, which under the VPS's ROOTLESS daemon is the unprivileged
 # account owning it — required because /data is a bind mount.
 
-FROM node:24-alpine AS deps
+# Every stage uses one exact base. A floating `node:24-alpine` follows the tag on
+# the day of the build, so the box ends up holding several bases and every cache
+# entry keyed on the old one goes dead; the estate moves to a new patch in one
+# sweep instead.
+FROM node:24.22.1-alpine AS deps
 # better-sqlite3 ships a linuxmusl-x64 prebuild; the toolchain is a fallback for
 # a version bump that ever drops it.
 RUN apk add --no-cache python3 make g++
@@ -25,7 +29,11 @@ COPY package.json package-lock.json ./
 COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
 COPY ui/package.json ./ui/
-RUN npm ci
+# Scoped to shared and the backend plus the root's dev dependencies, where
+# typescript is: this stage only compiles those two, so the ui's tree would be
+# installed for nothing. Measured on 2026-11-24: 745 MB of node_modules
+# unscoped, 307 MB scoped.
+RUN npm ci -w @public-resource-map/shared -w @public-resource-map/backend --include-workspace-root
 
 FROM deps AS builder
 # The workspaces' tsconfigs extend this one file.
@@ -36,7 +44,7 @@ COPY backend ./backend
 RUN npm run build -w @public-resource-map/shared \
  && npm run build -w @public-resource-map/backend
 
-FROM node:24-alpine AS proddeps
+FROM node:24.22.1-alpine AS proddeps
 RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -56,7 +64,7 @@ RUN cd node_modules \
  && find . -type d -name prebuilds -exec sh -c \
       'rm -f "$1"/darwin-*.node "$1"/win32-*.node "$1"/android-*.node' _ {} \;
 
-FROM node:24-alpine AS prod
+FROM node:24.22.1-alpine AS prod
 LABEL org.opencontainers.image.title="public-resource-map API"
 WORKDIR /app
 COPY --from=proddeps /app/node_modules ./node_modules
