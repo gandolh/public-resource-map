@@ -65,6 +65,8 @@ The API follows the estate's `code-structure` skill. `config.ts` is the one read
   - TypeBox, because zod is already the contract in `shared/`;
   - extracting a `store.ts` per feature now: the handlers keep their Drizzle queries, so the layout, the schemas and the error handling don't land in one diff with a fourth change.
 
+- **Migrations run from the API image (2026-11-24).** `prm-migrate` builds the same `prod` stage as `prm-api` and runs `node backend/dist/db/migrate.js`, so both tags name one image and the per-deploy migration costs no extra disk; the image carries `backend/drizzle/`. The production install is scoped to the `shared` and `backend` workspaces, so the UI's runtime packages stay out, and the image copies both `node_modules` folders that install leaves (the root one and `backend/`'s). `npm run db:migrate` keeps tsx for local development.
+
 ## Known/accepted issues (moved from decisions.md 2026-11-12)
 
 - **`npm audit`: 4 moderate (esbuild GHSA-67mh-4wv8-2f99).** Sole source is `drizzle-kit`'s transitive `@esbuild-kit/core-utils → esbuild@~0.18.20`. Accepted, not fixed: (1) dev-tooling only — `drizzle-kit` never ships to production and isn't used by any npm script (migrations run via `drizzle-orm`'s migrator through `tsx`; drizzle-kit is only for manual `generate`); (2) the advisory requires running esbuild's dev server, which `drizzle-kit generate` does not; (3) `0.31.10` is the latest stable and still pins the vulnerable esbuild — only `1.0.0-beta`/`rc` drop it; (4) an `esbuild` override won't apply because `@esbuild-kit/core-utils` uses the incompatible 0.18 platform-package layout. `npm audit fix --force` would *downgrade* drizzle-kit to 0.18.1 — do not run it.

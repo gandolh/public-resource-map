@@ -84,3 +84,23 @@ checks, and hand back with steps 1, 5 and 6 for the controller.
 - The outcome note has both `docker history` readings, taken on one machine.
 - The deploy is the owner's step: `node cli.ts public-resource-map deploy`
   from vps-deploy.
+
+## Outcome (2026-11-24)
+
+Built in the commit "build: migrations run from the API image; the production install skips the UI's packages". Changes: `infrastructure/Dockerfile` (scoped `proddeps` install, both `node_modules` folders copied, `COPY backend/drizzle`) and `infrastructure/docker-compose.yml` (`prm-migrate` on `target: prod`, entrypoint `node backend/dist/db/migrate.js`, comment rewritten). `.dockerignore` needed nothing: it excludes no `.sql` or `.json` file, and `backend/drizzle/meta/_journal.json` is in the image.
+
+**`docker history`, one machine (Docker Desktop, 2026-11-24, local tags `prm09-*`)**
+
+Before:
+- `prm-api` (prod stage): image `79a84eecbe64`, 293 MB; `node_modules` layer 122 MB.
+- `prm-migrate` (builder stage): image `480b34e4b539`, 926 MB; `npm ci` layer 445 MB on top of a 305 MB toolchain layer, plus the node base.
+
+After:
+- `prm-api` and `prm-migrate` (both the prod stage): one image, `ac411566504e`, 229 MB; `node_modules` layer 56.7 MB, `backend/node_modules` 47 kB, `backend/drizzle` 177 kB.
+- The migrate image's unique size is zero. The two tags are one ID, so a deploy builds one image instead of two.
+
+The scoped install leaves two `node_modules` folders, the root one and `backend/node_modules`; `shared` has none. None of the 14 packages that only `ui/package.json` declares is in the image.
+
+**Checks against a throwaway volume** (the scratch volume and containers were removed afterwards): the migrator applied all 5 migrations from an empty database; a second run reported success and left every table's contents unchanged (same hash); `prm-api` then started healthy on that database and answered `/health`. These ran with `docker run` and an entrypoint override equal to the compose service's, because compose's `env_file` would need the real `.env`. The copy of the local development database was skipped: `backend/data/` holds only `.gitkeep` on this machine.
+
+**Deploy phase.** The brief's `deploy` command ships only the static client. This change is the Dockerfile and compose file, so the owner step is `node cli.ts public-resource-map server` from vps-deploy (or `all` with a client change).

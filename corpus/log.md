@@ -1,5 +1,9 @@
 # Log
 
+## [2026-11-24] done | Brief 09: migrations run from the API image
+
+`prm-migrate` now builds the `prod` stage and runs the compiled migrator, so it and `prm-api` are one image (229 MB; the migrate image was 926 MB locally, 1.39 GB on the box). The production install is scoped to `shared` and `backend`, which took the root `node_modules` layer from 122 MB to 56.7 MB. Awaits a deploy (`server`). See [the brief](briefs/done/09-migrations-run-from-the-api-image.md).
+
 ## [2026-11-19] done | Brief 08: linking Ward asks for the password, and a username can change
 
 ward-auth went from 0.3.1 to 1.1.0 in both vendored copies. Ward link and unlink take the account's password, look-alike usernames are refused on register and rename, and settings has a Change username form. Follow-up the same day, from the audit: a Ward-only user now sees a failed Ward re-authentication, a same-name rename says "That's already your username.", the login page falls back to the library's `returnTo` after a refused Ward sign-in, and four tests were tightened to check what their titles claim. Awaits a deploy (`all`). See [the brief](briefs/done/08-linking-ward-asks-for-the-password-and-a-username-can-change.md).
