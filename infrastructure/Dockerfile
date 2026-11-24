@@ -4,9 +4,10 @@
 #
 # Two stages matter here. `builder` compiles shared then backend — in that
 # order, because backend's tsconfig has a project reference to ../shared — and
-# keeps its devDependencies, so it can also run the `tsx`-based migrator. `prod`
-# takes only the emitted JavaScript and production dependencies, so no
-# TypeScript compiler and no tsx reach the running service.
+# keeps its devDependencies. `prod` takes only the emitted JavaScript, the
+# migration SQL and the production dependencies of shared and backend (not the
+# UI's), so no TypeScript compiler and no tsx reach the running service. The
+# same image runs the migrator: `node backend/dist/db/migrate.js`.
 #
 # The stale-tsbuildinfo problem that used to need an explicit clean on the box
 # cannot happen here: every image build starts from a fresh layer, so `shared`
@@ -42,7 +43,9 @@ COPY package.json package-lock.json ./
 COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
 COPY ui/package.json ./ui/
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev \
+      --workspace @public-resource-map/shared \
+      --workspace @public-resource-map/backend
 # Keep every linux prebuild; delete only what this image can never be. A
 # whitelist here is a trap: these are FILES (`prebuilds/linuxmusl-x64.node`),
 # so a `case` on bare directory names matches nothing and removes the lot.
@@ -57,11 +60,16 @@ FROM node:24-alpine AS prod
 LABEL org.opencontainers.image.title="public-resource-map API"
 WORKDIR /app
 COPY --from=proddeps /app/node_modules ./node_modules
+# The scoped install nests the packages whose version differs from the hoisted
+# one under backend/; shared has none today.
+COPY --from=proddeps /app/backend/node_modules ./backend/node_modules
 COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/backend/dist ./backend/dist
 # Ward's shared library (accounts, sessions, "Sign in with Ward"): a vendored
 # build that dist/ imports by relative path, so it ships beside it.
 COPY --from=builder /app/backend/vendor ./backend/vendor
+# The migrator reads these SQL files and the journal beside dist/.
+COPY backend/drizzle ./backend/drizzle
 COPY package.json ./
 COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
