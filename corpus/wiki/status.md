@@ -1,6 +1,6 @@
 ---
 summary: The current-state dashboard as of 2026-11-13, what is built and verified, the gap between code and decisions, a per-area snapshot with dates, and the dev commands.
-updated: 2026-11-19
+updated: 2026-11-24
 ---
 
 # Status
@@ -32,6 +32,8 @@ The public surface has been rebuilt place-centric on a replacement design system
 **The live site has no places yet.** On 2026-10-09 the production site answers at `/prm/`, but its API returns 0 places for both cities. Loading them, e.g. the per-city OSM sync in `/prm/admin`, is the owner's call.
 
 ## Where things stand
+
+**Sleep (2026-11-24).** The owner agreed the API may sleep; vps-deploy will stop it when idle and wake it at 09:00 Bucharest for the reminder sweep. A reminder missed while asleep is dropped (brief 11; [decisions.md](decisions.md), Favorites & notifications).
 
 **The old design system is gone, and so is the event-centric UI.** The 2026-06-29 "Warmer Editorial-Civic" world (Fraunces + steel-blue Material tokens) was retired without ever being built; the user asked for a total UI/UX rework, chose the category convention played straight at a Citymapper/Linear craft bar, and that is now locked ([decisions-ui.md → Visual direction](decisions-ui.md)).
 

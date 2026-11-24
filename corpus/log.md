@@ -952,3 +952,5 @@ Brief 11: the owner agreed on 2026-11-24 that the API may sleep; the reminder sw
 brief widens each run's window to start at the run's time, which sends a reminder a sleep missed, and records
 the revisit in decisions.md. Both ship with `node cli.ts public-resource-map server`; the sleep and the 09:00
 wake are vps-deploy's.
+
+## [2026-11-24] done | Brief 11: owner said No (missed reminders are dropped); only the decisions note that the API may sleep, woken at 09:00 by vps-deploy; a long admin refresh vs the 15-minute session flagged for vps-deploy 39

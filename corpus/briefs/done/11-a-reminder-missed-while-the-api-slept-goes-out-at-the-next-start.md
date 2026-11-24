@@ -92,3 +92,19 @@ it, so it is the owner's: **may a reminder the API missed while asleep go out on
 
 - `node cli.ts public-resource-map all` from vps-deploy (the bell is in the web app, the sweep in the server; on
   "no", `server` alone). The sleep itself ships later with vps-deploy's change, after this deploy.
+
+## Outcome (2026-11-24)
+
+The owner answered **No, drop them** (on the ticket, 2026-11-24): the day-before window stays strict. So only step 6
+was built, by the controller; Done on the board, nothing deploys.
+
+- Step 1, the premise holds: `startReminderSweep` runs once at start and then daily at 09:00 Bucharest; each
+  `runReminderSweep` covers only the next Bucharest day. The only other waits in `backend/src` are inside
+  `db/capture-osm.ts` (a script's back-off) and the geocoder's spacing during an admin refresh; neither is a timer
+  a stop would cut on its own.
+- One finding for vps-deploy's sleep brief: an admin refresh is one long request (`ingest/routes.ts` turns its
+  socket timeout off, since it can outlast 180 s). Sablier renews a session only on a new request, so a refresh
+  longer than the 15-minute session would be stopped mid-way. Recorded in decisions.md and on vps-deploy's ticket.
+- `corpus/wiki/decisions.md`: a dated revisit note under Favorites & notifications (the API may sleep, the 09:00
+  wake, the strict window, the refresh caution).
+- A wake that fails loses that day's reminders; the owner accepted that.
